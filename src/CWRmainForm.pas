@@ -318,6 +318,7 @@ begin
   end;
 end;
 
+
 function GetURL: string;
 var i: Integer;
 begin
@@ -341,20 +342,7 @@ begin
     AlertLabel.Show;
     AlertLabel.BringToFront;
     asm await sleep(50) end;
-//    URL := application.EXEName;
-//    i := pos('://', URL) + 3;
-////    URL := copy(URL, i, pos(':', URL, i) - i);
-////    URL := 'http://' + URL + ':8181/';
-//    URL := copy(URL,1,pos('/',URL,i));       // Incl server ID through port no.
-//    URL := ReplaceStr(URL,':8000',':8181');  // Redir if TMS debug server port
     URL := GetURL + 'getdbfile?filename='+ TableFile;
-//    WebClientDataSet1.DisableControls;
-//    WebClientDataSet1.Active := False;
-//    WebClientConnection1.URI := URL;
-//    WebClientConnection1.Delimiter := ',';
-//    WebClientConnection1.SkipFirstCSVLine := False;
-//    WebClientConnection1.Active := True;
-//    WebClientDataSet1.Active := True;
 
     WSG.BeginUpdate;
     try
