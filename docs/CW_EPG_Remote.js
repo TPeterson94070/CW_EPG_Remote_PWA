@@ -39120,7 +39120,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       if (this.AllCapsGrid.GetCells(1,i) === "") return;
       if (await pas["WEBLib.Dialogs"].MessageDlgAsync('Erase "' + this.AllCapsGrid.GetCells(8,i) + '" ' + this.AllCapsGrid.GetCells(3,i) + " " + this.AllCapsGrid.GetCells(4,i) + " - " + this.AllCapsGrid.GetCells(5,i) + " " + " Schedule Entry?",3,rtl.createSet(0,1)) === 7) return;
       $impl.Log("  >>>>>  " + this.AllCapsGrid.GetCells(1,i) + " - " + this.AllCapsGrid.GetCells(2,i) + "  Delete : (" + this.AllCapsGrid.GetCells(0,i) + ") " + this.AllCapsGrid.GetCells(8,i) + " - " + this.AllCapsGrid.GetCells(3,i) + " " + this.AllCapsGrid.GetCells(4,i) + "-" + this.AllCapsGrid.GetCells(5,i));
-      URL = "http://" + $impl.CWHelperIP + ":8181/decapture?sequence=" + this.AllCapsGrid.GetCells(0,i);
+      URL = "https://" + $impl.CWHelperIP + ":8181/decapture?sequence=" + this.AllCapsGrid.GetCells(0,i);
       Response = await this.HttpReq(URL);
       if (Response !== "") this.AllCapsGrid.RemoveRow(i);
     };
@@ -39201,7 +39201,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       var URL = "";
       var Response = "";
       $impl.Log(" ====== FetchCapReservations called =========");
-      URL = "http://" + $impl.CWHelperIP + ":8181/captures";
+      URL = "https://" + $impl.CWHelperIP + ":8181/captures";
       $impl.Log(' Calling "' + URL + '"');
       try {
         try {
@@ -39227,7 +39227,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.AlertLabel.Show();
         this.AlertLabel.BringToFront();
         await sleep(50);
-        URL = "http://" + $impl.CWHelperIP + ":8181/getdbfile?filename=" + TableFile;
+        URL = "https://" + $impl.CWHelperIP + ":8181/getdbfile?filename=" + TableFile;
         WSG.BeginUpdate();
         try {
           $impl.Log("Requesting: " + TableFile);
