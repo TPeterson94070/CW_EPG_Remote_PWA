@@ -132,13 +132,14 @@ var
 implementation
 
 uses
-  System.Math;
+  WebLib.WebTools, System.Math;
 
 {$R *.dfm}
 
 var
   EPGChanged: Boolean;
   ClickedCol,  ClickedRow: Integer;
+  CWHelperIP: String;
 
 const
   DBFIELDS: array[0..13] of string = ('PSIP', 'Time', 'Title', 'SubTitle', 'Description',
@@ -181,6 +182,8 @@ var
   AppVersion: string;
 begin
   Log('FormCreate is called');
+  CWHelperIP := GetQueryParam('HTPCIP');
+  if CWHelperIP = '' then ShowMessage('You must specify the HTPC''s IP Address');
 {$IFDEF PAS2JS}
   asm
     console.log('Starting ' + ProjectName);
@@ -318,14 +321,15 @@ begin
   end;
 end;
 
-
+// This function needs to return the URL of the HTPC CWHelper, which is passed in as a parameter by the caller
 function GetURL: string;
-var i: Integer;
+//var i: Integer;
 begin
-  Result := application.EXEName;
-  i := pos('://', Result) + 3;
-  Result := copy(Result,1,pos('/',Result,i));    // Incl server ID through port no.
-  Result := ReplaceStr(Result,':8000',':8181');  // Redir if TMS debug server port
+
+  Result := GetQueryParam('cwhelper');
+//  i := pos('://', Result) + 3;
+//  Result := copy(Result,1,pos('/',Result,i));    // Incl server ID through port no.
+//  Result := ReplaceStr(Result,':8000',':8181');  // Redir if TMS debug server port
 end;
 
 procedure TCWRmainFrm.RefreshCSV(WSG: TWebStringGrid; TableFile, Title: string);
@@ -342,7 +346,7 @@ begin
     AlertLabel.Show;
     AlertLabel.BringToFront;
     asm await sleep(50) end;
-    URL := GetURL + 'getdbfile?filename='+ TableFile;
+    URL := 'http://'+ CWHelperIP + ':8181/getdbfile?filename='+ TableFile;
 
     WSG.BeginUpdate;
     try
@@ -714,7 +718,7 @@ begin
     + '  Delete : (' + AllCapsGrid.cells[0,i]
     + ') ' + AllCapsGrid.cells[8,i] + ' - ' + AllCapsGrid.cells[3,i] + ' '
     + AllCapsGrid.cells[4,i] + '-' + AllCapsGrid.cells[5,i]);
-  URL := 'http://' + {AllCapsGrid.Cells[1,i]}'localhost' + ':8181/decapture?sequence=' + AllCapsGrid.cells[0,i];
+  URL := 'http://' + CWHelperIP + ':8181/decapture?sequence=' + AllCapsGrid.cells[0,i];
   Response := await(HttpReq(URL));
   // Assume success, delete AllCapsGrid row i
 //  showmessage('Response: ' + Response);
@@ -876,7 +880,7 @@ var
   sl: TStrings;
 begin
   Log(' ====== FetchCapReservations called =========');
-    URL := GetURL + 'captures';
+    URL := 'http://'+ CWHelperIP + ':8181/captures';
   Log(' Calling "' + URL + '"');
   try
     try

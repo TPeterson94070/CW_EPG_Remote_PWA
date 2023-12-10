@@ -1726,9 +1726,6 @@ rtl.module("System",[],function () {
   this.Pos = function (Search, InString) {
     return InString.indexOf(Search)+1;
   };
-  this.Pos$1 = function (Search, InString, StartAt) {
-    return InString.indexOf(Search,StartAt-1)+1;
-  };
   this.Insert = function (Insertion, Target, Index) {
     var t = "";
     if (Insertion === "") return;
@@ -11988,6 +11985,38 @@ rtl.module("WEBLib.WebTools",["System","Classes","Web","JS","WEBLib.Controls","W
     "/////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=");
     snd.play();
   };
+  this.GetQueryParam = function (AName) {
+    var Result = "";
+    var res = "";
+    $mod.HasQueryParam(AName,{get: function () {
+        return res;
+      }, set: function (v) {
+        res = v;
+      }});
+    Result = res;
+    return Result;
+  };
+  this.HasQueryParam = function (AName, AValue) {
+    var Result = false;
+    var found = false;
+    var s = "";
+    s = "";
+    var query = window.location.search.substring(1);
+    var res = "";
+    found = false;
+    var vars = query.split('&');
+    for (var i = 0; i < vars.length; i++) {
+       var pair = vars[i].split('=');
+      if (decodeURIComponent(pair[0]) == AName) {
+          res = decodeURIComponent(pair[1]);
+          found = true;
+       }
+    }
+    s = res;
+    AValue.set(s);
+    Result = found;
+    return Result;
+  };
   this.GetLocaleShortDateFormat = function (ALocale) {
     var Result = "";
     Result = pas.SysUtils.TFormatSettings.Create$1(ALocale).ShortDateFormat;
@@ -16275,11 +16304,6 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
     this.Run = function () {
       this.FCanCreateForm = true;
       this.FAppInitializing = false;
-    };
-    this.EXEName = function () {
-      var Result = "";
-      Result = window.document.location.href;
-      return Result;
     };
     var $r = this.$rtti;
     $r.addMethod("Create$1",2,[["AOwner",pas.Classes.$rtti["TComponent"]]]);
@@ -38799,6 +38823,8 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       var i = 0;
       var AppVersion = "";
       $impl.Log("FormCreate is called");
+      $impl.CWHelperIP = pas["WEBLib.WebTools"].GetQueryParam("HTPCIP");
+      if ($impl.CWHelperIP === "") pas["WEBLib.Dialogs"].ShowMessage("You must specify the HTPC's IP Address");
       console.log('Starting ' + ProjectName);
       // Define sleep function used to allow screen updates
           window.sleep = async function(msecs) {return new Promise((resolve) => setTimeout(resolve, msecs)); }
@@ -39094,7 +39120,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       if (this.AllCapsGrid.GetCells(1,i) === "") return;
       if (await pas["WEBLib.Dialogs"].MessageDlgAsync('Erase "' + this.AllCapsGrid.GetCells(8,i) + '" ' + this.AllCapsGrid.GetCells(3,i) + " " + this.AllCapsGrid.GetCells(4,i) + " - " + this.AllCapsGrid.GetCells(5,i) + " " + " Schedule Entry?",3,rtl.createSet(0,1)) === 7) return;
       $impl.Log("  >>>>>  " + this.AllCapsGrid.GetCells(1,i) + " - " + this.AllCapsGrid.GetCells(2,i) + "  Delete : (" + this.AllCapsGrid.GetCells(0,i) + ") " + this.AllCapsGrid.GetCells(8,i) + " - " + this.AllCapsGrid.GetCells(3,i) + " " + this.AllCapsGrid.GetCells(4,i) + "-" + this.AllCapsGrid.GetCells(5,i));
-      URL = "http://" + "localhost" + ":8181/decapture?sequence=" + this.AllCapsGrid.GetCells(0,i);
+      URL = "http://" + $impl.CWHelperIP + ":8181/decapture?sequence=" + this.AllCapsGrid.GetCells(0,i);
       Response = await this.HttpReq(URL);
       if (Response !== "") this.AllCapsGrid.RemoveRow(i);
     };
@@ -39175,7 +39201,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       var URL = "";
       var Response = "";
       $impl.Log(" ====== FetchCapReservations called =========");
-      URL = $impl.GetURL() + "captures";
+      URL = "http://" + $impl.CWHelperIP + ":8181/captures";
       $impl.Log(' Calling "' + URL + '"');
       try {
         try {
@@ -39201,7 +39227,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.AlertLabel.Show();
         this.AlertLabel.BringToFront();
         await sleep(50);
-        URL = $impl.GetURL() + "getdbfile?filename=" + TableFile;
+        URL = "http://" + $impl.CWHelperIP + ":8181/getdbfile?filename=" + TableFile;
         WSG.BeginUpdate();
         try {
           $impl.Log("Requesting: " + TableFile);
@@ -39318,7 +39344,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
             this.p = v;
           }}));
         k = 1;
-        for (var $l = 1, $end = this.WIDBCDS.GetRecordCount(); $l <= $end; $l++) {
+        for (var $l = 2, $end = this.WIDBCDS.GetRecordCount(); $l <= $end; $l++) {
           i = $l;
           this.WIDBCDS.SetRecNo(i);
           if (this.WIDBCDS.FFieldList.GetField(6).GetAsString() > "") {
@@ -40679,6 +40705,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
     $impl.EPGChanged = false;
     $impl.ClickedCol = 0;
     $impl.ClickedRow = 0;
+    $impl.CWHelperIP = "";
     $impl.DBFIELDS = ["PSIP","Time","Title","SubTitle","Description","StartTime","EndTime","programID","originalAirDate","new","audioProperties","videoProperties","movieYear","genres"];
     $impl.NUMDAYS = "NumDisplayDays";
     $impl.NUMHIST = "NumHistoryItems";
@@ -40700,20 +40727,11 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       WSG.SetColAlignments(0,2);
       WSG.SetColAlignments(1,2);
     };
-    $impl.GetURL = function () {
-      var Result = "";
-      var i = 0;
-      Result = pas["WEBLib.Forms"].Application.EXEName();
-      i = pas.System.Pos("://",Result) + 3;
-      Result = pas.System.Copy(Result,1,pas.System.Pos$1("/",Result,i));
-      Result = pas.StrUtils.ReplaceStr(Result,":8000",":8181");
-      return Result;
-    };
     $impl.SetLabelStyle = function (lbl, State) {
       lbl.FFont.SetColor(pas.Math.IfThen(State,255,12698049));
     };
   };
-},["Math"]);
+},["WEBLib.WebTools","Math"]);
 rtl.module("program",["System","WEBLib.Forms","WEBLib.Forms","CWRmainForm"],function () {
   "use strict";
   var $mod = this;
