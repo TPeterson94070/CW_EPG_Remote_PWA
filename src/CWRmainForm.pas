@@ -346,7 +346,7 @@ begin
     AlertLabel.Show;
     AlertLabel.BringToFront;
     asm await sleep(50) end;
-    URL := 'https://'+ CWHelperIP + ':8181/getdbfile?filename='+ TableFile;
+    URL := 'https://'+ CWHelperIP + ':8443/getdbfile?filename='+ TableFile;
 
     WSG.BeginUpdate;
     try
@@ -718,7 +718,7 @@ begin
     + '  Delete : (' + AllCapsGrid.cells[0,i]
     + ') ' + AllCapsGrid.cells[8,i] + ' - ' + AllCapsGrid.cells[3,i] + ' '
     + AllCapsGrid.cells[4,i] + '-' + AllCapsGrid.cells[5,i]);
-  URL := 'https://' + CWHelperIP + ':8181/decapture?sequence=' + AllCapsGrid.cells[0,i];
+  URL := 'https://' + CWHelperIP + ':8443/decapture?sequence=' + AllCapsGrid.cells[0,i];
   Response := await(HttpReq(URL));
   // Assume success, delete AllCapsGrid row i
 //  showmessage('Response: ' + Response);
@@ -880,7 +880,7 @@ var
   sl: TStrings;
 begin
   Log(' ====== FetchCapReservations called =========');
-    URL := 'https://'+ CWHelperIP + ':8181/captures';
+    URL := 'https://'+ CWHelperIP + ':8443/captures';
   Log(' Calling "' + URL + '"');
   try
     try
