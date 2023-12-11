@@ -182,9 +182,16 @@ var
   AppVersion: string;
 begin
   Log('FormCreate is called');
-  CWHelperIP := GetQueryParam('HTPCIP');
-  if CWHelperIP = '' then ShowMessage('You must specify the HTPC''s IP Address'
-    + #13'Useage: "https://tpeterson94070.github.io/CW_EPG_Remote_PWA?HTPCIP=<IP Addr>"');
+  if not application.IsPWA then
+  begin
+    CWHelperIP := GetQueryParam('HTPCIP');
+    if CWHelperIP = '' then ShowMessage('You must specify the HTPC''s IP Address'
+      + #13'Useage:'#13'"https://tpeterson94070.github.io/CW_EPG_Remote_PWA?HTPCIP=<IP Addr>"'
+      + #13#13'Please edit the browser''s address line and refresh the page')
+    else
+      TWebLocalStorage.SetValue('HTPCIP', CWHelperIP);
+  end else
+    CWHelperIP := TWebLocalStorage.GetValue('HTPCIP');
 {$IFDEF PAS2JS}
   asm
     console.log('Starting ' + ProjectName);
