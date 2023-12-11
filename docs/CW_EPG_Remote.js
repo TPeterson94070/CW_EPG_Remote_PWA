@@ -38824,7 +38824,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       var AppVersion = "";
       $impl.Log("FormCreate is called");
       $impl.CWHelperIP = pas["WEBLib.WebTools"].GetQueryParam("HTPCIP");
-      if ($impl.CWHelperIP === "") pas["WEBLib.Dialogs"].ShowMessage("You must specify the HTPC's IP Address");
+      if ($impl.CWHelperIP === "") pas["WEBLib.Dialogs"].ShowMessage("You must specify the HTPC's IP Address" + '\rUseage: "https://tpeterson94070.github.io/CW_EPG_Remote_PWA?HTPCIP=<IP Addr>"');
       console.log('Starting ' + ProjectName);
       // Define sleep function used to allow screen updates
           window.sleep = async function(msecs) {return new Promise((resolve) => setTimeout(resolve, msecs)); }

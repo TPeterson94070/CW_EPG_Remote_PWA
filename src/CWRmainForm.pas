@@ -183,7 +183,8 @@ var
 begin
   Log('FormCreate is called');
   CWHelperIP := GetQueryParam('HTPCIP');
-  if CWHelperIP = '' then ShowMessage('You must specify the HTPC''s IP Address');
+  if CWHelperIP = '' then ShowMessage('You must specify the HTPC''s IP Address'
+    + #13'Useage: "https://tpeterson94070.github.io/CW_EPG_Remote_PWA?HTPCIP=<IP Addr>"');
 {$IFDEF PAS2JS}
   asm
     console.log('Starting ' + ProjectName);
