@@ -180,9 +180,32 @@ procedure TCWRmainFrm.WebFormCreate(Sender: TObject);
 var
   i: Integer;
   AppVersion: string;
+  IsInstalled: boolean;
 begin
   Log('FormCreate is called');
-  if not application.IsPWA then
+{$IFDEF PAS2JS}
+  asm
+    console.log('Starting ' + ProjectName);
+// Define sleep function used to allow screen updates
+    window.sleep = async function(msecs) {return new Promise((resolve) => setTimeout(resolve, msecs)); }
+// Retrieve JS version info in Delphi variable
+    AppVersion = ProjectName;
+// Discover if installed ("standalone")
+//    function getPWADisplayMode() {
+//    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+//    if (document.referrer.startsWith('android-app://')) {
+//      return 'twa';
+//    } else if (navigator.standalone || isStandalone) {
+//      return 'standalone';
+//    }
+//    return 'browser';
+  end;
+{$ENDIF}
+//  asm this.IsInstalled = window.navigator.standalone end;
+//  asm console.log(window.navigator.standalone) end;  // Suggested by Andrew Simard, but is not a defined var
+//  asm IsInstalled = getPWADisplayMode === 'standalone' end;
+  showmessage(IsInstalled.ToString);
+  if not IsInstalled then
   begin
     CWHelperIP := GetQueryParam('HTPCIP');
     if CWHelperIP = '' then ShowMessage('You must specify the HTPC''s IP Address'
@@ -192,15 +215,6 @@ begin
       TWebLocalStorage.SetValue('HTPCIP', CWHelperIP);
   end else
     CWHelperIP := TWebLocalStorage.GetValue('HTPCIP');
-{$IFDEF PAS2JS}
-  asm
-    console.log('Starting ' + ProjectName);
-// Define sleep function used to allow screen updates
-    window.sleep = async function(msecs) {return new Promise((resolve) => setTimeout(resolve, msecs)); }
-// Retrieve JS version info in Delphi variable
-    AppVersion = ProjectName;
-  end;
-{$ENDIF}
   // Log Version Information
   Log('Running version:  ' + AppVersion);
   Log('App is ' + IfThen(not Application.IsOnline, 'NOT ') + 'online');
