@@ -103,6 +103,7 @@ type
     [async]
     procedure WebButton2Click(Sender: TObject);
     procedure WebClientDataSet1AfterOpen(DataSet: TDataSet);
+    procedure WebSpinEdit1Change(Sender: TObject);
 private
   { Private declarations }
   [async]
@@ -127,6 +128,7 @@ private
   [async]
   procedure RefreshHistory;
     procedure RemoteCaps(const rstr, URL: string);
+  procedure SetAddrSwitches;
 public
   { Public declarations }
 end;
@@ -174,18 +176,13 @@ begin
 
 end;
 
-//procedure TCWRmainFrm.SleepMS(t: Integer);
-//begin
-//{$IFDEF PAS2JS}
-//  asm await sleep(t) end;
-//{$ENDIF}
-//end;
 
 procedure TCWRmainFrm.WebFormCreate(Sender: TObject);
 var
   i: Integer;
   AppVersion: string;
   IsInstalled: boolean;
+  IPAddr: TArray<string>;
 begin
   Log('FormCreate is called');
 {$IFDEF PAS2JS}
@@ -196,30 +193,21 @@ begin
 // Retrieve JS version info in Delphi variable
     AppVersion = ProjectName;
 // Discover if installed ("standalone")
-//    function getPWADisplayMode() {
-//    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-//    if (document.referrer.startsWith('android-app://')) {
-//      return 'twa';
-//    } else if (navigator.standalone || isStandalone) {
-//      return 'standalone';
-//    }
-//    return 'browser';
+   IsInstalled = (window.matchMedia('(display-mode: standalone)').matches) ||
+                 ('standalone' in window.navigator);
   end;
 {$ENDIF}
-//  asm this.IsInstalled = window.navigator.standalone end;
-//  asm console.log(window.navigator.standalone) end;  // Suggested by Andrew Simard, but is not a defined var
-  asm IsInstalled = window.matchMedia('(display-mode: standalone)').matches end;
-  showmessage(IsInstalled.ToString);
-  if not IsInstalled then
+//  showmessage(IsInstalled.ToString);
+//  if not IsInstalled then
   begin
     CWHelperIP := GetQueryParam('HTPCIP');
-    if CWHelperIP = '' then ShowMessage('You must specify the HTPC''s IP Address'
-      + #13'Useage:'#13'"https://tpeterson94070.github.io/CW_EPG_Remote_PWA?HTPCIP=<IP Addr>"'
-      + #13#13'Please edit the browser''s address line and refresh the page')
+    CWHelperIP := IfThen(CWHelperIP = '', TWebLocalStorage.GetValue('HTPCIP'));  // No param value given, check Local Store
+    if CWHelperIP = '' then // no guidance found
+      ShowMessage('You must specify the HTPC''s IP Address.'
+      + #13#13'Please enter it on the Options page')
     else
-      TWebLocalStorage.SetValue('HTPCIP', CWHelperIP);
-  end else
-    CWHelperIP := TWebLocalStorage.GetValue('HTPCIP');
+      SetAddrSwitches;
+  end;
   // Log Version Information
   Log('Running version:  ' + AppVersion);
   Log('App is ' + IfThen(not Application.IsOnline, 'NOT ') + 'online');
@@ -346,17 +334,6 @@ begin
       ShowMessage('Cannot send request while CWHelper is offline');
     end;
   end;
-end;
-
-// This function needs to return the URL of the HTPC CWHelper, which is passed in as a parameter by the caller
-function GetURL: string;
-//var i: Integer;
-begin
-
-  Result := GetQueryParam('cwhelper');
-//  i := pos('://', Result) + 3;
-//  Result := copy(Result,1,pos('/',Result,i));    // Incl server ID through port no.
-//  Result := ReplaceStr(Result,':8000',':8181');  // Redir if TMS debug server port
 end;
 
 procedure TCWRmainFrm.RefreshCSV(WSG: TWebStringGrid; TableFile, Title: string);
@@ -674,6 +651,23 @@ begin
   HistoryTable.Visible := True;
 end;
 
+procedure TCWRmainFrm.SetAddrSwitches;
+var
+  IPAddr: TArray<string>;
+begin
+  IPAddr := CWHelperIP.Split(['.']);
+  // Verify that parameter is format aa.bb.cc.dd
+  if length(IPAddr) = 4 then
+  begin
+    WebSpinEdit1.Value := StrToIntDef(IPAddr[0],0);
+    WebSpinEdit2.Value := StrToIntDef(IPAddr[1],0);
+    WebSpinEdit3.Value := StrToIntDef(IPAddr[2],0);
+    WebSpinEdit4.Value := StrToIntDef(IPAddr[3],0);
+    TWebLocalStorage.SetValue('HTPCIP', CWHelperIP)
+  end else
+    ShowMessage('"' + CWHelperIP + '" is not in AA.BB.CC.DD IP format.');
+end;
+
 procedure TCWRmainFrm.SetPage(PageNum: Integer);
 begin
   if PageNum <> WebRadioGroup1.ItemIndex then begin
@@ -865,6 +859,15 @@ begin
     lb04HD.Caption := WIDBCDS.Fields[1+11].AsString.Split(['["HD ','"'])[1] ; //,[TStringSplitOptions.ExcludeEmpty]);
   SetLabelStyle(lb04HD, lb04HD.Caption <> 'SD');
   lb12Description.Caption := WIDBCDS.Fields[1+4].AsString;
+end;
+
+procedure TCWRmainFrm.WebSpinEdit1Change(Sender: TObject);
+begin
+  CWHelperIP := WebSpinEdit1.Value.ToString + '.'
+              + WebSpinEdit2.Value.ToString + '.'
+              + WebSpinEdit3.Value.ToString + '.'
+              + WebSpinEdit4.Value.ToString;
+  TWebLocalStorage.SetValue('HTPCIP', CWHelperIP);
 end;
 
 procedure TCWRmainFrm.WebStringGrid2DblClick(Sender: TObject);

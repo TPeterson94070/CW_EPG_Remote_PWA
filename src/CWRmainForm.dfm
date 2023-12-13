@@ -993,7 +993,7 @@ object CWRmainFrm: TCWRmainFrm
         MinValue = 0
         Role = ''
         Value = 0
-        OnChange = seNumDisplayDaysChange
+        OnChange = WebSpinEdit1Change
       end
       object WebSpinEdit2: TWebSpinEdit
         Left = 80
@@ -1017,7 +1017,7 @@ object CWRmainFrm: TCWRmainFrm
         MinValue = 0
         Role = ''
         Value = 0
-        OnChange = seNumDisplayDaysChange
+        OnChange = WebSpinEdit1Change
       end
       object WebSpinEdit3: TWebSpinEdit
         Left = 143
@@ -1041,7 +1041,7 @@ object CWRmainFrm: TCWRmainFrm
         MinValue = 0
         Role = ''
         Value = 0
-        OnChange = seNumDisplayDaysChange
+        OnChange = WebSpinEdit1Change
       end
       object WebSpinEdit4: TWebSpinEdit
         Left = 207
@@ -1065,7 +1065,7 @@ object CWRmainFrm: TCWRmainFrm
         MinValue = 0
         Role = ''
         Value = 0
-        OnChange = seNumDisplayDaysChange
+        OnChange = WebSpinEdit1Change
       end
     end
   end
