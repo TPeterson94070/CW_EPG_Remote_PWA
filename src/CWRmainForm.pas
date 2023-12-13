@@ -64,6 +64,11 @@ type
     WebClientConnection1: TWebClientConnection;
     WebDBGrid1: TWebDBGrid;
     WebDataSource1: TWebDataSource;
+    WebGroupBox4: TWebGroupBox;
+    WebSpinEdit1: TWebSpinEdit;
+    WebSpinEdit2: TWebSpinEdit;
+    WebSpinEdit3: TWebSpinEdit;
+    WebSpinEdit4: TWebSpinEdit;
 
   procedure LoadWIDBCDS;
   procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
@@ -203,7 +208,7 @@ begin
 {$ENDIF}
 //  asm this.IsInstalled = window.navigator.standalone end;
 //  asm console.log(window.navigator.standalone) end;  // Suggested by Andrew Simard, but is not a defined var
-//  asm IsInstalled = getPWADisplayMode === 'standalone' end;
+  asm IsInstalled = window.matchMedia('(display-mode: standalone)').matches end;
   showmessage(IsInstalled.ToString);
   if not IsInstalled then
   begin

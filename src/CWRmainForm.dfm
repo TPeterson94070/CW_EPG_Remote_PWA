@@ -674,185 +674,6 @@ object CWRmainFrm: TCWRmainFrm
       WordWrap = False
     end
   end
-  object pnlOptions: TWebPanel
-    Left = 0
-    Top = 53
-    Width = 644
-    Height = 999
-    ElementClassName = 'card'
-    Align = alClient
-    ChildOrder = 9
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    object WebButton1: TWebButton
-      Left = 24
-      Top = 356
-      Width = 200
-      Height = 20
-      Align = alCustom
-      Caption = 'Refresh EPG'
-      ChildOrder = 1
-      ElementClassName = 'btn btn-primary'
-      ElementFont = efCSS
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWhite
-      Font.Height = -9
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      HeightStyle = ssAuto
-      HeightPercent = 6.000000000000000000
-      ParentFont = False
-      WidthPercent = 100.000000000000000000
-      OnClick = WebButton1Click
-    end
-    object WebGroupBox1: TWebGroupBox
-      Left = 16
-      Top = 48
-      Width = 250
-      Height = 80
-      ElementClassName = 'container'
-      Align = alCustom
-      BorderColor = clSilver
-      Caption = 'EPG Days Displayed'
-      ChildOrder = 1
-      ElementFont = efCSS
-      ElementLegendClassName = 'h6'
-      object seNumDisplayDays: TWebSpinEdit
-        AlignWithMargins = True
-        Left = 40
-        Top = 30
-        Width = 170
-        Height = 30
-        Margins.Left = 40
-        Margins.Top = 30
-        Margins.Right = 40
-        Margins.Bottom = 20
-        HeightStyle = ssAuto
-        Align = alClient
-        AutoSize = True
-        BorderStyle = bsNone
-        Color = clBtnFace
-        ElementFont = efCSS
-        Increment = 1
-        MaxValue = 20
-        MinValue = 1
-        Role = ''
-        Value = 1
-        OnChange = seNumDisplayDaysChange
-      end
-    end
-    object WebGroupBox2: TWebGroupBox
-      Left = 16
-      Top = 253
-      Width = 250
-      Height = 80
-      ElementClassName = 'container'
-      Align = alCustom
-      BorderColor = clSilver
-      Caption = 'Http Timeout Seconds'
-      ChildOrder = 1
-      ElementFont = efCSS
-      ElementLegendClassName = 'h6'
-      object seHttpTimeoutSec: TWebSpinEdit
-        AlignWithMargins = True
-        Left = 40
-        Top = 30
-        Width = 170
-        Height = 30
-        Margins.Left = 40
-        Margins.Top = 30
-        Margins.Right = 40
-        Margins.Bottom = 20
-        HeightStyle = ssAuto
-        Align = alClient
-        AutoSize = True
-        BorderStyle = bsNone
-        Color = clBtnFace
-        ElementFont = efCSS
-        Increment = 1
-        MaxValue = 20
-        MinValue = 1
-        Role = ''
-        Value = 20
-        OnChange = seHttpTimeoutSecChange
-      end
-    end
-    object WebGroupBox3: TWebGroupBox
-      Left = 16
-      Top = 150
-      Width = 250
-      Height = 80
-      ElementClassName = 'container'
-      Align = alCustom
-      BorderColor = clSilver
-      Caption = 'History Events Displayed'
-      ChildOrder = 1
-      ElementFont = efCSS
-      ElementLegendClassName = 'h6'
-      object seNumHistEvents: TWebSpinEdit
-        AlignWithMargins = True
-        Left = 40
-        Top = 30
-        Width = 170
-        Height = 30
-        Margins.Left = 40
-        Margins.Top = 30
-        Margins.Right = 40
-        Margins.Bottom = 20
-        HeightStyle = ssAuto
-        Align = alClient
-        AutoSize = True
-        BorderStyle = bsNone
-        Color = clBtnFace
-        ElementFont = efCSS
-        Increment = 100
-        MaxValue = 8000
-        MinValue = 100
-        Role = ''
-        Value = 100
-        OnChange = seNumHistEventsChange
-      end
-    end
-    object WebButton2: TWebButton
-      Left = 24
-      Top = 404
-      Width = 200
-      Height = 20
-      Align = alCustom
-      Caption = 'Refresh History'
-      ChildOrder = 1
-      ElementClassName = 'btn btn-secondary'
-      ElementFont = efCSS
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWhite
-      Font.Height = -9
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      HeightStyle = ssAuto
-      HeightPercent = 6.000000000000000000
-      ParentFont = False
-      WidthPercent = 100.000000000000000000
-      OnClick = WebButton2Click
-    end
-    object WebDBGrid1: TWebDBGrid
-      Left = 0
-      Top = 799
-      Width = 644
-      Height = 200
-      Align = alBottom
-      Columns = <>
-      DataSource = WebDataSource1
-      FixedCols = 0
-      Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goFixedRowDefAlign]
-      TabOrder = 5
-      HeightStyle = ssPercent
-      HeightPercent = 50.000000000000000000
-      Visible = False
-      WidthPercent = 100.000000000000000000
-      ColWidths = (
-        24)
-    end
-  end
   object WebMessageDlg1: TWebMessageDlg
     Left = 320
     Top = 520
@@ -952,6 +773,300 @@ object CWRmainFrm: TCWRmainFrm
       ChildOrder = 2
       ElementBarClassName = 'progress-bar'
       Value = pbvAbsolute
+    end
+  end
+  object pnlOptions: TWebPanel
+    Left = 0
+    Top = 53
+    Width = 644
+    Height = 999
+    ElementClassName = 'card'
+    Align = alClient
+    ChildOrder = 9
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    object WebButton1: TWebButton
+      Left = 24
+      Top = 416
+      Width = 200
+      Height = 20
+      Align = alCustom
+      Caption = 'Refresh EPG'
+      ChildOrder = 1
+      ElementClassName = 'btn btn-primary'
+      ElementFont = efCSS
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -9
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      HeightStyle = ssAuto
+      HeightPercent = 6.000000000000000000
+      ParentFont = False
+      WidthPercent = 100.000000000000000000
+      OnClick = WebButton1Click
+    end
+    object WebGroupBox1: TWebGroupBox
+      Left = 16
+      Top = 117
+      Width = 250
+      Height = 80
+      ElementClassName = 'container'
+      WidthPercent = 25.000000000000000000
+      Align = alCustom
+      BorderColor = clSilver
+      Caption = '   EPG Days Displayed'
+      ChildOrder = 1
+      ElementFont = efCSS
+      ElementLegendClassName = 'h6'
+      object seNumDisplayDays: TWebSpinEdit
+        AlignWithMargins = True
+        Left = 60
+        Top = 25
+        Width = 130
+        Height = 30
+        Margins.Left = 60
+        Margins.Top = 25
+        Margins.Right = 60
+        Margins.Bottom = 25
+        ElementClassName = 'form-control'
+        Align = alClient
+        AutoSize = True
+        BiDiMode = bdRightToLeft
+        BorderStyle = bsNone
+        Color = clBtnFace
+        ElementFont = efCSS
+        Increment = 1
+        MaxValue = 20
+        MinValue = 1
+        Role = ''
+        Value = 1
+        OnChange = seNumDisplayDaysChange
+      end
+    end
+    object WebGroupBox2: TWebGroupBox
+      Left = 16
+      Top = 313
+      Width = 250
+      Height = 80
+      ElementClassName = 'container'
+      WidthPercent = 25.000000000000000000
+      Align = alCustom
+      BorderColor = clSilver
+      Caption = '   Http Timeout Seconds'
+      ChildOrder = 1
+      ElementFont = efCSS
+      ElementLegendClassName = 'h6'
+      object seHttpTimeoutSec: TWebSpinEdit
+        AlignWithMargins = True
+        Left = 60
+        Top = 25
+        Width = 130
+        Height = 30
+        Margins.Left = 60
+        Margins.Top = 25
+        Margins.Right = 60
+        Margins.Bottom = 25
+        ElementClassName = 'form-control'
+        Align = alClient
+        AutoSize = True
+        BiDiMode = bdRightToLeft
+        BorderStyle = bsNone
+        Color = clBtnFace
+        ElementFont = efCSS
+        Increment = 1
+        MaxValue = 20
+        MinValue = 1
+        Role = ''
+        Value = 20
+        OnChange = seHttpTimeoutSecChange
+      end
+    end
+    object WebGroupBox3: TWebGroupBox
+      Left = 16
+      Top = 215
+      Width = 250
+      Height = 80
+      ElementClassName = 'container'
+      WidthPercent = 25.000000000000000000
+      Align = alCustom
+      BorderColor = clSilver
+      Caption = '   History Events Displayed'
+      ChildOrder = 1
+      ElementFont = efCSS
+      ElementLegendClassName = 'h6'
+      object seNumHistEvents: TWebSpinEdit
+        AlignWithMargins = True
+        Left = 60
+        Top = 25
+        Width = 130
+        Height = 30
+        Margins.Left = 60
+        Margins.Top = 25
+        Margins.Right = 60
+        Margins.Bottom = 25
+        ElementClassName = 'form-control'
+        Align = alClient
+        AutoSize = True
+        BiDiMode = bdRightToLeft
+        BorderStyle = bsNone
+        Color = clBtnFace
+        ElementFont = efCSS
+        Increment = 100
+        MaxValue = 8000
+        MinValue = 100
+        Role = ''
+        Value = 100
+        OnChange = seNumHistEventsChange
+      end
+    end
+    object WebButton2: TWebButton
+      Left = 24
+      Top = 464
+      Width = 200
+      Height = 20
+      Align = alCustom
+      Caption = 'Refresh History'
+      ChildOrder = 1
+      ElementClassName = 'btn btn-secondary'
+      ElementFont = efCSS
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -9
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      HeightStyle = ssAuto
+      HeightPercent = 6.000000000000000000
+      ParentFont = False
+      WidthPercent = 100.000000000000000000
+      OnClick = WebButton2Click
+    end
+    object WebDBGrid1: TWebDBGrid
+      Left = 0
+      Top = 799
+      Width = 644
+      Height = 200
+      Align = alBottom
+      Columns = <>
+      DataSource = WebDataSource1
+      FixedCols = 0
+      Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goFixedRowDefAlign]
+      TabOrder = 5
+      HeightStyle = ssPercent
+      HeightPercent = 50.000000000000000000
+      Visible = False
+      WidthPercent = 100.000000000000000000
+      ColWidths = (
+        24)
+    end
+    object WebGroupBox4: TWebGroupBox
+      Left = 16
+      Top = 19
+      Width = 290
+      Height = 80
+      ElementClassName = 'container'
+      WidthPercent = 25.000000000000000000
+      Align = alCustom
+      BorderColor = clSilver
+      Caption = '   HTPC IP Address'
+      ChildOrder = 1
+      ElementFont = efCSS
+      ElementLegendClassName = 'h6'
+      object WebSpinEdit1: TWebSpinEdit
+        Left = 17
+        Top = 25
+        Width = 65
+        Height = 30
+        Margins.Left = 0
+        Margins.Top = 25
+        Margins.Right = 0
+        Margins.Bottom = 25
+        ElementClassName = 'form-control'
+        Align = alCustom
+        AutoSize = True
+        BiDiMode = bdRightToLeft
+        BorderStyle = bsNone
+        Color = clBtnFace
+        ElementFont = efCSS
+        Increment = 1
+        MaxValue = 255
+        MinValue = 0
+        Role = ''
+        Value = 0
+        OnChange = seNumDisplayDaysChange
+      end
+      object WebSpinEdit2: TWebSpinEdit
+        Left = 80
+        Top = 25
+        Width = 65
+        Height = 30
+        Margins.Left = 0
+        Margins.Top = 25
+        Margins.Right = 0
+        Margins.Bottom = 25
+        ElementClassName = 'form-control'
+        Align = alCustom
+        AutoSize = True
+        BiDiMode = bdRightToLeft
+        BorderStyle = bsNone
+        ChildOrder = 1
+        Color = clBtnFace
+        ElementFont = efCSS
+        Increment = 1
+        MaxValue = 255
+        MinValue = 0
+        Role = ''
+        Value = 0
+        OnChange = seNumDisplayDaysChange
+      end
+      object WebSpinEdit3: TWebSpinEdit
+        Left = 143
+        Top = 25
+        Width = 65
+        Height = 30
+        Margins.Left = 0
+        Margins.Top = 25
+        Margins.Right = 0
+        Margins.Bottom = 25
+        ElementClassName = 'form-control'
+        Align = alCustom
+        AutoSize = True
+        BiDiMode = bdRightToLeft
+        BorderStyle = bsNone
+        ChildOrder = 2
+        Color = clBtnFace
+        ElementFont = efCSS
+        Increment = 1
+        MaxValue = 255
+        MinValue = 0
+        Role = ''
+        Value = 0
+        OnChange = seNumDisplayDaysChange
+      end
+      object WebSpinEdit4: TWebSpinEdit
+        Left = 207
+        Top = 25
+        Width = 65
+        Height = 30
+        Margins.Left = 0
+        Margins.Top = 25
+        Margins.Right = 0
+        Margins.Bottom = 25
+        ElementClassName = 'form-control'
+        Align = alCustom
+        AutoSize = True
+        BiDiMode = bdRightToLeft
+        BorderStyle = bsNone
+        ChildOrder = 3
+        Color = clBtnFace
+        ElementFont = efCSS
+        Increment = 1
+        MaxValue = 255
+        MinValue = 0
+        Role = ''
+        Value = 0
+        OnChange = seNumDisplayDaysChange
+      end
     end
   end
   object WIDBCDS: TWebIndexedDbClientDataset
