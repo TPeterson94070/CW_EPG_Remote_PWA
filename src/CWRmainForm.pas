@@ -10,7 +10,7 @@ uses
   WEBLib.Menus, WEBLib.ComCtrls, Vcl.Controls, WEBLib.Grids, WEBLib.ExtCtrls, DB,
   Vcl.Grids, System.StrUtils, Vcl.StdCtrls, WEBLib.StdCtrls, WEBLib.DBCtrls,
   WEBLib.FlexControls, WEBLib.WebCtrls, WEBLib.REST, {System.Types,} Types,
-  WEBLib.Storage, WEBLib.CDS  ;
+  WEBLib.Storage, WEBLib.CDS, WEBLib.Auth  ;
 
 type
   TGridDrawState = set of (gdSelected, gdFocused, gdFixed, gdRowSelected, gdHotTrack, gdPressed);
@@ -69,6 +69,11 @@ type
     WebSpinEdit2: TWebSpinEdit;
     WebSpinEdit3: TWebSpinEdit;
     WebSpinEdit4: TWebSpinEdit;
+    WebAuth1: TWebAuth;
+    WebButton3: TWebButton;
+    WebButton4: TWebButton;
+    WebButton5: TWebButton;
+    WebRESTClient1: TWebRESTClient;
 
   procedure LoadWIDBCDS;
   procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
@@ -104,6 +109,11 @@ type
     procedure WebButton2Click(Sender: TObject);
     procedure WebClientDataSet1AfterOpen(DataSet: TDataSet);
     procedure WebSpinEdit1Change(Sender: TObject);
+    procedure WebAuth1GoogleSignIn(Sender: TObject; UserData: TGoogleUserData);
+    procedure WebButton3Click(Sender: TObject);
+    procedure WebButton4Click(Sender: TObject);
+    [async]
+    procedure WebButton5Click(Sender: TObject);
 private
   { Private declarations }
   [async]
@@ -193,8 +203,8 @@ begin
 // Retrieve JS version info in Delphi variable
     AppVersion = ProjectName;
 // Discover if installed ("standalone")
-   IsInstalled = (window.matchMedia('(display-mode: standalone)').matches) ||
-                 ('standalone' in window.navigator);
+//   IsInstalled = (window.matchMedia('(display-mode: standalone)').matches) ||
+//                 ('standalone' in window.navigator);
   end;
 {$ENDIF}
 //  showmessage(IsInstalled.ToString);
@@ -278,6 +288,12 @@ begin
   log('HttpRequest timed out. Presume CWHelper offline');
 end;
 
+procedure TCWRmainFrm.WebAuth1GoogleSignIn(Sender: TObject;
+  UserData: TGoogleUserData);
+begin
+ShowMessage('WAGSI UserData: '+UserData.ToString);
+end;
+
 procedure TCWRmainFrm.WebButton1Click(Sender: TObject);
 begin
   Log('======== "Refresh EPG" clicked');
@@ -296,6 +312,88 @@ end;
 procedure TCWRmainFrm.WebButton2Click(Sender: TObject);
 begin
   await (RefreshHistory);
+end;
+
+procedure TCWRmainFrm.WebButton3Click(Sender: TObject);
+begin
+asm
+      /**
+       *  Sign in the user upon button click.
+       */
+      // function handleAuthClick()
+      {
+        tokenClient.callback = async (resp) => {
+          if (resp.error !== undefined) {
+            throw (resp);
+          }
+          document.getElementById('signout_button').style.visibility = 'visible';
+          document.getElementById('authorize_button').innerText = 'Refresh';
+          await listFiles();
+        };
+
+        if (gapi.client.getToken() === null) {
+          // Prompt the user to select a Google Account and ask for consent to share their data
+          // when establishing a new session.
+          tokenClient.requestAccessToken({prompt: 'consent'});
+        } else {
+          // Skip display of account chooser and consent dialog for an existing session.
+          tokenClient.requestAccessToken({prompt: ''});
+        }
+      }
+end;
+end;
+
+procedure TCWRmainFrm.WebButton4Click(Sender: TObject);
+begin
+asm
+      /**
+       *  Sign out the user upon button click.
+       */
+      // function handleSignoutClick()
+      {
+        const token = gapi.client.getToken();
+        if (token !== null) {
+          google.accounts.oauth2.revoke(token.access_token);
+          gapi.client.setToken('');
+          document.getElementById('content').innerText = '';
+          document.getElementById('authorize_button').innerText = 'Authorize';
+          document.getElementById('signout_button').style.visibility = 'hidden';
+        }
+      }
+
+end;
+end;
+
+procedure TCWRmainFrm.WebButton5Click(Sender: TObject);
+begin
+asm
+      /**
+       * Print metadata for first 25 files.
+       */
+      //async function listFiles()
+      {
+        let response;
+        try {
+          response = await gapi.client.drive.files.list({
+            'pageSize': 25,
+            'fields': 'files(id, name)',
+          });
+        } catch (err) {
+          console.log(err.message);
+          return;
+        }
+        const files = response.result.files;
+        if (!files || files.length == 0) {
+          console.log('No files found')
+          return;
+        }
+        // Flatten to string to display
+        const output = files.reduce(
+            (str, file) => `${str}${file.name} (${file.id})\n`,
+            'Files:\n');
+        console.log(output);
+      }
+end;
 end;
 
 procedure TCWRmainFrm.WebClientDataSet1AfterOpen(DataSet: TDataSet);
@@ -350,22 +448,27 @@ begin
     AlertLabel.Show;
     AlertLabel.BringToFront;
     asm await sleep(50) end;
+
+    //  Need to change syntax to "open" Google Drive file into WSG
+    // ===============================================================
     URL := 'https://'+ CWHelperIP + ':8443/getdbfile?filename='+ TableFile;
+    // ===============================================================
 
     WSG.BeginUpdate;
     try
       Log('Requesting: ' + TableFile);
       try
+    // ===============================================================
         Reply := await(HttpReq(URL));
+    // ===============================================================
         if Reply <> '' then  // Got a response
         begin
           sl := TStringList.Create;
           Log('Begin extract strings');
-          ExtractStrings([],[],Reply, sl);
-          Log(sl.Count.ToString + ' strings extracted, begin '+WSG.Name+'.LoadFromStrings');
+          Log(ExtractStrings([],[],Reply, sl).ToString
+            + ' strings extracted, begin ' + WSG.Name + '.LoadFromStrings');
           WSG.LoadFromStrings(sl, ',', True);
-          Log(WSG.Name+'.RowCount: '+WSG.RowCount.ToString);
-//          WSG.RowCount := sl.Count;
+          Log(WSG.Name+'.RowCount: ' + WSG.RowCount.ToString);
           Log('Done loading '+WSG.Name);
           sl.Free; // := nil;
         end;
