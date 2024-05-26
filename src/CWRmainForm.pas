@@ -986,55 +986,56 @@ begin
   ShowMessage(DataSet.Name + ' error: ' + errorName + ', msg: ' + errorMsg);
 end;
 
-//procedure TCWRmainFrm.FetchCapReservations;
-//var
-//  i: Integer;
-//  sl: TStrings;
-//begin
-//  Log(' ====== FetchCapReservations called =========');
-//  // Turn off GetCellData (modifies Cols 1, 2 for display)
-//  AllCapsGrid.OnGetCellData := nil;
-//  await (RefreshCSV(AllCapsGrid, 'cwr_captures.csv', 'Scheduled'));
-//  // Save unmodified capture data to Local Storage
-//  sl := TStringList.Create;
-//  AllCapsGrid.SaveToStrings(sl, ',', True);
-//  for i := 0 to sl.Count - 1 do
-//    TWebLocalStorage.SetValue('sl'+i.ToString, sl[i]);
-//  TWebLocalStorage.RemoveKey('sl'+sl.Count.ToString);  // dump old value
-//  sl.Free;
-//  // Turn GetCellData formatting back on
-//  AllCapsGrid.OnGetCellData := AllCapsGridGetCellData;
-//  Log(' ====== FetchCapReservations finished =========');
-//end;
-procedure TCWRmainFrm.FetchCapReservations;
+procedure TCWRmainFrm.FetchCapReservations;  // Fetch CW_EPG-saved file
 var
   i: Integer;
-  URL, Response: string;
   sl: TStrings;
 begin
   Log(' ====== FetchCapReservations called =========');
-    URL := 'https://'+ CWHelperIP + ':8443/captures';
-  Log(' Calling "' + URL + '"');
-  try
-    try
-      Response := await(HttpReq(URL));
-      if Response > '' then RemoteCaps(Response, URL);
-    except
-      on E: Exception do
-          ShowMessage(' Fetching Captures -- Oops '#10 + E.Message);
-    end;
+  // Turn off GetCellData (modifies Cols 1, 2 for display)
+  AllCapsGrid.OnGetCellData := nil;
+  await (RefreshCSV(AllCapsGrid, 'cwr_captures.csv', 'Scheduled'));
   // Save unmodified capture data to Local Storage
-//  sl := TStringList.Create;
-//  RemoteCapsGrid.SaveToStrings(sl, ',', True);
-//  for i := 0 to sl.Count - 1 do
-//    TWebLocalStorage.SetValue('sl'+i.ToString, sl[i]);
-//  TWebLocalStorage.RemoveKey('sl'+sl.Count.ToString);  // dump old value
-//  sl.Free;
-  finally
-
-  end;
+  sl := TStringList.Create;
+  AllCapsGrid.SaveToStrings(sl, ',', True);
+  for i := 0 to sl.Count - 1 do
+    TWebLocalStorage.SetValue('sl'+i.ToString, sl[i]);
+  TWebLocalStorage.RemoveKey('sl'+sl.Count.ToString);  // dump old value
+  sl.Free;
+  // Turn GetCellData formatting back on
+  AllCapsGrid.OnGetCellData := AllCapsGridGetCellData;
   Log(' ====== FetchCapReservations finished =========');
 end;
+
+//procedure TCWRmainFrm.FetchCapReservations;  // Fetch directly from CWHelper
+//var
+//  i: Integer;
+//  URL, Response: string;
+//  sl: TStrings;
+//begin
+//  Log(' ====== FetchCapReservations called =========');
+//    URL := 'https://'+ CWHelperIP + ':8443/captures';
+//  Log(' Calling "' + URL + '"');
+//  try
+//    try
+//      Response := await(HttpReq(URL));
+//      if Response > '' then RemoteCaps(Response, URL);
+//    except
+//      on E: Exception do
+//          ShowMessage(' Fetching Captures -- Oops '#10 + E.Message);
+//    end;
+//  // Save unmodified capture data to Local Storage
+////  sl := TStringList.Create;
+////  RemoteCapsGrid.SaveToStrings(sl, ',', True);
+////  for i := 0 to sl.Count - 1 do
+////    TWebLocalStorage.SetValue('sl'+i.ToString, sl[i]);
+////  TWebLocalStorage.RemoveKey('sl'+sl.Count.ToString);  // dump old value
+////  sl.Free;
+//  finally
+//
+//  end;
+//  Log(' ====== FetchCapReservations finished =========');
+//end;
 
 function ParameterVal(const pname, Capture: string): string;
 var
