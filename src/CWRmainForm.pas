@@ -10,7 +10,7 @@ uses
   WEBLib.Menus, WEBLib.ComCtrls, Vcl.Controls, WEBLib.Grids, WEBLib.ExtCtrls, DB,
   Vcl.Grids, System.StrUtils, Vcl.StdCtrls, WEBLib.StdCtrls, WEBLib.DBCtrls,
   WEBLib.FlexControls, WEBLib.WebCtrls, WEBLib.REST, {System.Types,} Types,
-  WEBLib.Storage, WEBLib.CDS, WEBLib.Auth  ;
+  WEBLib.Storage, WEBLib.CDS, WEBLib.Auth, WEBLib.JSON, WEBLib.WebTools;
 
 type
   TGridDrawState = set of (gdSelected, gdFocused, gdFixed, gdRowSelected, gdHotTrack, gdPressed);
@@ -137,8 +137,10 @@ private
   function HttpReq(Cmd: string): {TJSXMLHttpRequest}string;
   [async]
   procedure RefreshHistory;
-    procedure RemoteCaps(const rstr, URL: string);
+  procedure RemoteCaps(const rstr, URL: string);
   procedure SetAddrSwitches;
+  [async]
+  function GetGoogleDriveFile(TableFile: string): string;
 public
   { Public declarations }
 end;
@@ -149,7 +151,7 @@ var
 implementation
 
 uses
-  WebLib.WebTools, System.Math;
+  System.Math;
 
 {$R *.dfm}
 
@@ -434,10 +436,56 @@ begin
   end;
 end;
 
+function TCWRmainFrm.GetGoogleDriveFile(TableFile: string): string;
+var
+  q,id,AResponse: string;
+  rq: TJSXMLHttpRequest;
+  jso: TJSONObject;
+  ja: TJSONArray;
+  i: integer;
+
+begin
+  Result := '';
+  if WebRESTClient1.AccessToken = '' then
+    Exit;
+
+  q :='name contains ''' + TableFile + '''';
+
+  rq := await(TJSXMLHttpRequest, WEBRESTClient1.HttpRequest('GET','https://www.googleapis.com/drive/v3/files?q='+WEBRestClient1.URLEncode(q)));
+
+  if Assigned(rq) then
+  begin
+    AResponse := rq.responseText;
+    console.log(rq.responseText);
+
+    jso := TJSONObject(TJSONObject.ParseJSONValue(AResponse));
+
+    if Assigned(jso) then
+    begin
+      ja := TJSONArray(jso.GetValue('files'));
+      for i := 0 to ja.Count - 1 do
+      begin
+        jso := TJSONObject(ja.Items[i]);
+        if jso.GetJSONValue('name') = TableFile then
+          id := string(jso.GetJSONValue('id'));
+//        console.log('add id',jso.GetValue('id'), s);
+//        WebListbox1.Items.AddPair(jso.GetJSONValue('name'),jso.GetJSONValue('id'));
+      end;
+      jso.Free;
+      console.log(id);
+      rq := await(TJSXMLHttpRequest, WebRESTClient1.httprequest('GET','https://www.googleapis.com/drive/v3/files/'+id+'?alt=media').catch(
+        function(AValue: JSValue): JSValue
+        begin
+          console.log('error here',AValue);
+        end));
+
+      if Assigned(rq) then Result := rq.responseText;
+    end;
+  end;
+end;
+
 procedure TCWRmainFrm.RefreshCSV(WSG: TWebStringGrid; TableFile, Title: string);
 var
-  URL: string;
-  i: integer;
   Reply: string;
   sl: TStrings;
 begin
@@ -449,18 +497,12 @@ begin
     AlertLabel.BringToFront;
     asm await sleep(50) end;
 
-    //  Need to change syntax to "open" Google Drive file into WSG
-    // ===============================================================
-    URL := 'https://'+ CWHelperIP + ':8443/getdbfile?filename='+ TableFile;
-    // ===============================================================
-
     WSG.BeginUpdate;
     try
       Log('Requesting: ' + TableFile);
       try
-    // ===============================================================
-        Reply := await(HttpReq(URL));
-    // ===============================================================
+        Reply := await(GetGoogleDriveFile(TableFile));
+
         if Reply <> '' then  // Got a response
         begin
           sl := TStringList.Create;
