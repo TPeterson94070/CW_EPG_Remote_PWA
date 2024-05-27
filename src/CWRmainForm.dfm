@@ -873,44 +873,6 @@ object CWRmainFrm: TCWRmainFrm
         OnChange = seNumDisplayDaysChange
       end
     end
-    object WebGroupBox2: TWebGroupBox
-      Left = 16
-      Top = 313
-      Width = 250
-      Height = 80
-      ElementClassName = 'container'
-      WidthPercent = 25.000000000000000000
-      Align = alCustom
-      BorderColor = clSilver
-      Caption = '   Http Timeout Seconds'
-      ChildOrder = 1
-      ElementFont = efCSS
-      ElementLegendClassName = 'h6'
-      object seHttpTimeoutSec: TWebSpinEdit
-        AlignWithMargins = True
-        Left = 60
-        Top = 25
-        Width = 130
-        Height = 30
-        Margins.Left = 60
-        Margins.Top = 25
-        Margins.Right = 60
-        Margins.Bottom = 25
-        ElementClassName = 'form-control'
-        Align = alClient
-        AutoSize = True
-        BiDiMode = bdRightToLeft
-        BorderStyle = bsNone
-        Color = clBtnFace
-        ElementFont = efCSS
-        Increment = 1
-        MaxValue = 20
-        MinValue = 1
-        Role = ''
-        Value = 20
-        OnChange = seHttpTimeoutSecChange
-      end
-    end
     object WebGroupBox3: TWebGroupBox
       Left = 16
       Top = 215
@@ -977,7 +939,6 @@ object CWRmainFrm: TCWRmainFrm
       Height = 200
       Align = alBottom
       Columns = <>
-      DataSource = WebDataSource1
       FixedFont.Charset = DEFAULT_CHARSET
       FixedFont.Color = clWindowText
       FixedFont.Height = -12
@@ -985,7 +946,7 @@ object CWRmainFrm: TCWRmainFrm
       FixedFont.Style = []
       FixedCols = 0
       Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goFixedRowDefAlign]
-      TabOrder = 5
+      TabOrder = 4
       HeightStyle = ssPercent
       HeightPercent = 50.000000000000000000
       Visible = False
@@ -1007,26 +968,12 @@ object CWRmainFrm: TCWRmainFrm
   end
   object WebHttpRequest1: TWebHttpRequest
     Timeout = 5000
-    OnAbort = WebHttpRequest1Abort
-    OnError = WebHttpRequest1Error
-    OnTimeout = WebHttpRequest1Timeout
     Left = 304
     Top = 512
   end
   object WebLocalStorage1: TWebLocalStorage
     Left = 232
     Top = 480
-  end
-  object WebClientConnection1: TWebClientConnection
-    Active = False
-    Delimiter = ';'
-    URI = 'http://localhost:8181/getdbfile?filename=cwr_epg.csv'
-    Left = 356
-    Top = 584
-  end
-  object WebDataSource1: TWebDataSource
-    Left = 256
-    Top = 568
   end
   object WebRESTClient1: TWebRESTClient
     App.ClientID = 

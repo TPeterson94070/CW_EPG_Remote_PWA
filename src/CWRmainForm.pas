@@ -21,7 +21,7 @@ type
   WebMemo1: TWebMemo;
   seNumDisplayDays: TWebSpinEdit;
   WebGroupBox1: TWebGroupBox;
-  WebHttpRequest1: TWebHttpRequest;
+//  WebHttpRequest1: TWebHttpRequest;
   WebGridPanel2: TWebGridPanel;
   WebGridPanel3: TWebGridPanel;
   lb01Title: TWebLabel;
@@ -31,8 +31,7 @@ type
   WebGridPanel4: TWebGridPanel;
   lb06SubTitle: TWebLabel;
   lb12Description: TWebLabel;
-  WebGroupBox2: TWebGroupBox;
-  seHttpTimeoutSec: TWebSpinEdit;
+//  seHttpTimeoutSec: TWebSpinEdit;
   WebGridPanel1: TWebGridPanel;
   WebGridPanel7: TWebGridPanel;
   lb07Dolby: TWebLabel;
@@ -60,9 +59,7 @@ type
     seNumHistEvents: TWebSpinEdit;
     WebPanel1: TWebPanel;
     WebButton2: TWebButton;
-    WebClientConnection1: TWebClientConnection;
     WebDBGrid1: TWebDBGrid;
-    WebDataSource1: TWebDataSource;
     WebRESTClient1: TWebRESTClient;
 
   procedure LoadWIDBCDS;
@@ -73,12 +70,12 @@ type
   procedure WebButton1Click(Sender: TObject);
   procedure WebFormCreate(Sender: TObject);
   procedure seNumDisplayDaysChange(Sender: TObject);
-  procedure seHttpTimeoutSecChange(Sender: TObject);
-  procedure WebHttpRequest1Abort(Sender: TObject);
-  procedure WebHttpRequest1Error(Sender: TObject;
-    ARequest: TJSXMLHttpRequestRecord; Event: TJSEventRecord;
-    var Handled: Boolean);
-  procedure WebHttpRequest1Timeout(Sender: TObject);
+//  procedure seHttpTimeoutSecChange(Sender: TObject);
+//  procedure WebHttpRequest1Abort(Sender: TObject);
+//  procedure WebHttpRequest1Error(Sender: TObject;
+//    ARequest: TJSXMLHttpRequestRecord; Event: TJSEventRecord;
+//    var Handled: Boolean);
+//  procedure WebHttpRequest1Timeout(Sender: TObject);
   [async]
   procedure WebRadioGroup1Change(Sender: TObject);
   procedure WebStringGrid2DblClick(Sender: TObject);
@@ -206,8 +203,8 @@ begin
     seNumDisplayDays.Value := StrToInt(TWebLocalStorage.GetValue(NUMDAYS));
   if TWebLocalStorage.GetValue(NUMHIST) <> '' then
     seNumHistEvents.Value := StrToInt(TWebLocalStorage.GetValue(NUMHIST));
-  if TWebLocalStorage.GetValue(HTTPTIMEOUT) <> '' then
-    seHttpTimeoutSec.Value := StrToInt(TWebLocalStorage.GetValue(HTTPTIMEOUT));
+//  if TWebLocalStorage.GetValue(HTTPTIMEOUT) <> '' then
+//    seHttpTimeoutSec.Value := StrToInt(TWebLocalStorage.GetValue(HTTPTIMEOUT));
   FillHistoryDisplay;
   Listings.RowCount := 1;
   SetTableDefaults(Listings, 70, 150, ClientWidth, 0);
@@ -245,29 +242,29 @@ begin
   end;
 end;
 
-procedure TCWRmainFrm.WebHttpRequest1Abort(Sender: TObject);
-begin
-  WebRadioGroup1.Enabled := True;
-  ShowMessage('Request aborted');
-  Log('Http request aborted, no reason supplied');
-end;
-
-procedure TCWRmainFrm.WebHttpRequest1Error(Sender: TObject;
-  ARequest: TJSXMLHttpRequestRecord; Event: TJSEventRecord;
-  var Handled: Boolean);
-begin
-  WebRadioGroup1.Enabled := True;
-  ShowMessage('Request ERROR:  ' + ARequest.req.ToString
-    + #13#13'Make sure that the Master HTPC is awake');
-  log('HttpRequest ERROR: ' + ARequest.req.toString);
-end;
-
-procedure TCWRmainFrm.WebHttpRequest1Timeout(Sender: TObject);
-begin
-  WebRadioGroup1.Enabled := True;
-  ShowMessage('Request timed out'#13#13'Cannot refresh EPG data while CWHelper is offline');
-  log('HttpRequest timed out. Presume CWHelper offline');
-end;
+//procedure TCWRmainFrm.WebHttpRequest1Abort(Sender: TObject);
+//begin
+//  WebRadioGroup1.Enabled := True;
+//  ShowMessage('Request aborted');
+//  Log('Http request aborted, no reason supplied');
+//end;
+//
+//procedure TCWRmainFrm.WebHttpRequest1Error(Sender: TObject;
+//  ARequest: TJSXMLHttpRequestRecord; Event: TJSEventRecord;
+//  var Handled: Boolean);
+//begin
+//  WebRadioGroup1.Enabled := True;
+//  ShowMessage('Request ERROR:  ' + ARequest.req.ToString
+//    + #13#13'Make sure that the Master HTPC is awake');
+//  log('HttpRequest ERROR: ' + ARequest.req.toString);
+//end;
+//
+//procedure TCWRmainFrm.WebHttpRequest1Timeout(Sender: TObject);
+//begin
+//  WebRadioGroup1.Enabled := True;
+//  ShowMessage('Request timed out'#13#13'Cannot refresh EPG data while CWHelper is offline');
+//  log('HttpRequest timed out. Presume CWHelper offline');
+//end;
 
 //procedure TCWRmainFrm.WebAuth1GoogleSignIn(Sender: TObject;
 //  UserData: TGoogleUserData);
@@ -387,26 +384,26 @@ begin
   WebRadioGroup1.Enabled := True;
 end;
 
-function TCWRmainFrm.HttpReq(Cmd: string): string;
-var
-  req: TJSXMLHttpRequest;
-begin
-  Log('Sending command: ' + Cmd);
-  WebHttpRequest1.URL := Cmd;
-  WebHttpRequest1.Timeout := seHttpTimeoutSec.Value * 1000;
-  try
-    req := await(TJSXMLHttpRequest, WebHttpRequest1.Perform);
-    Log('Status: ' + req.Status.ToString);
-    Result := IfThen(req.Status=200, req.responseText);
-//    Log('Result: ' + Result);
-  except
-    on E:Exception do
-    begin
-      Log('HttpRequest Exception: ' + E.Message);
-      ShowMessage('Cannot send request while CWHelper is offline');
-    end;
-  end;
-end;
+//function TCWRmainFrm.HttpReq(Cmd: string): string;
+//var
+//  req: TJSXMLHttpRequest;
+//begin
+//  Log('Sending command: ' + Cmd);
+//  WebHttpRequest1.URL := Cmd;
+//  WebHttpRequest1.Timeout := seHttpTimeoutSec.Value * 1000;
+//  try
+//    req := await(TJSXMLHttpRequest, WebHttpRequest1.Perform);
+//    Log('Status: ' + req.Status.ToString);
+//    Result := IfThen(req.Status=200, req.responseText);
+////    Log('Result: ' + Result);
+//  except
+//    on E:Exception do
+//    begin
+//      Log('HttpRequest Exception: ' + E.Message);
+//      ShowMessage('Cannot send request while CWHelper is offline');
+//    end;
+//  end;
+//end;
 
 function TCWRmainFrm.GetGoogleDriveFile(TableFile: string): string;
 var
@@ -624,11 +621,11 @@ begin
   DBIncRecs := nil;
 end;
 
-procedure TCWRmainFrm.seHttpTimeoutSecChange(Sender: TObject);
-begin
-  Log('Http Timeout set to: ' + seHttpTimeoutSec.Value.ToString);
-  TWebLocalStorage.SetValue(HTTPTIMEOUT,seHttpTimeoutSec.Value.ToString);
-end;
+//procedure TCWRmainFrm.seHttpTimeoutSecChange(Sender: TObject);
+//begin
+//  Log('Http Timeout set to: ' + seHttpTimeoutSec.Value.ToString);
+//  TWebLocalStorage.SetValue(HTTPTIMEOUT,seHttpTimeoutSec.Value.ToString);
+//end;
 
 procedure TCWRmainFrm.seNumDisplayDaysChange(Sender: TObject);
 begin
