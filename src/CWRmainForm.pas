@@ -60,7 +60,6 @@ type
     seNumHistEvents: TWebSpinEdit;
     WebPanel1: TWebPanel;
     WebButton2: TWebButton;
-    WebClientDataSet1: TWebClientDataSet;
     WebClientConnection1: TWebClientConnection;
     WebDBGrid1: TWebDBGrid;
     WebDataSource1: TWebDataSource;
@@ -98,12 +97,12 @@ type
     procedure AllCapsGridClickCell(Sender: TObject; ACol, ARow: Integer);
     [async]
     procedure WebButton2Click(Sender: TObject);
-    procedure WebClientDataSet1AfterOpen(DataSet: TDataSet);
-    procedure WebAuth1GoogleSignIn(Sender: TObject; UserData: TGoogleUserData);
-    procedure WebButton3Click(Sender: TObject);
-    procedure WebButton4Click(Sender: TObject);
-    [async]
-    procedure WebButton5Click(Sender: TObject);
+//    procedure WebClientDataSet1AfterOpen(DataSet: TDataSet);
+//    procedure WebAuth1GoogleSignIn(Sender: TObject; UserData: TGoogleUserData);
+//    procedure WebButton3Click(Sender: TObject);
+//    procedure WebButton4Click(Sender: TObject);
+//    [async]
+//    procedure WebButton5Click(Sender: TObject);
 private
   { Private declarations }
   [async]
@@ -270,11 +269,11 @@ begin
   log('HttpRequest timed out. Presume CWHelper offline');
 end;
 
-procedure TCWRmainFrm.WebAuth1GoogleSignIn(Sender: TObject;
-  UserData: TGoogleUserData);
-begin
-ShowMessage('WAGSI UserData: '+UserData.ToString);
-end;
+//procedure TCWRmainFrm.WebAuth1GoogleSignIn(Sender: TObject;
+//  UserData: TGoogleUserData);
+//begin
+//ShowMessage('WAGSI UserData: '+UserData.ToString);
+//end;
 
 procedure TCWRmainFrm.WebButton1Click(Sender: TObject);
 begin
@@ -296,94 +295,87 @@ begin
   await (RefreshHistory);
 end;
 
-procedure TCWRmainFrm.WebButton3Click(Sender: TObject);
-begin
-asm
-      /**
-       *  Sign in the user upon button click.
-       */
-      // function handleAuthClick()
-      {
-        tokenClient.callback = async (resp) => {
-          if (resp.error !== undefined) {
-            throw (resp);
-          }
-          document.getElementById('signout_button').style.visibility = 'visible';
-          document.getElementById('authorize_button').innerText = 'Refresh';
-          await listFiles();
-        };
+//procedure TCWRmainFrm.WebButton3Click(Sender: TObject);
+//begin
+//asm
+//      /**
+//       *  Sign in the user upon button click.
+//       */
+//      // function handleAuthClick()
+//      {
+//        tokenClient.callback = async (resp) => {
+//          if (resp.error !== undefined) {
+//            throw (resp);
+//          }
+//          document.getElementById('signout_button').style.visibility = 'visible';
+//          document.getElementById('authorize_button').innerText = 'Refresh';
+//          await listFiles();
+//        };
+//
+//        if (gapi.client.getToken() === null) {
+//          // Prompt the user to select a Google Account and ask for consent to share their data
+//          // when establishing a new session.
+//          tokenClient.requestAccessToken({prompt: 'consent'});
+//        } else {
+//          // Skip display of account chooser and consent dialog for an existing session.
+//          tokenClient.requestAccessToken({prompt: ''});
+//        }
+//      }
+//end;
+//end;
 
-        if (gapi.client.getToken() === null) {
-          // Prompt the user to select a Google Account and ask for consent to share their data
-          // when establishing a new session.
-          tokenClient.requestAccessToken({prompt: 'consent'});
-        } else {
-          // Skip display of account chooser and consent dialog for an existing session.
-          tokenClient.requestAccessToken({prompt: ''});
-        }
-      }
-end;
-end;
+//procedure TCWRmainFrm.WebButton4Click(Sender: TObject);
+//begin
+//asm
+//      /**
+//       *  Sign out the user upon button click.
+//       */
+//      // function handleSignoutClick()
+//      {
+//        const token = gapi.client.getToken();
+//        if (token !== null) {
+//          google.accounts.oauth2.revoke(token.access_token);
+//          gapi.client.setToken('');
+//          document.getElementById('content').innerText = '';
+//          document.getElementById('authorize_button').innerText = 'Authorize';
+//          document.getElementById('signout_button').style.visibility = 'hidden';
+//        }
+//      }
+//
+//end;
+//end;
 
-procedure TCWRmainFrm.WebButton4Click(Sender: TObject);
-begin
-asm
-      /**
-       *  Sign out the user upon button click.
-       */
-      // function handleSignoutClick()
-      {
-        const token = gapi.client.getToken();
-        if (token !== null) {
-          google.accounts.oauth2.revoke(token.access_token);
-          gapi.client.setToken('');
-          document.getElementById('content').innerText = '';
-          document.getElementById('authorize_button').innerText = 'Authorize';
-          document.getElementById('signout_button').style.visibility = 'hidden';
-        }
-      }
-
-end;
-end;
-
-procedure TCWRmainFrm.WebButton5Click(Sender: TObject);
-begin
-asm
-      /**
-       * Print metadata for first 25 files.
-       */
-      //async function listFiles()
-      {
-        let response;
-        try {
-          response = await gapi.client.drive.files.list({
-            'pageSize': 25,
-            'fields': 'files(id, name)',
-          });
-        } catch (err) {
-          console.log(err.message);
-          return;
-        }
-        const files = response.result.files;
-        if (!files || files.length == 0) {
-          console.log('No files found')
-          return;
-        }
-        // Flatten to string to display
-        const output = files.reduce(
-            (str, file) => `${str}${file.name} (${file.id})\n`,
-            'Files:\n');
-        console.log(output);
-      }
-end;
-end;
-
-procedure TCWRmainFrm.WebClientDataSet1AfterOpen(DataSet: TDataSet);
-begin
-  WebClientDataSet1.EnableControls;
-  Log('WebCDS.RC: '+WebClientDataSet1.RecordCount.ToString);
-
-end;
+//procedure TCWRmainFrm.WebButton5Click(Sender: TObject);
+//begin
+//asm
+//      /**
+//       * Print metadata for first 25 files.
+//       */
+//      //async function listFiles()
+//      {
+//        let response;
+//        try {
+//          response = await gapi.client.drive.files.list({
+//            'pageSize': 25,
+//            'fields': 'files(id, name)',
+//          });
+//        } catch (err) {
+//          console.log(err.message);
+//          return;
+//        }
+//        const files = response.result.files;
+//        if (!files || files.length == 0) {
+//          console.log('No files found')
+//          return;
+//        }
+//        // Flatten to string to display
+//        const output = files.reduce(
+//            (str, file) => `${str}${file.name} (${file.id})\n`,
+//            'Files:\n');
+//        console.log(output);
+//      }
+//end;
+//end;
 
 procedure TCWRmainFrm.RefreshHistory;
 begin

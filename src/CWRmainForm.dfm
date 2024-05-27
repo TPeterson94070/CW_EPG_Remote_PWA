@@ -1017,13 +1017,6 @@ object CWRmainFrm: TCWRmainFrm
     Left = 232
     Top = 480
   end
-  object WebClientDataSet1: TWebClientDataSet
-    Connection = WebClientConnection1
-    AfterOpen = WebClientDataSet1AfterOpen
-    Params = <>
-    Left = 240
-    Top = 640
-  end
   object WebClientConnection1: TWebClientConnection
     Active = False
     Delimiter = ';'
@@ -1032,7 +1025,6 @@ object CWRmainFrm: TCWRmainFrm
     Top = 584
   end
   object WebDataSource1: TWebDataSource
-    DataSet = WebClientDataSet1
     Left = 256
     Top = 568
   end
