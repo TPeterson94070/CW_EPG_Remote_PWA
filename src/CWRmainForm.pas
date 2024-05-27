@@ -64,11 +64,6 @@ type
     WebClientConnection1: TWebClientConnection;
     WebDBGrid1: TWebDBGrid;
     WebDataSource1: TWebDataSource;
-    WebGroupBox4: TWebGroupBox;
-    WebSpinEdit1: TWebSpinEdit;
-    WebSpinEdit2: TWebSpinEdit;
-    WebSpinEdit3: TWebSpinEdit;
-    WebSpinEdit4: TWebSpinEdit;
     WebAuth1: TWebAuth;
     WebButton3: TWebButton;
     WebButton4: TWebButton;
@@ -501,7 +496,7 @@ begin
     try
       Log('Requesting: ' + TableFile);
       try
-        Reply := await(GetGoogleDriveFile(TableFile));
+        Reply := await(string, GetGoogleDriveFile(TableFile));
 
         if Reply <> '' then  // Got a response
         begin
