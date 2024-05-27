@@ -64,10 +64,6 @@ type
     WebClientConnection1: TWebClientConnection;
     WebDBGrid1: TWebDBGrid;
     WebDataSource1: TWebDataSource;
-    WebAuth1: TWebAuth;
-    WebButton3: TWebButton;
-    WebButton4: TWebButton;
-    WebButton5: TWebButton;
     WebRESTClient1: TWebRESTClient;
 
   procedure LoadWIDBCDS;
