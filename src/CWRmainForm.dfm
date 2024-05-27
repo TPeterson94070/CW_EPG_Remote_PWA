@@ -746,7 +746,6 @@ object CWRmainFrm: TCWRmainFrm
       HeightPercent = 100.000000000000000000
       WordWrap = True
       WidthPercent = 100.000000000000000000
-      OnClickCell = AllCapsGridClickCell
       OnGetCellData = AllCapsGridGetCellData
     end
   end
@@ -965,11 +964,6 @@ object CWRmainFrm: TCWRmainFrm
     AfterOpen = WIDBCDSAfterOpen
     Left = 472
     Top = 88
-  end
-  object WebHttpRequest1: TWebHttpRequest
-    Timeout = 5000
-    Left = 304
-    Top = 512
   end
   object WebLocalStorage1: TWebLocalStorage
     Left = 232

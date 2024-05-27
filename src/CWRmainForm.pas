@@ -89,9 +89,9 @@ type
       var CanSelect: Boolean);
     procedure seNumHistEventsChange(Sender: TObject);
     procedure HistoryTableFixedCellClick(Sender: TObject; ACol, ARow: Integer);
-    [async]
-    procedure AllCapsGridDblClick(Sender: TObject);
-    procedure AllCapsGridClickCell(Sender: TObject; ACol, ARow: Integer);
+//    [async]
+//    procedure AllCapsGridDblClick(Sender: TObject);
+//    procedure AllCapsGridClickCell(Sender: TObject; ACol, ARow: Integer);
     [async]
     procedure WebButton2Click(Sender: TObject);
 //    procedure WebClientDataSet1AfterOpen(DataSet: TDataSet);
@@ -119,8 +119,8 @@ private
   procedure tbHistoryShow;
   [async]
   procedure FillHistoryDisplay;
-  [async]
-  function HttpReq(Cmd: string): {TJSXMLHttpRequest}string;
+//  [async]
+//  function HttpReq(Cmd: string): {TJSXMLHttpRequest}string;
   [async]
   procedure RefreshHistory;
   procedure RemoteCaps(const rstr, URL: string);
@@ -811,38 +811,38 @@ begin
   lbl.Font.Color := IfThen(State, clRed, clLtGray);
 end;
 
-procedure TCWRmainFrm.AllCapsGridClickCell(Sender: TObject; ACol,
-  ARow: Integer);
-begin
-  ClickedCol := ACol;
-  ClickedRow := ARow;
-  Log('Clicked Col, Row: ' + ACol.ToString + ', ' + ARow.ToString);
-end;
+//procedure TCWRmainFrm.AllCapsGridClickCell(Sender: TObject; ACol,
+//  ARow: Integer);
+//begin
+//  ClickedCol := ACol;
+//  ClickedRow := ARow;
+//  Log('Clicked Col, Row: ' + ACol.ToString + ', ' + ARow.ToString);
+//end;
 
-procedure TCWRmainFrm.AllCapsGridDblClick(Sender: TObject);
-var
-  i: Integer;
-  URL, Response: string;
-begin
-  i := ClickedRow;
-
-  if AllCapsGrid.cells[1,i] = '' then exit;
-
-//  AllCapsGrid.OnGetCellData := nil;
-  if await (TModalResult, MessageDlgAsync('Erase "' + AllCapsGrid.cells[8,i] + '" ' + AllCapsGrid.cells[3,i] + ' ' + AllCapsGrid.cells[4,i] + ' - ' + AllCapsGrid.cells[5,i] + ' '
-    + ' Schedule Entry?', mtConfirmation, [mbYes, mbNo])) = mrNo then exit;
-//    Start the delete here...............                                           // Delete schedule Entry
-  Log('  >>>>>  ' + AllCapsGrid.cells[1,i] + ' - ' + AllCapsGrid.cells[2,i]
-    + '  Delete : (' + AllCapsGrid.cells[0,i]
-    + ') ' + AllCapsGrid.cells[8,i] + ' - ' + AllCapsGrid.cells[3,i] + ' '
-    + AllCapsGrid.cells[4,i] + '-' + AllCapsGrid.cells[5,i]);
-  URL := 'https://' + CWHelperIP + ':8443/decapture?sequence=' + AllCapsGrid.cells[0,i];
-  Response := await(HttpReq(URL));
-  // Assume success, delete AllCapsGrid row i
-//  showmessage('Response: ' + Response);
-  if Response<>'' then AllCapsGrid.RemoveRow(i);
-//  AllCapsGrid.OnGetCellData := AllCapsGridGetCellData;
-end;
+//procedure TCWRmainFrm.AllCapsGridDblClick(Sender: TObject);
+//var
+//  i: Integer;
+//  URL, Response: string;
+//begin
+//  i := ClickedRow;
+//
+//  if AllCapsGrid.cells[1,i] = '' then exit;
+//
+////  AllCapsGrid.OnGetCellData := nil;
+//  if await (TModalResult, MessageDlgAsync('Erase "' + AllCapsGrid.cells[8,i] + '" ' + AllCapsGrid.cells[3,i] + ' ' + AllCapsGrid.cells[4,i] + ' - ' + AllCapsGrid.cells[5,i] + ' '
+//    + ' Schedule Entry?', mtConfirmation, [mbYes, mbNo])) = mrNo then exit;
+////    Start the delete here...............                                           // Delete schedule Entry
+//  Log('  >>>>>  ' + AllCapsGrid.cells[1,i] + ' - ' + AllCapsGrid.cells[2,i]
+//    + '  Delete : (' + AllCapsGrid.cells[0,i]
+//    + ') ' + AllCapsGrid.cells[8,i] + ' - ' + AllCapsGrid.cells[3,i] + ' '
+//    + AllCapsGrid.cells[4,i] + '-' + AllCapsGrid.cells[5,i]);
+//  URL := 'https://' + CWHelperIP + ':8443/decapture?sequence=' + AllCapsGrid.cells[0,i];
+//  Response := await(HttpReq(URL));
+//  // Assume success, delete AllCapsGrid row i
+////  showmessage('Response: ' + Response);
+//  if Response<>'' then AllCapsGrid.RemoveRow(i);
+////  AllCapsGrid.OnGetCellData := AllCapsGridGetCellData;
+//end;
 
 procedure TCWRmainFrm.AllCapsGridGetCellData(Sender: TObject; ACol,
   ARow: Integer; AField: TField; var AValue: string);
