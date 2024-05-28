@@ -1930,6 +1930,13 @@ rtl.module("JS",["System","Types"],function () {
      else Result = null;
     return Result;
   };
+  this.toBoolean = function (Value) {
+    var Result = false;
+    if ($mod.isBoolean(Value)) {
+      Result = !(Value == false)}
+     else Result = false;
+    return Result;
+  };
   this.TJSValueType = {"0": "jvtNull", jvtNull: 0, "1": "jvtBoolean", jvtBoolean: 1, "2": "jvtInteger", jvtInteger: 2, "3": "jvtFloat", jvtFloat: 3, "4": "jvtString", jvtString: 4, "5": "jvtObject", jvtObject: 5, "6": "jvtArray", jvtArray: 6};
   this.GetValueType = function (JS) {
     var Result = 0;
@@ -5885,6 +5892,12 @@ rtl.module("Classes",["System","RTLConsts","Types","SysUtils","JS","TypInfo"],fu
       };
       return Result;
     };
+    this.Put = function (Index, S) {
+      var Obj = null;
+      Obj = this.GetObject(Index);
+      this.Delete(Index);
+      this.InsertObject(Index,S,Obj);
+    };
     this.PutObject = function (Index, AObject) {
       if (Index === 0) return;
       if (AObject === null) return;
@@ -6091,6 +6104,10 @@ rtl.module("Classes",["System","RTLConsts","Types","SysUtils","JS","TypInfo"],fu
       Result = -1;
       return Result;
     };
+    this.InsertObject = function (Index, S, AObject) {
+      this.Insert(Index,S);
+      this.PutObject(Index,AObject);
+    };
     this.GetNameValue = function (Index, AName, AValue) {
       var L = 0;
       this.CheckSpecialChars();
@@ -6206,6 +6223,13 @@ rtl.module("Classes",["System","RTLConsts","Types","SysUtils","JS","TypInfo"],fu
       Result = this.FList[Index].FObject;
       return Result;
     };
+    this.Put = function (Index, S) {
+      if (this.GetSorted()) this.Error(rtl.getResStr(pas.RTLConsts,"SSortedListError"),0);
+      this.CheckIndex(Index);
+      this.Changing();
+      this.FList[Index].FString = S;
+      this.Changed();
+    };
     this.PutObject = function (Index, AObject) {
       this.CheckIndex(Index);
       this.Changing();
@@ -6266,6 +6290,20 @@ rtl.module("Classes",["System","RTLConsts","Types","SysUtils","JS","TypInfo"],fu
       if (this.FCount === 0) return;
       this.Changing();
       this.InternalClear(0,false);
+      this.Changed();
+    };
+    this.Delete = function (Index) {
+      this.CheckIndex(Index);
+      this.Changing();
+      if (this.FOwnsObjects) pas.SysUtils.FreeAndNil({p: this.FList[Index], get: function () {
+          return this.p.FObject;
+        }, set: function (v) {
+          this.p.FObject = v;
+        }});
+      this.FList.splice(Index,1);
+      this.FList[this.GetCount() - 1].FString = "";
+      this.FList[this.GetCount() - 1].FObject = null;
+      this.FCount -= 1;
       this.Changed();
     };
     this.Find = function (S, Index) {
@@ -7294,7 +7332,6 @@ rtl.module("WEBLib.Dialogs",["System","Classes","WEBLib.Controls","Web","JS","Sy
       this.FLayer$1.setAttribute("tabindex","0");
       this.FLayer$1.addEventListener("keydown",rtl.createCallback(this,"HandleKeyDown"));
       btnFocus = true;
-      MsgTitle = this.FTitle;
       this.FMessage = $impl.StringToHTML(this.FMessage);
       var $tmp = this.FMsgDlgType;
       if ($tmp === 0) {
@@ -7318,6 +7355,7 @@ rtl.module("WEBLib.Dialogs",["System","Classes","WEBLib.Controls","Web","JS","Sy
         MsgColor = "";
         MsgTitle = this.GetDialogText(4);
       };
+      if (this.FTitle !== "") MsgTitle = this.FTitle;
       if (pas["WEBLib.Forms"].Application.FMainForm.FCSSLibrary === 1) {
         this.FDlg = document.createElement("DIV");
         this.FDlg.setAttribute("class","modal-dialog");
@@ -7671,6 +7709,1010 @@ rtl.module("Math",["System"],function () {
     return Result;
   };
 });
+rtl.module("WEBLib.JSON",["System","Classes","Web","JS","SysUtils"],function () {
+  "use strict";
+  var $mod = this;
+  var $impl = $mod.$impl;
+  rtl.createClass(this,"TJSONAncestor",pas.System.TObject,function () {
+    this.SetStrValue = function (Value) {
+    };
+  });
+  rtl.createClass(this,"TJSONValue",this.TJSONAncestor,function () {
+    this.$init = function () {
+      $mod.TJSONAncestor.$init.call(this);
+      this.fjv = undefined;
+      this.fjo = undefined;
+    };
+    this.JSONValueFromJS = function (AJSValue) {
+      var Result = null;
+      var d = 0.0;
+      Result = null;
+      if (rtl.isArray(AJSValue)) {
+        Result = $mod.TJSONArray.$create("Create");
+        rtl.as(Result,$mod.TJSONArray).fja = AJSValue;
+      } else if (rtl.isObject(AJSValue)) {
+        Result = $mod.TJSONObject.$create("Create$2");
+        rtl.as(Result,$mod.TJSONObject).fjo$1 = AJSValue;
+      } else if (rtl.isString(AJSValue)) {
+        Result = $mod.TJSONString.$create("Create");
+        rtl.as(Result,$mod.TJSONString).SetStrValue("" + AJSValue);
+      } else if (rtl.isNumber(AJSValue)) {
+        Result = $mod.TJSONNumber.$create("Create");
+        rtl.as(Result,$mod.TJSONNumber).SetStrValue("" + AJSValue);
+        d = rtl.getNumber(AJSValue);
+        rtl.as(Result,$mod.TJSONNumber).FDouble = d;
+        if (pas.System.Frac(d) === 0) rtl.as(Result,$mod.TJSONNumber).FInt = rtl.trunc(AJSValue);
+      } else if (pas.JS.isNull(AJSValue)) {
+        Result = $mod.TJSONNull.$create("Create")}
+       else if (pas.JS.isBoolean(AJSValue)) {
+        if (pas.JS.toBoolean(AJSValue)) {
+          Result = $mod.TJSONTrue.$create("Create$3")}
+         else Result = $mod.TJSONFalse.$create("Create$3");
+      };
+      if (!(Result != null)) Result = $mod.TJSONNull.$create("Create");
+      Result.fjv = AJSValue;
+      return Result;
+    };
+    this.Create$1 = function (AJSValue) {
+      pas.System.TObject.Create.call(this);
+      this.fjv = AJSValue;
+      return this;
+    };
+    this.ToString = function () {
+      var Result = "";
+      Result = JSON.stringify(this.fjv);
+      return Result;
+    };
+  });
+  rtl.createClass(this,"TJSONPair",pas.System.TObject,function () {
+    this.$init = function () {
+      pas.System.TObject.$init.call(this);
+      this.fjo = undefined;
+      this.fjv = null;
+      this.fjs = null;
+    };
+    this.$final = function () {
+      this.fjv = undefined;
+      this.fjs = undefined;
+      pas.System.TObject.$final.call(this);
+    };
+    this.Create$1 = function () {
+      pas.System.TObject.Create.call(this);
+      this.fjs = $mod.TJSONString.$create("Create");
+      return this;
+    };
+    this.Destroy = function () {
+      rtl.free(this,"fjs");
+      pas.System.TObject.Destroy.call(this);
+    };
+    this.ToString = function () {
+      var Result = "";
+      if ($mod.TJSONObject.isPrototypeOf(this.fjv)) {
+        Result = '"' + this.fjs.GetStrValue() + '":' + rtl.as(this.fjv,$mod.TJSONObject).ToJSON()}
+       else {
+        if ((this.fjs !== null) && (this.fjv !== null)) {
+          Result = '"' + this.fjs.GetStrValue() + '":' + this.fjv.ToString()}
+         else Result = "";
+      };
+      return Result;
+    };
+  });
+  rtl.createClass(this,"TJSONPairList",pas.Classes.TList,function () {
+  });
+  rtl.createClass(this,"TJSONObject",this.TJSONValue,function () {
+    this.$init = function () {
+      $mod.TJSONValue.$init.call(this);
+      this.fjo$1 = null;
+      this.FMembers = null;
+    };
+    this.$final = function () {
+      this.fjo$1 = undefined;
+      this.FMembers = undefined;
+      $mod.TJSONValue.$final.call(this);
+    };
+    this.GetCount = function () {
+      var Result = 0;
+      if (this.fjo$1 != null) {
+        Result = rtl.length(Object.keys(this.fjo$1))}
+       else if (this.FMembers != null) {
+        Result = this.FMembers.GetCount()}
+       else Result = 0;
+      return Result;
+    };
+    this.Create$2 = function () {
+      pas.System.TObject.Create.call(this);
+      this.FMembers = $mod.TJSONPairList.$create("Create$1");
+      this.fjo$1 = null;
+      return this;
+    };
+    this.Destroy = function () {
+      rtl.free(this,"FMembers");
+      pas.System.TObject.Destroy.call(this);
+    };
+    this.ParseJSONValue = function (data) {
+      var Result = null;
+      var O = null;
+      O = JSON.parse(data);
+      Result = this.JSONValueFromJS(O);
+      return Result;
+    };
+    this.GetJSONValue = function (Name) {
+      var Result = "";
+      var jv = undefined;
+      jv = this.fjo$1[Name];
+      Result = $impl.JSONObjectToString(jv);
+      return Result;
+    };
+    this.Get = function (Name) {
+      var Result = null;
+      var jv = undefined;
+      var jsv = null;
+      var i = 0;
+      var p = null;
+      Result = null;
+      if (this.fjo$1 != null) {
+        jv = this.fjo$1[Name];
+        if ((jv != undefined) || (jv === null)) {
+          Result = $mod.TJSONPair.$create("Create$1");
+          jsv = this.$class.JSONValueFromJS(jv);
+          Result.fjo = this.fjo$1;
+          Result.fjs.SetStrValue(Name);
+          Result.fjv = jsv;
+        };
+      } else {
+        for (var $l = 0, $end = this.FMembers.GetCount() - 1; $l <= $end; $l++) {
+          i = $l;
+          p = rtl.getObject(this.FMembers.Get(i));
+          if (p.fjs.ToString() === ('"' + Name + '"')) Result = p;
+        };
+      };
+      return Result;
+    };
+    this.Get$1 = function (Index) {
+      var Result = null;
+      Result = this.Get(Object.keys(this.fjo$1)[Index]);
+      return Result;
+    };
+    this.GetValue$1 = function (Name) {
+      var Result = null;
+      var jp = null;
+      Result = null;
+      jp = this.Get(Name);
+      if (jp != null) {
+        Result = jp.fjv;
+        Result.fjo = jp.fjo;
+      };
+      return Result;
+    };
+    this.ToJSON = function () {
+      var Result = "";
+      var s = "";
+      var Size = 0;
+      var I = 0;
+      var jp = null;
+      if (this.fjo$1 != null) {
+        Size = this.GetCount()}
+       else Size = this.FMembers.GetCount();
+      s = "{";
+      if (Size > 0) {
+        if (this.fjo$1 != null) {
+          jp = this.Get$1(0);
+          if (jp != null) {
+            s = s + jp.ToString()}
+           else s = s + '"' + Object.keys(this.fjo$1)[0] + '":null';
+        } else s = s + rtl.getObject(this.FMembers.Get(0)).ToString();
+      };
+      for (var $l = 1, $end = Size - 1; $l <= $end; $l++) {
+        I = $l;
+        if (this.fjo$1 != null) {
+          jp = this.Get$1(I);
+          if (jp != null) {
+            s = s + "," + jp.ToString()}
+           else s = s + "," + '"' + Object.keys(this.fjo$1)[I] + '":null';
+        } else s = s + "," + rtl.getObject(this.FMembers.Get(I)).ToString();
+      };
+      s = s + "}";
+      Result = s;
+      return Result;
+    };
+    this.ToString = function () {
+      var Result = "";
+      Result = this.ToJSON();
+      return Result;
+    };
+  });
+  rtl.createClass(this,"TJSONString",this.TJSONValue,function () {
+    this.$init = function () {
+      $mod.TJSONValue.$init.call(this);
+      this.FValue = "";
+    };
+    this.GetStrValue = function () {
+      var Result = "";
+      Result = this.FValue;
+      return Result;
+    };
+    this.SetStrValue = function (Value) {
+      this.FValue = Value;
+      this.fjv = Value;
+      if (pas.System.Assigned(this.fjo)) {
+        var s = Object.keys(this.fjo)[0];
+        this.fjo[s] = Value;
+      };
+    };
+  });
+  rtl.createClass(this,"TJSONNumber",this.TJSONString,function () {
+    this.$init = function () {
+      $mod.TJSONString.$init.call(this);
+      this.FInt = 0;
+      this.FInt64 = 0;
+      this.FDouble = 0.0;
+    };
+    this.GetStrValue = function () {
+      var Result = "";
+      Result = pas.SysUtils.FloatToStr$1(this.FDouble,pas.SysUtils.TFormatSettings.Invariant());
+      return Result;
+    };
+    this.SetStrValue = function (Value) {
+      this.FDouble = pas.SysUtils.StrToFloat$1(Value,pas.SysUtils.TFormatSettings.Invariant());
+      if (pas.System.Frac(this.FDouble) === 0) {
+        if (!pas.SysUtils.TryStrToInt64$1(Value,{p: this, get: function () {
+            return this.p.FInt64;
+          }, set: function (v) {
+            this.p.FInt64 = v;
+          }},pas.SysUtils.TFormatSettings.Invariant())) this.FInt64 = 0;
+        this.FInt = this.FInt64;
+        this.fjv = this.FInt64;
+      } else this.fjv = this.FDouble;
+    };
+  });
+  rtl.createClass(this,"TJSONBool",this.TJSONValue,function () {
+    this.$init = function () {
+      $mod.TJSONValue.$init.call(this);
+      this.FBool = false;
+    };
+    this.SetStrValue = function (Value) {
+      var s = "";
+      s = pas.SysUtils.UpperCase(Value);
+      this.FBool = s === "TRUE";
+    };
+    this.Create$2 = function (AValue) {
+      $mod.TJSONValue.Create$1.call(this,AValue);
+      this.FBool = AValue;
+      return this;
+    };
+  });
+  rtl.createClass(this,"TJSONTrue",this.TJSONBool,function () {
+    this.GetStrValue = function () {
+      var Result = "";
+      Result = "true";
+      return Result;
+    };
+    this.Create$3 = function () {
+      $mod.TJSONBool.Create$2.call(this,true);
+      return this;
+    };
+    this.ToString = function () {
+      var Result = "";
+      Result = this.GetStrValue();
+      return Result;
+    };
+  });
+  rtl.createClass(this,"TJSONFalse",this.TJSONBool,function () {
+    this.GetStrValue = function () {
+      var Result = "";
+      Result = "false";
+      return Result;
+    };
+    this.Create$3 = function () {
+      $mod.TJSONBool.Create$2.call(this,false);
+      return this;
+    };
+    this.ToString = function () {
+      var Result = "";
+      Result = this.GetStrValue();
+      return Result;
+    };
+  });
+  rtl.createClass(this,"TJSONNull",this.TJSONValue,function () {
+    this.GetStrValue = function () {
+      var Result = "";
+      Result = "null";
+      return Result;
+    };
+    this.ToString = function () {
+      var Result = "";
+      Result = this.GetStrValue();
+      return Result;
+    };
+  });
+  rtl.createClass(this,"TJSONArray",this.TJSONValue,function () {
+    this.$init = function () {
+      $mod.TJSONValue.$init.call(this);
+      this.fja = null;
+    };
+    this.$final = function () {
+      this.fja = undefined;
+      $mod.TJSONValue.$final.call(this);
+    };
+    this.GetItem = function (index) {
+      var Result = null;
+      var jv = undefined;
+      jv = this.GetJA()[index];
+      if (rtl.isExt(jv,$mod.TJSONObject,1) || rtl.isExt(jv,$mod.TJSONArray,1)) {
+        Result = rtl.getObject(jv)}
+       else Result = this.$class.JSONValueFromJS(jv);
+      return Result;
+    };
+    this.GetCount = function () {
+      var Result = 0;
+      Result = this.GetJA().length;
+      return Result;
+    };
+    this.GetJA = function () {
+      var Result = null;
+      if (!(this.fja != null)) this.fja = new Array();
+      Result = this.fja;
+      return Result;
+    };
+    this.ToString = function () {
+      var Result = "";
+      var i = 0;
+      var jv = null;
+      var comma = "";
+      Result = "[";
+      comma = "";
+      for (var $l = 0, $end = this.GetCount() - 1; $l <= $end; $l++) {
+        i = $l;
+        jv = this.GetItem(i);
+        if (jv != null) {
+          if ($mod.TJSONObject.isPrototypeOf(jv)) {
+            Result = Result + comma + rtl.as(jv,$mod.TJSONObject).ToString();
+          } else Result = Result + comma + jv.ToString();
+          comma = ",";
+        };
+      };
+      Result = Result + "]";
+      return Result;
+    };
+  });
+  $mod.$implcode = function () {
+    $impl.JSONObjectToString = function (v) {
+      return v+"";
+    };
+  };
+},[]);
+rtl.module("WEBLib.Storage",["System","Web","Classes"],function () {
+  "use strict";
+  var $mod = this;
+  this.$rtti.$MethodVar("TStorageChangeEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["AKey",rtl.string],["AOldValue",rtl.string],["ANewValue",rtl.string],["AURL",rtl.string]]), methodkind: 0});
+  rtl.createClass(this,"TLocalStorage",pas.Classes.TComponent,function () {
+    this.$init = function () {
+      pas.Classes.TComponent.$init.call(this);
+      this.FChangePtr = null;
+      this.FOnChange = null;
+    };
+    this.$final = function () {
+      this.FOnChange = undefined;
+      pas.Classes.TComponent.$final.call(this);
+    };
+    this.SetValues = function (AKey, AValue) {
+      window.localStorage.setItem(AKey,AValue);
+    };
+    this.GetValues = function (AKey) {
+      var Result = "";
+      var s = "";
+      s = window.localStorage.getItem(AKey);
+      if (!pas.System.Assigned(s)) {
+        Result = ""}
+       else Result = s;
+      return Result;
+    };
+    this.StorageChanged = function (AEvent) {
+      var s = "";
+      s = AEvent.storageArea + " ";
+      if ((this.FOnChange != null) && (pas.System.Pos("OBJECT",pas.SysUtils.UpperCase(s)) > 0)) this.FOnChange(this,AEvent.key,AEvent.oldValue,AEvent.newValue,AEvent.url);
+    };
+    this.Create$1 = function (AOwner) {
+      this.FChangePtr = rtl.createCallback(this,"StorageChanged");
+      pas.Classes.TComponent.Create$1.apply(this,arguments);
+      window.addEventListener("storage",this.FChangePtr);
+      return this;
+    };
+    this.Destroy = function () {
+      window.removeEventListener("storage",this.FChangePtr);
+      pas.Classes.TComponent.Destroy.call(this);
+    };
+    this.SetValue = function (AKey, AValue) {
+      window.localStorage.setItem(AKey,AValue);
+    };
+    this.GetValue = function (AKey) {
+      var Result = "";
+      var s = "";
+      s = window.localStorage.getItem(AKey);
+      if (!pas.System.Assigned(s)) {
+        Result = ""}
+       else Result = s;
+      return Result;
+    };
+    this.RemoveKey = function (AKey) {
+      window.localStorage.removeItem(AKey);
+    };
+    var $r = this.$rtti;
+    $r.addMethod("Create$1",2,[["AOwner",pas.Classes.$rtti["TComponent"]]]);
+    $r.addProperty("OnChange",0,$mod.$rtti["TStorageChangeEvent"],"FOnChange","FOnChange");
+  });
+},["SysUtils"]);
+rtl.module("WEBLib.REST",["System","Classes","Web","JS","SysUtils","WEBLib.Controls","WEBLib.JSON"],function () {
+  "use strict";
+  var $mod = this;
+  this.THTTPCommand = {"0": "httpGET", httpGET: 0, "1": "httpPOST", httpPOST: 1, "2": "httpPUT", httpPUT: 2, "3": "httpDELETE", httpDELETE: 3, "4": "httpHEAD", httpHEAD: 4, "5": "httpPATCH", httpPATCH: 5, "6": "httpCUSTOM", httpCUSTOM: 6};
+  this.$rtti.$Enum("THTTPCommand",{minvalue: 0, maxvalue: 6, ordtype: 1, enumtype: this.THTTPCommand});
+  this.THTTPRequestResponseType = {"0": "rtDefault", rtDefault: 0, "1": "rtText", rtText: 1, "2": "rtBlob", rtBlob: 2, "3": "rtJSON", rtJSON: 3, "4": "rtDocument", rtDocument: 4, "5": "rtArrayBuffer", rtArrayBuffer: 5};
+  this.$rtti.$Enum("THTTPRequestResponseType",{minvalue: 0, maxvalue: 5, ordtype: 1, enumtype: this.THTTPRequestResponseType});
+  this.$rtti.$MethodVar("THTTPProgressEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["Position",rtl.nativeint],["Total",rtl.nativeint]]), methodkind: 0});
+  rtl.createClass(this,"THttpRequest",pas.Classes.TComponent,function () {
+    this.$init = function () {
+      pas.Classes.TComponent.$init.call(this);
+      this.FURL = "";
+      this.FOnResponse = null;
+      this.FOnAbort = null;
+      this.FHeaders = null;
+      this.FCommand = 0;
+      this.FCustomCommand = "";
+      this.FPostData = "";
+      this.FOnRequestResponse = null;
+      this.FPassword = "";
+      this.FUser = "";
+      this.FTimeout = 0;
+      this.FOnTimeout = null;
+      this.FOnError = null;
+      this.FResponse = null;
+      this.FResponseType = 0;
+      this.FOnProgress = null;
+    };
+    this.$final = function () {
+      this.FOnResponse = undefined;
+      this.FOnAbort = undefined;
+      this.FHeaders = undefined;
+      this.FOnRequestResponse = undefined;
+      this.FOnTimeout = undefined;
+      this.FOnError = undefined;
+      this.FResponse = undefined;
+      this.FOnProgress = undefined;
+      pas.Classes.TComponent.$final.call(this);
+    };
+    this.SetHeaders = function (AValue) {
+      this.FHeaders.Assign(AValue);
+    };
+    this.Create$1 = function (AOwner) {
+      pas.Classes.TComponent.Create$1.apply(this,arguments);
+      this.FHeaders = pas.Classes.TStringList.$create("Create$1");
+      this.FResponseType = 0;
+      this.FCommand = 0;
+      this.FTimeout = 0;
+      this.FResponse = null;
+      return this;
+    };
+    this.Destroy = function () {
+      rtl.free(this,"FHeaders");
+      pas.Classes.TComponent.Destroy.call(this);
+    };
+    this.Loaded = function () {
+      var i = 0;
+      var j = 0;
+      var s = "";
+      var flg = false;
+      pas.Classes.TComponent.Loaded.call(this);
+      for (var $l = 0, $end = this.FHeaders.GetCount() - 1; $l <= $end; $l++) {
+        i = $l;
+        s = this.FHeaders.Get(i);
+        flg = false;
+        for (var $l1 = 1, $end1 = s.length; $l1 <= $end1; $l1++) {
+          j = $l1;
+          if ((s.charAt(j - 1) === ":") && !flg) {
+            s = rtl.setCharAt(s,j - 1,"=");
+            flg = true;
+          } else if ((s.charAt(j - 1) === "=") && flg) {
+            s = rtl.setCharAt(s,j - 1,":");
+          };
+        };
+        this.FHeaders.Put(i,s);
+      };
+    };
+    this.GetResponseType = function (AResponseType) {
+      var Result = "";
+      Result = "";
+      var $tmp = AResponseType;
+      if ($tmp === 1) {
+        Result = "text"}
+       else if ($tmp === 2) {
+        Result = "blob"}
+       else if ($tmp === 4) {
+        Result = "document"}
+       else if ($tmp === 3) {
+        Result = "json"}
+       else if ($tmp === 5) Result = "arraybuffer";
+      return Result;
+    };
+    var $r = this.$rtti;
+    $r.addMethod("Create$1",2,[["AOwner",pas.Classes.$rtti["TComponent"]]]);
+    $r.addProperty("Command",0,$mod.$rtti["THTTPCommand"],"FCommand","FCommand");
+    $r.addProperty("CustomCommand",0,rtl.string,"FCustomCommand","FCustomCommand");
+    $r.addProperty("Headers",2,pas.Classes.$rtti["TStringList"],"FHeaders","SetHeaders");
+    $r.addProperty("Password",0,rtl.string,"FPassword","FPassword");
+    $r.addProperty("PostData",0,rtl.string,"FPostData","FPostData");
+    $r.addProperty("ResponseType",0,$mod.$rtti["THTTPRequestResponseType"],"FResponseType","FResponseType",{Default: $mod.THTTPRequestResponseType.rtDefault});
+    $r.addProperty("Timeout",0,rtl.longint,"FTimeout","FTimeout",{Default: 0});
+    $r.addProperty("URL",0,rtl.string,"FURL","FURL");
+    $r.addProperty("User",0,rtl.string,"FUser","FUser");
+    $r.addProperty("OnError",0,pas["WEBLib.Controls"].$rtti["THTTPErrorEvent"],"FOnError","FOnError");
+    $r.addProperty("OnAbort",0,pas["WEBLib.Controls"].$rtti["THTTPAbortEvent"],"FOnAbort","FOnAbort");
+    $r.addProperty("OnProgress",0,$mod.$rtti["THTTPProgressEvent"],"FOnProgress","FOnProgress");
+    $r.addProperty("OnRequestResponse",0,pas["WEBLib.Controls"].$rtti["THTTPRequestResponseEvent"],"FOnRequestResponse","FOnRequestResponse");
+    $r.addProperty("OnResponse",0,pas["WEBLib.Controls"].$rtti["THTTPResponseEvent"],"FOnResponse","FOnResponse");
+    $r.addProperty("OnTimeout",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnTimeout","FOnTimeout");
+  });
+  this.$rtti.$MethodVar("THttpResponse",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["AResponse",rtl.string]]), methodkind: 0});
+  rtl.createClass(this,"TPersistTokens",pas.Classes.TPersistent,function () {
+    this.$init = function () {
+      pas.Classes.TPersistent.$init.call(this);
+      this.FKey = "";
+      this.FEnabled = false;
+    };
+    this.Create$1 = function () {
+      this.FEnabled = false;
+      this.FKey = "";
+      return this;
+    };
+    this.Assign = function (Source) {
+      if ($mod.TPersistTokens.isPrototypeOf(Source)) {
+        this.FKey = rtl.as(Source,$mod.TPersistTokens).FKey;
+        this.FEnabled = rtl.as(Source,$mod.TPersistTokens).FEnabled;
+      };
+    };
+    var $r = this.$rtti;
+    $r.addMethod("Create$1",2,[]);
+    $r.addProperty("Key",0,rtl.string,"FKey","FKey");
+    $r.addProperty("Enabled",0,rtl.boolean,"FEnabled","FEnabled",{Default: false});
+  });
+  rtl.createClass(this,"TRESTApp",pas.Classes.TPersistent,function () {
+    this.$init = function () {
+      pas.Classes.TPersistent.$init.call(this);
+      this.FKey = "";
+      this.FCallbackURL = "";
+      this.FSecret = "";
+      this.FAuthURL = "";
+      this.FClientID = "";
+    };
+    this.Assign = function (Source) {
+      if ($mod.TRESTApp.isPrototypeOf(Source)) {
+        this.FKey = rtl.as(Source,$mod.TRESTApp).FKey;
+        this.FClientID = rtl.as(Source,$mod.TRESTApp).FClientID;
+        this.FCallbackURL = rtl.as(Source,$mod.TRESTApp).FCallbackURL;
+        this.FSecret = rtl.as(Source,$mod.TRESTApp).FSecret;
+        this.FAuthURL = rtl.as(Source,$mod.TRESTApp).FAuthURL;
+      };
+    };
+    var $r = this.$rtti;
+    $r.addProperty("AuthURL",0,rtl.string,"FAuthURL","FAuthURL");
+    $r.addProperty("ClientID",0,rtl.string,"FClientID","FClientID");
+    $r.addProperty("Key",0,rtl.string,"FKey","FKey");
+    $r.addProperty("CallbackURL",0,rtl.string,"FCallbackURL","FCallbackURL");
+    $r.addProperty("Secret",0,rtl.string,"FSecret","FSecret");
+  });
+  this.TAuthLocale = {"0": "lcDefault", lcDefault: 0, "1": "lcEnglish", lcEnglish: 1, "2": "lcDutch", lcDutch: 2, "3": "lcGerman", lcGerman: 3, "4": "lcFrench", lcFrench: 4, "5": "lcSpanish", lcSpanish: 5, "6": "lcItalian", lcItalian: 6, "7": "lcPortuguese", lcPortuguese: 7, "8": "lcGreek", lcGreek: 8, "9": "lcDanish", lcDanish: 9, "10": "lcRussian", lcRussian: 10, "11": "lcRomanian", lcRomanian: 11, "12": "lcSwedish", lcSwedish: 12, "13": "lcFinnish", lcFinnish: 13, "14": "lcTurkish", lcTurkish: 14, "15": "lcJapanese", lcJapanese: 15};
+  rtl.recNewT(this,"TCoreCloudHeader",function () {
+    this.header = "";
+    this.value = "";
+    this.$eq = function (b) {
+      return (this.header === b.header) && (this.value === b.value);
+    };
+    this.$assign = function (s) {
+      this.header = s.header;
+      this.value = s.value;
+      return this;
+    };
+  });
+  rtl.createClass(this,"TRESTClient",pas.Classes.TComponent,function () {
+    this.$init = function () {
+      pas.Classes.TComponent.$init.call(this);
+      this.FAccessToken = "";
+      this.FRefreshToken = "";
+      this.FAccessExpiry = 0.0;
+      this.FRefreshExpiry = 0.0;
+      this.FOnAccessToken = null;
+      this.FEventRegistered = false;
+      this.FOnResponse = null;
+      this.FPersistTokens = null;
+      this.FApp = null;
+      this.FScopes = null;
+      this.FLocale = 0;
+      this.FOnRequestResponse = null;
+      this.FOnError = null;
+      this.FResponseType = 0;
+      this.FLoginWidth = 0;
+      this.FLoginHeight = 0;
+      this.FHandleAccessTokenPtr = null;
+    };
+    this.$final = function () {
+      this.FOnAccessToken = undefined;
+      this.FOnResponse = undefined;
+      this.FPersistTokens = undefined;
+      this.FApp = undefined;
+      this.FScopes = undefined;
+      this.FOnRequestResponse = undefined;
+      this.FOnError = undefined;
+      pas.Classes.TComponent.$final.call(this);
+    };
+    this.SetPersistTokens = function (Value) {
+      this.FPersistTokens.Assign(Value);
+    };
+    this.SetApp = function (Value) {
+      this.FApp.Assign(Value);
+    };
+    this.SetScopes = function (Value) {
+      this.FScopes.Assign(Value);
+    };
+    this.InstallCallback = function () {
+      var Result = false;
+      var scriptsrc = "";
+      scriptsrc = " function processAuthData(access_token) {" + 'var event = new CustomEvent("oauthcallback", {\r' + "            detail: {\r" + "                 message: access_token\r" + "            },\r" + "  bubbles: true,\r" + "  cancelable: true});\r" + "  document.dispatchEvent(event);" + "}";
+      var script = document.createElement("script");
+          script.innerHTML = scriptsrc;
+          document.head.appendChild(script);
+      
+          var scr = document.createElement('script');
+          scr.async = true;
+          scr.defer = true;
+          scr.type = 'text/javascript';
+          document.body.appendChild(scr);
+      Result = true;
+      return Result;
+    };
+    this.RemoveOAuthHandler = function () {
+      document.removeEventListener("oauthcallback",this.FHandleAccessTokenPtr);
+      this.FEventRegistered = false;
+    };
+    this.HandleAccessToken = function (s) {
+      var Result = false;
+      var token = "";
+      this.RemoveOAuthHandler();
+      token = s.detail.message;
+      this.FAccessToken = token;
+      this.WriteTokens();
+      if (this.FOnAccessToken != null) this.FOnAccessToken(this);
+      Result = true;
+      return Result;
+    };
+    this.GetAuthURL = function () {
+      var Result = "";
+      Result = this.FApp.FAuthURL;
+      return Result;
+    };
+    this.Create$1 = function (AOwner) {
+      pas.Classes.TComponent.Create$1.apply(this,arguments);
+      this.FPersistTokens = $mod.TPersistTokens.$create("Create$1");
+      this.FApp = $mod.TRESTApp.$create("Create");
+      this.FScopes = pas.Classes.TStringList.$create("Create$1");
+      this.FLocale = 0;
+      this.FResponseType = 0;
+      this.FLoginWidth = 800;
+      this.FLoginHeight = 600;
+      this.FHandleAccessTokenPtr = rtl.createCallback(this,"HandleAccessToken");
+      return this;
+    };
+    this.Destroy = function () {
+      rtl.free(this,"FApp");
+      rtl.free(this,"FScopes");
+      rtl.free(this,"FPersistTokens");
+      pas.Classes.TComponent.Destroy.call(this);
+    };
+    this.HttpRequest = function (Command, URL, Data, ContentType, headers) {
+      var $Self = this;
+      var Result = null;
+      Result = new Promise(function (ASuccess, AFailed) {
+        var i = 0;
+        var req = null;
+        function ResponseHandler(Event) {
+          var Result = false;
+          ASuccess(Event.target);
+          return Result;
+        };
+        function ErrorHandler(Event) {
+          var Result = false;
+          AFailed(Event.target);
+          return Result;
+        };
+        req = new XMLHttpRequest();
+        req.addEventListener("load",rtl.createSafeCallback(null,ResponseHandler));
+        req.addEventListener("error",rtl.createSafeCallback(null,ErrorHandler));
+        req.responseType = $mod.THttpRequest.GetResponseType($Self.FResponseType);
+        req.open(Command,URL,true);
+        if (ContentType !== "") req.setRequestHeader("Content-Type",ContentType);
+        if ($Self.FAccessToken !== "") req.setRequestHeader("Authorization","Bearer " + $Self.FAccessToken);
+        if (rtl.length(headers) > 0) {
+          for (var $l = 0, $end = rtl.length(headers) - 1; $l <= $end; $l++) {
+            i = $l;
+            req.setRequestHeader(headers[i].header,headers[i].value);
+          };
+        };
+        if (Data === "") {
+          req.send(null)}
+         else req.send(Data);
+      });
+      return Result;
+    };
+    this.URLEncode = function (URI) {
+      var Result = "";
+      Result = encodeURIComponent(URI);
+      return Result;
+    };
+    this.IsoToDateTime = function (s) {
+      var Result = 0.0;
+      var da = 0;
+      var mo = 0;
+      var ye = 0;
+      var ho = 0;
+      var mi = 0;
+      var se = 0;
+      var ms = 0;
+      var err = 0;
+      ms = 0;
+      pas.System.val$5(pas.System.Copy(s,1,4),{get: function () {
+          return ye;
+        }, set: function (v) {
+          ye = v;
+        }},{get: function () {
+          return err;
+        }, set: function (v) {
+          err = v;
+        }});
+      pas.System.val$5(pas.System.Copy(s,6,2),{get: function () {
+          return mo;
+        }, set: function (v) {
+          mo = v;
+        }},{get: function () {
+          return err;
+        }, set: function (v) {
+          err = v;
+        }});
+      pas.System.val$5(pas.System.Copy(s,9,2),{get: function () {
+          return da;
+        }, set: function (v) {
+          da = v;
+        }},{get: function () {
+          return err;
+        }, set: function (v) {
+          err = v;
+        }});
+      pas.System.val$5(pas.System.Copy(s,12,2),{get: function () {
+          return ho;
+        }, set: function (v) {
+          ho = v;
+        }},{get: function () {
+          return err;
+        }, set: function (v) {
+          err = v;
+        }});
+      pas.System.val$5(pas.System.Copy(s,15,2),{get: function () {
+          return mi;
+        }, set: function (v) {
+          mi = v;
+        }},{get: function () {
+          return err;
+        }, set: function (v) {
+          err = v;
+        }});
+      pas.System.val$5(pas.System.Copy(s,18,2),{get: function () {
+          return se;
+        }, set: function (v) {
+          se = v;
+        }},{get: function () {
+          return err;
+        }, set: function (v) {
+          err = v;
+        }});
+      if ((s.length >= 20) && (s.charAt(19) === ".")) {
+        pas.System.val$5(pas.System.Copy(s,21,3),{get: function () {
+            return ms;
+          }, set: function (v) {
+            ms = v;
+          }},{get: function () {
+            return err;
+          }, set: function (v) {
+            err = v;
+          }});
+      };
+      if (ye < 1) ye = 1;
+      if (mo < 1) mo = 1;
+      if (da < 1) da = 1;
+      Result = pas.SysUtils.EncodeDate(ye,mo,da) + pas.SysUtils.EncodeTime(ho,mi,se,ms);
+      return Result;
+    };
+    this.IsIsoDateTime = function (s) {
+      var Result = false;
+      var da = 0;
+      var mo = 0;
+      var ye = 0;
+      var ho = 0;
+      var mi = 0;
+      var se = 0;
+      var err = 0;
+      Result = true;
+      pas.System.val$5(pas.System.Copy(s,1,4),{get: function () {
+          return ye;
+        }, set: function (v) {
+          ye = v;
+        }},{get: function () {
+          return err;
+        }, set: function (v) {
+          err = v;
+        }});
+      if (err !== 0) return false;
+      if (!(pas.System.Copy(s,5,1) === "-")) return false;
+      pas.System.val$5(pas.System.Copy(s,6,2),{get: function () {
+          return mo;
+        }, set: function (v) {
+          mo = v;
+        }},{get: function () {
+          return err;
+        }, set: function (v) {
+          err = v;
+        }});
+      if (err !== 0) return false;
+      if (!(pas.System.Copy(s,8,1) === "-")) return false;
+      pas.System.val$5(pas.System.Copy(s,9,2),{get: function () {
+          return da;
+        }, set: function (v) {
+          da = v;
+        }},{get: function () {
+          return err;
+        }, set: function (v) {
+          err = v;
+        }});
+      if (err !== 0) return false;
+      pas.System.val$5(pas.System.Copy(s,12,2),{get: function () {
+          return ho;
+        }, set: function (v) {
+          ho = v;
+        }},{get: function () {
+          return err;
+        }, set: function (v) {
+          err = v;
+        }});
+      if (err === 0) {
+        if (!(pas.System.Copy(s,14,1) === ":")) return false;
+        pas.System.val$5(pas.System.Copy(s,15,2),{get: function () {
+            return mi;
+          }, set: function (v) {
+            mi = v;
+          }},{get: function () {
+            return err;
+          }, set: function (v) {
+            err = v;
+          }});
+        if (err !== 0) return false;
+        if (!(pas.System.Copy(s,17,1) === ":")) return false;
+        pas.System.val$5(pas.System.Copy(s,18,2),{get: function () {
+            return se;
+          }, set: function (v) {
+            se = v;
+          }},{get: function () {
+            return err;
+          }, set: function (v) {
+            err = v;
+          }});
+        if (err !== 0) return false;
+      };
+      return Result;
+    };
+    this.DoAuth = function () {
+      var URL = "";
+      var param = "";
+      if (!this.FEventRegistered) {
+        document.addEventListener("oauthcallback",this.FHandleAccessTokenPtr);
+        this.FEventRegistered = true;
+      };
+      URL = this.GetAuthURL();
+      param = "width=" + pas["WEBLib.Utils"].TLongIntHelper.ToString.call({p: this, get: function () {
+          return this.p.FLoginWidth;
+        }, set: function (v) {
+          this.p.FLoginWidth = v;
+        }}) + ",height=" + pas["WEBLib.Utils"].TLongIntHelper.ToString.call({p: this, get: function () {
+          return this.p.FLoginHeight;
+        }, set: function (v) {
+          this.p.FLoginHeight = v;
+        }}) + ",location=no,toolbar=no,menubar=no";
+      window.open(URL, 'oauth', param);
+    };
+    this.Authenticate = function () {
+      var $Self = this;
+      var Result = null;
+      Result = new Promise(function (ASuccess, AFailed) {
+        var ptr = null;
+        function HandleOAuthCallBack(s) {
+          var Result = false;
+          var token = "";
+          document.removeEventListener("oauthcallback",ptr);
+          token = s.detail.message;
+          $Self.FAccessToken = token;
+          $Self.WriteTokens();
+          ASuccess($Self.FAccessToken);
+          return Result;
+        };
+        ptr = HandleOAuthCallBack;
+        document.addEventListener("oauthcallback",ptr);
+        $Self.DoAuth();
+      });
+      return Result;
+    };
+    this.ReadTokens = function () {
+      var ls = null;
+      if (this.FPersistTokens.FEnabled && (this.FPersistTokens.FKey !== "")) {
+        ls = pas["WEBLib.Storage"].TLocalStorage.$create("Create");
+        this.FAccessToken = ls.GetValues(this.FPersistTokens.FKey);
+        this.FRefreshToken = ls.GetValues(this.FPersistTokens.FKey + "refresh");
+        this.FAccessExpiry = this.$class.IsoToDateTime(ls.GetValues(this.FPersistTokens.FKey + "accessexpiry"));
+        this.FRefreshExpiry = this.$class.IsoToDateTime(ls.GetValues(this.FPersistTokens.FKey + "refreshexpiry"));
+        ls = rtl.freeLoc(ls);
+      };
+    };
+    this.WriteTokens = function () {
+      var ls = null;
+      if (this.FPersistTokens.FEnabled && (this.FPersistTokens.FKey !== "")) {
+        ls = pas["WEBLib.Storage"].TLocalStorage.$create("Create");
+        ls.SetValues(this.FPersistTokens.FKey,this.FAccessToken);
+        ls.SetValues(this.FPersistTokens.FKey + "refresh",this.FRefreshToken);
+        ls.SetValues(this.FPersistTokens.FKey + "accessexpiry",pas["WEBLib.Utils"].TDateTimeHelper.ToIsoString.call({p: this, get: function () {
+            return this.p.FAccessExpiry;
+          }, set: function (v) {
+            this.p.FAccessExpiry = v;
+          }},true,false));
+        ls.SetValues(this.FPersistTokens.FKey + "refreshexpiry",pas["WEBLib.Utils"].TDateTimeHelper.ToIsoString.call({p: this, get: function () {
+            return this.p.FRefreshExpiry;
+          }, set: function (v) {
+            this.p.FRefreshExpiry = v;
+          }},true,false));
+        ls = rtl.freeLoc(ls);
+      };
+    };
+    var $r = this.$rtti;
+    $r.addMethod("Create$1",2,[["AOwner",pas.Classes.$rtti["TComponent"]]]);
+    $r.addProperty("App",2,$mod.$rtti["TRESTApp"],"FApp","SetApp");
+    $r.addProperty("LoginHeight",0,rtl.longint,"FLoginHeight","FLoginHeight",{Default: 600});
+    $r.addProperty("LoginWidth",0,rtl.longint,"FLoginWidth","FLoginWidth",{Default: 800});
+    $r.addProperty("PersistTokens",2,$mod.$rtti["TPersistTokens"],"FPersistTokens","SetPersistTokens");
+    $r.addProperty("ResponseType",0,$mod.$rtti["THTTPRequestResponseType"],"FResponseType","FResponseType",{Default: $mod.THTTPRequestResponseType.rtDefault});
+    $r.addProperty("Scopes",2,pas.Classes.$rtti["TStrings"],"FScopes","SetScopes");
+    $r.addProperty("OnAccessToken",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnAccessToken","FOnAccessToken");
+    $r.addProperty("OnRequestResponse",0,pas["WEBLib.Controls"].$rtti["THTTPRequestResponseEvent"],"FOnRequestResponse","FOnRequestResponse");
+    $r.addProperty("OnResponse",0,$mod.$rtti["THttpResponse"],"FOnResponse","FOnResponse");
+    $r.addProperty("OnError",0,pas["WEBLib.Controls"].$rtti["THTTPErrorEvent"],"FOnError","FOnError");
+  });
+  this.HTTPCommand = function (ACommand, ACustomCommand) {
+    var Result = "";
+    var cmd = "";
+    var $tmp = ACommand;
+    if ($tmp === 0) {
+      cmd = "GET"}
+     else if ($tmp === 1) {
+      cmd = "POST"}
+     else if ($tmp === 2) {
+      cmd = "PUT"}
+     else if ($tmp === 3) {
+      cmd = "DELETE"}
+     else if ($tmp === 4) {
+      cmd = "HEAD"}
+     else if ($tmp === 5) {
+      cmd = "PATCH"}
+     else if ($tmp === 6) cmd = ACustomCommand;
+    Result = cmd;
+    return Result;
+  };
+  $mod.$init = function () {
+    $mod.TRESTClient.InstallCallback();
+  };
+},["WEBLib.Storage","WEBLib.Utils"]);
 rtl.module("WEBLib.Utils",["System","Types","Web","SysUtils","Math","Classes","JS"],function () {
   "use strict";
   var $mod = this;
@@ -8303,7 +9345,7 @@ rtl.module("WEBLib.Utils",["System","Types","Web","SysUtils","Math","Classes","J
       return Result;
     };
   };
-},["RTLConsts","WEBLib.Consts"]);
+},["RTLConsts","WEBLib.Consts","WEBLib.REST"]);
 rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysUtils","Web","JS"],function () {
   "use strict";
   var $mod = this;
@@ -8499,6 +9541,42 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
     $r.addProperty("Right",2,rtl.longint,"FRight","SetRight",{Default: 3});
     $r.addProperty("Bottom",2,rtl.longint,"FBottom","SetBottom",{Default: 3});
   });
+  rtl.createClass(this,"TCenter",pas.Classes.TPersistent,function () {
+    this.$init = function () {
+      pas.Classes.TPersistent.$init.call(this);
+      this.FHorizontal = false;
+      this.FVertical = false;
+      this.FOnChange = null;
+    };
+    this.$final = function () {
+      this.FOnChange = undefined;
+      pas.Classes.TPersistent.$final.call(this);
+    };
+    this.SetHorizontal = function (Value) {
+      if (this.FHorizontal !== Value) {
+        this.FHorizontal = Value;
+        this.DoChange();
+      };
+    };
+    this.SetVertical = function (Value) {
+      if (this.FVertical !== Value) {
+        this.FVertical = Value;
+        this.DoChange();
+      };
+    };
+    this.DoChange = function () {
+      if (this.FOnChange != null) this.FOnChange(this);
+    };
+    this.Assign = function (Source) {
+      if ($mod.TCenter.isPrototypeOf(Source)) {
+        this.FHorizontal = rtl.as(Source,$mod.TCenter).FHorizontal;
+        this.FVertical = rtl.as(Source,$mod.TCenter).FVertical;
+      };
+    };
+    var $r = this.$rtti;
+    $r.addProperty("Horizontal",2,rtl.boolean,"FHorizontal","SetHorizontal",{Default: false});
+    $r.addProperty("Vertical",2,rtl.boolean,"FVertical","SetVertical",{Default: false});
+  });
   rtl.createClass(this,"TPadding",pas.Classes.TPersistent,function () {
     this.$init = function () {
       pas.Classes.TPersistent.$init.call(this);
@@ -8619,6 +9697,7 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
       this.FDoubleBuffered = false;
       this.FControlStyle = {};
       this.FMargins = null;
+      this.FCenter = null;
       this.FOnMouseWheel = null;
       this.FParentDoubleBuffered = false;
       this.FParentColor = false;
@@ -8723,6 +9802,7 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
       this.FOnMouseLeave = undefined;
       this.FControlStyle = undefined;
       this.FMargins = undefined;
+      this.FCenter = undefined;
       this.FOnMouseWheel = undefined;
       this.FOnTouchMove = undefined;
       this.FOnTouchStart = undefined;
@@ -8907,7 +9987,7 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
     this.SetHeightStyle = function (Value) {
       if (this.FHeightStyle !== Value) {
         this.FHeightStyle = Value;
-        if ((this.FHeightStyle === 2) && (this.GetElementHandle() != null)) this.GetElementStyle().removeProperty("height");
+        if ((this.FHeightStyle === 2) && (this.GetElementHandle() != null) && !this.GetIsLinked()) this.GetElementStyle().removeProperty("height");
         this.UpdateElementSize();
         this.ResetAnchoring();
         this.DoBoundsChange();
@@ -8916,7 +9996,7 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
     this.SetWidthStyle = function (Value) {
       if (this.FWidthStyle !== Value) {
         this.FWidthStyle = Value;
-        if ((this.FWidthStyle === 2) && (this.GetElementHandle() != null)) this.GetElementStyle().removeProperty("width");
+        if ((this.FWidthStyle === 2) && (this.GetElementHandle() != null) && !this.GetIsLinked()) this.GetElementStyle().removeProperty("width");
         this.UpdateElementSize();
         this.ResetAnchoring();
         this.DoBoundsChange();
@@ -9027,7 +10107,7 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
         this.FWidth = AValue;
         this.ResetAnchoring();
         this.DoBoundsChange();
-        if (this.GetIsLinked() && !this.IsUpdating() && (this.GetElementHandle() != null)) {
+        if (this.GetIsLinked() && (this.FWidthStyle === 1) && !(0 in this.FComponentState) && !this.IsUpdating() && (this.GetElementHandle() != null)) {
           if (AValue >= 0) {
             this.GetElementStyle().setProperty("width",pas.SysUtils.IntToStr(AValue) + "px")}
            else this.GetElementStyle().removeProperty("width");
@@ -9046,7 +10126,7 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
         this.FHeight = AValue;
         this.ResetAnchoring();
         this.DoBoundsChange();
-        if (this.GetIsLinked() && !this.IsUpdating() && (this.GetElementHandle() != null)) {
+        if (this.GetIsLinked() && (this.FHeightStyle === 1) && !(0 in this.FComponentState) && !this.IsUpdating() && (this.GetElementHandle() != null)) {
           if (AValue >= 0) {
             this.GetElementStyle().setProperty("height",pas.SysUtils.IntToStr(AValue) + "px")}
            else this.GetElementStyle().removeProperty("height");
@@ -9969,6 +11049,7 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
       var ToolTipPos = "";
       var ToolTipPause = 0;
       var ToolTipHidePause = 0;
+      var tt = undefined;
       if (this.GetElementHandle() != null) {
         if (!(4 in this.FComponentState)) {
           if (this.FVisible) {
@@ -9982,7 +11063,7 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
         if (this.GetIsLinked() && (this.FHint === "")) return;
         if (this.GetRole() !== "") this.FContainer.setAttribute("role",this.FRole);
         frm = pas["WEBLib.Forms"].GetParentForm(this);
-        if ((frm != null) && (frm.FCSSLibrary === 1) && this.FShowHint && (this.FHint !== "")) {
+        if ((frm != null) && (frm.FCSSLibrary === 1) && this.FShowHint && (this.FHint !== "") && !pas.System.Assigned(this.FToolTip)) {
           el = this.GetElementHandle();
           AToolTip = this.FHint;
           var $tmp = pas["WEBLib.Forms"].Application.FHintPosition;
@@ -9996,12 +11077,14 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
           ToolTipClass = pas["WEBLib.Forms"].Application.FHintClassName;
           ToolTipPause = pas["WEBLib.Forms"].Application.FHintPause;
           ToolTipHidePause = pas["WEBLib.Forms"].Application.FHintHidePause;
-          this.FTooltip = new bootstrap.Tooltip(el, {
+          tt = new bootstrap.Tooltip(el, {
            title: AToolTip,
+           trigger: 'hover',
            placement: ToolTipPos,
            customClass: ToolTipClass,
            delay: { "show": ToolTipPause, "hide": ToolTipHidePause }
           });
+          this.FToolTip = tt;
         } else {
           if (this.FShowHint && (this.FHint !== "")) {
             this.FContainer.setAttribute("title",this.FHint)}
@@ -10258,6 +11341,9 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
       };
     };
     this.DoMarginsChanged = function (Sender) {
+      this.DoRealign();
+    };
+    this.DoCenterChanged = function (Sender) {
       this.DoRealign();
     };
     this.DoRealign = function () {
@@ -10756,6 +11842,22 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
           ARect.Right = ARect.Right - Control.GetWidth() - dr - dl;
         } else if ($tmp === 5) {
           Control.SetBoundsInt(ARect.Left + dl,ARect.Top + dt,ARect.Right - ARect.Left - dl - dr,ARect.Bottom - ARect.Top - db - dt);
+        } else if ($tmp === 6) {
+          dl = Control.GetLeft();
+          dt = Control.GetTop();
+          dr = 0;
+          db = 0;
+          if (Control.FCenter.FVertical || Control.FCenter.FHorizontal) {
+            if (Control.FCenter.FHorizontal) {
+              dl = ARect.Left;
+              dr = rtl.trunc((ARect.Right - ARect.Left - Control.GetWidth()) / 2);
+            };
+            if (Control.FCenter.FVertical) {
+              dt = ARect.Top;
+              db = rtl.trunc((ARect.Bottom - ARect.Top - Control.GetHeight()) / 2);
+            };
+            Control.SetBoundsInt(dl + dr,dt + db,Control.GetWidth(),Control.GetHeight());
+          };
         };
         Control.FUpdateTopLeft = false;
       };
@@ -10764,10 +11866,12 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
         var j = 0;
         var ins = 0;
         var il = null;
+        var b = false;
         il = pas.Classes.TList.$create("Create$1");
         for (var $l = 0, $end = $Self.GetControlsCount() - 1; $l <= $end; $l++) {
           i = $l;
-          if (($Self.GetControls(i).FAlign === AAlign) && ($Self.GetControls(i).FVisible || (4 in $Self.FComponentState))) {
+          b = ($Self.GetControls(i).FCenter.FVertical || $Self.GetControls(i).FCenter.FHorizontal) && (AAlign === 6);
+          if (b || (($Self.GetControls(i).FAlign === AAlign) && ($Self.GetControls(i).FVisible || (4 in $Self.FComponentState)))) {
             ins = il.GetCount();
             for (var $l1 = il.GetCount() - 1; $l1 >= 0; $l1--) {
               j = $l1;
@@ -11040,6 +12144,8 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
       this.FColor = 16711422;
       this.FMargins = $mod.TMargins.$create("Create$1");
       this.FMargins.FOnChange = rtl.createCallback(this,"DoMarginsChanged");
+      this.FCenter = $mod.TCenter.$create("Create");
+      this.FCenter.FOnChange = rtl.createCallback(this,"DoCenterChanged");
       this.FParent = null;
       this.FPrevParent = null;
       if (!(0 in this.FControlStyle)) this.ClearControls();
@@ -11280,6 +12386,7 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
       };
       rtl.free(this,"FRequiredScripts");
       rtl.free(this,"FMargins");
+      rtl.free(this,"FCenter");
       rtl.free(this,"FFont");
       if (pas.System.Assigned(this.FToolTip)) {
         FToolTip.dispose();
@@ -11624,7 +12731,9 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
               this.GetElementStyle().setProperty("border-width","1px");
               this.GetElementStyle().setProperty("border-color",pas["WEBLib.Graphics"].ColorToHTML(this.FBorderColor));
             } else this.GetElementStyle().setProperty("border-style","");
-          } else this.GetElementStyle().setProperty("border-style","none");
+          } else {
+            this.GetElementStyle().setProperty("border-style","none");
+          };
         };
         if (this.FElementClassName !== "") {
           this.GetElementStyle().removeProperty("border-style");
@@ -11774,7 +12883,7 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
       
             res = HeightNoScroll - HeightWithScroll;
       
-            res = 0;
+            //res = 0;
       $impl.ScrollBH = res;
     };
     Result = res;
@@ -11984,38 +13093,6 @@ rtl.module("WEBLib.WebTools",["System","Classes","Web","JS","WEBLib.Controls","W
     "////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"+
     "/////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=");
     snd.play();
-  };
-  this.GetQueryParam = function (AName) {
-    var Result = "";
-    var res = "";
-    $mod.HasQueryParam(AName,{get: function () {
-        return res;
-      }, set: function (v) {
-        res = v;
-      }});
-    Result = res;
-    return Result;
-  };
-  this.HasQueryParam = function (AName, AValue) {
-    var Result = false;
-    var found = false;
-    var s = "";
-    s = "";
-    var query = window.location.search.substring(1);
-    var res = "";
-    found = false;
-    var vars = query.split('&');
-    for (var i = 0; i < vars.length; i++) {
-       var pair = vars[i].split('=');
-      if (decodeURIComponent(pair[0]) == AName) {
-          res = decodeURIComponent(pair[1]);
-          found = true;
-       }
-    }
-    s = res;
-    AValue.set(s);
-    Result = found;
-    return Result;
   };
   this.GetLocaleShortDateFormat = function (ALocale) {
     var Result = "";
@@ -12793,7 +13870,9 @@ rtl.module("WEBLib.Graphics",["System","Classes","Types","Web","JS"],function ()
   };
   this.ColorToHTML = function (c) {
     var Result = "";
-    if ((c & 0xFF000000) !== 0) {
+    if ((c & 0xFFFFFFFF) === -1) {
+      Result = "#00000000"}
+     else if ((c & 0xFF000000) !== 0) {
       Result = "#" + $mod.ColorToHex(c & 0xFFFFFF) + pas.SysUtils.IntToHex(Math.floor((c & 0xFF000000) / 16777216) & 0xFF,2);
     } else Result = "#" + $mod.ColorToHex(c);
     return Result;
@@ -13689,7 +14768,7 @@ rtl.module("WEBLib.Menus",["System","Classes","SysUtils","WEBLib.Controls","WEBL
     };
     this.Assign = function (Source) {
       pas.Classes.TPersistent.Assign.apply(this,arguments);
-      if ($mod.TMainMenu.isPrototypeOf(Source)) {
+      if ($mod.TMainMenuAppearance.isPrototypeOf(Source)) {
         this.FBackgroundColor = rtl.as(Source,$mod.TMainMenuAppearance).FBackgroundColor;
         this.FHoverColor = rtl.as(Source,$mod.TMainMenuAppearance).FHoverColor;
         this.FHoverFontColor = rtl.as(Source,$mod.TMainMenuAppearance).FHoverFontColor;
@@ -13875,7 +14954,7 @@ rtl.module("WEBLib.Menus",["System","Classes","SysUtils","WEBLib.Controls","WEBL
       if (this.FAppearance.FImageSize > 0) {
         MenuImageSize = "  width: " + pas.SysUtils.IntToStr(this.FAppearance.FImageSize) + "px;\r" + "  height: " + pas.SysUtils.IntToStr(this.FAppearance.FImageSize) + "px;\r";
       };
-      MenuStyle = "#" + this.GetID() + "menu ul {\r" + "  margin: 0;\r" + "  padding: 0;\r" + "}\r" + "#" + this.GetID() + "menu .main-menu {\r" + "  display: none;\r" + "}\r" + "#" + this.GetID() + "menu .popup-menu {\r" + "  display: block;\r" + "}\r" + "#" + this.GetID() + "menu label img.icon," + "#" + this.GetID() + "menu label span.checked {\r" + MenuImageSize + "  margin-right: 10px;\r" + "  pointer-events: none;\r" + "}\r" + "#tm:checked + .main-menu {\r" + "  display: block;\r" + "}\r" + "#" + this.GetID() + 'menu input[type="checkbox"],\r' + "#" + this.GetID() + "menu ul span.drop-label {\r" + "  display: none;\r" + "}\r" + "#" + this.GetID() + "menu li,\r" + "#" + this.GetID() + "menu #toggle-menu,\r" + "#" + this.GetID() + "menu .popup-menu,\r" + "#" + this.GetID() + "menu .sub-menu {\r" + "  border-width: 1px;\r" + "  border-style: solid;\r" + "  border-color: rgba(0, 0, 0, .05);\r" + "  border-bottom: 0px;\r" + "  border-top: 0px;\r" + "}\r" + "#" + this.GetID() + "menu li,\r" + "#" + this.GetID() + "menu #toggle-menu {\r" + "  border-width: 0 0 3px;\r" + "}\r" + "#" + this.GetID() + "menu .popup-menu,\r" + "#" + this.GetID() + "menu .sub-menu {\r" + "  border-width: 1px 1px 0;\r" + "  margin: 0 1em;\r" + "}\r" + "#" + this.GetID() + "menu .popup-menu li:first-child,\r" + "#" + this.GetID() + "menu .sub-menu li:first-child {\r" + "  border-top: 1px solid;\r" + "  border-color: rgba(0, 0, 0, .05);\r" + "}\r" + "#" + this.GetID() + "menu .popup-menu li:last-child,\r" + "#" + this.GetID() + "menu .sub-menu li:last-child {\r" + "  border-bottom: 1px solid;\r" + "  border-color: rgba(0, 0, 0, .05);\r" + "}\r" + "#" + this.GetID() + "menu li,\r" + "#" + this.GetID() + "menu #toggle-menu,\r" + "#" + this.GetID() + "menu li label {\r" + "  position: relative;\r" + "  display: block;\r" + "}\r" + "#" + this.GetID() + "menu #toggle-menu,\r" + "#" + this.GetID() + "menu li label { \r" + "  padding: 0.75em 1.5em;\r" + "  text-decoration: none;\r" + "}\r" + "#" + this.GetID() + "menu li span.menu-separator { \r" + "  display: block;\r" + "  width: 100%;\r" + "  height: 1px;\r" + "  background-color: rgba(0, 0, 0, .05);\r" + "}\r" + "#" + this.GetID() + "menu .popup-menu, \r" + "#" + this.GetID() + "menu .sub-menu {\r" + "  display: none;\r" + "}\r" + "#" + this.GetID() + 'menu input[type="checkbox"]:checked + .popup-menu,\r' + "#" + this.GetID() + 'menu input[type="checkbox"]:checked + .sub-menu {\r' + "  display: block;\r" + "  z-index: 3000;\r" + "}\r" + "#" + this.GetID() + "menu span.drop-icon {\r" + "  margin-left: 10px;" + "}\r" + "#" + this.GetID() + "menu span.hamburger-icon {\r" + "  float: right;\r" + "  padding: 0;\r" + "  margin: 0;\r" + "  font-weight: 900;\r" + "}\r" + "@media only screen and (max-width: 64em) and (min-width: 52.01em) {\r" + "  #" + this.GetID() + "menu li {\r" + "    width: auto;\r" + "  }\r" + "  #" + this.GetID() + "menu .sub-menu li {\r" + "    width: auto;\r" + "  }\r" + "}\r";
+      MenuStyle = "#" + this.GetID() + "menu ul {\r" + "  margin: 0;\r" + "  padding: 0;\r" + "}\r" + "#" + this.GetID() + "menu .main-menu {\r" + "  display: none;\r" + "}\r" + "#" + this.GetID() + "menu .popup-menu {\r" + "  display: block;\r" + "}\r" + "#" + this.GetID() + "menu label img.icon," + "#" + this.GetID() + "menu label span.checked {\r" + MenuImageSize + "  margin-right: 10px;\r" + "  pointer-events: none;\r" + "}\r" + "#" + this.GetID() + "tm:checked + .main-menu {\r" + "  display: block;\r" + "}\r" + "#" + this.GetID() + 'menu input[type="checkbox"],\r' + "#" + this.GetID() + "menu ul span.drop-label {\r" + "  display: none;\r" + "}\r" + "#" + this.GetID() + "menu li,\r" + "#" + this.GetID() + "menu #toggle-menu,\r" + "#" + this.GetID() + "menu .popup-menu,\r" + "#" + this.GetID() + "menu .sub-menu {\r" + "  border-width: 1px;\r" + "  border-style: solid;\r" + "  border-color: rgba(0, 0, 0, .05);\r" + "  border-bottom: 0px;\r" + "  border-top: 0px;\r" + "}\r" + "#" + this.GetID() + "menu li,\r" + "#" + this.GetID() + "menu #toggle-menu {\r" + "  border-width: 0 0 3px;\r" + "}\r" + "#" + this.GetID() + "menu .popup-menu,\r" + "#" + this.GetID() + "menu .sub-menu {\r" + "  border-width: 1px 1px 0;\r" + "  margin: 0 1em;\r" + "}\r" + "#" + this.GetID() + "menu .popup-menu li:first-child,\r" + "#" + this.GetID() + "menu .sub-menu li:first-child {\r" + "  border-top: 1px solid;\r" + "  border-color: rgba(0, 0, 0, .05);\r" + "}\r" + "#" + this.GetID() + "menu .popup-menu li:last-child,\r" + "#" + this.GetID() + "menu .sub-menu li:last-child {\r" + "  border-bottom: 1px solid;\r" + "  border-color: rgba(0, 0, 0, .05);\r" + "}\r" + "#" + this.GetID() + "menu li,\r" + "#" + this.GetID() + "menu #toggle-menu,\r" + "#" + this.GetID() + "menu li label {\r" + "  position: relative;\r" + "  display: block;\r" + "}\r" + "#" + this.GetID() + "menu #toggle-menu,\r" + "#" + this.GetID() + "menu li label { \r" + "  padding: 0.75em 1.5em;\r" + "  text-decoration: none;\r" + "}\r" + "#" + this.GetID() + "menu li span.menu-separator { \r" + "  display: block;\r" + "  width: 100%;\r" + "  height: 1px;\r" + "  background-color: rgba(0, 0, 0, .05);\r" + "}\r" + "#" + this.GetID() + "menu .popup-menu, \r" + "#" + this.GetID() + "menu .sub-menu {\r" + "  display: none;\r" + "}\r" + "#" + this.GetID() + 'menu input[type="checkbox"]:checked + .popup-menu,\r' + "#" + this.GetID() + 'menu input[type="checkbox"]:checked + .sub-menu {\r' + "  display: block;\r" + "  z-index: 3000;\r" + "}\r" + "#" + this.GetID() + "menu span.drop-icon {\r" + "  margin-left: 10px;" + "}\r" + "#" + this.GetID() + "menu span.hamburger-icon {\r" + "  float: right;\r" + "  padding: 0;\r" + "  margin: 0;\r" + "  font-weight: 900;\r" + "}\r" + "@media only screen and (max-width: 64em) and (min-width: 52.01em) {\r" + "  #" + this.GetID() + "menu li {\r" + "    width: auto;\r" + "  }\r" + "  #" + this.GetID() + "menu .sub-menu li {\r" + "    width: auto;\r" + "  }\r" + "}\r";
       MenuColorStyle = "";
       if (this.FElementClassName === "") {
         MenuColorStyle = "#" + this.GetID() + "menu .popup-menu, \r" + "#" + this.GetID() + "menu .sub-menu {\r" + "  background-color: " + pas["WEBLib.Graphics"].ColorToHTML(this.FAppearance.FBackgroundColor) + ";\r" + "}\r" + "@media only screen and (max-width: 64em) and (min-width: 52.01em) {\r" + "#" + this.GetID() + "menu .sub-menu {\r" + "  background-color: " + pas["WEBLib.Graphics"].ColorToHTML(this.FAppearance.FHamburgerMenu.FBackgroundColor) + ";\r" + "}\r" + "}\r" + "#" + this.GetID() + "menu li,\r" + "#" + this.GetID() + "menu #toggle-menu,\r" + "#" + this.GetID() + "menu li label {\r" + "}\r" + "#" + this.GetID() + "menu #toggle-menu {\r" + "  background-color: " + pas["WEBLib.Graphics"].ColorToHTML(this.FAppearance.FHamburgerMenu.FBackgroundColor) + ";\r" + "  color: " + pas["WEBLib.Graphics"].ColorToHTML(this.FAppearance.FHamburgerMenu.FCaptionColor) + ";\r" + "}\r" + "#" + this.GetID() + "menu .main-menu li label {\r" + "  background-color: " + pas["WEBLib.Graphics"].ColorToHTML(this.FAppearance.FBackgroundColor) + ";\r" + "}\r" + "#" + this.GetID() + "menu li label:hover {\r" + "  background-color: " + pas["WEBLib.Graphics"].ColorToHTML(this.FAppearance.FHoverColor) + ";\r" + "  color: " + pas["WEBLib.Graphics"].ColorToHTML(this.FAppearance.FHoverFontColor) + ";\r" + "}\r" + "#" + this.GetID() + "menu .popup-menu label:hover, \r" + "#" + this.GetID() + "menu .sub-menu label:hover {\r" + "  background-color: " + pas["WEBLib.Graphics"].ColorToHTML(this.FAppearance.FHoverColor) + ";\r" + "  color: " + pas["WEBLib.Graphics"].ColorToHTML(this.FAppearance.FHoverFontColor) + ";\r" + "}\r";
@@ -13888,7 +14967,7 @@ rtl.module("WEBLib.Menus",["System","Classes","SysUtils","WEBLib.Controls","WEBL
       ElScript = document.createElement("SCRIPT");
       ElScript.innerHTML = "function " + this.GetID() + "MenuClick(ctrl){" + "  el = ctrl.parentElement.parentElement;" + '  el.style.display = "none";' + '  setTimeout(function(){el.style.removeProperty("display")}, 25);' + "}" + "function " + this.GetID() + "MenuOut(ctrl){" + '  menuel = document.getElementById("' + this.GetID() + '");' + "  if(menuel) { " + '    popupel = menuel.getElementsByClassName("popup-menu");' + "    if(popupel) " + '      setTimeout(function(){popupel[0].style.display = "none"}, 25);' + "  }" + "}";
       ElLabel = document.createElement("LABEL");
-      ElLabel.setAttribute("for","tm");
+      ElLabel.setAttribute("for",this.GetID() + "tm");
       ElLabel.setAttribute("id","toggle-menu");
       ElLabel.innerHTML = this.FAppearance.FHamburgerMenu.FCaption;
       ElSpan = document.createElement("SPAN");
@@ -13902,7 +14981,7 @@ rtl.module("WEBLib.Menus",["System","Classes","SysUtils","WEBLib.Controls","WEBL
       ElSpan.appendChild(ElIcon);
       ElCheckBox = document.createElement("INPUT");
       ElCheckBox.setAttribute("type","checkbox");
-      ElCheckBox.setAttribute("id","tm");
+      ElCheckBox.setAttribute("id",this.GetID() + "tm");
       this.FMenu.appendChild(ElStyle);
       this.FMenu.appendChild(ElScript);
       this.FMenu.appendChild(ElLabel);
@@ -13978,7 +15057,7 @@ rtl.module("WEBLib.Menus",["System","Classes","SysUtils","WEBLib.Controls","WEBL
               ElListItem.appendChild(ElCheckBox);
               if (it.FEnabled) ElListItem.appendChild(this.GetMenuSource(it));
             } else {
-              ElLabel.setAttribute("for","tm");
+              ElLabel.setAttribute("for",this.GetID() + "tm");
               ElLabel.setAttribute("id",it.FName);
               if (it.FEnabled) {
                 if (MenuClass === "sub-menu") {
@@ -14928,9 +16007,19 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
       if (this.FOnResize != null) this.FOnResize(this);
     };
     this.DoShow = function () {
+      this.DoAutoFocus();
       if ((this.FOnShow != null) && !this.FShown) {
         this.FShown = true;
         this.FOnShow(this);
+      };
+    };
+    this.DoAutoFocus = function () {
+      var i = 0;
+      for (var $l = 0, $end = this.GetControlsCount() - 1; $l <= $end; $l++) {
+        i = $l;
+        if ((this.GetControls(i).FTabOrder === 0) && this.GetControls(i).FTabStop) {
+          this.GetControls(i).SetFocus();
+        };
       };
     };
     this.HandleDoClick$1 = function (Event) {
@@ -15323,9 +16412,13 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
       if (!$mod.Application.FThemed) return;
       var $tmp = AScheme;
       if ($tmp === 2) {
+        this.SetColor(0x202124);
         s = "label,option,td,table,ul,li {background-color: #202124; color: #BEC1C6;}" + "\r\n" + "body,input,textarea,select,fieldset {background-color: #202124; color: #BEC1C6; border: 1px solid gray;}" + "\r\n" + "input:focus, textarea:focus, select:focus, span:focus { border: 1px solid silver; outline: none !important;}";
         this.AddCSS("appscheme",s);
-      } else if ($tmp === 1) this.RemoveCSS("appscheme");
+      } else if ($tmp === 1) {
+        this.SetColor(16777215);
+        this.RemoveCSS("appscheme");
+      };
     };
     this.GetHTMLFileName = function () {
       var Result = "";
@@ -15822,6 +16915,7 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
         isError = false;
       };
       if (Event.message === "ResizeObserver loop limit exceeded") return Result;
+      if (Event.message === "ResizeObserver loop completed with undelivered notifications.") return Result;
       if (!isError) {
         err.AMessage = "Undefined JavaScript exception";
         err.AFile = "";
@@ -16357,7 +17451,7 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
     document.body.appendChild($mod.HandShakeScript);
     $mod.Application = $mod.TApplication.$create("Create$1",[null]);
   };
-},["WEBLib.Dialogs","WEBLib.WebTools","WEBLib.Utils","Math"]);
+},["WEBLib.Dialogs","WEBLib.WebTools","WEBLib.JSON","WEBLib.Utils","Math"]);
 rtl.module("DateUtils",["System","SysUtils","Math"],function () {
   "use strict";
   var $mod = this;
@@ -20825,12 +21919,12 @@ rtl.module("DB",["System","Classes","SysUtils","JS","Types","DateUtils"],functio
     $impl.SString = "String";
   };
 },["DBConst","TypInfo"]);
-rtl.module("fpexprpars",["System","Classes","SysUtils","contnrs"],function () {
+rtl.module("fpexprpars",["System","Classes","SysUtils","contnrs","JS"],function () {
   "use strict";
   var $mod = this;
   var $impl = $mod.$impl;
-  this.TTokenType = {"0": "ttPlus", ttPlus: 0, "1": "ttMinus", ttMinus: 1, "2": "ttLessThan", ttLessThan: 2, "3": "ttLargerThan", ttLargerThan: 3, "4": "ttEqual", ttEqual: 4, "5": "ttDiv", ttDiv: 5, "6": "ttMod", ttMod: 6, "7": "ttMul", ttMul: 7, "8": "ttLeft", ttLeft: 8, "9": "ttRight", ttRight: 9, "10": "ttLessThanEqual", ttLessThanEqual: 10, "11": "ttLargerThanEqual", ttLargerThanEqual: 11, "12": "ttunequal", ttunequal: 12, "13": "ttNumber", ttNumber: 13, "14": "ttString", ttString: 14, "15": "ttIdentifier", ttIdentifier: 15, "16": "ttComma", ttComma: 16, "17": "ttAnd", ttAnd: 17, "18": "ttOr", ttOr: 18, "19": "ttXor", ttXor: 19, "20": "ttTrue", ttTrue: 20, "21": "ttFalse", ttFalse: 21, "22": "ttNot", ttNot: 22, "23": "ttif", ttif: 23, "24": "ttCase", ttCase: 24, "25": "ttPower", ttPower: 25, "26": "ttEOF", ttEOF: 26};
-  this.ttComparisons = rtl.createSet(3,2,11,10,4,12);
+  this.TTokenType = {"0": "ttPlus", ttPlus: 0, "1": "ttMinus", ttMinus: 1, "2": "ttLessThan", ttLessThan: 2, "3": "ttLargerThan", ttLargerThan: 3, "4": "ttEqual", ttEqual: 4, "5": "ttDiv", ttDiv: 5, "6": "ttMod", ttMod: 6, "7": "ttMul", ttMul: 7, "8": "ttLeft", ttLeft: 8, "9": "ttRight", ttRight: 9, "10": "ttLessThanEqual", ttLessThanEqual: 10, "11": "ttLargerThanEqual", ttLargerThanEqual: 11, "12": "ttunequal", ttunequal: 12, "13": "ttNumber", ttNumber: 13, "14": "ttString", ttString: 14, "15": "ttIdentifier", ttIdentifier: 15, "16": "ttComma", ttComma: 16, "17": "ttAnd", ttAnd: 17, "18": "ttOr", ttOr: 18, "19": "ttXor", ttXor: 19, "20": "ttTrue", ttTrue: 20, "21": "ttFalse", ttFalse: 21, "22": "ttNot", ttNot: 22, "23": "ttif", ttif: 23, "24": "ttCase", ttCase: 24, "25": "ttPower", ttPower: 25, "26": "ttLike", ttLike: 26, "27": "ttEOF", ttEOF: 27};
+  this.ttComparisons = rtl.createSet(3,2,11,10,4,12,26);
   this.$rtti.$Class("TFPExpressionParser");
   this.$rtti.$ClassRef("TFPExprFunctionClass",{instancetype: this.$rtti["TFPExprFunction"]});
   this.TNumberKind = {"0": "nkDecimal", nkDecimal: 0, "1": "nkHex", nkHex: 1, "2": "nkOctal", nkOctal: 2, "3": "nkBinary", nkBinary: 3};
@@ -20843,6 +21937,7 @@ rtl.module("fpexprpars",["System","Classes","SysUtils","contnrs"],function () {
       this.FChar = "";
       this.FToken = "";
       this.FTokenType = 0;
+      this.FAllowLike = false;
     };
     this.GetCurrentChar = function () {
       var Result = "";
@@ -20855,7 +21950,7 @@ rtl.module("fpexprpars",["System","Classes","SysUtils","contnrs"],function () {
     this.SetSource = function (AValue) {
       this.FSource = AValue;
       this.LSource = this.FSource.length;
-      this.FTokenType = 26;
+      this.FTokenType = 27;
       if (this.LSource === 0) {
         this.FPos = 0;
         this.FChar = $impl.cNull;
@@ -20902,6 +21997,8 @@ rtl.module("fpexprpars",["System","Classes","SysUtils","contnrs"],function () {
         Result = 24}
        else if (S === "mod") {
         Result = 6}
+       else if ((S === "like") && this.FAllowLike) {
+        Result = 26}
        else Result = 15;
       return Result;
     };
@@ -21076,7 +22173,7 @@ rtl.module("fpexprpars",["System","Classes","SysUtils","contnrs"],function () {
       this.SkipWhiteSpace();
       C = this.FChar;
       if (C === $impl.cNull) {
-        Result = 26}
+        Result = 27}
        else if (this.IsDelim(C)) {
         Result = this.DoDelimiter()}
        else if (C === $impl.cSingleQuote) {
@@ -21089,7 +22186,7 @@ rtl.module("fpexprpars",["System","Classes","SysUtils","contnrs"],function () {
         Result = this.DoNumber(3)}
        else if (this.IsDigit(C,0)) {
         Result = this.DoNumber(0)}
-       else if (this.IsAlpha(C) || (C === '"')) {
+       else if (this.IsAlpha(C) || (C === '"') || (C === "_")) {
         Result = this.DoIdentifier()}
        else this.ScanError(pas.SysUtils.Format(rtl.getResStr($mod,"SErrUnknownCharacter"),pas.System.VarRecs(0,this.FPos,9,C)));
       this.FTokenType = Result;
@@ -21129,6 +22226,11 @@ rtl.module("fpexprpars",["System","Classes","SysUtils","contnrs"],function () {
         };
         $impl.RaiseParserError$1(rtl.getResStr($mod,"SInvalidNodeType"),pas.System.VarRecs(18,$mod.ResultTypeName(Anode.NodeType()),18,S,18,Anode.AsString()));
       };
+    };
+    this.NodeValue = function () {
+      var Result = $mod.TFPExpressionResult.$new();
+      Result.$assign(this.GetNodeValue());
+      return Result;
     };
   });
   rtl.createClass(this,"TFPBinaryOperation",this.TFPExprNode,function () {
@@ -21263,6 +22365,52 @@ rtl.module("fpexprpars",["System","Classes","SysUtils","contnrs"],function () {
     this.AsString = function () {
       var Result = "";
       Result = this.FLeft.AsString() + " = " + this.FRight.AsString();
+      return Result;
+    };
+  });
+  rtl.createClass(this,"TFPLikeOperation",this.TFPBooleanResultOperation,function () {
+    this.$init = function () {
+      $mod.TFPBooleanResultOperation.$init.call(this);
+      this.FRE = null;
+      this.FLast = "";
+    };
+    this.$final = function () {
+      this.FRE = undefined;
+      $mod.TFPBooleanResultOperation.$final.call(this);
+    };
+    var RESpecials = "([\\$\\+\\[\\]\\(\\)\\\\\\.\\*\\^\\?\\|])";
+    this.GetNodeValue = function () {
+      var Result = $mod.TFPExpressionResult.$new();
+      var S = "";
+      var RE = null;
+      S = "" + this.FRight.NodeValue().resValue;
+      if ((this.FLast !== "") && (S === this.FLast)) {
+        RE = this.FRE}
+       else {
+        this.FLast = S;
+        S = S.replace(new RegExp(RESpecials,"g"),"\\$1");
+        S = pas.SysUtils.StringReplace(S,"%","(.*)",rtl.createSet(0));
+        S = pas.SysUtils.StringReplace(S,"_","(.)",rtl.createSet(0));
+        S = "^" + S + "$";
+        try {
+          this.FRE = new RegExp(S,"i");
+          RE = this.FRE;
+        } catch ($e) {
+          Result.resValue = false;
+          return Result;
+        };
+      };
+      Result.resValue = RE.test("" + this.FLeft.NodeValue().resValue);
+      return Result;
+    };
+    this.Check = function () {
+      if (this.FLeft.NodeType() !== 4) $impl.RaiseParserError$1(rtl.getResStr($mod,"SErrStringTypeRequired"),pas.System.VarRecs(18,$mod.ResultTypeName(this.FLeft.NodeType()),18,this.FLeft.AsString()));
+      if (this.FRight.NodeType() !== 4) $impl.RaiseParserError$1(rtl.getResStr($mod,"SErrStringTypeRequired"),pas.System.VarRecs(18,$mod.ResultTypeName(this.FRight.NodeType()),18,this.FRight.AsString()));
+      $mod.TFPBooleanResultOperation.Check.call(this);
+    };
+    this.AsString = function () {
+      var Result = "";
+      Result = this.FLeft.AsString() + " LIKE " + this.FRight.AsString();
       return Result;
     };
   });
@@ -22402,7 +23550,7 @@ rtl.module("fpexprpars",["System","Classes","SysUtils","contnrs"],function () {
       pas.Classes.TComponent.$final.call(this);
     };
     this.CheckEOF = function () {
-      if (this.TokenType() === 26) this.ParserError(rtl.getResStr($mod,"SErrUnexpectedEndOfExpression"));
+      if (this.TokenType() === 27) this.ParserError(rtl.getResStr($mod,"SErrUnexpectedEndOfExpression"));
     };
     this.GetAsBoolean = function () {
       var Result = false;
@@ -22441,6 +23589,9 @@ rtl.module("fpexprpars",["System","Classes","SysUtils","contnrs"],function () {
     this.SetIdentifiers = function (AValue) {
       this.FIdentifiers.Assign(AValue);
     };
+    this.SetAllowLike = function (AValue) {
+      this.FScanner.FAllowLike = AValue;
+    };
     this.ParserError = function (Msg) {
       throw $mod.EExprParser.$create("Create$1",[Msg]);
     };
@@ -22456,7 +23607,7 @@ rtl.module("fpexprpars",["System","Classes","SysUtils","contnrs"],function () {
       if (this.FExpression !== "") {
         this.GetToken();
         this.FExprNode = this.Level1();
-        if (this.TokenType() !== 26) this.ParserError(pas.SysUtils.Format(rtl.getResStr($mod,"SErrUnterminatedExpression"),pas.System.VarRecs(0,this.FScanner.FPos,18,this.CurrentToken())));
+        if (this.TokenType() !== 27) this.ParserError(pas.SysUtils.Format(rtl.getResStr($mod,"SErrUnterminatedExpression"),pas.System.VarRecs(0,this.FScanner.FPos,18,this.CurrentToken())));
         this.FExprNode.Check();
       } else this.FExprNode = null;
     };
@@ -22559,6 +23710,8 @@ rtl.module("fpexprpars",["System","Classes","SysUtils","contnrs"],function () {
             C = $mod.TFPEqualOperation}
            else if ($tmp === 12) {
             C = $mod.TFPUnequalOperation}
+           else if ($tmp === 26) {
+            C = $mod.TFPLikeOperation}
            else {
             this.ParserError(rtl.getResStr($mod,"SErrUnknownComparison"));
           };
@@ -23224,18 +24377,21 @@ rtl.module("fpexprpars",["System","Classes","SysUtils","contnrs"],function () {
     };
     $impl.BuiltInDate = function (Args) {
       var Result = $mod.TFPExpressionResult.$new();
+      if (rtl.length(Args) === 0) ;
       Result.ResultType = 3;
       Result.resValue = pas.SysUtils.Date();
       return Result;
     };
     $impl.BuiltInTime = function (Args) {
       var Result = $mod.TFPExpressionResult.$new();
+      if (rtl.length(Args) === 0) ;
       Result.ResultType = 3;
       Result.resValue = pas.SysUtils.Time();
       return Result;
     };
     $impl.BuiltInNow = function (Args) {
       var Result = $mod.TFPExpressionResult.$new();
+      if (rtl.length(Args) === 0) ;
       Result.ResultType = 3;
       Result.resValue = pas.SysUtils.Now();
       return Result;
@@ -23627,7 +24783,7 @@ rtl.module("fpexprpars",["System","Classes","SysUtils","contnrs"],function () {
       $impl.FileFormatSettings.ShortDateFormat = "yyyy-mm-dd";
       $impl.FileFormatSettings.LongTimeFormat = "hh:nn:ss";
     };
-    $mod.$resourcestrings = {SBadQuotes: {org: "Unterminated string"}, SUnknownDelimiter: {org: 'Unknown delimiter character: "%s"'}, SErrUnknownCharacter: {org: 'Unknown character at pos %d: "%s"'}, SErrUnexpectedEndOfExpression: {org: "Unexpected end of expression"}, SErrUnknownComparison: {org: "Internal error: Unknown comparison"}, SErrUnknownBooleanOp: {org: "Internal error: Unknown boolean operation"}, SErrBracketExpected: {org: "Expected ) bracket at position %d, but got %s"}, SerrUnknownTokenAtPos: {org: "Unknown token at pos %d : %s"}, SErrLeftBracketExpected: {org: "Expected ( bracket at position %d, but got %s"}, SErrInvalidFloat: {org: "%s is not a valid floating-point value"}, SErrUnknownIdentifier: {org: "Unknown identifier: %s"}, SErrInExpression: {org: "Cannot evaluate: error in expression"}, SErrInExpressionEmpty: {org: "Cannot evaluate: empty expression"}, SErrCommaExpected: {org: "Expected comma (,) at position %d, but got %s"}, SErrInvalidNumberChar: {org: "Unexpected character in number : %s"}, SErrInvalidNumber: {org: "Invalid numerical value : %s"}, SErrUnterminatedIdentifier: {org: "Unterminated quoted identifier: %s"}, SErrNoOperand: {org: "No operand for unary operation %s"}, SErrNoleftOperand: {org: "No left operand for binary operation %s"}, SErrNoRightOperand: {org: "No right operand for binary operation %s"}, SErrNoNegation: {org: "Cannot negate expression of type %s : %s"}, SErrNoNOTOperation: {org: 'Cannot perform "not" on expression of type %s: %s'}, SErrTypesDoNotMatch: {org: 'Type mismatch: %s<>%s for expressions "%s" and "%s".'}, SErrNoNodeToCheck: {org: "Internal error: No node to check !"}, SInvalidNodeType: {org: "Node type (%s) not in allowed types (%s) for expression: %s"}, SErrUnterminatedExpression: {org: "Badly terminated expression. Found token at position %d : %s"}, SErrDuplicateIdentifier: {org: 'An identifier with name "%s" already exists.'}, SErrInvalidResultCharacter: {org: '"%s" is not a valid return type indicator'}, ErrInvalidArgumentCount: {org: "Invalid argument count for function %s"}, SErrInvalidArgumentType: {org: "Invalid type for argument %d: Expected %s, got %s"}, SErrInvalidResultType: {org: "Invalid result type: %s"}, SErrIFNeedsBoolean: {org: "First argument to IF must be of type boolean: %s"}, SErrCaseNeeds3: {org: "Case statement needs to have at least 4 arguments"}, SErrCaseEvenCount: {org: "Case statement needs to have an even number of arguments"}, SErrCaseLabelNotAConst: {org: 'Case label %d "%s" is not a constant expression'}, SErrCaseLabelType: {org: 'Case label %d "%s" needs type %s, but has type %s'}, SErrCaseValueType: {org: 'Case value %d "%s" needs type %s, but has type %s'}};
+    $mod.$resourcestrings = {SBadQuotes: {org: "Unterminated string"}, SUnknownDelimiter: {org: 'Unknown delimiter character: "%s"'}, SErrUnknownCharacter: {org: 'Unknown character at pos %d: "%s"'}, SErrUnexpectedEndOfExpression: {org: "Unexpected end of expression"}, SErrUnknownComparison: {org: "Internal error: Unknown comparison"}, SErrUnknownBooleanOp: {org: "Internal error: Unknown boolean operation"}, SErrBracketExpected: {org: "Expected ) bracket at position %d, but got %s"}, SerrUnknownTokenAtPos: {org: "Unknown token at pos %d : %s"}, SErrLeftBracketExpected: {org: "Expected ( bracket at position %d, but got %s"}, SErrInvalidFloat: {org: "%s is not a valid floating-point value"}, SErrUnknownIdentifier: {org: "Unknown identifier: %s"}, SErrInExpression: {org: "Cannot evaluate: error in expression"}, SErrInExpressionEmpty: {org: "Cannot evaluate: empty expression"}, SErrCommaExpected: {org: "Expected comma (,) at position %d, but got %s"}, SErrInvalidNumberChar: {org: "Unexpected character in number : %s"}, SErrInvalidNumber: {org: "Invalid numerical value : %s"}, SErrUnterminatedIdentifier: {org: "Unterminated quoted identifier: %s"}, SErrNoOperand: {org: "No operand for unary operation %s"}, SErrNoleftOperand: {org: "No left operand for binary operation %s"}, SErrNoRightOperand: {org: "No right operand for binary operation %s"}, SErrNoNegation: {org: "Cannot negate expression of type %s : %s"}, SErrNoNOTOperation: {org: 'Cannot perform "not" on expression of type %s: %s'}, SErrTypesDoNotMatch: {org: 'Type mismatch: %s<>%s for expressions "%s" and "%s".'}, SErrNoNodeToCheck: {org: "Internal error: No node to check !"}, SInvalidNodeType: {org: "Node type (%s) not in allowed types (%s) for expression: %s"}, SErrUnterminatedExpression: {org: "Badly terminated expression. Found token at position %d : %s"}, SErrDuplicateIdentifier: {org: 'An identifier with name "%s" already exists.'}, SErrInvalidResultCharacter: {org: '"%s" is not a valid return type indicator'}, ErrInvalidArgumentCount: {org: "Invalid argument count for function %s"}, SErrInvalidArgumentType: {org: "Invalid type for argument %d: Expected %s, got %s"}, SErrInvalidResultType: {org: "Invalid result type: %s"}, SErrIFNeedsBoolean: {org: "First argument to IF must be of type boolean: %s"}, SErrCaseNeeds3: {org: "Case statement needs to have at least 4 arguments"}, SErrCaseEvenCount: {org: "Case statement needs to have an even number of arguments"}, SErrCaseLabelNotAConst: {org: 'Case label %d "%s" is not a constant expression'}, SErrCaseLabelType: {org: 'Case label %d "%s" needs type %s, but has type %s'}, SErrCaseValueType: {org: 'Case value %d "%s" needs type %s, but has type %s'}, SErrStringTypeRequired: {org: 'Expression requires string type, got type "%s" for %s'}};
   };
   $mod.$init = function () {
     $impl.L10 = Math.log(10);
@@ -23824,7 +24980,7 @@ rtl.module("JSONDataset",["System","Types","JS","DB","Classes","SysUtils","TypIn
     this.DataTypeToComparerClass = function (aFieldType) {
       var Result = null;
       var $tmp = aFieldType;
-      if (($tmp === 11) || ($tmp === 12) || ($tmp === 1) || ($tmp === 15)) {
+      if (($tmp === 11) || ($tmp === 12) || ($tmp === 1)) {
         Result = $mod.TStringFieldComparer}
        else if (($tmp === 9) || ($tmp === 2) || ($tmp === 3)) {
         Result = $mod.TNativeIntFieldComparer}
@@ -24322,9 +25478,10 @@ rtl.module("JSONDataset",["System","Types","JS","DB","Classes","SysUtils","TypIn
       var Result = null;
       var I = 0;
       Result = this.FilterExpressionClass().$create("Create$1",[this]);
+      Result.SetAllowLike(true);
       for (var $l = 0, $end = this.FFieldList.GetCount() - 1; $l <= $end; $l++) {
         I = $l;
-        Result.FIdentifiers.AddVariable(this.FFieldList.GetField(I).FFieldName,this.FieldTypeToExpressionType(this.FFieldList.GetField(I).FDataType),rtl.createCallback(this,"GetFilterField"));
+        if (!(this.FFieldList.GetField(I).FDataType in rtl.createSet(10,11))) Result.FIdentifiers.AddVariable(this.FFieldList.GetField(I).FFieldName,this.FieldTypeToExpressionType(this.FFieldList.GetField(I).FDataType),rtl.createCallback(this,"GetFilterField"));
       };
       Result.FIdentifiers.AddFunction("IsNull","B","S",rtl.createCallback(this,"GetFilterIsNull"));
       Result.SetExpression(this.FFilterText);
@@ -24862,9 +26019,7 @@ rtl.module("JSONDataset",["System","Types","JS","DB","Classes","SysUtils","TypIn
     };
     this.GetJSONDataForField = function (FieldName, FieldIndex, Row) {
       var Result = undefined;
-      if (Row != undefined) {
-        Result = Row[FieldName]}
-       else Result = undefined;
+      Result = Row[FieldName];
       return Result;
     };
     this.CreateRow = function () {
@@ -24894,613 +26049,6 @@ rtl.module("JSONDataset",["System","Types","JS","DB","Classes","SysUtils","TypIn
   rtl.createClass(this,"EJSONDataset",pas.DB.EDatabaseError,function () {
   });
 },["DateUtils"]);
-rtl.module("WEBLib.Storage",["System","Web","Classes"],function () {
-  "use strict";
-  var $mod = this;
-  this.$rtti.$MethodVar("TStorageChangeEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["AKey",rtl.string],["AOldValue",rtl.string],["ANewValue",rtl.string],["AURL",rtl.string]]), methodkind: 0});
-  rtl.createClass(this,"TLocalStorage",pas.Classes.TComponent,function () {
-    this.$init = function () {
-      pas.Classes.TComponent.$init.call(this);
-      this.FChangePtr = null;
-      this.FOnChange = null;
-    };
-    this.$final = function () {
-      this.FOnChange = undefined;
-      pas.Classes.TComponent.$final.call(this);
-    };
-    this.SetValues = function (AKey, AValue) {
-      window.localStorage.setItem(AKey,AValue);
-    };
-    this.StorageChanged = function (AEvent) {
-      var s = "";
-      s = AEvent.storageArea + " ";
-      if ((this.FOnChange != null) && (pas.System.Pos("OBJECT",pas.SysUtils.UpperCase(s)) > 0)) this.FOnChange(this,AEvent.key,AEvent.oldValue,AEvent.newValue,AEvent.url);
-    };
-    this.Create$1 = function (AOwner) {
-      this.FChangePtr = rtl.createCallback(this,"StorageChanged");
-      pas.Classes.TComponent.Create$1.apply(this,arguments);
-      window.addEventListener("storage",this.FChangePtr);
-      return this;
-    };
-    this.Destroy = function () {
-      window.removeEventListener("storage",this.FChangePtr);
-      pas.Classes.TComponent.Destroy.call(this);
-    };
-    this.SetValue = function (AKey, AValue) {
-      window.localStorage.setItem(AKey,AValue);
-    };
-    this.GetValue = function (AKey) {
-      var Result = "";
-      var s = "";
-      s = window.localStorage.getItem(AKey);
-      if (!pas.System.Assigned(s)) {
-        Result = ""}
-       else Result = s;
-      return Result;
-    };
-    var $r = this.$rtti;
-    $r.addMethod("Create$1",2,[["AOwner",pas.Classes.$rtti["TComponent"]]]);
-    $r.addProperty("OnChange",0,$mod.$rtti["TStorageChangeEvent"],"FOnChange","FOnChange");
-  });
-},["SysUtils"]);
-rtl.module("WEBLib.REST",["System","Classes","Web","JS","SysUtils","WEBLib.Controls"],function () {
-  "use strict";
-  var $mod = this;
-  this.THTTPCommand = {"0": "httpGET", httpGET: 0, "1": "httpPOST", httpPOST: 1, "2": "httpPUT", httpPUT: 2, "3": "httpDELETE", httpDELETE: 3, "4": "httpHEAD", httpHEAD: 4, "5": "httpPATCH", httpPATCH: 5, "6": "httpCUSTOM", httpCUSTOM: 6};
-  this.$rtti.$Enum("THTTPCommand",{minvalue: 0, maxvalue: 6, ordtype: 1, enumtype: this.THTTPCommand});
-  this.THTTPRequestResponseType = {"0": "rtDefault", rtDefault: 0, "1": "rtText", rtText: 1, "2": "rtBlob", rtBlob: 2, "3": "rtJSON", rtJSON: 3, "4": "rtDocument", rtDocument: 4, "5": "rtArrayBuffer", rtArrayBuffer: 5};
-  this.$rtti.$Enum("THTTPRequestResponseType",{minvalue: 0, maxvalue: 5, ordtype: 1, enumtype: this.THTTPRequestResponseType});
-  this.$rtti.$MethodVar("THTTPProgressEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["Position",rtl.nativeint],["Total",rtl.nativeint]]), methodkind: 0});
-  rtl.createClass(this,"THttpRequest",pas.Classes.TComponent,function () {
-    this.$init = function () {
-      pas.Classes.TComponent.$init.call(this);
-      this.FURL = "";
-      this.FOnResponse = null;
-      this.FOnAbort = null;
-      this.FHeaders = null;
-      this.FCommand = 0;
-      this.FCustomCommand = "";
-      this.FPostData = "";
-      this.FOnRequestResponse = null;
-      this.FPassword = "";
-      this.FUser = "";
-      this.FTimeout = 0;
-      this.FOnTimeout = null;
-      this.FOnError = null;
-      this.FResponse = null;
-      this.FErrorProc = null;
-      this.FTimeOutProc = null;
-      this.FResponseType = 0;
-      this.FOnProgress = null;
-    };
-    this.$final = function () {
-      this.FOnResponse = undefined;
-      this.FOnAbort = undefined;
-      this.FHeaders = undefined;
-      this.FOnRequestResponse = undefined;
-      this.FOnTimeout = undefined;
-      this.FOnError = undefined;
-      this.FResponse = undefined;
-      this.FErrorProc = undefined;
-      this.FTimeOutProc = undefined;
-      this.FOnProgress = undefined;
-      pas.Classes.TComponent.$final.call(this);
-    };
-    this.HandleResponse = function (Event) {
-      var Result = false;
-      var s = "";
-      var LRequestRec = pas["WEBLib.Controls"].TJSXMLHttpRequestRecord.$new();
-      LRequestRec.req = Event.target;
-      s = "";
-      if (this.FResponseType in rtl.createSet(1,0)) {
-        s = Event.target.responseText;
-      };
-      if (this.FOnRequestResponse != null) {
-        this.FOnRequestResponse(this,pas["WEBLib.Controls"].TJSXMLHttpRequestRecord.$clone(LRequestRec),s);
-      };
-      if (this.FOnResponse != null) this.FOnResponse(this,s);
-      if (this.FResponse != null) {
-        this.FResponse(s,LRequestRec.req);
-      };
-      Result = true;
-      return Result;
-    };
-    this.HandleAbort = function (Event) {
-      var Result = false;
-      if (this.FOnAbort != null) this.FOnAbort(this);
-      Result = true;
-      return Result;
-    };
-    this.HandleTimeout = function (Event) {
-      var Result = false;
-      if (this.FOnTimeout != null) this.FOnTimeout(this);
-      if (this.FTimeOutProc != null) this.FTimeOutProc(Event.target);
-      Result = true;
-      return Result;
-    };
-    this.HandleError = function (Event) {
-      var Result = false;
-      var Handled = false;
-      var LEventRec = pas["WEBLib.Controls"].TJSEventRecord.$new();
-      var LRequestRec = pas["WEBLib.Controls"].TJSXMLHttpRequestRecord.$new();
-      Result = true;
-      Handled = false;
-      if (this.FOnError != null) {
-        LEventRec.event = Event;
-        LRequestRec.req = Event.target;
-        this.FOnError(this,pas["WEBLib.Controls"].TJSXMLHttpRequestRecord.$clone(LRequestRec),pas["WEBLib.Controls"].TJSEventRecord.$clone(LEventRec),{get: function () {
-            return Handled;
-          }, set: function (v) {
-            Handled = v;
-          }});
-      };
-      if (this.FErrorProc != null) this.FErrorProc(LRequestRec.req);
-      if (!Handled) throw pas.SysUtils.Exception.$create("Create$1",["HTTP request error @" + this.FURL]);
-      return Result;
-    };
-    this.HandleProgress = function (Event) {
-      var Result = false;
-      var position = 0;
-      var total = 0;
-      Result = true;
-      position = Event.loaded;
-      total = Event.total;
-      if (this.FOnProgress != null) this.FOnProgress(this,position,total);
-      return Result;
-    };
-    this.SetHeaders = function (AValue) {
-      this.FHeaders.Assign(AValue);
-    };
-    this.Create$1 = function (AOwner) {
-      pas.Classes.TComponent.Create$1.apply(this,arguments);
-      this.FHeaders = pas.Classes.TStringList.$create("Create$1");
-      this.FResponseType = 0;
-      this.FCommand = 0;
-      this.FTimeout = 0;
-      this.FResponse = null;
-      return this;
-    };
-    this.Destroy = function () {
-      rtl.free(this,"FHeaders");
-      pas.Classes.TComponent.Destroy.call(this);
-    };
-    this.GetResponseType = function (AResponseType) {
-      var Result = "";
-      Result = "";
-      var $tmp = AResponseType;
-      if ($tmp === 1) {
-        Result = "text"}
-       else if ($tmp === 2) {
-        Result = "blob"}
-       else if ($tmp === 4) {
-        Result = "document"}
-       else if ($tmp === 3) {
-        Result = "json"}
-       else if ($tmp === 5) Result = "arraybuffer";
-      return Result;
-    };
-    this.Execute$2 = function (AResponse, AError, ATimeOut) {
-      var i = 0;
-      var cmd = "";
-      var req = null;
-      var headname = "";
-      var headvalue = "";
-      this.FResponse = AResponse;
-      this.FErrorProc = AError;
-      this.FTimeOutProc = ATimeOut;
-      req = new XMLHttpRequest();
-      req.addEventListener("load",rtl.createSafeCallback(this,"HandleResponse"));
-      req.addEventListener("abort",rtl.createSafeCallback(this,"HandleAbort"));
-      req.addEventListener("timeout",rtl.createSafeCallback(this,"HandleTimeout"));
-      req.addEventListener("error",rtl.createSafeCallback(this,"HandleError"));
-      req.addEventListener("progress",rtl.createSafeCallback(this,"HandleProgress"));
-      req.responseType = $mod.THttpRequest.GetResponseType(this.FResponseType);
-      cmd = $mod.HTTPCommand(this.FCommand,this.FCustomCommand);
-      if (this.FTimeout !== 0) req.timeout = this.FTimeout;
-      if (this.FUser !== "") {
-        req.open(cmd,this.FURL,true);
-        req.setRequestHeader("X-Requested-With","XMLHttpRequest");
-      } else req.open(cmd,this.FURL);
-      for (var $l = 0, $end = this.FHeaders.GetCount() - 1; $l <= $end; $l++) {
-        i = $l;
-        this.FHeaders.GetNameValue(i,{get: function () {
-            return headname;
-          }, set: function (v) {
-            headname = v;
-          }},{get: function () {
-            return headvalue;
-          }, set: function (v) {
-            headvalue = v;
-          }});
-        req.setRequestHeader(headname,headvalue);
-      };
-      if (this.FUser !== "") req.setRequestHeader("Authorization","Basic " + window.btoa(this.FUser + ":" + this.FPassword));
-      if (this.FPostData !== "") {
-        req.send(this.FPostData)}
-       else req.send();
-    };
-    this.Perform = function () {
-      var $Self = this;
-      var Result = null;
-      Result = new Promise(function (ASuccess, AFailed) {
-        $Self.Execute$2(function (AResponse, ARequest) {
-          ASuccess(ARequest);
-        },function (ARequest) {
-          AFailed(ARequest);
-        },function (ARequest) {
-          AFailed(ARequest);
-        });
-      });
-      return Result;
-    };
-    var $r = this.$rtti;
-    $r.addMethod("Create$1",2,[["AOwner",pas.Classes.$rtti["TComponent"]]]);
-    $r.addProperty("Command",0,$mod.$rtti["THTTPCommand"],"FCommand","FCommand");
-    $r.addProperty("CustomCommand",0,rtl.string,"FCustomCommand","FCustomCommand");
-    $r.addProperty("Headers",2,pas.Classes.$rtti["TStringList"],"FHeaders","SetHeaders");
-    $r.addProperty("Password",0,rtl.string,"FPassword","FPassword");
-    $r.addProperty("PostData",0,rtl.string,"FPostData","FPostData");
-    $r.addProperty("ResponseType",0,$mod.$rtti["THTTPRequestResponseType"],"FResponseType","FResponseType",{Default: $mod.THTTPRequestResponseType.rtDefault});
-    $r.addProperty("Timeout",0,rtl.longint,"FTimeout","FTimeout",{Default: 0});
-    $r.addProperty("URL",0,rtl.string,"FURL","FURL");
-    $r.addProperty("User",0,rtl.string,"FUser","FUser");
-    $r.addProperty("OnError",0,pas["WEBLib.Controls"].$rtti["THTTPErrorEvent"],"FOnError","FOnError");
-    $r.addProperty("OnAbort",0,pas["WEBLib.Controls"].$rtti["THTTPAbortEvent"],"FOnAbort","FOnAbort");
-    $r.addProperty("OnProgress",0,$mod.$rtti["THTTPProgressEvent"],"FOnProgress","FOnProgress");
-    $r.addProperty("OnRequestResponse",0,pas["WEBLib.Controls"].$rtti["THTTPRequestResponseEvent"],"FOnRequestResponse","FOnRequestResponse");
-    $r.addProperty("OnResponse",0,pas["WEBLib.Controls"].$rtti["THTTPResponseEvent"],"FOnResponse","FOnResponse");
-    $r.addProperty("OnTimeout",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnTimeout","FOnTimeout");
-  });
-  this.$rtti.$MethodVar("THttpResponse",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["AResponse",rtl.string]]), methodkind: 0});
-  rtl.createClass(this,"TPersistTokens",pas.Classes.TPersistent,function () {
-    this.$init = function () {
-      pas.Classes.TPersistent.$init.call(this);
-      this.FKey = "";
-      this.FEnabled = false;
-    };
-    this.Create$1 = function () {
-      this.FEnabled = false;
-      this.FKey = "";
-      return this;
-    };
-    this.Assign = function (Source) {
-      if ($mod.TPersistTokens.isPrototypeOf(Source)) {
-        this.FKey = rtl.as(Source,$mod.TPersistTokens).FKey;
-        this.FEnabled = rtl.as(Source,$mod.TPersistTokens).FEnabled;
-      };
-    };
-    var $r = this.$rtti;
-    $r.addMethod("Create$1",2,[]);
-    $r.addProperty("Key",0,rtl.string,"FKey","FKey");
-    $r.addProperty("Enabled",0,rtl.boolean,"FEnabled","FEnabled",{Default: false});
-  });
-  rtl.createClass(this,"TRESTApp",pas.Classes.TPersistent,function () {
-    this.$init = function () {
-      pas.Classes.TPersistent.$init.call(this);
-      this.FKey = "";
-      this.FCallbackURL = "";
-      this.FSecret = "";
-      this.FAuthURL = "";
-    };
-    this.Assign = function (Source) {
-      if ($mod.TRESTApp.isPrototypeOf(Source)) {
-        this.FKey = rtl.as(Source,$mod.TRESTApp).FKey;
-        this.FCallbackURL = rtl.as(Source,$mod.TRESTApp).FCallbackURL;
-        this.FSecret = rtl.as(Source,$mod.TRESTApp).FSecret;
-        this.FAuthURL = rtl.as(Source,$mod.TRESTApp).FAuthURL;
-      };
-    };
-    var $r = this.$rtti;
-    $r.addProperty("AuthURL",0,rtl.string,"FAuthURL","FAuthURL");
-    $r.addProperty("Key",0,rtl.string,"FKey","FKey");
-    $r.addProperty("CallbackURL",0,rtl.string,"FCallbackURL","FCallbackURL");
-    $r.addProperty("Secret",0,rtl.string,"FSecret","FSecret");
-  });
-  this.TAuthLocale = {"0": "lcDefault", lcDefault: 0, "1": "lcEnglish", lcEnglish: 1, "2": "lcDutch", lcDutch: 2, "3": "lcGerman", lcGerman: 3, "4": "lcFrench", lcFrench: 4, "5": "lcSpanish", lcSpanish: 5, "6": "lcItalian", lcItalian: 6, "7": "lcPortuguese", lcPortuguese: 7, "8": "lcGreek", lcGreek: 8, "9": "lcDanish", lcDanish: 9, "10": "lcRussian", lcRussian: 10, "11": "lcRomanian", lcRomanian: 11, "12": "lcSwedish", lcSwedish: 12, "13": "lcFinnish", lcFinnish: 13, "14": "lcTurkish", lcTurkish: 14, "15": "lcJapanese", lcJapanese: 15};
-  rtl.createClass(this,"TRESTClient",pas.Classes.TComponent,function () {
-    this.$init = function () {
-      pas.Classes.TComponent.$init.call(this);
-      this.FAccessToken = "";
-      this.FRefreshToken = "";
-      this.FAccessExpiry = 0.0;
-      this.FRefreshExpiry = 0.0;
-      this.FOnAccessToken = null;
-      this.FEventRegistered = false;
-      this.FOnResponse = null;
-      this.FPersistTokens = null;
-      this.FApp = null;
-      this.FScopes = null;
-      this.FLocale = 0;
-      this.FOnRequestResponse = null;
-      this.FOnError = null;
-      this.FResponseType = 0;
-      this.FLoginWidth = 0;
-      this.FLoginHeight = 0;
-      this.FHandleAccessTokenPtr = null;
-    };
-    this.$final = function () {
-      this.FOnAccessToken = undefined;
-      this.FOnResponse = undefined;
-      this.FPersistTokens = undefined;
-      this.FApp = undefined;
-      this.FScopes = undefined;
-      this.FOnRequestResponse = undefined;
-      this.FOnError = undefined;
-      pas.Classes.TComponent.$final.call(this);
-    };
-    this.SetPersistTokens = function (Value) {
-      this.FPersistTokens.Assign(Value);
-    };
-    this.SetApp = function (Value) {
-      this.FApp.Assign(Value);
-    };
-    this.SetScopes = function (Value) {
-      this.FScopes.Assign(Value);
-    };
-    this.InstallCallback = function () {
-      var Result = false;
-      var scriptsrc = "";
-      scriptsrc = " function processAuthData(access_token) {" + 'var event = new CustomEvent("oauthcallback", {\r' + "            detail: {\r" + "                 message: access_token\r" + "            },\r" + "  bubbles: true,\r" + "  cancelable: true});\r" + "  document.dispatchEvent(event);" + "}";
-      var script = document.createElement("script");
-          script.innerHTML = scriptsrc;
-          document.head.appendChild(script);
-      
-          var scr = document.createElement('script');
-          scr.async = true;
-          scr.defer = true;
-          scr.type = 'text/javascript';
-          document.body.appendChild(scr);
-      Result = true;
-      return Result;
-    };
-    this.RemoveOAuthHandler = function () {
-      document.removeEventListener("oauthcallback",this.FHandleAccessTokenPtr);
-      this.FEventRegistered = false;
-    };
-    this.HandleAccessToken = function (s) {
-      var Result = false;
-      var token = "";
-      this.RemoveOAuthHandler();
-      token = s.detail.message;
-      this.FAccessToken = token;
-      this.WriteTokens();
-      if (this.FOnAccessToken != null) this.FOnAccessToken(this);
-      Result = true;
-      return Result;
-    };
-    this.Create$1 = function (AOwner) {
-      pas.Classes.TComponent.Create$1.apply(this,arguments);
-      this.FPersistTokens = $mod.TPersistTokens.$create("Create$1");
-      this.FApp = $mod.TRESTApp.$create("Create");
-      this.FScopes = pas.Classes.TStringList.$create("Create$1");
-      this.FLocale = 0;
-      this.FResponseType = 0;
-      this.FLoginWidth = 800;
-      this.FLoginHeight = 600;
-      this.FHandleAccessTokenPtr = rtl.createCallback(this,"HandleAccessToken");
-      return this;
-    };
-    this.Destroy = function () {
-      rtl.free(this,"FApp");
-      rtl.free(this,"FScopes");
-      rtl.free(this,"FPersistTokens");
-      pas.Classes.TComponent.Destroy.call(this);
-    };
-    this.IsoToDateTime = function (s) {
-      var Result = 0.0;
-      var da = 0;
-      var mo = 0;
-      var ye = 0;
-      var ho = 0;
-      var mi = 0;
-      var se = 0;
-      var ms = 0;
-      var err = 0;
-      ms = 0;
-      pas.System.val$5(pas.System.Copy(s,1,4),{get: function () {
-          return ye;
-        }, set: function (v) {
-          ye = v;
-        }},{get: function () {
-          return err;
-        }, set: function (v) {
-          err = v;
-        }});
-      pas.System.val$5(pas.System.Copy(s,6,2),{get: function () {
-          return mo;
-        }, set: function (v) {
-          mo = v;
-        }},{get: function () {
-          return err;
-        }, set: function (v) {
-          err = v;
-        }});
-      pas.System.val$5(pas.System.Copy(s,9,2),{get: function () {
-          return da;
-        }, set: function (v) {
-          da = v;
-        }},{get: function () {
-          return err;
-        }, set: function (v) {
-          err = v;
-        }});
-      pas.System.val$5(pas.System.Copy(s,12,2),{get: function () {
-          return ho;
-        }, set: function (v) {
-          ho = v;
-        }},{get: function () {
-          return err;
-        }, set: function (v) {
-          err = v;
-        }});
-      pas.System.val$5(pas.System.Copy(s,15,2),{get: function () {
-          return mi;
-        }, set: function (v) {
-          mi = v;
-        }},{get: function () {
-          return err;
-        }, set: function (v) {
-          err = v;
-        }});
-      pas.System.val$5(pas.System.Copy(s,18,2),{get: function () {
-          return se;
-        }, set: function (v) {
-          se = v;
-        }},{get: function () {
-          return err;
-        }, set: function (v) {
-          err = v;
-        }});
-      if ((s.length >= 20) && (s.charAt(19) === ".")) {
-        pas.System.val$5(pas.System.Copy(s,21,3),{get: function () {
-            return ms;
-          }, set: function (v) {
-            ms = v;
-          }},{get: function () {
-            return err;
-          }, set: function (v) {
-            err = v;
-          }});
-      };
-      if (ye < 1) ye = 1;
-      if (mo < 1) mo = 1;
-      if (da < 1) da = 1;
-      Result = pas.SysUtils.EncodeDate(ye,mo,da) + pas.SysUtils.EncodeTime(ho,mi,se,ms);
-      return Result;
-    };
-    this.IsIsoDateTime = function (s) {
-      var Result = false;
-      var da = 0;
-      var mo = 0;
-      var ye = 0;
-      var ho = 0;
-      var mi = 0;
-      var se = 0;
-      var err = 0;
-      Result = true;
-      pas.System.val$5(pas.System.Copy(s,1,4),{get: function () {
-          return ye;
-        }, set: function (v) {
-          ye = v;
-        }},{get: function () {
-          return err;
-        }, set: function (v) {
-          err = v;
-        }});
-      if (err !== 0) return false;
-      if (!(pas.System.Copy(s,5,1) === "-")) return false;
-      pas.System.val$5(pas.System.Copy(s,6,2),{get: function () {
-          return mo;
-        }, set: function (v) {
-          mo = v;
-        }},{get: function () {
-          return err;
-        }, set: function (v) {
-          err = v;
-        }});
-      if (err !== 0) return false;
-      if (!(pas.System.Copy(s,8,1) === "-")) return false;
-      pas.System.val$5(pas.System.Copy(s,9,2),{get: function () {
-          return da;
-        }, set: function (v) {
-          da = v;
-        }},{get: function () {
-          return err;
-        }, set: function (v) {
-          err = v;
-        }});
-      if (err !== 0) return false;
-      pas.System.val$5(pas.System.Copy(s,12,2),{get: function () {
-          return ho;
-        }, set: function (v) {
-          ho = v;
-        }},{get: function () {
-          return err;
-        }, set: function (v) {
-          err = v;
-        }});
-      if (err === 0) {
-        if (!(pas.System.Copy(s,14,1) === ":")) return false;
-        pas.System.val$5(pas.System.Copy(s,15,2),{get: function () {
-            return mi;
-          }, set: function (v) {
-            mi = v;
-          }},{get: function () {
-            return err;
-          }, set: function (v) {
-            err = v;
-          }});
-        if (err !== 0) return false;
-        if (!(pas.System.Copy(s,17,1) === ":")) return false;
-        pas.System.val$5(pas.System.Copy(s,18,2),{get: function () {
-            return se;
-          }, set: function (v) {
-            se = v;
-          }},{get: function () {
-            return err;
-          }, set: function (v) {
-            err = v;
-          }});
-        if (err !== 0) return false;
-      };
-      return Result;
-    };
-    this.WriteTokens = function () {
-      var ls = null;
-      if (this.FPersistTokens.FEnabled && (this.FPersistTokens.FKey !== "")) {
-        ls = pas["WEBLib.Storage"].TLocalStorage.$create("Create");
-        ls.SetValues(this.FPersistTokens.FKey,this.FAccessToken);
-        ls.SetValues(this.FPersistTokens.FKey + "refresh",this.FRefreshToken);
-        ls.SetValues(this.FPersistTokens.FKey + "accessexpiry",pas["WEBLib.Utils"].TDateTimeHelper.ToIsoString.call({p: this, get: function () {
-            return this.p.FAccessExpiry;
-          }, set: function (v) {
-            this.p.FAccessExpiry = v;
-          }},true,false));
-        ls.SetValues(this.FPersistTokens.FKey + "refreshexpiry",pas["WEBLib.Utils"].TDateTimeHelper.ToIsoString.call({p: this, get: function () {
-            return this.p.FRefreshExpiry;
-          }, set: function (v) {
-            this.p.FRefreshExpiry = v;
-          }},true,false));
-        ls = rtl.freeLoc(ls);
-      };
-    };
-    var $r = this.$rtti;
-    $r.addMethod("Create$1",2,[["AOwner",pas.Classes.$rtti["TComponent"]]]);
-    $r.addProperty("App",2,$mod.$rtti["TRESTApp"],"FApp","SetApp");
-    $r.addProperty("LoginHeight",0,rtl.longint,"FLoginHeight","FLoginHeight",{Default: 600});
-    $r.addProperty("LoginWidth",0,rtl.longint,"FLoginWidth","FLoginWidth",{Default: 800});
-    $r.addProperty("PersistTokens",2,$mod.$rtti["TPersistTokens"],"FPersistTokens","SetPersistTokens");
-    $r.addProperty("ResponseType",0,$mod.$rtti["THTTPRequestResponseType"],"FResponseType","FResponseType",{Default: $mod.THTTPRequestResponseType.rtDefault});
-    $r.addProperty("Scopes",2,pas.Classes.$rtti["TStrings"],"FScopes","SetScopes");
-    $r.addProperty("OnAccessToken",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnAccessToken","FOnAccessToken");
-    $r.addProperty("OnRequestResponse",0,pas["WEBLib.Controls"].$rtti["THTTPRequestResponseEvent"],"FOnRequestResponse","FOnRequestResponse");
-    $r.addProperty("OnResponse",0,$mod.$rtti["THttpResponse"],"FOnResponse","FOnResponse");
-    $r.addProperty("OnError",0,pas["WEBLib.Controls"].$rtti["THTTPErrorEvent"],"FOnError","FOnError");
-  });
-  this.HTTPCommand = function (ACommand, ACustomCommand) {
-    var Result = "";
-    var cmd = "";
-    var $tmp = ACommand;
-    if ($tmp === 0) {
-      cmd = "GET"}
-     else if ($tmp === 1) {
-      cmd = "POST"}
-     else if ($tmp === 2) {
-      cmd = "PUT"}
-     else if ($tmp === 3) {
-      cmd = "DELETE"}
-     else if ($tmp === 4) {
-      cmd = "HEAD"}
-     else if ($tmp === 5) {
-      cmd = "PATCH"}
-     else if ($tmp === 6) cmd = ACustomCommand;
-    Result = cmd;
-    return Result;
-  };
-  $mod.$init = function () {
-    $mod.TRESTClient.InstallCallback();
-  };
-},["WEBLib.Storage","WEBLib.Utils"]);
 rtl.module("WEBLib.CDS",["System","Classes","DB","JSONDataset","Web","JS","WEBLib.Controls","WEBLib.REST"],function () {
   "use strict";
   var $mod = this;
@@ -25676,7 +26224,6 @@ rtl.module("WEBLib.CDS",["System","Classes","DB","JSONDataset","Web","JS","WEBLi
       if (this.FDS != null) {
         if (this.FAutoOpen) {
           this.FDS.SetActive(false);
-          this.FDS.FFieldDefs.Clear();
         };
       };
     };
@@ -27362,6 +27909,7 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
     this.UpdateElementData = function () {
       var lTxt = "";
       var acc = "";
+      var ml = false;
       var contentelement = null;
       pas["WEBLib.Controls"].TControl.UpdateElementData.call(this);
       acc = "";
@@ -27377,10 +27925,13 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
           lTxt = pas["WEBLib.WebTools"].HTMLToString(lTxt)}
          else lTxt = this.FHTML;
       };
+      ml = false;
       if (pas.System.Pos("\r",lTxt) > 0) {
+        ml = true;
         if (pas.System.Pos("\n",lTxt) > 0) lTxt = pas.SysUtils.StringReplace(lTxt,"\n","",rtl.createSet(0,1));
         lTxt = pas.SysUtils.StringReplace(lTxt,"\r","<BR>",rtl.createSet(0,1));
       } else if (pas.System.Pos("\n",lTxt) > 0) {
+        ml = true;
         lTxt = pas.SysUtils.StringReplace(lTxt,"\n","<BR>",rtl.createSet(0,1));
       };
       if (this.GetIsLinked() && (lTxt === "") && (0 in this.FComponentState)) return;
@@ -27396,9 +27947,11 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
              else if (contentelement.childElementCount === 0) contentelement.innerHTML = lTxt;
           };
         } else {
-          if ((this.GetContentHandle().childElementCount > 0) && !this.FHasAccel && !this.FHasHTML) {
-            this.GetContentHandle().nodeValue = lTxt}
-           else this.GetContentHandle().innerHTML = lTxt;
+          if ((this.GetContentHandle().childElementCount > 0) && pas.System.Assigned(this.GetContentHandle().nodeValue) && !this.FHasAccel && !this.FHasHTML && !ml) {
+            this.GetContentHandle().nodeValue = lTxt;
+          } else {
+            this.GetContentHandle().innerHTML = lTxt;
+          };
         };
       } else this.GetElementHandle().innerHTML = lTxt;
       this.FHasHTML = pas.System.Pos("</",lTxt) > 0;
@@ -27954,12 +28507,12 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
             this.GetElementInputHandle().style.setProperty("text-align","center")}
            else if ($tmp1 === 1) this.GetElementInputHandle().style.setProperty("text-align","right");
         };
-        if (this.FAutoFocus) {
-          this.GetElementInputHandle().setAttribute("autofocus","")}
-         else this.GetElementInputHandle().removeAttribute("autofocus");
         if (this.FRequired) {
           this.GetElementInputHandle().setAttribute("required","")}
-         else this.GetElementInputHandle().removeAttribute("required");
+         else if (!this.GetIsLinked()) this.GetElementInputHandle().removeAttribute("required");
+        if (this.FAutoFocus) {
+          this.GetElementInputHandle().setAttribute("autofocus","")}
+         else if (!this.GetIsLinked()) this.GetElementInputHandle().removeAttribute("autofocus");
         if (this.FPattern !== "") {
           this.GetElementInputHandle().setAttribute("pattern",this.FPattern)}
          else this.GetElementInputHandle().removeAttribute("pattern");
@@ -29333,6 +29886,7 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
       this.FAutoCompletion = 0;
       this.FSpellCheck = false;
       this.FModified = false;
+      this.FScrollbars = 0;
     };
     this.$final = function () {
       this.FLines = undefined;
@@ -29459,6 +30013,7 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
       var Result = false;
       this.GetText();
       this.Change();
+      if (this.FAutoSize) this.DoAutoSize();
       Result = true;
       return Result;
     };
@@ -29478,6 +30033,19 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
       var Result = "";
       Result = this.FLines.GetTextStr();
       return Result;
+    };
+    this.DoAutoSize = function () {
+      var sh = 0;
+      var el = null;
+      this.GetElementInputHandle().style.setProperty("overflow","hidden");
+      this.GetElementInputHandle().style.setProperty("height","auto");
+      el = this.GetElementInputHandle();
+      sh = el.scrollHeight;
+      this.GetElementInputHandle().style.setProperty("height",pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
+          return sh;
+        }, set: function (v) {
+          sh = v;
+        }}) + "px");
     };
     this.BindEvents = function () {
       pas["WEBLib.Controls"].TCustomControl.BindEvents.call(this);
@@ -29535,7 +30103,26 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
     this.UpdateElementVisual = function () {
       pas["WEBLib.Controls"].TCustomControl.UpdateElementVisual.call(this);
       if ((this.GetElementInputHandle() != null) && !this.FBlockChange && !this.GetIsLinked()) {
-        this.GetElementInputHandle().style.setProperty("overflow","auto");
+        if (this.FAutoSize) {
+          this.GetElementInputHandle().style.setProperty("overflow","hidden");
+          this.GetElementInputHandle().style.setProperty("height","auto");
+        } else {
+          this.GetElementInputHandle().style.setProperty("overflow","auto");
+          var $tmp = this.FScrollbars;
+          if ($tmp === 0) {
+            this.GetElementInputHandle().style.setProperty("overflow","hidden");
+          } else if ($tmp === 2) {
+            this.GetElementInputHandle().style.removeProperty("overflow");
+            this.GetElementInputHandle().style.setProperty("overflow-x","hidden");
+            this.GetElementInputHandle().style.setProperty("overflow-y","auto");
+          } else if ($tmp === 1) {
+            this.GetElementInputHandle().style.removeProperty("overflow");
+            this.GetElementInputHandle().style.setProperty("overflow-x","auto");
+            this.GetElementInputHandle().style.setProperty("overflow-y","hidden");
+          } else if ($tmp === 3) {
+            this.GetElementInputHandle().style.setProperty("overflow","auto");
+          };
+        };
         this.GetElementInputHandle().style.setProperty("margin","0");
         if ((this.FColor !== -1) && (this.FColor !== 16711422)) {
           this.GetElementInputHandle().style.setProperty("background-color",pas["WEBLib.Graphics"].ColorToHTML(this.FColor))}
@@ -29547,6 +30134,10 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
           this.GetElementInputHandle().setAttribute("wrap","off")}
          else if (this.GetElementInputHandle().hasAttribute("wrap")) this.GetElementInputHandle().removeAttribute("wrap");
       };
+    };
+    this.UpdateElementSize = function () {
+      pas["WEBLib.Controls"].TControl.UpdateElementSize.call(this);
+      if (this.FAutoSize) this.DoAutoSize();
     };
     this.SetLines = function (ALines) {
       this.FLines.Assign(ALines);
@@ -29597,8 +30188,10 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
       this.SetShowFocus(true);
       this.SetClipChildren(false);
       this.FWantTabs = false;
+      this.FAutoSize = false;
       this.FAutoCompletion = 0;
       this.FWordWrap = true;
+      this.FScrollbars = 3;
       this.FNoUserSelect = false;
     };
     this.Destroy = function () {
@@ -30443,6 +31036,8 @@ rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Cont
     $r.addProperty("PopupMenu",0,pas["WEBLib.Menus"].$rtti["TPopupMenu"],"FPopupMenu","FPopupMenu");
     $r.addProperty("Role",3,rtl.string,"GetRole","SetRole");
     $r.addProperty("ShowCaption",2,rtl.boolean,"FShowCaption","SetShowCaption",{Default: true});
+    $r.addProperty("TabOrder",2,rtl.longint,"FTabOrder","SetTabOrder");
+    $r.addProperty("TabStop",2,rtl.boolean,"FTabStop","SetTabStop",{Default: true});
     $r.addProperty("WidthPercent",2,rtl.double,"FWidthPercent","SetWidthPercent",{Default: 100});
     $r.addProperty("WidthStyle",2,pas["WEBLib.Controls"].$rtti["TSizeStyle"],"FWidthStyle","SetWidthStyle",{Default: pas["WEBLib.Controls"].TSizeStyle.ssAbsolute});
     $r.addProperty("OnClick",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnClick","FOnClick");
@@ -30900,17 +31495,19 @@ rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Cont
       };
       row = document.createElement("tr");
       if (this.FElementClassName === "") row.style.setProperty("border",ps);
-      if (this.FRowCollection.GetItem$1(AIndex).FMarginTop !== 0) row.style.setProperty("margin-top",pas.SysUtils.IntToStr(this.FRowCollection.GetItem$1(AIndex).FMarginTop));
-      if (this.FRowCollection.GetItem$1(AIndex).FMarginBottom !== 0) row.style.setProperty("margin-bottom",pas.SysUtils.IntToStr(this.FRowCollection.GetItem$1(AIndex).FMarginBottom));
-      if (this.FRowCollection.GetItem$1(AIndex).FElementClassName !== "") {
-        row.setAttribute("class",this.FRowCollection.GetItem$1(AIndex).FElementClassName);
+      if (AIndex < this.FRowCollection.GetCount()) {
+        if (this.FRowCollection.GetItem$1(AIndex).FMarginTop !== 0) row.style.setProperty("margin-top",pas.SysUtils.IntToStr(this.FRowCollection.GetItem$1(AIndex).FMarginTop));
+        if (this.FRowCollection.GetItem$1(AIndex).FMarginBottom !== 0) row.style.setProperty("margin-bottom",pas.SysUtils.IntToStr(this.FRowCollection.GetItem$1(AIndex).FMarginBottom));
+        if (this.FRowCollection.GetItem$1(AIndex).FElementClassName !== "") {
+          row.setAttribute("class",this.FRowCollection.GetItem$1(AIndex).FElementClassName);
+        };
+        var $tmp = this.FRowCollection.GetItem$1(AIndex).FAlignment;
+        if ($tmp === 1) {
+          row.setAttribute("valign","middle")}
+         else if ($tmp === 2) row.setAttribute("valign","bottom");
+        if (this.FElementClassName === "") row.style.setProperty("border",ps);
+        row.setAttribute("height",this.FRowCollection.GetItem$1(AIndex).HeightAttribute());
       };
-      var $tmp = this.FRowCollection.GetItem$1(AIndex).FAlignment;
-      if ($tmp === 1) {
-        row.setAttribute("valign","middle")}
-       else if ($tmp === 2) row.setAttribute("valign","bottom");
-      if (this.FElementClassName === "") row.style.setProperty("border",ps);
-      row.setAttribute("height",this.FRowCollection.GetItem$1(AIndex).HeightAttribute());
       for (var $l = 0, $end = this.FColumnCollection.GetCount() - 1; $l <= $end; $l++) {
         i = $l;
         cell = document.createElement("td");
@@ -31036,7 +31633,7 @@ rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Cont
             control.SetHeightPercent(100);
           };
           row = this.FTblBody.childNodes.item(j);
-          if (row != null) {
+          if ((row != null) && (j < this.FRowCollection.GetCount())) {
             row.setAttribute("height",this.FRowCollection.GetItem$1(j).HeightAttribute());
             if (this.FRowCollection.GetItem$1(j).FElementClassName !== "") {
               row.setAttribute("class",this.FRowCollection.GetItem$1(j).FElementClassName)}
@@ -31049,9 +31646,9 @@ rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Cont
             row = this.CreateRow(j);
             this.FTblBody.appendChild(row);
             el = document.getElementById(destid);
-            row.setAttribute("height",this.FRowCollection.GetItem$1(j).HeightAttribute());
+            if (this.FRowCollection.GetCount() > j) row.setAttribute("height",this.FRowCollection.GetItem$1(j).HeightAttribute());
           } else {
-            if (j === 0) {
+            if ((j === 0) && (i < this.FColumnCollection.GetCount())) {
               if (this.FColumnCollection.GetItem$1(i).FSizeStyle === 1) {
                 this.FTbl.removeAttribute("width");
                 this.FTbl.removeAttribute("height");
@@ -31098,6 +31695,11 @@ rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Cont
       pas["WEBLib.Controls"].TCustomControl.UpdateElementVisual.call(this);
       if (4 in this.FComponentState) {
         this.GetElementHandle().style.setProperty("border","1px dotted gray");
+      };
+      if (!this.GetIsLinked() && (this.FTbl != null)) {
+        if (this.FColor !== -1) {
+          this.FTbl.style.setProperty("background-color",pas["WEBLib.Graphics"].ColorToHTML(this.FColor))}
+         else this.FTbl.style.removeProperty("background-color");
       };
     };
     this.RegisterParent = function (AValue) {
@@ -32321,6 +32923,7 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
       this.FEditCol = 0;
       this.FEditRow = 0;
       this.FEditType = 0;
+      this.FFixedFont = null;
       this.FOnGetEditText = null;
       this.FOnSetEditText = null;
       this.FOnCheckClick = null;
@@ -32339,7 +32942,6 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
       this.FHandleClickPtr = null;
       this.FDrawingStyle = 0;
       this.FOnCanEditCell = null;
-      this.FFixedTextColor = 0;
       this.FOnColumnSized = null;
       this.FRows = null;
       this.FRowsIndex = 0;
@@ -32391,6 +32993,7 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
       this.FOnGetCellData = undefined;
       this.FOnGetCellChildren = undefined;
       this.FStyleElements = undefined;
+      this.FFixedFont = undefined;
       this.FOnGetEditText = undefined;
       this.FOnSetEditText = undefined;
       this.FOnCheckClick = undefined;
@@ -32722,7 +33325,9 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
         c = this.GetCol() - this.FFixedCols;
         if (c < 0) c = 0;
         r = Value - this.FFixedRows;
-        sh = pas["WEBLib.Controls"].GetScrollBarHeight();
+        if ((this.FixedColWidth() + this.NormalColWidth()) < this.GetWidth()) {
+          sh = 0}
+         else sh = pas["WEBLib.Controls"].GetScrollBarHeight();
         tr = this.FNormalCells.rows[r];
         td = tr.cells[c];
         if (rselect) {
@@ -32739,8 +33344,10 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
                 pardiv.scrollTop = td.offsetTop;
               }
         
-              while (td.offsetTop + td.offsetHeight - pardiv.scrollTop > pardiv.offsetHeight - sh)  {
-                pardiv.scrollTop = pardiv.scrollTop + td.offsetHeight;
+              if (td.offsetHeight>0) {
+                while (td.offsetTop + td.offsetHeight - pardiv.scrollTop > pardiv.offsetHeight - sh)  {
+                  pardiv.scrollTop = pardiv.scrollTop + td.offsetHeight;
+                }
               };
       };
     };
@@ -32891,11 +33498,10 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
         this.UpdateElementVisual();
       };
     };
-    this.SetFixedTextColor = function (Value) {
-      if (this.FFixedTextColor !== Value) {
-        this.FFixedTextColor = Value;
-        this.UpdateElementVisual();
-      };
+    this.GetFixedTextColor = function () {
+      var Result = 0;
+      Result = this.FFixedFont.FColor;
+      return Result;
     };
     this.GetVisibleColCount = function () {
       var Result = 0;
@@ -33010,6 +33616,13 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
         if (!(0 in this.FComponentState)) this.ReRenderGrid();
       };
     };
+    this.SetFixedFont = function (Value) {
+      this.FFixedFont = Value;
+    };
+    this.FontChanged = function () {
+      pas["WEBLib.Controls"].TControl.FontChanged.call(this);
+      this.UpdateElement();
+    };
     this.UnbindEvents = function () {
       pas["WEBLib.Controls"].TControl.UnbindEvents.call(this);
       if (this.FNormalCells != null) {
@@ -33021,6 +33634,10 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
       if (this.FFixedCol != null) this.FFixedCol.removeEventListener("click",this.FHandleFixedClickPtr);
       if (this.FFixedRow != null) this.FFixedRow.removeEventListener("click",this.FHandleFixedClickPtr);
       if (this.FFixedColRow != null) this.FFixedColRow.removeEventListener("click",this.FHandleFixedClickPtr);
+    };
+    this.FixedFontChanged = function (Sender) {
+      this.$class.AddInstanceStyle$1(this.StylePrefix() + this.FOrigID,this.GetGridCSS(this.FOrigID + "tbl"));
+      this.UpdateElementVisual();
     };
     this.StylePrefix = function () {
       var Result = "";
@@ -33755,7 +34372,9 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
       if (this.FOnGetCellEditor != null) this.FOnGetCellEditor(this,ACol,ARow,AEditor);
     };
     this.AddSelection = function (ACell) {
-      if (this.FShowSelection) ACell.classList.add("selected");
+      if (this.FShowSelection) {
+        ACell.classList.add("selected");
+      };
     };
     this.RemoveSelection = function (ACell) {
       if (this.FShowSelection) ACell.classList.remove("selected");
@@ -33855,12 +34474,16 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
     };
     this.GetGridCSS = function (id) {
       var Result = "";
+      var ff = "";
       Result = "";
       if (this.FElementTableClassName !== "") return Result;
       if (!(2 in this.FOptions)) Result = "border-left: 0px; border-right: 0px;";
       if (!(3 in this.FOptions)) Result = Result + "border-top: 0px; border-bottom: 0px;";
-      if (this.FElementFont === 0) Result = Result + pas["WEBLib.Graphics"].CSSFont(this.FFont);
-      Result = "table#" + id + " td { overflow: hidden; text-overflow: ellipsis; white-space:nowrap; border: solid 1px " + pas["WEBLib.Graphics"].ColorToHTML(this.FGridLineColor) + "; padding: 0px;" + Result + "} " + "\r" + "table#" + id + " td.selected { background-color: " + pas["WEBLib.Graphics"].ColorToHTML(this.FSelectionColor) + "; color: " + pas["WEBLib.Graphics"].ColorToHTML(this.FSelectionTextColor) + ";} " + "\r" + "table#" + id + " tr.selected { background-color: " + pas["WEBLib.Graphics"].ColorToHTML(this.FSelectionColor) + "; color: " + pas["WEBLib.Graphics"].ColorToHTML(this.FSelectionTextColor) + ";} " + "\r" + "table#" + id + " DIV.cell {word-wrap: normal; white-space: normal; text-overflow: clip; } ";
+      if (this.FElementFont === 0) {
+        Result = Result + pas["WEBLib.Graphics"].CSSFont(this.FFont);
+        ff = pas["WEBLib.Graphics"].CSSFont(this.FFixedFont);
+      };
+      Result = "table#" + id + " td { overflow: hidden; text-overflow: ellipsis; white-space:nowrap; border: solid 1px " + pas["WEBLib.Graphics"].ColorToHTML(this.FGridLineColor) + "; padding: 0px;" + Result + "} " + "\r" + "table#" + id + " td.fixed {" + ff + "} " + "\r" + "table#" + id + " td.selected { background-color: " + pas["WEBLib.Graphics"].ColorToHTML(this.FSelectionColor) + "; color: " + pas["WEBLib.Graphics"].ColorToHTML(this.FSelectionTextColor) + ";} " + "\r" + "table#" + id + " tr.selected { background-color: " + pas["WEBLib.Graphics"].ColorToHTML(this.FSelectionColor) + "; color: " + pas["WEBLib.Graphics"].ColorToHTML(this.FSelectionTextColor) + ";} " + "\r" + "table#" + id + " DIV.cell {word-wrap: normal; white-space: normal; text-overflow: clip; } ";
       return Result;
     };
     this.RenderGrid = function () {
@@ -33953,9 +34576,11 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
         nhvis = nhvis - 2;
       };
       nwvisnoscroll = nwvis - pas["WEBLib.Controls"].GetScrollBarWidth();
-      nhvisnoscroll = nhvis - pas["WEBLib.Controls"].GetScrollBarHeight();
+      if ((this.FixedColWidth() + this.NormalColWidth()) < this.GetWidth()) {
+        nhvisnoscroll = nhvis}
+       else nhvisnoscroll = nhvis - pas["WEBLib.Controls"].GetScrollBarHeight();
       fixcol = pas["WEBLib.Graphics"].ColorToHTML(this.FFixedColor);
-      fixtxtcol = pas["WEBLib.Graphics"].ColorToHTML(this.FFixedTextColor);
+      fixtxtcol = pas["WEBLib.Graphics"].ColorToHTML(this.GetFixedTextColor());
       tr = res.insertRow(0);
       td = tr.insertCell(0);
       td.style.border = "0px";
@@ -34016,8 +34641,7 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
             for (var $l1 = 0, $end1 = this.FFixedCols - 1; $l1 <= $end1; $l1++) {
               j = $l1;
               td = tr.insertCell(j);
-              td.style.setProperty('background-color',fixcol);
-              td.style.setProperty('color',fixtxtcol);
+              td.setAttribute('class','fixed');
               this.SetAlignAttr(this.GetColAlignments(j),td);
             };
           };
@@ -34029,8 +34653,7 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
             j = $l3;
             k = j - this.FFixedCols;
             td = tr.insertCell(k);
-            td.style.setProperty('background-color',fixcol);
-            td.style.setProperty('color',fixtxtcol);
+            td.setAttribute('class','fixed');
             this.SetAlignAttr(this.GetColAlignments(j),td);
           };
         };
@@ -34045,6 +34668,7 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
         
               td.style.backgroundColor = fixcol;
               td.style.color = fixtxtcol;
+              td.setAttribute('class','fixed');
         
               span = document.createElement('DIV');
               if (!LAutoSizeW) {
@@ -34067,8 +34691,7 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
           for (var $l5 = 0, $end5 = this.FFixedCols - 1; $l5 <= $end5; $l5++) {
             j = $l5;
             td = tr.insertCell(j);
-            td.style.setProperty('background-color',fixcol);
-            td.style.setProperty('color',fixtxtcol);
+            td.setAttribute('class','fixed');
             this.SetAlignAttr(this.GetColAlignments(j),td);
           };
         };
@@ -34168,7 +34791,9 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
         nhvis = nhvis - 2;
       };
       nwvisnoscroll = nwvis - pas["WEBLib.Controls"].GetScrollBarWidth();
-      nhvisnoscroll = nhvis - pas["WEBLib.Controls"].GetScrollBarHeight();
+      if ((this.FixedColWidth() + this.NormalColWidth()) < this.GetWidth()) {
+        nhvisnoscroll = nhvis}
+       else nhvisnoscroll = nhvis - pas["WEBLib.Controls"].GetScrollBarHeight();
       if ((this.FFixedRows > 0) && (this.FWidthStyle === 1)) {
         var td = this.FGrid.rows[0].cells[1];
         if (td!=null) {
@@ -34401,6 +35026,9 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
       if (this.IsUpdating()) return;
       if (this.GetElementHandle() != null) {
         if ((this.FColor !== 16711422) && (this.FColor !== -1)) this.GetElementHandle().style.setProperty("background-color",pas["WEBLib.Graphics"].ColorToHTML(this.FColor));
+        if (this.FGrid != null) {
+          pas["WEBLib.Controls"].SetHTMLElementFont(this.FGrid,this.FFont,!((this.FElementClassName === "") && (this.FElementFont === 0)));
+        };
         this.GetElementHandle().style.setProperty("overflow","hidden");
         if ((this.FBorderStyle === 1) && !(this.FBorderColor === -1) && (this.FElementClassName === "") && !this.GetIsLinked()) {
           this.GetElementHandle().style.setProperty("border","1px solid " + pas["WEBLib.Graphics"].ColorToHTML(this.FBorderColor));
@@ -34432,7 +35060,7 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
       if (this.IsUpdating()) return;
       if ((this.GetElementHandle() != null) && (this.FGrid != null)) {
         fixcol = pas["WEBLib.Graphics"].ColorToHTML(this.FFixedColor);
-        fixtxtcol = pas["WEBLib.Graphics"].ColorToHTML(this.FFixedTextColor);
+        fixtxtcol = pas["WEBLib.Graphics"].ColorToHTML(this.GetFixedTextColor());
         if ((this.FFixedCols > 0) && (this.FFixedRows > 0)) {
           this.FFixedColRow.parentElement.style.setProperty('background-color',fixcol);
           this.FFixedColRow.parentElement.style.setProperty('color',fixtxtcol);
@@ -34522,8 +35150,6 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
       var r = 0;
       var fr = 0;
       var fc = 0;
-      var fixcol = "";
-      var fixtxtcol = "";
       var nh = 0;
       function SetColAlign(column, td) {
         $Self.SetAlignAttr($Self.GetColAlignments(column),td);
@@ -34535,8 +35161,6 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
       nh = this.NormalRowHeight();
       if (1 < 0) SetColAlign(0,null);
       if (delta > 0) {
-        fixcol = pas["WEBLib.Graphics"].ColorToHTML(this.FFixedColor);
-        fixtxtcol = pas["WEBLib.Graphics"].ColorToHTML(this.FFixedTextColor);
         var i = 0;
               var j = 0;
               var tr = undefined;
@@ -34559,8 +35183,7 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
                    for(j = 0; j < this.FFixedCols; j++)
                    {
                      td = tr.insertCell(0);
-                     td.style.setProperty('background-color',fixcol);
-                     td.style.setProperty('color',fixtxtcol);
+                     td.setAttribute('class','fixed');
                      SetColAlign(j, td);
                    }
                  }
@@ -34593,13 +35216,9 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
     };
     this.ColCountChanged = function (delta) {
       var c = 0;
-      var fixcol = "";
-      var fixtxtcol = "";
       if (this.IsUpdating() && (0 in this.FComponentState)) return;
       if (!(this.FNormalCells != null)) return;
       if (delta > 0) {
-        fixcol = pas["WEBLib.Graphics"].ColorToHTML(this.FFixedColor);
-        fixtxtcol = pas["WEBLib.Graphics"].ColorToHTML(this.FFixedTextColor);
         var i = 0;
               var j = 0;
               var k = 0;
@@ -34628,8 +35247,7 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
                 for(i = 0; i < delta; i++)
                 {
                   td = this.FFixedRow.rows[j].insertCell(k);
-                  td.style.setProperty('background-color',fixcol);
-                  td.style.setProperty('color',fixtxtcol);
+                  td.setAttribute('class','fixed');
                   div = document.createElement("DIV");
                   div.style = 'position:relative;height:100%;width:100%';
                   td.appendChild(div);
@@ -34892,7 +35510,9 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
           }, set: function (v) {
             val = v;
           }});
-        this.AddSelection(this.FSelectedCell);
+        if (!(12 in this.FOptions)) {
+          this.AddSelection(this.FSelectedCell);
+        };
       };
       return Result;
     };
@@ -34965,6 +35585,7 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
       rtl.free(this,"FColAlignments");
       rtl.free(this,"FRowHeights");
       rtl.free(this,"FRows");
+      rtl.free(this,"FFixedFont");
       for (var $l = 0, $end = this.FObjectRows.GetCount() - 1; $l <= $end; $l++) {
         i = $l;
         LObjr = rtl.getObject(this.FObjectRows.Get(i));
@@ -35007,6 +35628,8 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
       this.FSelectionColor = 0xFF8F5B;
       this.FSelectionTextColor = 0xFFFFFF;
       this.FOptions = rtl.createSet(3,2,4);
+      this.FFixedFont = pas["WEBLib.Graphics"].TFont.$create("Create$1");
+      this.FFixedFont.FOnChange = rtl.createCallback(this,"FixedFontChanged");
       if (4 in this.FComponentState) {
         this.SetWidth(400);
         this.SetHeight(300);
@@ -35071,7 +35694,7 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
           }, set: function (v) {
             val = v;
           }});
-        this.AddSelection(this.FSelectedCell);
+        if (!(12 in this.FOptions)) this.AddSelection(this.FSelectedCell);
         this.SetEditText(this.FEditCol,this.FEditRow,val);
         this.FBlockFocus = true;
         this.FNormalCells.focus();
@@ -35119,7 +35742,9 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
           }, set: function (v) {
             this.p.FOrigVal = v;
           }});
-        this.AddSelection(this.FSelectedCell);
+        if (!(12 in this.FOptions)) {
+          this.AddSelection(this.FSelectedCell);
+        };
         this.SetEditText(this.FEditCol,this.FEditRow,this.FOrigVal);
         this.FBlockFocus = true;
         this.FNormalCells.focus();
@@ -35389,7 +36014,7 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
     $r.addProperty("FixedRows",2,rtl.longint,"FFixedRows","SetFixedRows",{Default: 1});
     $r.addProperty("FixedCols",2,rtl.longint,"FFixedCols","SetFixedCols",{Default: 1});
     $r.addProperty("FixedColor",2,pas["WEBLib.Graphics"].$rtti["TColor"],"FFixedColor","SetFixedColor",{Default: 15790320});
-    $r.addProperty("FixedTextColor",2,pas["WEBLib.Graphics"].$rtti["TColor"],"FFixedTextColor","SetFixedTextColor",{Default: 0});
+    $r.addProperty("FixedFont",2,pas["WEBLib.Graphics"].$rtti["TFont"],"FFixedFont","SetFixedFont");
     $r.addProperty("Font",2,pas["WEBLib.Graphics"].$rtti["TFont"],"FFont","SetFont");
     $r.addProperty("GridLineColor",2,pas["WEBLib.Graphics"].$rtti["TColor"],"FGridLineColor","SetGridLineColor",{Default: 12632256});
     $r.addProperty("Height",3,rtl.longint,"GetHeight","SetHeight");
@@ -36915,10 +37540,12 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
         
                 k = tr.cells.length;
         
-                 for(i = 0; i < -delta; i++)
-                 {
-                   tr.deleteCell(k - i - 1);
-                 }
+                for(i = 0; i < -delta; i++)
+                {
+                  if ((k - i - 1 < k) && (k - i - 1 >= 0))  {
+                    tr.deleteCell(k - i - 1);
+                }
+               }
               };
       };
     };
@@ -37305,8 +37932,12 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
       return Result;
     };
     this.HideColumn = function (Index) {
+      var fr = 0;
       if ((Index < 0) || (Index > this.FColCount)) return;
-      for(i=0; i < this.FTable.rows.length; i++)
+      if (this.FFooter.FVisible) {
+        fr = 1}
+       else fr = 0;
+      for(i=0; i < this.FTable.rows.length - fr; i++)
       {
         tr = this.FTable.rows[i];
         td = tr.cells[Index];
@@ -37437,7 +38068,7 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
     $impl.CELLPADDING = 0;
   };
 },["SysUtils","Math","WEBLib.Utils","WEBLib.WebTools","WEBLib.Forms"]);
-rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls","WEBLib.StdCtrls","WEBLib.ExtCtrls","WEBLib.Grids","WEBLib.Mask","Web","WEBLib.REST"],function () {
+rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls","WEBLib.StdCtrls","WEBLib.ExtCtrls","WEBLib.Grids","WEBLib.Mask","Web","WEBLib.REST","WEBLib.Graphics"],function () {
   "use strict";
   var $mod = this;
   var $impl = $mod.$impl;
@@ -37712,7 +38343,7 @@ rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls
           } catch ($e) {
             lField = null;
           };
-          if (lField != null) cd = $impl.TableFieldToCellData(ce,lField,this.FColumns.GetItem$1(c).FDataType,false,0);
+          if (lField != null) cd = $impl.TableFieldToCellData(ce,lField,this.FColumns.GetItem$1(c).FDataType,false,true,0);
         };
         this.GetCellData(c,r,lField,{get: function () {
             return cd;
@@ -37786,12 +38417,16 @@ rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls
     this.CreateInitialize = function () {
       pas["WEBLib.Grids"].TCustomTableControl.CreateInitialize.call(this);
       this.SetRowCount(2);
-      this.FDataLink = $mod.TDBDataLink.$create("Create$1");
-      this.FDataLink.FOnActiveChange = rtl.createCallback(this,"ActiveChange");
-      this.FDataLink.FOnRecordChange = rtl.createCallback(this,"RecordChange");
-      this.FDataLink.FOnDataChange = rtl.createCallback(this,"DataChange");
-      this.FColumns = $mod.TTableControlColumns.$create("Create$3",[this]);
-      this.FColumns.FPropName = "Columns";
+      if (!(this.FDataLink != null)) {
+        this.FDataLink = $mod.TDBDataLink.$create("Create$1");
+        this.FDataLink.FOnActiveChange = rtl.createCallback(this,"ActiveChange");
+        this.FDataLink.FOnRecordChange = rtl.createCallback(this,"RecordChange");
+        this.FDataLink.FOnDataChange = rtl.createCallback(this,"DataChange");
+      };
+      if (!(this.FColumns != null)) {
+        this.FColumns = $mod.TTableControlColumns.$create("Create$3",[this]);
+        this.FColumns.FPropName = "Columns";
+      };
       this.FDefaultFields = false;
       this.FDataChanging = false;
     };
@@ -37825,6 +38460,7 @@ rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls
       this.FDBField = null;
       this.FImageWidth = 0;
       this.FAlignment = 0;
+      this.FAutoFormatDateTime = false;
     };
     this.$final = function () {
       this.FComboBoxItems = undefined;
@@ -37888,6 +38524,7 @@ rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls
         this.FDBField = rtl.as(Source,$mod.TGridColumn).FDBField;
         this.FImageWidth = rtl.as(Source,$mod.TGridColumn).FImageWidth;
         this.FAlignment = rtl.as(Source,$mod.TGridColumn).FAlignment;
+        this.FAutoFormatDateTime = rtl.as(Source,$mod.TGridColumn).FAutoFormatDateTime;
       };
     };
     this.Create$1 = function (Collection) {
@@ -37895,6 +38532,7 @@ rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls
       this.FWidth = 64;
       this.FDataType = 0;
       this.FComboBoxItems = pas.Classes.TStringList.$create("Create$1");
+      this.FAutoFormatDateTime = true;
       return this;
     };
     this.Destroy = function () {
@@ -37904,6 +38542,7 @@ rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls
     var $r = this.$rtti;
     $r.addMethod("Create$1",2,[["Collection",pas.Classes.$rtti["TCollection"]]]);
     $r.addProperty("Alignment",2,pas.Classes.$rtti["TAlignment"],"FAlignment","SetAlignment",{Default: pas.Classes.TAlignment.taLeftJustify});
+    $r.addProperty("AutoFormatDateTime",0,rtl.boolean,"FAutoFormatDateTime","FAutoFormatDateTime",{Default: true});
     $r.addProperty("ComboBoxItems",2,pas.Classes.$rtti["TStrings"],"FComboBoxItems","SetComboBoxItems");
     $r.addProperty("DataField",2,$mod.$rtti["TDataField"],"FDataField","SetDataField");
     $r.addProperty("DataType",0,$mod.$rtti["TColumnDataType"],"FDataType","FDataType");
@@ -37998,6 +38637,7 @@ rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls
       var subclass = "";
       var fld = null;
       var ce = null;
+      var ne = null;
       noflds = true;
       r = 0;
       for (var $l = 0, $end = this.FColumns.GetCount() - 1; $l <= $end; $l++) {
@@ -38018,6 +38658,11 @@ rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls
           if (this.FDataLink.GetDataset().FFieldList.GetField(i).FFieldKind === 2) {
             $with.FEditor = 12;
             this.LoadComboItems(i,this.FDataLink.GetDataset().FFieldList.GetField(i));
+          };
+          if (this.FDataLink.GetDataset().FFieldList.GetField(i).FDataType in rtl.createSet(6,8)) $with.FEditor = 2;
+          if (this.FDataLink.GetDataset().FFieldList.GetField(i).FDataType in rtl.createSet(11)) $with.FEditor = 13;
+          if (this.FDataLink.GetDataset().FFieldList.GetField(i).FDataType in rtl.createSet(4)) {
+            $with.FDataType = 3;
           };
         };
         while (this.FColumns.GetCount() > this.FDataLink.GetDataset().GetfieldCount()) {
@@ -38041,6 +38686,8 @@ rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls
       isEOF = this.FDataLink.GetDataset().FEOF;
       this.FDataLink.FDataSource.FDataSet.DisableControls();
       bk.$assign(this.FDataLink.GetDataset().GetBookmark());
+      ne = this.FDataLink.GetDataset().FAfterScroll;
+      this.FDataLink.GetDataset().FAfterScroll = null;
       this.FDataLink.FDataSource.FDataSet.First();
       if (this.FFixedRows > 0) {
         for (var $l3 = 0, $end3 = this.FColumns.GetCount() - 1; $l3 <= $end3; $l3++) {
@@ -38105,6 +38752,7 @@ rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls
       if (this.GetDataSource().FDataSet.BookmarkValid(pas.DB.TBookmark.$clone(bk))) this.FDataLink.FDataSource.FDataSet.GotoBookmark(bk);
       if (isBOF) this.FDataLink.FDataSource.FDataSet.First();
       if (isEOF) this.FDataLink.FDataSource.FDataSet.Last();
+      this.FDataLink.GetDataset().FAfterScroll = ne;
       this.FDataLink.FDataSource.FDataSet.EnableControls();
     };
     this.LoadRow = function (ARow) {
@@ -38509,16 +39157,20 @@ rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls
     };
     this.CreateInitialize = function () {
       pas["WEBLib.Grids"].TCustomStringGrid.CreateInitialize.call(this);
-      this.FDataLink = $mod.TDBDataLink.$create("Create$1");
-      this.FDataLink.FOnActiveChange = rtl.createCallback(this,"ActiveChange");
-      this.FDataLink.FOnRecordChange = rtl.createCallback(this,"RecordChange");
-      this.FDataLink.FOnDataChange = rtl.createCallback(this,"DataChange");
-      this.FDataLink.FOnUpdateData = rtl.createCallback(this,"UpdateData");
-      this.FDataLink.FOnDataScroll = rtl.createCallback(this,"DataScroll");
-      this.FColumns = $mod.TGridColumns.$create("Create$3",[this]);
-      this.FColumns.FOnChange = rtl.createCallback(this,"ColumnsChanged");
-      this.FColumns.FOnSortIndicatorChange = rtl.createCallback(this,"DoSortIndicatorChange");
-      this.FColumns.FPropName = "Columns";
+      if (!(this.FDataLink != null)) {
+        this.FDataLink = $mod.TDBDataLink.$create("Create$1");
+        this.FDataLink.FOnActiveChange = rtl.createCallback(this,"ActiveChange");
+        this.FDataLink.FOnRecordChange = rtl.createCallback(this,"RecordChange");
+        this.FDataLink.FOnDataChange = rtl.createCallback(this,"DataChange");
+        this.FDataLink.FOnUpdateData = rtl.createCallback(this,"UpdateData");
+        this.FDataLink.FOnDataScroll = rtl.createCallback(this,"DataScroll");
+      };
+      if (!(this.FColumns != null)) {
+        this.FColumns = $mod.TGridColumns.$create("Create$3",[this]);
+        this.FColumns.FOnChange = rtl.createCallback(this,"ColumnsChanged");
+        this.FColumns.FOnSortIndicatorChange = rtl.createCallback(this,"DoSortIndicatorChange");
+        this.FColumns.FPropName = "Columns";
+      };
       this.FModifying = false;
       this.FDefaultFields = false;
       this.FDataChanging = false;
@@ -38565,6 +39217,7 @@ rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls
     $r.addProperty("ElementClassName",2,pas["WEBLib.Controls"].$rtti["TElementClassName"],"FElementClassName","SetElementClassName");
     $r.addProperty("ElementID",3,pas["WEBLib.Controls"].$rtti["TElementID"],"GetID","SetID");
     $r.addProperty("ElementPosition",2,pas["WEBLib.Controls"].$rtti["TElementPosition"],"FElementPosition","SetElementPosition",{Default: pas["WEBLib.Controls"].TElementPosition.epAbsolute});
+    $r.addProperty("FixedFont",2,pas["WEBLib.Graphics"].$rtti["TFont"],"FFixedFont","SetFixedFont");
     $r.addProperty("Font",2,pas["WEBLib.Graphics"].$rtti["TFont"],"FFont","SetFont");
     $r.addProperty("ParentFont",2,rtl.boolean,"FParentFont","SetParentFont",{Default: true});
     $r.addProperty("ShowIndicator",2,rtl.boolean,"FShowIndicator","SetShowIndicator");
@@ -38574,7 +39227,7 @@ rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls
     $r.addProperty("OnStartDrag",0,pas["WEBLib.Controls"].$rtti["TStartDragEvent"],"FOnStartDrag","FOnStartDrag");
   });
   $mod.$implcode = function () {
-    $impl.TableFieldToCellData = function (AElement, AField, ColumnDataType, Enabled, ImgWidth) {
+    $impl.TableFieldToCellData = function (AElement, AField, ColumnDataType, Enabled, AutoFormatDateTime, ImgWidth) {
       var Result = "";
       var b = false;
       var fs = "";
@@ -38585,7 +39238,7 @@ rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls
       Result = "";
       var $tmp = ColumnDataType;
       if (($tmp === 0) || ($tmp === 6)) {
-        if ((AField.FDataType !== 10) && pas["WEBLib.REST"].TRESTClient.IsIsoDateTime(AField.GetAsString())) {
+        if ((AField.FDataType !== 10) && pas["WEBLib.REST"].TRESTClient.IsIsoDateTime(AField.GetAsString()) && AutoFormatDateTime) {
           dt = pas["WEBLib.REST"].TRESTClient.IsoToDateTime(AField.GetAsString());
           if (pas.System.Frac(dt) === 0) {
             Result = pas.SysUtils.DateToStr(dt)}
@@ -38641,12 +39294,12 @@ rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls
     };
     $impl.FieldToCellData = function (AElement, AField, Column, Enabled) {
       var Result = "";
-      Result = $impl.TableFieldToCellData(AElement,AField,Column.FDataType,Enabled,Column.FImageWidth);
+      Result = $impl.TableFieldToCellData(AElement,AField,Column.FDataType,Enabled,Column.FAutoFormatDateTime,Column.FImageWidth);
       return Result;
     };
   };
 },["WEBLib.WebTools","Math"]);
-rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics","WEBLib.Controls","WEBLib.Forms","WEBLib.Dialogs","WEBLib.IndexedDb","WEBLib.Menus","WEBLib.Menus","WEBLib.ComCtrls","WEBLib.Controls","WEBLib.Grids","WEBLib.ExtCtrls","DB","WEBLib.Grids","StrUtils","WEBLib.StdCtrls","WEBLib.StdCtrls","WEBLib.DBCtrls","WEBLib.REST","Types","WEBLib.Storage","WEBLib.CDS"],function () {
+rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics","WEBLib.Controls","WEBLib.Forms","WEBLib.Dialogs","WEBLib.IndexedDb","WEBLib.Menus","WEBLib.Menus","WEBLib.ComCtrls","WEBLib.Controls","WEBLib.Grids","WEBLib.ExtCtrls","DB","WEBLib.Grids","StrUtils","WEBLib.StdCtrls","WEBLib.StdCtrls","WEBLib.DBCtrls","WEBLib.REST","Types","WEBLib.Storage","WEBLib.CDS","WEBLib.JSON","WEBLib.WebTools"],function () {
   "use strict";
   var $mod = this;
   var $impl = $mod.$impl;
@@ -38659,7 +39312,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       this.WebMemo1 = null;
       this.seNumDisplayDays = null;
       this.WebGroupBox1 = null;
-      this.WebHttpRequest1 = null;
       this.WebGridPanel2 = null;
       this.WebGridPanel3 = null;
       this.lb01Title = null;
@@ -38669,8 +39321,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       this.WebGridPanel4 = null;
       this.lb06SubTitle = null;
       this.lb12Description = null;
-      this.WebGroupBox2 = null;
-      this.seHttpTimeoutSec = null;
       this.WebGridPanel1 = null;
       this.WebGridPanel7 = null;
       this.lb07Dolby = null;
@@ -38680,7 +39330,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       this.lb10Channel = null;
       this.lb11Time = null;
       this.WebMemo2 = null;
-      this.WebLocalStorage1 = null;
       this.WebProgressBar1 = null;
       this.WebRadioGroup1 = null;
       this.AlertLabel = null;
@@ -38698,10 +39347,8 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       this.seNumHistEvents = null;
       this.WebPanel1 = null;
       this.WebButton2 = null;
-      this.WebClientDataSet1 = null;
-      this.WebClientConnection1 = null;
       this.WebDBGrid1 = null;
-      this.WebDataSource1 = null;
+      this.WebRESTClient1 = null;
     };
     this.$final = function () {
       this.WebStringGrid1 = undefined;
@@ -38710,7 +39357,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       this.WebMemo1 = undefined;
       this.seNumDisplayDays = undefined;
       this.WebGroupBox1 = undefined;
-      this.WebHttpRequest1 = undefined;
       this.WebGridPanel2 = undefined;
       this.WebGridPanel3 = undefined;
       this.lb01Title = undefined;
@@ -38720,8 +39366,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       this.WebGridPanel4 = undefined;
       this.lb06SubTitle = undefined;
       this.lb12Description = undefined;
-      this.WebGroupBox2 = undefined;
-      this.seHttpTimeoutSec = undefined;
       this.WebGridPanel1 = undefined;
       this.WebGridPanel7 = undefined;
       this.lb07Dolby = undefined;
@@ -38731,7 +39375,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       this.lb10Channel = undefined;
       this.lb11Time = undefined;
       this.WebMemo2 = undefined;
-      this.WebLocalStorage1 = undefined;
       this.WebProgressBar1 = undefined;
       this.WebRadioGroup1 = undefined;
       this.AlertLabel = undefined;
@@ -38749,10 +39392,8 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       this.seNumHistEvents = undefined;
       this.WebPanel1 = undefined;
       this.WebButton2 = undefined;
-      this.WebClientDataSet1 = undefined;
-      this.WebClientConnection1 = undefined;
       this.WebDBGrid1 = undefined;
-      this.WebDataSource1 = undefined;
+      this.WebRESTClient1 = undefined;
       pas["WEBLib.Forms"].TForm.$final.call(this);
     };
     this.LoadWIDBCDS = function () {
@@ -38819,22 +39460,28 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       await this.ReFreshListings();
       this.WebRadioGroup1.SetEnabled(true);
     };
-    this.WebFormCreate = function (Sender) {
+    this.WebFormCreate = async function (Sender) {
       var i = 0;
+      var res = "";
       var AppVersion = "";
       $impl.Log("FormCreate is called");
-      $impl.CWHelperIP = pas["WEBLib.WebTools"].GetQueryParam("HTPCIP");
-      if ($impl.CWHelperIP === "") pas["WEBLib.Dialogs"].ShowMessage("You must specify the HTPC's IP Address" + '\rUseage: "https://tpeterson94070.github.io/CW_EPG_Remote_PWA?HTPCIP=<IP Addr>"');
       console.log('Starting ' + ProjectName);
       // Define sleep function used to allow screen updates
           window.sleep = async function(msecs) {return new Promise((resolve) => setTimeout(resolve, msecs)); }
       // Retrieve JS version info in Delphi variable
           AppVersion = ProjectName;
+      // Discover if installed ("standalone")
+      //   IsInstalled = (window.matchMedia('(display-mode: standalone)').matches) ||
+      //                 ('standalone' in window.navigator);
       $impl.Log("Running version:  " + AppVersion);
       $impl.Log("App is " + pas.StrUtils.IfThen(!pas["WEBLib.Forms"].Application.GetIsOnline(),"NOT ","") + "online");
+      this.WebRESTClient1.FApp.FKey = "654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com";
+      this.WebRESTClient1.ReadTokens();
+      this.WebRESTClient1.FApp.FCallbackURL = window.location.href;
+      this.WebRESTClient1.FApp.FAuthURL = "https://accounts.google.com/o/oauth2/v2/auth?client_id=" + this.WebRESTClient1.FApp.FKey + "&state=bf&response_type=token&redirect_uri=" + this.WebRESTClient1.FApp.FCallbackURL + "&scope=https://www.googleapis.com/auth/drive";
+      if (this.WebRESTClient1.FAccessToken === "") res = await this.WebRESTClient1.Authenticate();
       if (pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMDAYS) !== "") this.seNumDisplayDays.SetValue(pas.SysUtils.StrToInt(pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMDAYS)));
       if (pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMHIST) !== "") this.seNumHistEvents.SetValue(pas.SysUtils.StrToInt(pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMHIST)));
-      if (pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.HTTPTIMEOUT) !== "") this.seHttpTimeoutSec.SetValue(pas.SysUtils.StrToInt(pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.HTTPTIMEOUT)));
       this.FillHistoryDisplay();
       this.Listings.SetRowCount(1);
       $impl.SetTableDefaults(this.Listings,70,150,this.GetClientWidth(),0);
@@ -38864,33 +39511,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
           this.p = v;
         }}));
       $impl.EPGChanged = true;
-    };
-    this.seHttpTimeoutSecChange = function (Sender) {
-      $impl.Log("Http Timeout set to: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.seHttpTimeoutSec.GetValue(), get: function () {
-          return this.p;
-        }, set: function (v) {
-          this.p = v;
-        }}));
-      pas["WEBLib.Storage"].TLocalStorage.SetValue($impl.HTTPTIMEOUT,pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.seHttpTimeoutSec.GetValue(), get: function () {
-          return this.p;
-        }, set: function (v) {
-          this.p = v;
-        }}));
-    };
-    this.WebHttpRequest1Abort = function (Sender) {
-      this.WebRadioGroup1.SetEnabled(true);
-      pas["WEBLib.Dialogs"].ShowMessage("Request aborted");
-      $impl.Log("Http request aborted, no reason supplied");
-    };
-    this.WebHttpRequest1Error = function (Sender, ARequest, Event, Handled) {
-      this.WebRadioGroup1.SetEnabled(true);
-      pas["WEBLib.Dialogs"].ShowMessage("Request ERROR:  " + ARequest.req.toString() + "\r\rMake sure that the Master HTPC is awake");
-      $impl.Log("HttpRequest ERROR: " + ARequest.req.toString());
-    };
-    this.WebHttpRequest1Timeout = function (Sender) {
-      this.WebRadioGroup1.SetEnabled(true);
-      pas["WEBLib.Dialogs"].ShowMessage("Request timed out\r\rCannot refresh EPG data while CWHelper is offline");
-      $impl.Log("HttpRequest timed out. Presume CWHelper offline");
     };
     this.WebRadioGroup1Change = async function (Sender) {
       $impl.Log("Showing Page: " + this.WebRadioGroup1.FItems.Get(this.WebRadioGroup1.GetItemIndex()));
@@ -39112,41 +39732,8 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       };
       this.HistoryTable.SetCells(ACol,0,this.HistoryTable.GetCells(ACol,0) + pas.StrUtils.IfThen(SortDir === 2," v"," ^"));
     };
-    this.AllCapsGridDblClick = async function (Sender) {
-      var i = 0;
-      var URL = "";
-      var Response = "";
-      i = $impl.ClickedRow;
-      if (this.AllCapsGrid.GetCells(1,i) === "") return;
-      if (await pas["WEBLib.Dialogs"].MessageDlgAsync('Erase "' + this.AllCapsGrid.GetCells(8,i) + '" ' + this.AllCapsGrid.GetCells(3,i) + " " + this.AllCapsGrid.GetCells(4,i) + " - " + this.AllCapsGrid.GetCells(5,i) + " " + " Schedule Entry?",3,rtl.createSet(0,1)) === 7) return;
-      $impl.Log("  >>>>>  " + this.AllCapsGrid.GetCells(1,i) + " - " + this.AllCapsGrid.GetCells(2,i) + "  Delete : (" + this.AllCapsGrid.GetCells(0,i) + ") " + this.AllCapsGrid.GetCells(8,i) + " - " + this.AllCapsGrid.GetCells(3,i) + " " + this.AllCapsGrid.GetCells(4,i) + "-" + this.AllCapsGrid.GetCells(5,i));
-      URL = "https://" + $impl.CWHelperIP + ":8443/decapture?sequence=" + this.AllCapsGrid.GetCells(0,i);
-      Response = await this.HttpReq(URL);
-      if (Response !== "") this.AllCapsGrid.RemoveRow(i);
-    };
-    this.AllCapsGridClickCell = function (Sender, ACol, ARow) {
-      $impl.ClickedCol = ACol;
-      $impl.ClickedRow = ARow;
-      $impl.Log("Clicked Col, Row: " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
-          return ACol;
-        }, set: function (v) {
-          ACol = v;
-        }}) + ", " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
-          return ARow;
-        }, set: function (v) {
-          ARow = v;
-        }}));
-    };
     this.WebButton2Click = async function (Sender) {
       await this.RefreshHistory();
-    };
-    this.WebClientDataSet1AfterOpen = function (DataSet) {
-      this.WebClientDataSet1.EnableControls();
-      $impl.Log("WebCDS.RC: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WebClientDataSet1.GetRecordCount(), get: function () {
-          return this.p;
-        }, set: function (v) {
-          this.p = v;
-        }}));
     };
     this.WebFormShow = async function () {
       $impl.Log("WebFormShow, calling RefreshListings");
@@ -39198,27 +39785,31 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       await this.WebRadioGroup1Change(pas["WEBLib.Forms"].Application);
     };
     this.FetchCapReservations = async function () {
-      var URL = "";
-      var Response = "";
+      var i = 0;
+      var sl = null;
       $impl.Log(" ====== FetchCapReservations called =========");
-      URL = "https://" + $impl.CWHelperIP + ":8443/captures";
-      $impl.Log(' Calling "' + URL + '"');
-      try {
-        try {
-          Response = await this.HttpReq(URL);
-          if (Response > "") this.RemoteCaps(Response,URL);
-        } catch ($e) {
-          if (pas.SysUtils.Exception.isPrototypeOf($e)) {
-            var E = $e;
-            pas["WEBLib.Dialogs"].ShowMessage(" Fetching Captures -- Oops \n" + E.FMessage);
-          } else throw $e
-        };
-      } finally {
+      this.AllCapsGrid.FOnGetCellData = null;
+      await this.RefreshCSV(this.AllCapsGrid,"cwr_captures.csv","Scheduled");
+      sl = pas.Classes.TStringList.$create("Create$1");
+      this.AllCapsGrid.SaveToStrings(sl,",",true);
+      for (var $l = 0, $end = sl.GetCount() - 1; $l <= $end; $l++) {
+        i = $l;
+        pas["WEBLib.Storage"].TLocalStorage.SetValue("sl" + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
+            return i;
+          }, set: function (v) {
+            i = v;
+          }}),sl.Get(i));
       };
+      pas["WEBLib.Storage"].TLocalStorage.RemoveKey("sl" + pas.SysUtils.TIntegerHelper.ToString$1.call({p: sl.GetCount(), get: function () {
+          return this.p;
+        }, set: function (v) {
+          this.p = v;
+        }}));
+      sl = rtl.freeLoc(sl);
+      this.AllCapsGrid.FOnGetCellData = rtl.createCallback(this,"AllCapsGridGetCellData");
       $impl.Log(" ====== FetchCapReservations finished =========");
     };
     this.RefreshCSV = async function (WSG, TableFile, Title) {
-      var URL = "";
       var Reply = "";
       var sl = null;
       $impl.Log("ReFreshCSV called for " + TableFile);
@@ -39227,20 +39818,18 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.AlertLabel.Show();
         this.AlertLabel.BringToFront();
         await sleep(50);
-        URL = "https://" + $impl.CWHelperIP + ":8443/getdbfile?filename=" + TableFile;
         WSG.BeginUpdate();
         try {
           $impl.Log("Requesting: " + TableFile);
           try {
-            Reply = await this.HttpReq(URL);
+            Reply = await this.GetGoogleDriveFile(TableFile);
             if (Reply !== "") {
               sl = pas.Classes.TStringList.$create("Create$1");
               $impl.Log("Begin extract strings");
-              pas.Classes.ExtractStrings({},{},Reply,sl,false);
-              $impl.Log(pas.SysUtils.TIntegerHelper.ToString$1.call({p: sl.GetCount(), get: function () {
-                  return this.p;
+              $impl.Log(pas.SysUtils.TIntegerHelper.ToString$1.call({a: pas.Classes.ExtractStrings({},{},Reply,sl,false), get: function () {
+                  return this.a;
                 }, set: function (v) {
-                  this.p = v;
+                  this.a = v;
                 }}) + " strings extracted, begin " + WSG.FName + ".LoadFromStrings");
               WSG.LoadFromStrings(sl,",",true);
               $impl.Log(WSG.FName + ".RowCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: WSG, get: function () {
@@ -39479,29 +40068,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       this.HistoryTable.EndUpdate();
       $impl.Log("FillHistoryDisplay finished");
     };
-    this.HttpReq = async function (Cmd) {
-      var Result = "";
-      var req = null;
-      $impl.Log("Sending command: " + Cmd);
-      this.WebHttpRequest1.FURL = Cmd;
-      this.WebHttpRequest1.FTimeout = this.seHttpTimeoutSec.GetValue() * 1000;
-      try {
-        req = await this.WebHttpRequest1.Perform();
-        $impl.Log("Status: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: req, get: function () {
-            return this.p.status;
-          }, set: function (v) {
-            this.p.status = v;
-          }}));
-        Result = pas.StrUtils.IfThen(req.status === 200,req.responseText,"");
-      } catch ($e) {
-        if (pas.SysUtils.Exception.isPrototypeOf($e)) {
-          var E = $e;
-          $impl.Log("HttpRequest Exception: " + E.FMessage);
-          pas["WEBLib.Dialogs"].ShowMessage("Cannot send request while CWHelper is offline");
-        } else throw $e
-      };
-      return Result;
-    };
     this.RefreshHistory = async function () {
       this.WebRadioGroup1.SetEnabled(false);
       await sleep(100);
@@ -39510,23 +40076,42 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       await sleep(100);
       this.WebRadioGroup1.SetEnabled(true);
     };
-    this.RemoteCaps = function (rstr, URL) {
-      var Captures = [];
-      $impl.Log("  >>>>>>>> remotecaps called ......");
-      $impl.Log("  ########## " + URL + " Output ###########");
-      $impl.Log(rstr);
-      if (pas.SysUtils.TStringHelper.Contains.call({get: function () {
-          return rstr;
-        }, set: function (v) {
-          rtl.raiseE("EPropReadOnly");
-        }},'<xml id="captures">')) {
-        Captures = pas.SysUtils.TStringHelper.Split$8.call({get: function () {
-            return rstr;
-          }, set: function (v) {
-            rtl.raiseE("EPropReadOnly");
-          }},["<capture "]);
+    this.GetGoogleDriveFile = async function (TableFile) {
+      var $Self = this;
+      var Result = "";
+      var q = "";
+      var id = "";
+      var AResponse = "";
+      var rq = null;
+      var jso = null;
+      var ja = null;
+      var i = 0;
+      Result = "";
+      if (this.WebRESTClient1.FAccessToken === "") return Result;
+      q = "name = '" + TableFile + "'";
+      rq = await this.WebRESTClient1.HttpRequest("GET","https://www.googleapis.com/drive/v3/files?q=" + this.WebRESTClient1.$class.URLEncode(q),"","",null);
+      if (rq != null) {
+        AResponse = rq.responseText;
+        window.console.log(rq.responseText);
+        jso = pas["WEBLib.JSON"].TJSONObject.ParseJSONValue(AResponse);
+        if (jso != null) {
+          ja = jso.GetValue$1("files");
+          for (var $l = 0, $end = ja.GetCount() - 1; $l <= $end; $l++) {
+            i = $l;
+            jso = ja.GetItem(i);
+            if (jso.GetJSONValue("name") === TableFile) id = jso.GetJSONValue("id");
+          };
+          jso = rtl.freeLoc(jso);
+          window.console.log(id);
+          rq = await this.WebRESTClient1.HttpRequest("GET","https://www.googleapis.com/drive/v3/files/" + id + "?alt=media","","",null).catch(function (AValue) {
+            var Result = undefined;
+            window.console.log("error here",AValue);
+            return Result;
+          });
+          if (rq != null) Result = rq.responseText;
+        };
       };
-      $impl.Log("  >>>>>>>> remotecaps finished ......");
+      return Result;
     };
     this.LoadDFMValues = function () {
       pas["WEBLib.Forms"].TCustomForm.LoadDFMValues.call(this);
@@ -39556,29 +40141,23 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       this.pnlHistory = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
       this.HistoryTable = pas["WEBLib.Grids"].TStringGrid.$create("Create$1",[this]);
       this.pnlLog = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
-      this.WebMemo2 = pas["WEBLib.StdCtrls"].TMemo.$create("Create$2",["WebMemo2"]);
-      this.pnlOptions = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
-      this.WebButton1 = pas["WEBLib.StdCtrls"].TButton.$create("Create$1",[this]);
-      this.WebGroupBox1 = pas["WEBLib.ExtCtrls"].TGroupBox.$create("Create$1",[this]);
-      this.seNumDisplayDays = pas["WEBLib.StdCtrls"].TSpinEdit.$create("Create$1",[this]);
-      this.WebGroupBox2 = pas["WEBLib.ExtCtrls"].TGroupBox.$create("Create$1",[this]);
-      this.seHttpTimeoutSec = pas["WEBLib.StdCtrls"].TSpinEdit.$create("Create$1",[this]);
-      this.WebGroupBox3 = pas["WEBLib.ExtCtrls"].TGroupBox.$create("Create$1",[this]);
-      this.seNumHistEvents = pas["WEBLib.StdCtrls"].TSpinEdit.$create("Create$1",[this]);
-      this.WebButton2 = pas["WEBLib.StdCtrls"].TButton.$create("Create$1",[this]);
-      this.WebDBGrid1 = pas["WEBLib.DBCtrls"].TDBGrid.$create("Create$1",[this]);
+      this.WebMemo2 = pas["WEBLib.StdCtrls"].TMemo.$create("Create$2",["content"]);
       this.WebMessageDlg1 = pas["WEBLib.Dialogs"].TMessageDlg.$create("Create$1",[this]);
       this.pnlCaptures = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
       this.AllCapsGrid = pas["WEBLib.Grids"].TStringGrid.$create("Create$1",[this]);
       this.WebPanel1 = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
       this.WebMemo1 = pas["WEBLib.StdCtrls"].TMemo.$create("Create$2",["WebMemo1"]);
       this.WebProgressBar1 = pas["WEBLib.ComCtrls"].TProgressBar.$create("Create$1",[this]);
+      this.pnlOptions = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
+      this.WebButton1 = pas["WEBLib.StdCtrls"].TButton.$create("Create$1",[this]);
+      this.WebGroupBox1 = pas["WEBLib.ExtCtrls"].TGroupBox.$create("Create$1",[this]);
+      this.seNumDisplayDays = pas["WEBLib.StdCtrls"].TSpinEdit.$create("Create$1",[this]);
+      this.WebGroupBox3 = pas["WEBLib.ExtCtrls"].TGroupBox.$create("Create$1",[this]);
+      this.seNumHistEvents = pas["WEBLib.StdCtrls"].TSpinEdit.$create("Create$1",[this]);
+      this.WebButton2 = pas["WEBLib.StdCtrls"].TButton.$create("Create$1",[this]);
+      this.WebDBGrid1 = pas["WEBLib.DBCtrls"].TDBGrid.$create("Create$1",[this]);
       this.WIDBCDS = pas["WEBLib.IndexedDb"].TIndexedDbClientDataset.$create("Create$1",[this]);
-      this.WebHttpRequest1 = pas["WEBLib.REST"].THttpRequest.$create("Create$1",[this]);
-      this.WebLocalStorage1 = pas["WEBLib.Storage"].TLocalStorage.$create("Create$1",[this]);
-      this.WebClientDataSet1 = pas["WEBLib.CDS"].TClientDataSet.$create("Create$1",[this]);
-      this.WebClientConnection1 = pas["WEBLib.CDS"].TClientConnection.$create("Create$1",[this]);
-      this.WebDataSource1 = pas.DB.TDataSource.$create("Create$1",[this]);
+      this.WebRESTClient1 = pas["WEBLib.REST"].TRESTClient.$create("Create$1",[this]);
       this.AlertLabel.BeforeLoadDFMValues();
       this.WebRadioGroup1.BeforeLoadDFMValues();
       this.pnlListings.BeforeLoadDFMValues();
@@ -39606,28 +40185,22 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       this.HistoryTable.BeforeLoadDFMValues();
       this.pnlLog.BeforeLoadDFMValues();
       this.WebMemo2.BeforeLoadDFMValues();
-      this.pnlOptions.BeforeLoadDFMValues();
-      this.WebButton1.BeforeLoadDFMValues();
-      this.WebGroupBox1.BeforeLoadDFMValues();
-      this.seNumDisplayDays.BeforeLoadDFMValues();
-      this.WebGroupBox2.BeforeLoadDFMValues();
-      this.seHttpTimeoutSec.BeforeLoadDFMValues();
-      this.WebGroupBox3.BeforeLoadDFMValues();
-      this.seNumHistEvents.BeforeLoadDFMValues();
-      this.WebButton2.BeforeLoadDFMValues();
-      this.WebDBGrid1.BeforeLoadDFMValues();
       this.WebMessageDlg1.BeforeLoadDFMValues();
       this.pnlCaptures.BeforeLoadDFMValues();
       this.AllCapsGrid.BeforeLoadDFMValues();
       this.WebPanel1.BeforeLoadDFMValues();
       this.WebMemo1.BeforeLoadDFMValues();
       this.WebProgressBar1.BeforeLoadDFMValues();
+      this.pnlOptions.BeforeLoadDFMValues();
+      this.WebButton1.BeforeLoadDFMValues();
+      this.WebGroupBox1.BeforeLoadDFMValues();
+      this.seNumDisplayDays.BeforeLoadDFMValues();
+      this.WebGroupBox3.BeforeLoadDFMValues();
+      this.seNumHistEvents.BeforeLoadDFMValues();
+      this.WebButton2.BeforeLoadDFMValues();
+      this.WebDBGrid1.BeforeLoadDFMValues();
       this.WIDBCDS.BeforeLoadDFMValues();
-      this.WebHttpRequest1.BeforeLoadDFMValues();
-      this.WebLocalStorage1.BeforeLoadDFMValues();
-      this.WebClientDataSet1.BeforeLoadDFMValues();
-      this.WebClientConnection1.BeforeLoadDFMValues();
-      this.WebDataSource1.BeforeLoadDFMValues();
+      this.WebRESTClient1.BeforeLoadDFMValues();
       try {
         this.SetName("CWRmainFrm");
         this.SetWidth(644);
@@ -39701,6 +40274,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.pnlListings.SetChildOrderEx(9);
         this.pnlListings.FElementBodyClassName = "card-body";
         this.pnlListings.SetElementFont(1);
+        this.pnlListings.SetTabOrder(2);
         this.WebGridPanel2.SetParentComponent(this.pnlListings);
         this.WebGridPanel2.SetName("WebGridPanel2");
         this.WebGridPanel2.SetLeft(0);
@@ -40149,6 +40723,11 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.WebStringGrid1.SetParentFont(false);
         this.WebStringGrid1.SetTabOrder(1);
         this.WebStringGrid1.SetVisible(false);
+        this.WebStringGrid1.FFixedFont.FCharset = 1;
+        this.WebStringGrid1.FFixedFont.SetColor(65793);
+        this.WebStringGrid1.FFixedFont.SetHeight(-12);
+        this.WebStringGrid1.FFixedFont.SetName("Segoe UI");
+        this.WebStringGrid1.FFixedFont.SetStyle({});
         this.WebStringGrid1.FRange.FMax = 100.000000000000000000;
         this.WebStringGrid1.FRange.FStep = 1.000000000000000000;
         this.WebStringGrid1.SetSelectionTextColor(255);
@@ -40170,6 +40749,11 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.WebStringGrid2.SetVisible(false);
         this.SetEvent$1(this.WebStringGrid2,this,"OnDblClick","WebStringGrid2DblClick");
         this.WebStringGrid2.SetElementFont(1);
+        this.WebStringGrid2.FFixedFont.FCharset = 1;
+        this.WebStringGrid2.FFixedFont.SetColor(65793);
+        this.WebStringGrid2.FFixedFont.SetHeight(-12);
+        this.WebStringGrid2.FFixedFont.SetName("Segoe UI");
+        this.WebStringGrid2.FFixedFont.SetStyle({});
         this.WebStringGrid2.FRange.FMax = 100.000000000000000000;
         this.WebStringGrid2.FRange.FStep = 1.000000000000000000;
         this.WebStringGrid2.SetHeightPercent(100.000000000000000000);
@@ -40189,6 +40773,11 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.SetEvent$1(this.Listings,this,"OnDblClick","ListingsDblClick");
         this.SetEvent$1(this.Listings,this,"OnSelectCell","ListingsSelectCell");
         this.Listings.SetElementFont(1);
+        this.Listings.FFixedFont.FCharset = 1;
+        this.Listings.FFixedFont.SetColor(65793);
+        this.Listings.FFixedFont.SetHeight(-12);
+        this.Listings.FFixedFont.SetName("Segoe UI");
+        this.Listings.FFixedFont.SetStyle({});
         this.Listings.FRange.FMax = 100.000000000000000000;
         this.Listings.FRange.FStep = 1.000000000000000000;
         this.Listings.SetHeightPercent(80.000000000000000000);
@@ -40206,6 +40795,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.pnlHistory.SetChildOrderEx(11);
         this.pnlHistory.FElementBodyClassName = "card-body";
         this.pnlHistory.SetElementFont(1);
+        this.pnlHistory.SetTabOrder(3);
         this.HistoryTable.SetParentComponent(this.pnlHistory);
         this.HistoryTable.SetName("HistoryTable");
         this.HistoryTable.SetLeft(0);
@@ -40219,6 +40809,11 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.HistoryTable.SetTabOrder(0);
         this.SetEvent$1(this.HistoryTable,this,"OnFixedCellClick","HistoryTableFixedCellClick");
         this.HistoryTable.SetElementFont(1);
+        this.HistoryTable.FFixedFont.FCharset = 1;
+        this.HistoryTable.FFixedFont.SetColor(65793);
+        this.HistoryTable.FFixedFont.SetHeight(-12);
+        this.HistoryTable.FFixedFont.SetName("Segoe UI");
+        this.HistoryTable.FFixedFont.SetStyle({});
         this.HistoryTable.FRange.FMax = 100.000000000000000000;
         this.HistoryTable.FRange.FStep = 1.000000000000000000;
         this.HistoryTable.SetHeightStyle(0);
@@ -40235,6 +40830,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.pnlLog.SetChildOrderEx(9);
         this.pnlLog.FElementBodyClassName = "card-body";
         this.pnlLog.SetElementFont(1);
+        this.pnlLog.SetTabOrder(4);
         this.WebMemo2.SetParentComponent(this.pnlLog);
         this.WebMemo2.SetName("WebMemo2");
         this.WebMemo2.SetAlignWithMargins(true);
@@ -40243,7 +40839,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.WebMemo2.SetWidth(638);
         this.WebMemo2.SetHeight(993);
         this.WebMemo2.SetAlign(5);
-        this.WebMemo2.SetAutoSize(false);
         this.WebMemo2.SetElementFont(1);
         this.WebMemo2.SetHeightStyle(0);
         this.WebMemo2.SetHeightPercent(100.000000000000000000);
@@ -40253,183 +40848,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.WebMemo2.SetWidthStyle(0);
         this.WebMemo2.SetWidthPercent(100.000000000000000000);
         this.WebMemo2.SetWordWrap(false);
-        this.pnlOptions.SetParentComponent(this);
-        this.pnlOptions.SetName("pnlOptions");
-        this.pnlOptions.SetLeft(0);
-        this.pnlOptions.SetTop(53);
-        this.pnlOptions.SetWidth(644);
-        this.pnlOptions.SetHeight(999);
-        this.pnlOptions.SetElementClassName("card");
-        this.pnlOptions.SetAlign(5);
-        this.pnlOptions.SetChildOrderEx(9);
-        this.pnlOptions.FElementBodyClassName = "card-body";
-        this.pnlOptions.SetElementFont(1);
-        this.WebButton1.SetParentComponent(this.pnlOptions);
-        this.WebButton1.SetName("WebButton1");
-        this.WebButton1.SetLeft(24);
-        this.WebButton1.SetTop(356);
-        this.WebButton1.SetWidth(200);
-        this.WebButton1.SetHeight(20);
-        this.WebButton1.SetAlign(6);
-        this.WebButton1.SetCaption("Refresh EPG");
-        this.WebButton1.SetChildOrderEx(1);
-        this.WebButton1.SetElementClassName("btn btn-primary");
-        this.WebButton1.SetElementFont(1);
-        this.WebButton1.FFont.FCharset = 1;
-        this.WebButton1.FFont.SetColor(16777215);
-        this.WebButton1.FFont.SetHeight(-9);
-        this.WebButton1.FFont.SetName("Segoe UI");
-        this.WebButton1.FFont.SetStyle({});
-        this.WebButton1.SetHeightStyle(2);
-        this.WebButton1.SetHeightPercent(6.000000000000000000);
-        this.WebButton1.SetParentFont(false);
-        this.WebButton1.SetWidthPercent(100.000000000000000000);
-        this.SetEvent$1(this.WebButton1,this,"OnClick","WebButton1Click");
-        this.WebGroupBox1.SetParentComponent(this.pnlOptions);
-        this.WebGroupBox1.SetName("WebGroupBox1");
-        this.WebGroupBox1.SetLeft(16);
-        this.WebGroupBox1.SetTop(48);
-        this.WebGroupBox1.SetWidth(250);
-        this.WebGroupBox1.SetHeight(80);
-        this.WebGroupBox1.SetElementClassName("container");
-        this.WebGroupBox1.SetAlign(6);
-        this.WebGroupBox1.SetBorderColor(12632256);
-        this.WebGroupBox1.SetCaption("EPG Days Displayed");
-        this.WebGroupBox1.SetChildOrderEx(1);
-        this.WebGroupBox1.SetElementFont(1);
-        this.WebGroupBox1.SetElementLegendClassName("h6");
-        this.seNumDisplayDays.SetParentComponent(this.WebGroupBox1);
-        this.seNumDisplayDays.SetName("seNumDisplayDays");
-        this.seNumDisplayDays.SetAlignWithMargins(true);
-        this.seNumDisplayDays.SetLeft(40);
-        this.seNumDisplayDays.SetTop(30);
-        this.seNumDisplayDays.SetWidth(170);
-        this.seNumDisplayDays.SetHeight(30);
-        this.seNumDisplayDays.FMargins.SetLeft(40);
-        this.seNumDisplayDays.FMargins.SetTop(30);
-        this.seNumDisplayDays.FMargins.SetRight(40);
-        this.seNumDisplayDays.FMargins.SetBottom(20);
-        this.seNumDisplayDays.SetHeightStyle(2);
-        this.seNumDisplayDays.SetAlign(5);
-        this.seNumDisplayDays.FAutoSize = true;
-        this.seNumDisplayDays.SetBorderStyle(0);
-        this.seNumDisplayDays.SetColor(15790320);
-        this.seNumDisplayDays.SetElementFont(1);
-        this.seNumDisplayDays.SetIncrement(1);
-        this.seNumDisplayDays.SetMaxValue(20);
-        this.seNumDisplayDays.SetMinValue(1);
-        this.seNumDisplayDays.SetRole("");
-        this.seNumDisplayDays.SetValue(1);
-        this.SetEvent$1(this.seNumDisplayDays,this,"OnChange","seNumDisplayDaysChange");
-        this.WebGroupBox2.SetParentComponent(this.pnlOptions);
-        this.WebGroupBox2.SetName("WebGroupBox2");
-        this.WebGroupBox2.SetLeft(16);
-        this.WebGroupBox2.SetTop(253);
-        this.WebGroupBox2.SetWidth(250);
-        this.WebGroupBox2.SetHeight(80);
-        this.WebGroupBox2.SetElementClassName("container");
-        this.WebGroupBox2.SetAlign(6);
-        this.WebGroupBox2.SetBorderColor(12632256);
-        this.WebGroupBox2.SetCaption("Http Timeout Seconds");
-        this.WebGroupBox2.SetChildOrderEx(1);
-        this.WebGroupBox2.SetElementFont(1);
-        this.WebGroupBox2.SetElementLegendClassName("h6");
-        this.seHttpTimeoutSec.SetParentComponent(this.WebGroupBox2);
-        this.seHttpTimeoutSec.SetName("seHttpTimeoutSec");
-        this.seHttpTimeoutSec.SetAlignWithMargins(true);
-        this.seHttpTimeoutSec.SetLeft(40);
-        this.seHttpTimeoutSec.SetTop(30);
-        this.seHttpTimeoutSec.SetWidth(170);
-        this.seHttpTimeoutSec.SetHeight(30);
-        this.seHttpTimeoutSec.FMargins.SetLeft(40);
-        this.seHttpTimeoutSec.FMargins.SetTop(30);
-        this.seHttpTimeoutSec.FMargins.SetRight(40);
-        this.seHttpTimeoutSec.FMargins.SetBottom(20);
-        this.seHttpTimeoutSec.SetHeightStyle(2);
-        this.seHttpTimeoutSec.SetAlign(5);
-        this.seHttpTimeoutSec.FAutoSize = true;
-        this.seHttpTimeoutSec.SetBorderStyle(0);
-        this.seHttpTimeoutSec.SetColor(15790320);
-        this.seHttpTimeoutSec.SetElementFont(1);
-        this.seHttpTimeoutSec.SetIncrement(1);
-        this.seHttpTimeoutSec.SetMaxValue(20);
-        this.seHttpTimeoutSec.SetMinValue(1);
-        this.seHttpTimeoutSec.SetRole("");
-        this.seHttpTimeoutSec.SetValue(20);
-        this.SetEvent$1(this.seHttpTimeoutSec,this,"OnChange","seHttpTimeoutSecChange");
-        this.WebGroupBox3.SetParentComponent(this.pnlOptions);
-        this.WebGroupBox3.SetName("WebGroupBox3");
-        this.WebGroupBox3.SetLeft(16);
-        this.WebGroupBox3.SetTop(150);
-        this.WebGroupBox3.SetWidth(250);
-        this.WebGroupBox3.SetHeight(80);
-        this.WebGroupBox3.SetElementClassName("container");
-        this.WebGroupBox3.SetAlign(6);
-        this.WebGroupBox3.SetBorderColor(12632256);
-        this.WebGroupBox3.SetCaption("History Events Displayed");
-        this.WebGroupBox3.SetChildOrderEx(1);
-        this.WebGroupBox3.SetElementFont(1);
-        this.WebGroupBox3.SetElementLegendClassName("h6");
-        this.seNumHistEvents.SetParentComponent(this.WebGroupBox3);
-        this.seNumHistEvents.SetName("seNumHistEvents");
-        this.seNumHistEvents.SetAlignWithMargins(true);
-        this.seNumHistEvents.SetLeft(40);
-        this.seNumHistEvents.SetTop(30);
-        this.seNumHistEvents.SetWidth(170);
-        this.seNumHistEvents.SetHeight(30);
-        this.seNumHistEvents.FMargins.SetLeft(40);
-        this.seNumHistEvents.FMargins.SetTop(30);
-        this.seNumHistEvents.FMargins.SetRight(40);
-        this.seNumHistEvents.FMargins.SetBottom(20);
-        this.seNumHistEvents.SetHeightStyle(2);
-        this.seNumHistEvents.SetAlign(5);
-        this.seNumHistEvents.FAutoSize = true;
-        this.seNumHistEvents.SetBorderStyle(0);
-        this.seNumHistEvents.SetColor(15790320);
-        this.seNumHistEvents.SetElementFont(1);
-        this.seNumHistEvents.SetIncrement(100);
-        this.seNumHistEvents.SetMaxValue(8000);
-        this.seNumHistEvents.SetMinValue(100);
-        this.seNumHistEvents.SetRole("");
-        this.seNumHistEvents.SetValue(100);
-        this.SetEvent$1(this.seNumHistEvents,this,"OnChange","seNumHistEventsChange");
-        this.WebButton2.SetParentComponent(this.pnlOptions);
-        this.WebButton2.SetName("WebButton2");
-        this.WebButton2.SetLeft(24);
-        this.WebButton2.SetTop(404);
-        this.WebButton2.SetWidth(200);
-        this.WebButton2.SetHeight(20);
-        this.WebButton2.SetAlign(6);
-        this.WebButton2.SetCaption("Refresh History");
-        this.WebButton2.SetChildOrderEx(1);
-        this.WebButton2.SetElementClassName("btn btn-secondary");
-        this.WebButton2.SetElementFont(1);
-        this.WebButton2.FFont.FCharset = 1;
-        this.WebButton2.FFont.SetColor(16777215);
-        this.WebButton2.FFont.SetHeight(-9);
-        this.WebButton2.FFont.SetName("Segoe UI");
-        this.WebButton2.FFont.SetStyle({});
-        this.WebButton2.SetHeightStyle(2);
-        this.WebButton2.SetHeightPercent(6.000000000000000000);
-        this.WebButton2.SetParentFont(false);
-        this.WebButton2.SetWidthPercent(100.000000000000000000);
-        this.SetEvent$1(this.WebButton2,this,"OnClick","WebButton2Click");
-        this.WebDBGrid1.SetParentComponent(this.pnlOptions);
-        this.WebDBGrid1.SetName("WebDBGrid1");
-        this.WebDBGrid1.SetLeft(0);
-        this.WebDBGrid1.SetTop(799);
-        this.WebDBGrid1.SetWidth(644);
-        this.WebDBGrid1.SetHeight(200);
-        this.WebDBGrid1.SetAlign(2);
-        this.WebDBGrid1.SetDataSource(this.WebDataSource1);
-        this.WebDBGrid1.SetFixedCols(0);
-        this.WebDBGrid1.FOptions = rtl.createSet(0,1,2,3,4,7,18);
-        this.WebDBGrid1.SetTabOrder(5);
-        this.WebDBGrid1.SetHeightStyle(0);
-        this.WebDBGrid1.SetHeightPercent(50.000000000000000000);
-        this.WebDBGrid1.SetVisible(false);
-        this.WebDBGrid1.SetWidthPercent(100.000000000000000000);
-        this.WebDBGrid1.SetColWidths(0,24);
         this.WebMessageDlg1.SetParentComponent(this);
         this.WebMessageDlg1.SetName("WebMessageDlg1");
         this.WebMessageDlg1.SetLeft(320);
@@ -40453,6 +40871,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.pnlCaptures.SetChildOrderEx(9);
         this.pnlCaptures.FElementBodyClassName = "card-body";
         this.pnlCaptures.SetElementFont(1);
+        this.pnlCaptures.SetTabOrder(6);
         this.AllCapsGrid.SetParentComponent(this.pnlCaptures);
         this.AllCapsGrid.SetName("AllCapsGrid");
         this.AllCapsGrid.SetLeft(0);
@@ -40469,13 +40888,17 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.AllCapsGrid.FOptions = rtl.createSet(12,18);
         this.AllCapsGrid.SetTabOrder(0);
         this.AllCapsGrid.SetElementFont(1);
+        this.AllCapsGrid.FFixedFont.FCharset = 1;
+        this.AllCapsGrid.FFixedFont.SetColor(65793);
+        this.AllCapsGrid.FFixedFont.SetHeight(-12);
+        this.AllCapsGrid.FFixedFont.SetName("Segoe UI");
+        this.AllCapsGrid.FFixedFont.SetStyle({});
         this.AllCapsGrid.FRange.FMax = 100.000000000000000000;
         this.AllCapsGrid.FRange.FStep = 1.000000000000000000;
         this.AllCapsGrid.SetHeightStyle(0);
         this.AllCapsGrid.SetHeightPercent(100.000000000000000000);
         this.AllCapsGrid.FWordWrap = true;
         this.AllCapsGrid.SetWidthPercent(100.000000000000000000);
-        this.SetEvent$1(this.AllCapsGrid,this,"OnClickCell","AllCapsGridClickCell");
         this.SetEvent$1(this.AllCapsGrid,this,"OnGetCellData","AllCapsGridGetCellData");
         this.WebPanel1.SetParentComponent(this);
         this.WebPanel1.SetName("WebPanel1");
@@ -40488,6 +40911,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.WebPanel1.SetChildOrderEx(10);
         this.WebPanel1.FElementBodyClassName = "card-body";
         this.WebPanel1.SetElementFont(1);
+        this.WebPanel1.SetTabOrder(7);
         this.WebMemo1.SetParentComponent(this.WebPanel1);
         this.WebMemo1.SetName("WebMemo1");
         this.WebMemo1.SetLeft(0);
@@ -40499,7 +40923,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.WebMemo1.FMargins.SetRight(20);
         this.WebMemo1.FMargins.SetBottom(240);
         this.WebMemo1.SetAlign(5);
-        this.WebMemo1.SetAutoSize(false);
         this.WebMemo1.SetColor(65535);
         this.WebMemo1.SetElementFont(1);
         this.WebMemo1.FFont.FCharset = 1;
@@ -40534,6 +40957,156 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.WebProgressBar1.SetChildOrderEx(2);
         this.WebProgressBar1.SetElementBarClassName("progress-bar");
         this.WebProgressBar1.SetValue(2);
+        this.pnlOptions.SetParentComponent(this);
+        this.pnlOptions.SetName("pnlOptions");
+        this.pnlOptions.SetLeft(0);
+        this.pnlOptions.SetTop(53);
+        this.pnlOptions.SetWidth(644);
+        this.pnlOptions.SetHeight(999);
+        this.pnlOptions.SetElementClassName("card");
+        this.pnlOptions.SetAlign(5);
+        this.pnlOptions.SetChildOrderEx(9);
+        this.pnlOptions.FElementBodyClassName = "card-body";
+        this.pnlOptions.SetElementFont(1);
+        this.pnlOptions.SetTabOrder(8);
+        this.WebButton1.SetParentComponent(this.pnlOptions);
+        this.WebButton1.SetName("WebButton1");
+        this.WebButton1.SetLeft(24);
+        this.WebButton1.SetTop(416);
+        this.WebButton1.SetWidth(200);
+        this.WebButton1.SetHeight(20);
+        this.WebButton1.SetAlign(6);
+        this.WebButton1.SetCaption("Refresh EPG");
+        this.WebButton1.SetChildOrderEx(1);
+        this.WebButton1.SetElementClassName("btn btn-primary");
+        this.WebButton1.SetElementFont(1);
+        this.WebButton1.FFont.FCharset = 1;
+        this.WebButton1.FFont.SetColor(16777215);
+        this.WebButton1.FFont.SetHeight(-9);
+        this.WebButton1.FFont.SetName("Segoe UI");
+        this.WebButton1.FFont.SetStyle({});
+        this.WebButton1.SetHeightStyle(2);
+        this.WebButton1.SetHeightPercent(6.000000000000000000);
+        this.WebButton1.SetParentFont(false);
+        this.WebButton1.SetWidthPercent(100.000000000000000000);
+        this.SetEvent$1(this.WebButton1,this,"OnClick","WebButton1Click");
+        this.WebGroupBox1.SetParentComponent(this.pnlOptions);
+        this.WebGroupBox1.SetName("WebGroupBox1");
+        this.WebGroupBox1.SetLeft(16);
+        this.WebGroupBox1.SetTop(117);
+        this.WebGroupBox1.SetWidth(250);
+        this.WebGroupBox1.SetHeight(80);
+        this.WebGroupBox1.SetElementClassName("container");
+        this.WebGroupBox1.SetWidthPercent(25.000000000000000000);
+        this.WebGroupBox1.SetAlign(6);
+        this.WebGroupBox1.SetBorderColor(12632256);
+        this.WebGroupBox1.SetCaption("   EPG Days Displayed");
+        this.WebGroupBox1.SetChildOrderEx(1);
+        this.WebGroupBox1.SetElementFont(1);
+        this.WebGroupBox1.SetElementLegendClassName("h6");
+        this.seNumDisplayDays.SetParentComponent(this.WebGroupBox1);
+        this.seNumDisplayDays.SetName("seNumDisplayDays");
+        this.seNumDisplayDays.SetAlignWithMargins(true);
+        this.seNumDisplayDays.SetLeft(60);
+        this.seNumDisplayDays.SetTop(25);
+        this.seNumDisplayDays.SetWidth(130);
+        this.seNumDisplayDays.SetHeight(30);
+        this.seNumDisplayDays.FMargins.SetLeft(60);
+        this.seNumDisplayDays.FMargins.SetTop(25);
+        this.seNumDisplayDays.FMargins.SetRight(60);
+        this.seNumDisplayDays.FMargins.SetBottom(25);
+        this.seNumDisplayDays.SetElementClassName("form-control");
+        this.seNumDisplayDays.SetAlign(5);
+        this.seNumDisplayDays.FAutoSize = true;
+        this.seNumDisplayDays.SetBiDiMode(1);
+        this.seNumDisplayDays.SetBorderStyle(0);
+        this.seNumDisplayDays.SetColor(15790320);
+        this.seNumDisplayDays.SetElementFont(1);
+        this.seNumDisplayDays.SetIncrement(1);
+        this.seNumDisplayDays.SetMaxValue(20);
+        this.seNumDisplayDays.SetMinValue(1);
+        this.seNumDisplayDays.SetRole("");
+        this.seNumDisplayDays.SetValue(1);
+        this.SetEvent$1(this.seNumDisplayDays,this,"OnChange","seNumDisplayDaysChange");
+        this.WebGroupBox3.SetParentComponent(this.pnlOptions);
+        this.WebGroupBox3.SetName("WebGroupBox3");
+        this.WebGroupBox3.SetLeft(16);
+        this.WebGroupBox3.SetTop(215);
+        this.WebGroupBox3.SetWidth(250);
+        this.WebGroupBox3.SetHeight(80);
+        this.WebGroupBox3.SetElementClassName("container");
+        this.WebGroupBox3.SetWidthPercent(25.000000000000000000);
+        this.WebGroupBox3.SetAlign(6);
+        this.WebGroupBox3.SetBorderColor(12632256);
+        this.WebGroupBox3.SetCaption("   History Events Displayed");
+        this.WebGroupBox3.SetChildOrderEx(1);
+        this.WebGroupBox3.SetElementFont(1);
+        this.WebGroupBox3.SetElementLegendClassName("h6");
+        this.seNumHistEvents.SetParentComponent(this.WebGroupBox3);
+        this.seNumHistEvents.SetName("seNumHistEvents");
+        this.seNumHistEvents.SetAlignWithMargins(true);
+        this.seNumHistEvents.SetLeft(60);
+        this.seNumHistEvents.SetTop(25);
+        this.seNumHistEvents.SetWidth(130);
+        this.seNumHistEvents.SetHeight(30);
+        this.seNumHistEvents.FMargins.SetLeft(60);
+        this.seNumHistEvents.FMargins.SetTop(25);
+        this.seNumHistEvents.FMargins.SetRight(60);
+        this.seNumHistEvents.FMargins.SetBottom(25);
+        this.seNumHistEvents.SetElementClassName("form-control");
+        this.seNumHistEvents.SetAlign(5);
+        this.seNumHistEvents.FAutoSize = true;
+        this.seNumHistEvents.SetBiDiMode(1);
+        this.seNumHistEvents.SetBorderStyle(0);
+        this.seNumHistEvents.SetColor(15790320);
+        this.seNumHistEvents.SetElementFont(1);
+        this.seNumHistEvents.SetIncrement(100);
+        this.seNumHistEvents.SetMaxValue(8000);
+        this.seNumHistEvents.SetMinValue(100);
+        this.seNumHistEvents.SetRole("");
+        this.seNumHistEvents.SetValue(100);
+        this.SetEvent$1(this.seNumHistEvents,this,"OnChange","seNumHistEventsChange");
+        this.WebButton2.SetParentComponent(this.pnlOptions);
+        this.WebButton2.SetName("WebButton2");
+        this.WebButton2.SetLeft(24);
+        this.WebButton2.SetTop(464);
+        this.WebButton2.SetWidth(200);
+        this.WebButton2.SetHeight(20);
+        this.WebButton2.SetAlign(6);
+        this.WebButton2.SetCaption("Refresh History");
+        this.WebButton2.SetChildOrderEx(1);
+        this.WebButton2.SetElementClassName("btn btn-secondary");
+        this.WebButton2.SetElementFont(1);
+        this.WebButton2.FFont.FCharset = 1;
+        this.WebButton2.FFont.SetColor(16777215);
+        this.WebButton2.FFont.SetHeight(-9);
+        this.WebButton2.FFont.SetName("Segoe UI");
+        this.WebButton2.FFont.SetStyle({});
+        this.WebButton2.SetHeightStyle(2);
+        this.WebButton2.SetHeightPercent(6.000000000000000000);
+        this.WebButton2.SetParentFont(false);
+        this.WebButton2.SetWidthPercent(100.000000000000000000);
+        this.SetEvent$1(this.WebButton2,this,"OnClick","WebButton2Click");
+        this.WebDBGrid1.SetParentComponent(this.pnlOptions);
+        this.WebDBGrid1.SetName("WebDBGrid1");
+        this.WebDBGrid1.SetLeft(0);
+        this.WebDBGrid1.SetTop(799);
+        this.WebDBGrid1.SetWidth(644);
+        this.WebDBGrid1.SetHeight(200);
+        this.WebDBGrid1.SetAlign(2);
+        this.WebDBGrid1.FFixedFont.FCharset = 1;
+        this.WebDBGrid1.FFixedFont.SetColor(65793);
+        this.WebDBGrid1.FFixedFont.SetHeight(-12);
+        this.WebDBGrid1.FFixedFont.SetName("Segoe UI");
+        this.WebDBGrid1.FFixedFont.SetStyle({});
+        this.WebDBGrid1.SetFixedCols(0);
+        this.WebDBGrid1.FOptions = rtl.createSet(0,1,2,3,4,7,18);
+        this.WebDBGrid1.SetTabOrder(4);
+        this.WebDBGrid1.SetHeightStyle(0);
+        this.WebDBGrid1.SetHeightPercent(50.000000000000000000);
+        this.WebDBGrid1.SetVisible(false);
+        this.WebDBGrid1.SetWidthPercent(100.000000000000000000);
+        this.WebDBGrid1.SetColWidths(0,24);
         this.WIDBCDS.SetParentComponent(this);
         this.WIDBCDS.SetName("WIDBCDS");
         this.WIDBCDS.FIDBDatabaseName = "CWRDB";
@@ -40544,36 +41117,14 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.WIDBCDS.FAfterOpen = rtl.createCallback(this,"WIDBCDSAfterOpen");
         this.WIDBCDS.SetLeft(472);
         this.WIDBCDS.SetTop(88);
-        this.WebHttpRequest1.SetParentComponent(this);
-        this.WebHttpRequest1.SetName("WebHttpRequest1");
-        this.WebHttpRequest1.FTimeout = 5000;
-        this.SetEvent$1(this.WebHttpRequest1,this,"OnAbort","WebHttpRequest1Abort");
-        this.SetEvent$1(this.WebHttpRequest1,this,"OnError","WebHttpRequest1Error");
-        this.SetEvent$1(this.WebHttpRequest1,this,"OnTimeout","WebHttpRequest1Timeout");
-        this.WebHttpRequest1.SetLeft(304);
-        this.WebHttpRequest1.SetTop(512);
-        this.WebLocalStorage1.SetParentComponent(this);
-        this.WebLocalStorage1.SetName("WebLocalStorage1");
-        this.WebLocalStorage1.SetLeft(232);
-        this.WebLocalStorage1.SetTop(480);
-        this.WebClientDataSet1.SetParentComponent(this);
-        this.WebClientDataSet1.SetName("WebClientDataSet1");
-        this.WebClientDataSet1.SetConnection(this.WebClientConnection1);
-        this.WebClientDataSet1.FAfterOpen = rtl.createCallback(this,"WebClientDataSet1AfterOpen");
-        this.WebClientDataSet1.SetLeft(240);
-        this.WebClientDataSet1.SetTop(640);
-        this.WebClientConnection1.SetParentComponent(this);
-        this.WebClientConnection1.SetName("WebClientConnection1");
-        this.WebClientConnection1.SetActive(false);
-        this.WebClientConnection1.FDelimiter = ";";
-        this.WebClientConnection1.SetURI("http://localhost:8181/getdbfile?filename=cwr_epg.csv");
-        this.WebClientConnection1.SetLeft(356);
-        this.WebClientConnection1.SetTop(584);
-        this.WebDataSource1.SetParentComponent(this);
-        this.WebDataSource1.SetName("WebDataSource1");
-        this.WebDataSource1.SetDataSet(this.WebClientDataSet1);
-        this.WebDataSource1.SetLeft(312);
-        this.WebDataSource1.SetTop(512);
+        this.WebRESTClient1.SetParentComponent(this);
+        this.WebRESTClient1.SetName("WebRESTClient1");
+        this.WebRESTClient1.FLoginHeight = 480;
+        this.WebRESTClient1.FLoginWidth = 400;
+        this.WebRESTClient1.FPersistTokens.FKey = "GoogleToken";
+        this.WebRESTClient1.FPersistTokens.FEnabled = true;
+        this.WebRESTClient1.SetLeft(472);
+        this.WebRESTClient1.SetTop(168);
       } finally {
         this.AlertLabel.AfterLoadDFMValues();
         this.WebRadioGroup1.AfterLoadDFMValues();
@@ -40602,28 +41153,22 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
         this.HistoryTable.AfterLoadDFMValues();
         this.pnlLog.AfterLoadDFMValues();
         this.WebMemo2.AfterLoadDFMValues();
-        this.pnlOptions.AfterLoadDFMValues();
-        this.WebButton1.AfterLoadDFMValues();
-        this.WebGroupBox1.AfterLoadDFMValues();
-        this.seNumDisplayDays.AfterLoadDFMValues();
-        this.WebGroupBox2.AfterLoadDFMValues();
-        this.seHttpTimeoutSec.AfterLoadDFMValues();
-        this.WebGroupBox3.AfterLoadDFMValues();
-        this.seNumHistEvents.AfterLoadDFMValues();
-        this.WebButton2.AfterLoadDFMValues();
-        this.WebDBGrid1.AfterLoadDFMValues();
         this.WebMessageDlg1.AfterLoadDFMValues();
         this.pnlCaptures.AfterLoadDFMValues();
         this.AllCapsGrid.AfterLoadDFMValues();
         this.WebPanel1.AfterLoadDFMValues();
         this.WebMemo1.AfterLoadDFMValues();
         this.WebProgressBar1.AfterLoadDFMValues();
+        this.pnlOptions.AfterLoadDFMValues();
+        this.WebButton1.AfterLoadDFMValues();
+        this.WebGroupBox1.AfterLoadDFMValues();
+        this.seNumDisplayDays.AfterLoadDFMValues();
+        this.WebGroupBox3.AfterLoadDFMValues();
+        this.seNumHistEvents.AfterLoadDFMValues();
+        this.WebButton2.AfterLoadDFMValues();
+        this.WebDBGrid1.AfterLoadDFMValues();
         this.WIDBCDS.AfterLoadDFMValues();
-        this.WebHttpRequest1.AfterLoadDFMValues();
-        this.WebLocalStorage1.AfterLoadDFMValues();
-        this.WebClientDataSet1.AfterLoadDFMValues();
-        this.WebClientConnection1.AfterLoadDFMValues();
-        this.WebDataSource1.AfterLoadDFMValues();
+        this.WebRESTClient1.AfterLoadDFMValues();
       };
     };
     var $r = this.$rtti;
@@ -40633,7 +41178,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
     $r.addField("WebMemo1",pas["WEBLib.StdCtrls"].$rtti["TMemo"]);
     $r.addField("seNumDisplayDays",pas["WEBLib.StdCtrls"].$rtti["TSpinEdit"]);
     $r.addField("WebGroupBox1",pas["WEBLib.ExtCtrls"].$rtti["TGroupBox"]);
-    $r.addField("WebHttpRequest1",pas["WEBLib.REST"].$rtti["THttpRequest"]);
     $r.addField("WebGridPanel2",pas["WEBLib.ExtCtrls"].$rtti["TGridPanel"]);
     $r.addField("WebGridPanel3",pas["WEBLib.ExtCtrls"].$rtti["TGridPanel"]);
     $r.addField("lb01Title",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
@@ -40643,8 +41187,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
     $r.addField("WebGridPanel4",pas["WEBLib.ExtCtrls"].$rtti["TGridPanel"]);
     $r.addField("lb06SubTitle",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
     $r.addField("lb12Description",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
-    $r.addField("WebGroupBox2",pas["WEBLib.ExtCtrls"].$rtti["TGroupBox"]);
-    $r.addField("seHttpTimeoutSec",pas["WEBLib.StdCtrls"].$rtti["TSpinEdit"]);
     $r.addField("WebGridPanel1",pas["WEBLib.ExtCtrls"].$rtti["TGridPanel"]);
     $r.addField("WebGridPanel7",pas["WEBLib.ExtCtrls"].$rtti["TGridPanel"]);
     $r.addField("lb07Dolby",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
@@ -40654,7 +41196,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
     $r.addField("lb10Channel",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
     $r.addField("lb11Time",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
     $r.addField("WebMemo2",pas["WEBLib.StdCtrls"].$rtti["TMemo"]);
-    $r.addField("WebLocalStorage1",pas["WEBLib.Storage"].$rtti["TLocalStorage"]);
     $r.addField("WebProgressBar1",pas["WEBLib.ComCtrls"].$rtti["TProgressBar"]);
     $r.addField("WebRadioGroup1",pas["WEBLib.StdCtrls"].$rtti["TRadioGroup"]);
     $r.addField("AlertLabel",pas["WEBLib.StdCtrls"].$rtti["TButton"]);
@@ -40672,20 +41213,14 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
     $r.addField("seNumHistEvents",pas["WEBLib.StdCtrls"].$rtti["TSpinEdit"]);
     $r.addField("WebPanel1",pas["WEBLib.ExtCtrls"].$rtti["TPanel"]);
     $r.addField("WebButton2",pas["WEBLib.StdCtrls"].$rtti["TButton"]);
-    $r.addField("WebClientDataSet1",pas["WEBLib.CDS"].$rtti["TClientDataSet"]);
-    $r.addField("WebClientConnection1",pas["WEBLib.CDS"].$rtti["TClientConnection"]);
     $r.addField("WebDBGrid1",pas["WEBLib.DBCtrls"].$rtti["TDBGrid"]);
-    $r.addField("WebDataSource1",pas.DB.$rtti["TDataSource"]);
+    $r.addField("WebRESTClient1",pas["WEBLib.REST"].$rtti["TRESTClient"]);
     $r.addMethod("LoadWIDBCDS",0,[]);
     $r.addMethod("WIDBCDSIDBError",0,[["DataSet",pas.DB.$rtti["TDataSet"]],["opCode",pas["WEBLib.IndexedDb"].$rtti["TIndexedDbOpCode"]],["errorName",rtl.string],["errorMsg",rtl.string]]);
     $r.addMethod("WIDBCDSAfterOpen",0,[["DataSet",pas.DB.$rtti["TDataSet"]]]);
     $r.addMethod("WebButton1Click",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
-    $r.addMethod("WebFormCreate",0,[["Sender",pas.System.$rtti["TObject"]]]);
+    $r.addMethod("WebFormCreate",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("seNumDisplayDaysChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
-    $r.addMethod("seHttpTimeoutSecChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
-    $r.addMethod("WebHttpRequest1Abort",0,[["Sender",pas.System.$rtti["TObject"]]]);
-    $r.addMethod("WebHttpRequest1Error",0,[["Sender",pas.System.$rtti["TObject"]],["ARequest",pas["WEBLib.Controls"].$rtti["TJSXMLHttpRequestRecord"]],["Event",pas["WEBLib.Controls"].$rtti["TJSEventRecord"]],["Handled",rtl.boolean,1]]);
-    $r.addMethod("WebHttpRequest1Timeout",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("WebRadioGroup1Change",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("WebStringGrid2DblClick",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("tbCapturesShow",0,[],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
@@ -40695,21 +41230,16 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
     $r.addMethod("ListingsSelectCell",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint],["CanSelect",rtl.boolean,1]]);
     $r.addMethod("seNumHistEventsChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("HistoryTableFixedCellClick",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint]]);
-    $r.addMethod("AllCapsGridDblClick",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
-    $r.addMethod("AllCapsGridClickCell",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint]]);
     $r.addMethod("WebButton2Click",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
-    $r.addMethod("WebClientDataSet1AfterOpen",0,[["DataSet",pas.DB.$rtti["TDataSet"]]]);
   });
   this.CWRmainFrm = null;
   $mod.$implcode = function () {
     $impl.EPGChanged = false;
     $impl.ClickedCol = 0;
     $impl.ClickedRow = 0;
-    $impl.CWHelperIP = "";
     $impl.DBFIELDS = ["PSIP","Time","Title","SubTitle","Description","StartTime","EndTime","programID","originalAirDate","new","audioProperties","videoProperties","movieYear","genres"];
     $impl.NUMDAYS = "NumDisplayDays";
     $impl.NUMHIST = "NumHistoryItems";
-    $impl.HTTPTIMEOUT = "HttpTimeOut";
     $impl.Log = function (s) {
       $mod.CWRmainFrm.WebMemo2.FLines.Add(pas.SysUtils.DateTimeToStr(pas.SysUtils.Now(),false) + "--" + s);
       window.console.log(pas.SysUtils.DateTimeToStr(pas.SysUtils.Now(),false) + "--" + s);
@@ -40731,7 +41261,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","JS","Web","WEBLib.Graph
       lbl.FFont.SetColor(pas.Math.IfThen(State,255,12698049));
     };
   };
-},["WEBLib.WebTools","Math"]);
+},["Math"]);
 rtl.module("program",["System","WEBLib.Forms","WEBLib.Forms","CWRmainForm"],function () {
   "use strict";
   var $mod = this;
