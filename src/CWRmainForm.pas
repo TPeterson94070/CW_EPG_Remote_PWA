@@ -68,6 +68,7 @@ type
   procedure WIDBCDSAfterOpen(DataSet: TDataSet);
   [async]
   procedure WebButton1Click(Sender: TObject);
+  [async]
   procedure WebFormCreate(Sender: TObject);
   procedure seNumDisplayDaysChange(Sender: TObject);
 //  procedure seHttpTimeoutSecChange(Sender: TObject);
@@ -177,7 +178,7 @@ end;
 procedure TCWRmainFrm.WebFormCreate(Sender: TObject);
 var
   i: Integer;
-  AppVersion: string;
+  res, AppVersion: string;
   IsInstalled: boolean;
   IPAddr: TArray<string>;
 begin
@@ -199,6 +200,15 @@ begin
   // Log Version Information
   Log('Running version:  ' + AppVersion);
   Log('App is ' + IfThen(not Application.IsOnline, 'NOT ') + 'online');
+  WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
+//  WebRESTClient1.ReadTokens; // retrieve previous access token
+  WEBRESTClient1.App.CallBackURL := window.location.href;
+  WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' + WebRESTCLient1.App.Key+'&state=bf&response_type=token&redirect_uri='+WEBRESTClient1.App.CallbackURL+'&scope=https://www.googleapis.com/auth/drive';
+
+  res := await(string, WebRESTClient1.Authenticate);
+
+//  if Assigned(res) then
+//     GetGoogleDriveFiles;
   if TWebLocalStorage.GetValue(NUMDAYS) <> '' then
     seNumDisplayDays.Value := StrToInt(TWebLocalStorage.GetValue(NUMDAYS));
   if TWebLocalStorage.GetValue(NUMHIST) <> '' then

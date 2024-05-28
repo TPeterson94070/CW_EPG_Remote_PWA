@@ -5,7 +5,10 @@ program CW_EPG_Remote;
 uses
   Vcl.Forms,
   WEBLib.Forms,
-  CWRmainForm in 'CWRmainForm.pas' {CWRmainFrm: TWebForm} {*.html};
+  CWRmainForm in 'CWRmainForm.pas' {CWRmainFrm: TWebForm} {*.html}
+//  ,Vcl.Themes,
+//  Vcl.Styles
+;
 
 {$R *.res}
 
