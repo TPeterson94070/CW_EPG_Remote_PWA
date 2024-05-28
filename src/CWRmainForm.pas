@@ -41,7 +41,6 @@ type
   lb10Channel: TWebLabel;
   lb11Time: TWebLabel;
   WebMemo2: TWebMemo;
-  WebLocalStorage1: TWebLocalStorage;
   WebProgressBar1: TWebProgressBar;
   WebRadioGroup1: TWebRadioGroup;
   AlertLabel: TWebButton;
@@ -71,12 +70,6 @@ type
   [async]
   procedure WebFormCreate(Sender: TObject);
   procedure seNumDisplayDaysChange(Sender: TObject);
-//  procedure seHttpTimeoutSecChange(Sender: TObject);
-//  procedure WebHttpRequest1Abort(Sender: TObject);
-//  procedure WebHttpRequest1Error(Sender: TObject;
-//    ARequest: TJSXMLHttpRequestRecord; Event: TJSEventRecord;
-//    var Handled: Boolean);
-//  procedure WebHttpRequest1Timeout(Sender: TObject);
   [async]
   procedure WebRadioGroup1Change(Sender: TObject);
   procedure WebStringGrid2DblClick(Sender: TObject);
@@ -96,11 +89,6 @@ type
     [async]
     procedure WebButton2Click(Sender: TObject);
 //    procedure WebClientDataSet1AfterOpen(DataSet: TDataSet);
-//    procedure WebAuth1GoogleSignIn(Sender: TObject; UserData: TGoogleUserData);
-//    procedure WebButton3Click(Sender: TObject);
-//    procedure WebButton4Click(Sender: TObject);
-//    [async]
-//    procedure WebButton5Click(Sender: TObject);
 private
   { Private declarations }
   [async]
@@ -120,11 +108,8 @@ private
   procedure tbHistoryShow;
   [async]
   procedure FillHistoryDisplay;
-//  [async]
-//  function HttpReq(Cmd: string): {TJSXMLHttpRequest}string;
   [async]
   procedure RefreshHistory;
-  procedure RemoteCaps(const rstr, URL: string);
   [async]
   function GetGoogleDriveFile(TableFile: string): string;
 public
@@ -201,20 +186,19 @@ begin
   Log('Running version:  ' + AppVersion);
   Log('App is ' + IfThen(not Application.IsOnline, 'NOT ') + 'online');
   WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
-//  WebRESTClient1.ReadTokens; // retrieve previous access token
+  WebRESTClient1.ReadTokens; // retrieve previous access token
   WEBRESTClient1.App.CallBackURL := window.location.href;
-  WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' + WebRESTCLient1.App.Key+'&state=bf&response_type=token&redirect_uri='+WEBRESTClient1.App.CallbackURL+'&scope=https://www.googleapis.com/auth/drive';
-
-  res := await(string, WebRESTClient1.Authenticate);
-
+  WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' + WebRESTCLient1.App.Key
+    + '&state=bf&response_type=token&redirect_uri='+WEBRESTClient1.App.CallbackURL
+    + '&scope=https://www.googleapis.com/auth/drive';
+  if WebRESTClient1.AccessToken = '' then
+    res := await(string, WebRESTClient1.Authenticate);
 //  if Assigned(res) then
 //     GetGoogleDriveFiles;
   if TWebLocalStorage.GetValue(NUMDAYS) <> '' then
     seNumDisplayDays.Value := StrToInt(TWebLocalStorage.GetValue(NUMDAYS));
   if TWebLocalStorage.GetValue(NUMHIST) <> '' then
     seNumHistEvents.Value := StrToInt(TWebLocalStorage.GetValue(NUMHIST));
-//  if TWebLocalStorage.GetValue(HTTPTIMEOUT) <> '' then
-//    seHttpTimeoutSec.Value := StrToInt(TWebLocalStorage.GetValue(HTTPTIMEOUT));
   FillHistoryDisplay;
   Listings.RowCount := 1;
   SetTableDefaults(Listings, 70, 150, ClientWidth, 0);
@@ -252,36 +236,6 @@ begin
   end;
 end;
 
-//procedure TCWRmainFrm.WebHttpRequest1Abort(Sender: TObject);
-//begin
-//  WebRadioGroup1.Enabled := True;
-//  ShowMessage('Request aborted');
-//  Log('Http request aborted, no reason supplied');
-//end;
-//
-//procedure TCWRmainFrm.WebHttpRequest1Error(Sender: TObject;
-//  ARequest: TJSXMLHttpRequestRecord; Event: TJSEventRecord;
-//  var Handled: Boolean);
-//begin
-//  WebRadioGroup1.Enabled := True;
-//  ShowMessage('Request ERROR:  ' + ARequest.req.ToString
-//    + #13#13'Make sure that the Master HTPC is awake');
-//  log('HttpRequest ERROR: ' + ARequest.req.toString);
-//end;
-//
-//procedure TCWRmainFrm.WebHttpRequest1Timeout(Sender: TObject);
-//begin
-//  WebRadioGroup1.Enabled := True;
-//  ShowMessage('Request timed out'#13#13'Cannot refresh EPG data while CWHelper is offline');
-//  log('HttpRequest timed out. Presume CWHelper offline');
-//end;
-
-//procedure TCWRmainFrm.WebAuth1GoogleSignIn(Sender: TObject;
-//  UserData: TGoogleUserData);
-//begin
-//ShowMessage('WAGSI UserData: '+UserData.ToString);
-//end;
-
 procedure TCWRmainFrm.WebButton1Click(Sender: TObject);
 begin
   Log('======== "Refresh EPG" clicked');
@@ -302,88 +256,6 @@ begin
   await (RefreshHistory);
 end;
 
-//procedure TCWRmainFrm.WebButton3Click(Sender: TObject);
-//begin
-//asm
-//      /**
-//       *  Sign in the user upon button click.
-//       */
-//      // function handleAuthClick()
-//      {
-//        tokenClient.callback = async (resp) => {
-//          if (resp.error !== undefined) {
-//            throw (resp);
-//          }
-//          document.getElementById('signout_button').style.visibility = 'visible';
-//          document.getElementById('authorize_button').innerText = 'Refresh';
-//          await listFiles();
-//        };
-//
-//        if (gapi.client.getToken() === null) {
-//          // Prompt the user to select a Google Account and ask for consent to share their data
-//          // when establishing a new session.
-//          tokenClient.requestAccessToken({prompt: 'consent'});
-//        } else {
-//          // Skip display of account chooser and consent dialog for an existing session.
-//          tokenClient.requestAccessToken({prompt: ''});
-//        }
-//      }
-//end;
-//end;
-
-//procedure TCWRmainFrm.WebButton4Click(Sender: TObject);
-//begin
-//asm
-//      /**
-//       *  Sign out the user upon button click.
-//       */
-//      // function handleSignoutClick()
-//      {
-//        const token = gapi.client.getToken();
-//        if (token !== null) {
-//          google.accounts.oauth2.revoke(token.access_token);
-//          gapi.client.setToken('');
-//          document.getElementById('content').innerText = '';
-//          document.getElementById('authorize_button').innerText = 'Authorize';
-//          document.getElementById('signout_button').style.visibility = 'hidden';
-//        }
-//      }
-//
-//end;
-//end;
-
-//procedure TCWRmainFrm.WebButton5Click(Sender: TObject);
-//begin
-//asm
-//      /**
-//       * Print metadata for first 25 files.
-//       */
-//      //async function listFiles()
-//      {
-//        let response;
-//        try {
-//          response = await gapi.client.drive.files.list({
-//            'pageSize': 25,
-//            'fields': 'files(id, name)',
-//          });
-//        } catch (err) {
-//          console.log(err.message);
-//          return;
-//        }
-//        const files = response.result.files;
-//        if (!files || files.length == 0) {
-//          console.log('No files found')
-//          return;
-//        }
-//        // Flatten to string to display
-//        const output = files.reduce(
-//            (str, file) => `${str}${file.name} (${file.id})\n`,
-//            'Files:\n');
-//        console.log(output);
-//      }
-//end;
-//end;
-
 procedure TCWRmainFrm.RefreshHistory;
 begin
   WebRadioGroup1.Enabled := False;
@@ -393,27 +265,6 @@ begin
   asm await sleep(100) end;
   WebRadioGroup1.Enabled := True;
 end;
-
-//function TCWRmainFrm.HttpReq(Cmd: string): string;
-//var
-//  req: TJSXMLHttpRequest;
-//begin
-//  Log('Sending command: ' + Cmd);
-//  WebHttpRequest1.URL := Cmd;
-//  WebHttpRequest1.Timeout := seHttpTimeoutSec.Value * 1000;
-//  try
-//    req := await(TJSXMLHttpRequest, WebHttpRequest1.Perform);
-//    Log('Status: ' + req.Status.ToString);
-//    Result := IfThen(req.Status=200, req.responseText);
-////    Log('Result: ' + Result);
-//  except
-//    on E:Exception do
-//    begin
-//      Log('HttpRequest Exception: ' + E.Message);
-//      ShowMessage('Cannot send request while CWHelper is offline');
-//    end;
-//  end;
-//end;
 
 function TCWRmainFrm.GetGoogleDriveFile(TableFile: string): string;
 var
@@ -428,9 +279,10 @@ begin
   if WebRESTClient1.AccessToken = '' then
     Exit;
 
-  q :='name contains ''' + TableFile + '''';
+  q :='name = ''' + TableFile + '''';
 
-  rq := await(TJSXMLHttpRequest, WEBRESTClient1.HttpRequest('GET','https://www.googleapis.com/drive/v3/files?q='+WEBRestClient1.URLEncode(q)));
+  rq := await(TJSXMLHttpRequest, WEBRESTClient1.HttpRequest('GET',
+    'https://www.googleapis.com/drive/v3/files?q='+WEBRestClient1.URLEncode(q)));
 
   if Assigned(rq) then
   begin
@@ -447,12 +299,11 @@ begin
         jso := TJSONObject(ja.Items[i]);
         if jso.GetJSONValue('name') = TableFile then
           id := string(jso.GetJSONValue('id'));
-//        console.log('add id',jso.GetValue('id'), s);
-//        WebListbox1.Items.AddPair(jso.GetJSONValue('name'),jso.GetJSONValue('id'));
       end;
       jso.Free;
       console.log(id);
-      rq := await(TJSXMLHttpRequest, WebRESTClient1.httprequest('GET','https://www.googleapis.com/drive/v3/files/'+id+'?alt=media').catch(
+      rq := await(TJSXMLHttpRequest, WebRESTClient1.httprequest('GET',
+        'https://www.googleapis.com/drive/v3/files/'+id+'?alt=media').catch(
         function(AValue: JSValue): JSValue
         begin
           console.log('error here',AValue);
@@ -630,12 +481,6 @@ begin
   EPGChanged := False;
   DBIncRecs := nil;
 end;
-
-//procedure TCWRmainFrm.seHttpTimeoutSecChange(Sender: TObject);
-//begin
-//  Log('Http Timeout set to: ' + seHttpTimeoutSec.Value.ToString);
-//  TWebLocalStorage.SetValue(HTTPTIMEOUT,seHttpTimeoutSec.Value.ToString);
-//end;
 
 procedure TCWRmainFrm.seNumDisplayDaysChange(Sender: TObject);
 begin
@@ -1032,70 +877,70 @@ end;
 //  Log(' ====== FetchCapReservations finished =========');
 //end;
 
-function ParameterVal(const pname, Capture: string): string;
-var
-  ps: Integer;
-begin
-  ps := pos(pname + '="', Capture) + Length(pname) + 2;       // +2 for '="' after name
-  Result := copy(Capture,ps,PosEx('"',Capture,ps)-ps);
-end;
-
-//===============================================================
-  { Parses reply (rstr) from one server's CWHelper instruction and
-    constructs current capture list (nulled for "decaptureall") }
-procedure TCWRmainFrm.RemoteCaps(const rstr, URL: string);
+//function ParameterVal(const pname, Capture: string): string;
+//var
+//  ps: Integer;
+//begin
+//  ps := pos(pname + '="', Capture) + Length(pname) + 2;       // +2 for '="' after name
+//  Result := copy(Capture,ps,PosEx('"',Capture,ps)-ps);
+//end;
 //
-var
-  Captures: TArray<System.string>;
-begin
-  Log('  >>>>>>>> remotecaps called ......');
-  Log('  ########## ' + URL + ' Output ###########');
-  Log(rstr);
-//  RemoteCapGrid.Height := 0;
-  if rstr.Contains('<xml id="captures">') then               //  Read Remotes Scheduled Entries
-  begin
-    Captures := rstr.Split(['<capture ']);
-//    RemoteCapGrid.BeginUpdate;
-//    RemoteCapGrid.RowCount := Length(Captures) - 1;
-//    for var i := 1 to Length(Captures) - 1 do
-//    begin
-//      remotecapgrid.cells[0,i-1] := ParameterVal('sequence', Captures[i]); //.ToInteger;
-//      var x := ParameterVal('start', Captures[i]);
-//      var Splt := {ParameterVal('start', Captures[i])}x.Split([' '], 2);
-//      remotecapgrid.cells[1,i-1] := Splt[0];      // Date
-//      remotecapgrid.cells[2,i-1] := Splt[1];      // StartTime
-//      remotecapgrid.cells[3,i-1] :=               // EndTime
-//        FormatDateTime('hh:nn:ss',StrToDateTime(ParameterVal('end', Captures[i])) + OneSecond);
-//      var channelname := ParameterVal('channelName', Captures[i]);
-//      remotecapgrid.cells[4,i-1] := channelname;
-//      remotecapgrid.cells[15,i-1] := ParameterVal('alphaDescription', Captures[i]);
-////      remotecapgrid.cells[5,i-1] := ParameterVal('input', Captures[i]);
-//      remotecapgrid.cells[12,i-1] := ParameterVal('tuner', Captures[i]);
-//      remotecapgrid.cells[9,i-1] := ParameterVal('deviceId', Captures[i]);
-//      remotecapgrid.cells[14,i-1] := ParameterVal('tunerType', Captures[i]);
-//      var channelvirtual := ParameterVal('channelVirtual', Captures[i]);
-//      remotecapgrid.cells[16,i-1] := channelvirtual;
-//      remotecapgrid.cells[12,i-1] := 'HR('
-//        + remotecapgrid.cells[12,i-1] + ')';
-//      var ts1 := copy(remotecapgrid.cells[12,i-1],
-//        pos('-',remotecapgrid.cells[12,i-1])+1,1);
-//      remotecapgrid.cells[5,i-1] := ts1;
-//      remotecapgrid.cells[13,i-1] := ParameterVal('fileName', Captures[i]);
-//      remotecapgrid.cells[8,i-1] := IfThen
-//        (remotecapgrid.cells[13,i-1] = '(watch)', 'W', 'C');
-//      remotecapgrid.cells[6,i-1] := ParameterVal('title', Captures[i]);
-//      remotecapgrid.cells[11,i-1] := IfThen
-//        (uppercase(ParameterVal('recurring', Captures[i])) = 'TRUE', 'R');
-//      remotecapgrid.cells[10,i-1] := compname;  // Computername
-    end;
-//    SaveRemoteCapFile;
-//    RemoteCapGrid.EndUpdate;
-//    RemoteCapGrid.Height := 0;  //118;
-//  end;
-//  // Find Caps in Listings...need to wait for ShowGrid update!
-//
-  Log('  >>>>>>>> remotecaps finished ......');
-end;
+////===============================================================
+//  { Parses reply (rstr) from one server's CWHelper instruction and
+//    constructs current capture list (nulled for "decaptureall") }
+//procedure TCWRmainFrm.RemoteCaps(const rstr, URL: string);
+////
+//var
+//  Captures: TArray<System.string>;
+//begin
+//  Log('  >>>>>>>> remotecaps called ......');
+//  Log('  ########## ' + URL + ' Output ###########');
+//  Log(rstr);
+////  RemoteCapGrid.Height := 0;
+//  if rstr.Contains('<xml id="captures">') then               //  Read Remotes Scheduled Entries
+//  begin
+//    Captures := rstr.Split(['<capture ']);
+////    RemoteCapGrid.BeginUpdate;
+////    RemoteCapGrid.RowCount := Length(Captures) - 1;
+////    for var i := 1 to Length(Captures) - 1 do
+////    begin
+////      remotecapgrid.cells[0,i-1] := ParameterVal('sequence', Captures[i]); //.ToInteger;
+////      var x := ParameterVal('start', Captures[i]);
+////      var Splt := {ParameterVal('start', Captures[i])}x.Split([' '], 2);
+////      remotecapgrid.cells[1,i-1] := Splt[0];      // Date
+////      remotecapgrid.cells[2,i-1] := Splt[1];      // StartTime
+////      remotecapgrid.cells[3,i-1] :=               // EndTime
+////        FormatDateTime('hh:nn:ss',StrToDateTime(ParameterVal('end', Captures[i])) + OneSecond);
+////      var channelname := ParameterVal('channelName', Captures[i]);
+////      remotecapgrid.cells[4,i-1] := channelname;
+////      remotecapgrid.cells[15,i-1] := ParameterVal('alphaDescription', Captures[i]);
+//////      remotecapgrid.cells[5,i-1] := ParameterVal('input', Captures[i]);
+////      remotecapgrid.cells[12,i-1] := ParameterVal('tuner', Captures[i]);
+////      remotecapgrid.cells[9,i-1] := ParameterVal('deviceId', Captures[i]);
+////      remotecapgrid.cells[14,i-1] := ParameterVal('tunerType', Captures[i]);
+////      var channelvirtual := ParameterVal('channelVirtual', Captures[i]);
+////      remotecapgrid.cells[16,i-1] := channelvirtual;
+////      remotecapgrid.cells[12,i-1] := 'HR('
+////        + remotecapgrid.cells[12,i-1] + ')';
+////      var ts1 := copy(remotecapgrid.cells[12,i-1],
+////        pos('-',remotecapgrid.cells[12,i-1])+1,1);
+////      remotecapgrid.cells[5,i-1] := ts1;
+////      remotecapgrid.cells[13,i-1] := ParameterVal('fileName', Captures[i]);
+////      remotecapgrid.cells[8,i-1] := IfThen
+////        (remotecapgrid.cells[13,i-1] = '(watch)', 'W', 'C');
+////      remotecapgrid.cells[6,i-1] := ParameterVal('title', Captures[i]);
+////      remotecapgrid.cells[11,i-1] := IfThen
+////        (uppercase(ParameterVal('recurring', Captures[i])) = 'TRUE', 'R');
+////      remotecapgrid.cells[10,i-1] := compname;  // Computername
+//    end;
+////    SaveRemoteCapFile;
+////    RemoteCapGrid.EndUpdate;
+////    RemoteCapGrid.Height := 0;  //118;
+////  end;
+////  // Find Caps in Listings...need to wait for ShowGrid update!
+////
+//  Log('  >>>>>>>> remotecaps finished ......');
+//end;
 
 procedure TCWRmainFrm.FetchHistory;
 var
