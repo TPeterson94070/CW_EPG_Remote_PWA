@@ -970,6 +970,7 @@ object CWRmainFrm: TCWRmainFrm
     LoginWidth = 400
     PersistTokens.Key = 'GoogleToken'
     PersistTokens.Enabled = True
+    ResponseType = rtText
     Left = 472
     Top = 168
   end

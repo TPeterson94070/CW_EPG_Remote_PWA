@@ -180,21 +180,10 @@ begin
 //                 ('standalone' in window.navigator);
   end;
 {$ENDIF}
-//  showmessage(IsInstalled.ToString);
-//  if not IsInstalled then
   // Log Version Information
   Log('Running version:  ' + AppVersion);
   Log('App is ' + IfThen(not Application.IsOnline, 'NOT ') + 'online');
-  WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
-  WebRESTClient1.ReadTokens; // retrieve previous access token
-  WEBRESTClient1.App.CallBackURL := window.location.href;
-  WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' + WebRESTCLient1.App.Key
-    + '&state=bf&response_type=token&redirect_uri='+WEBRESTClient1.App.CallbackURL
-    + '&scope=https://www.googleapis.com/auth/drive';
-  if WebRESTClient1.AccessToken = '' then
-    res := await(string, WebRESTClient1.Authenticate);
-//  if Assigned(res) then
-//     GetGoogleDriveFiles;
+//  WebRESTClient1.ReadTokens; // retrieve previous access token
   if TWebLocalStorage.GetValue(NUMDAYS) <> '' then
     seNumDisplayDays.Value := StrToInt(TWebLocalStorage.GetValue(NUMDAYS));
   if TWebLocalStorage.GetValue(NUMHIST) <> '' then
@@ -276,10 +265,14 @@ var
 
 begin
   Result := '';
-  if WebRESTClient1.AccessToken = '' then
-    Exit;
+  WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
+  WEBRESTClient1.App.CallBackURL := window.location.href;
+  WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' + WebRESTCLient1.App.Key
+    + '&state=bf&response_type=token&redirect_uri='+WEBRESTClient1.App.CallbackURL
+    + '&scope=https://www.googleapis.com/auth/drive';
+  await(string, WebRESTClient1.Authenticate);
 
-  q :='name = ''' + TableFile + '''';
+  q :='name = ''' + TableFile + ''' and trashed = false';
 
   rq := await(TJSXMLHttpRequest, WEBRESTClient1.HttpRequest('GET',
     'https://www.googleapis.com/drive/v3/files?q='+WEBRestClient1.URLEncode(q)));
@@ -294,6 +287,7 @@ begin
     if Assigned(jso) then
     begin
       ja := TJSONArray(jso.GetValue('files'));
+      Log(ja.count.tostring + ' files found');
       for i := 0 to ja.Count - 1 do
       begin
         jso := TJSONObject(ja.Items[i]);
@@ -301,14 +295,15 @@ begin
           id := string(jso.GetJSONValue('id'));
       end;
       jso.Free;
+      ja.Free;
       console.log(id);
+      if id = '' then exit('');
       rq := await(TJSXMLHttpRequest, WebRESTClient1.httprequest('GET',
         'https://www.googleapis.com/drive/v3/files/'+id+'?alt=media').catch(
         function(AValue: JSValue): JSValue
         begin
           console.log('error here',AValue);
         end));
-
       if Assigned(rq) then Result := rq.responseText;
     end;
   end;
@@ -316,8 +311,9 @@ end;
 
 procedure TCWRmainFrm.RefreshCSV(WSG: TWebStringGrid; TableFile, Title: string);
 var
-  Reply: string;
+  Reply, Line: string;
   sl: TStrings;
+  ReplyArray: TArray<string>;
 begin
   Log('ReFreshCSV called for ' + TableFile);
   if application.IsOnline then
@@ -335,10 +331,11 @@ begin
 
         if Reply <> '' then  // Got a response
         begin
+          Log(copy(Reply,1,500));
           sl := TStringList.Create;
           Log('Begin extract strings');
-          Log(ExtractStrings([],[],Reply, sl).ToString
-            + ' strings extracted, begin ' + WSG.Name + '.LoadFromStrings');
+          ReplyArray := Reply.Split([#13]);
+          for Line in ReplyArray do sl.Add(Line);
           WSG.LoadFromStrings(sl, ',', True);
           Log(WSG.Name+'.RowCount: ' + WSG.RowCount.ToString);
           Log('Done loading '+WSG.Name);
