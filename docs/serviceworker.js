@@ -1,6 +1,6 @@
 var CACHE_NAME = "CW_EPG_Remote";
 var RUNTIME = "MyDynamicCache";
-//var NO_CONN_MSG = "NoConnMsg.html";
+var NO_CONN_MSG = "NoConnMsg.html";
 var CACHED_URLS = [
   "index.html",
   "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css",
@@ -8,13 +8,12 @@ var CACHED_URLS = [
   "https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js",
   "https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css",
   "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/webfonts/fa-solid-900.woff2",
-  "CW_EPG_Remote.js",
+  "CW_EPG_Remote_1_0_1230.js",
   "CWRmainForm.html",
   "IconResHigh.png",
   "IconResLow.png",
   "IconResMid.png",
-  "Manifest.json",
-  "NoConnMsg.html"
+  "Manifest.json"
   ];
 
 self.addEventListener('install', function(event) {
