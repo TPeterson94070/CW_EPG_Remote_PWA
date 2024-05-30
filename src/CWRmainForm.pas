@@ -183,7 +183,7 @@ begin
   // Log Version Information
   Log('Running version:  ' + AppVersion);
   Log('App is ' + IfThen(not Application.IsOnline, 'NOT ') + 'online');
-//  WebRESTClient1.ReadTokens; // retrieve previous access token
+  WebRESTClient1.ReadTokens; // retrieve previous access token
   if TWebLocalStorage.GetValue(NUMDAYS) <> '' then
     seNumDisplayDays.Value := StrToInt(TWebLocalStorage.GetValue(NUMDAYS));
   if TWebLocalStorage.GetValue(NUMHIST) <> '' then
@@ -229,6 +229,7 @@ procedure TCWRmainFrm.WebButton1Click(Sender: TObject);
 begin
   Log('======== "Refresh EPG" clicked');
   WebRadioGroup1.Enabled := False;
+  WebRESTClient1.ClearTokens;
   asm await sleep(100) end;
   await (RefreshCSV(WebStringGrid1, 'cwr_epg.csv','EPG'));
   await (LoadWIDBCDS);
@@ -265,13 +266,15 @@ var
 
 begin
   Result := '';
-  WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
-  WEBRESTClient1.App.CallBackURL := window.location.href;
-  WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' + WebRESTCLient1.App.Key
-    + '&state=bf&response_type=token&redirect_uri='+WEBRESTClient1.App.CallbackURL
-    + '&scope=https://www.googleapis.com/auth/drive';
-  await(string, WebRESTClient1.Authenticate);
-
+  if WebRESTClient1.App.Key = '' then
+  begin
+    WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
+    WEBRESTClient1.App.CallBackURL := window.location.href;
+    WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' + WebRESTCLient1.App.Key
+      + '&state=bf&response_type=token&redirect_uri='+WEBRESTClient1.App.CallbackURL
+      + '&scope=https://www.googleapis.com/auth/drive';
+    await(string, WebRESTClient1.Authenticate);
+  end;
   q :='name = ''' + TableFile + ''' and trashed = false';
 
   rq := await(TJSXMLHttpRequest, WEBRESTClient1.HttpRequest('GET',
