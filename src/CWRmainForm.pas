@@ -266,14 +266,19 @@ var
 
 begin
   Result := '';
-  if WebRESTClient1.App.Key = '' then
+// ??? AccessExpiry is always 12/30/1899 (i.e., 0) ???
+//  console.log('AccessExpiry: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
+  if WebRESTClient1.AccessToken = '' then
   begin
+    console.log('Performing OAuth');
     WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
     WEBRESTClient1.App.CallBackURL := window.location.href;
     WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' + WebRESTCLient1.App.Key
       + '&state=bf&response_type=token&redirect_uri='+WEBRESTClient1.App.CallbackURL
       + '&scope=https://www.googleapis.com/auth/drive';
     await(string, WebRESTClient1.Authenticate);
+//    WebRESTClient1.WriteTokens;
+//    console.log('AccessExpiry: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
   end;
   q :='name = ''' + TableFile + ''' and trashed = false';
 
