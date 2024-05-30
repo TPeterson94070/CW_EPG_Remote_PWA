@@ -390,6 +390,9 @@ begin
     while not WIDBCDS.IsEmpty do WIDBCDS.Delete;
     Log('LoadWIDBCDS (after empty), DB.RecordCount: ' + WIDBCDS.RecordCount.ToString);
     Log('LoadWIDBCDS, WSG1.RowCount: ' + WebStringGrid1.RowCount.ToString);
+    // Lose superfluous <">
+    for j := 1 to WebStringGrid1.RowCount - 1 do
+      WebStringGrid1.Cells[0,j] := ReplaceStr(WebStringGrid1.Cells[0,j],'"','');
     for j := 1 to WebStringGrid1.RowCount - 1 do
     begin
       WIDBCDS.Append;
