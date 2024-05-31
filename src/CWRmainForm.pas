@@ -58,7 +58,6 @@ type
     seNumHistEvents: TWebSpinEdit;
     WebPanel1: TWebPanel;
     WebButton2: TWebButton;
-    WebDBGrid1: TWebDBGrid;
     WebRESTClient1: TWebRESTClient;
 
   procedure LoadWIDBCDS;
