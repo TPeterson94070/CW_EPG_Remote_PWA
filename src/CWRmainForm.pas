@@ -415,7 +415,8 @@ begin
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   if WIDBCDS.Active and not WIDBCDS.IsEmpty then
   begin
-    WebRadioGroup1.Enabled := False;
+    SetPage(0);
+//    WebRadioGroup1.Enabled := False;
     WebPanel1.BringToFront;
     asm await sleep(100) end;
     Log('Memo1 is showing');
@@ -476,14 +477,15 @@ begin
       Listings.Cells[0,0] := 'Channel';
     finally
       Listings.EndUpdate;
-      SetPage(0);
+//      WebRadioGroup1.Enabled := True;
+//      SetPage(0);
     end;
   end else begin
     SetPage(4);
     asm await sleep(10) end;
     ShowMessage('Please click "Refresh EPG" button');
   end;
-  WebRadioGroup1.Enabled := True;
+//  WebRadioGroup1.Enabled := True;
   asm await sleep(10) end;
   EPGChanged := False;
   DBIncRecs := nil;
@@ -633,7 +635,7 @@ begin
     Log('Leaving Page: ' + WebRadioGroup1.Items[WebRadioGroup1.ItemIndex]);
   end;
   WebRadioGroup1.ItemIndex := PageNum;
-  await (WebRadioGroup1Change(Application));
+  await (WebRadioGroup1Change({Application}Self));
 end;
 
 procedure TCWRmainFrm.WebRadioGroup1Change(Sender: TObject);
@@ -645,7 +647,7 @@ begin
     0: begin          {Listings page}
       pnlListings.BringToFront;
       Log('Sender: ' + Sender.ToString);
-      if EPGChanged and (Sender = Application) then await(RefreshListings);
+//      if EPGChanged and (Sender = Application) then await(RefreshListings);
       Listings.SetFocus;
     end;
     1: begin          {Captures}
