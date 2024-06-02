@@ -127,9 +127,7 @@ uses
 {$R *.dfm}
 
 var
-  EPGChanged: Boolean;
   ClickedCol,  ClickedRow: Integer;
-  CWHelperIP: String;
 
 const
   DBFIELDS: array[0..13] of string = ('PSIP', 'Time', 'Title', 'SubTitle', 'Description',
@@ -137,7 +135,6 @@ const
     'audioProperties', 'videoProperties', 'movieYear', 'genres');
   NUMDAYS = 'NumDisplayDays';
   NUMHIST = 'NumHistoryItems';
-  HTTPTIMEOUT = 'HttpTimeOut';
 
 procedure Log(const s: string);
 begin
@@ -163,9 +160,7 @@ end;
 procedure TCWRmainFrm.WebFormCreate(Sender: TObject);
 var
   i: Integer;
-  res, AppVersion: string;
-  IsInstalled: boolean;
-  IPAddr: TArray<string>;
+  AppVersion: string;
 begin
   Log('FormCreate is called');
 {$IFDEF PAS2JS}
@@ -175,7 +170,7 @@ begin
     window.sleep = async function(msecs) {return new Promise((resolve) => setTimeout(resolve, msecs)); }
 // Retrieve JS version info in Delphi variable
     AppVersion = ProjectName;
-// Discover if installed ("standalone")
+// Discover if installed ("standalone") : Does not work!!
 //   IsInstalled = (window.matchMedia('(display-mode: standalone)').matches) ||
 //                 ('standalone' in window.navigator);
   end;
@@ -419,7 +414,6 @@ begin
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   if WIDBCDS.Active and not WIDBCDS.IsEmpty then
   begin
-//    SetPage(0);
     WebRadioGroup1.Enabled := False;
     WebPanel1.BringToFront;
     asm await sleep(100) end;
@@ -491,7 +485,6 @@ begin
   end;
   WebRadioGroup1.Enabled := True;
   asm await sleep(10) end;
-  EPGChanged := False;
   DBIncRecs := nil;
 end;
 
@@ -499,14 +492,12 @@ procedure TCWRmainFrm.seNumDisplayDaysChange(Sender: TObject);
 begin
   Log('Number EPG Display Days: ' + seNumDisplayDays.Value.ToString);
   TWebLocalStorage.SetValue(NUMDAYS,seNumDisplayDays.Value.ToString);
-  EPGChanged := True;
 end;
 
 procedure TCWRmainFrm.seNumHistEventsChange(Sender: TObject);
 begin
   Log('Number History Items: ' + seNumHistEvents.Value.ToString);
   TWebLocalStorage.SetValue(NUMHIST,seNumHistEvents.Value.ToString);
-//  HistoryChanged := True;
 end;
 
 procedure TCWRmainFrm.tbCapturesShow;
