@@ -10,7 +10,8 @@ uses
   WEBLib.Menus, WEBLib.ComCtrls, Vcl.Controls, WEBLib.Grids, WEBLib.ExtCtrls, DB,
   Vcl.Grids, System.StrUtils, Vcl.StdCtrls, WEBLib.StdCtrls, WEBLib.DBCtrls,
   WEBLib.FlexControls, WEBLib.WebCtrls, WEBLib.REST, {System.Types,} Types,
-  WEBLib.Storage, WEBLib.CDS, WEBLib.Auth, WEBLib.JSON, WEBLib.WebTools;
+  WEBLib.Storage, WEBLib.CDS, WEBLib.Auth, WEBLib.JSON, WEBLib.WebTools,
+  WEBLib.Google;
 
 type
   TGridDrawState = set of (gdSelected, gdFocused, gdFixed, gdRowSelected, gdHotTrack, gdPressed);
@@ -272,8 +273,11 @@ begin
     console.log('Performing OAuth');
     WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
     WEBRESTClient1.App.CallBackURL := window.location.href;
-    WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' + WebRESTCLient1.App.Key
-      + '&state=bf&response_type=token&redirect_uri='+WEBRESTClient1.App.CallbackURL
+    WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth'
+      + '?client_id=' + WebRESTCLient1.App.Key
+      + '&state=bf'
+      + '&response_type=token'
+      + '&redirect_uri='+WEBRESTClient1.App.CallbackURL
       + '&scope=https://www.googleapis.com/auth/drive';
     await(string, WebRESTClient1.Authenticate);
 //    WebRESTClient1.WriteTokens;
@@ -415,8 +419,8 @@ begin
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   if WIDBCDS.Active and not WIDBCDS.IsEmpty then
   begin
-    SetPage(0);
-//    WebRadioGroup1.Enabled := False;
+//    SetPage(0);
+    WebRadioGroup1.Enabled := False;
     WebPanel1.BringToFront;
     asm await sleep(100) end;
     Log('Memo1 is showing');
@@ -477,15 +481,15 @@ begin
       Listings.Cells[0,0] := 'Channel';
     finally
       Listings.EndUpdate;
-//      WebRadioGroup1.Enabled := True;
-//      SetPage(0);
+      WebRadioGroup1.Enabled := True;
+      SetPage(0);
     end;
   end else begin
     SetPage(4);
     asm await sleep(10) end;
     ShowMessage('Please click "Refresh EPG" button');
   end;
-//  WebRadioGroup1.Enabled := True;
+  WebRadioGroup1.Enabled := True;
   asm await sleep(10) end;
   EPGChanged := False;
   DBIncRecs := nil;
