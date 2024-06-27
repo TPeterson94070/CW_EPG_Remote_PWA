@@ -131,7 +131,7 @@ uses
 
 var
   ClickedCol,  ClickedRow: Integer;
-  ResetPrompt: string = 'none';
+  ResetPrompt: string = {'none'}'';
 
 const
   DBFIELDS: array[0..13] of string = ('PSIP', 'Time', 'Title', 'SubTitle', 'Description',
@@ -183,8 +183,6 @@ begin
   Log('Running version:  ' + AppVersion);
   Log('App is ' + IfThen(not Application.IsOnline, 'NOT ') + 'online');
   WebRESTClient1.ReadTokens; // retrieve previous access token
-  WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
-  WEBRESTClient1.App.CallBackURL := window.location.href;
   if TWebLocalStorage.GetValue(NUMDAYS) <> '' then
     seNumDisplayDays.Value := StrToInt(TWebLocalStorage.GetValue(NUMDAYS));
   if TWebLocalStorage.GetValue(NUMHIST) <> '' then
@@ -230,14 +228,11 @@ procedure TCWRmainFrm.WebButton1Click(Sender: TObject);
 begin
   Log('======== "Refresh EPG" clicked');
   WebRadioGroup1.Enabled := False;
-//  WebRESTClient1.ClearTokens;
   asm await sleep(100) end;
   await (RefreshCSV(WebStringGrid1, 'cwr_epg.csv','EPG'));
   await (LoadWIDBCDS);
   Log('Finished (re)loading WIDBCDS');
-//  EPGChanged := True;
   await (FetchCapReservations);
-//  await (FetchHistory);
   await (RefreshListings);
   WebRadioGroup1.Enabled := True;
 end;
@@ -253,8 +248,7 @@ begin
   if await (TModalResult, MessageDlgAsync('Do you want to change HTPC source?',
     mtConfirmation, [mbYes,mbNo])) = mrYes then
   begin
-    WebRESTClient1.ClearTokens;
-    ResetPrompt := 'select_account';
+    ResetPrompt := '&prompt=select_account';
     WebButton1Click(Self);
     WebButton2Click(Self);
   end;
@@ -282,28 +276,32 @@ var
 begin
   Result := '';
 // AccessExpiry is number of seconds, not a DateTime/Timestamp !!
-  console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString);
-  if WebRESTClient1.AccessToken = '' then
+  console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString
+    + ' or DateTime?: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
+  if (WebRESTClient1.AccessToken = '') or (ResetPrompt > '') then
   begin
     console.log('Performing OAuth');
+    WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
+    WEBRESTClient1.App.CallBackURL := window.location.href;
     WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth'
       + '?client_id=' + WebRESTCLient1.App.Key
       + '&state=bf'
       + '&response_type=token'
-      + '&redirect_uri=' + window.location.href // WEBRESTClient1.App.CallbackURL
+      + '&redirect_uri=' + WEBRESTClient1.App.CallbackURL
       + '&scope=https://www.googleapis.com/auth/drive'
-      {+ '&prompt=' + ResetPrompt};
-    console.log('WEBRESTClient1.App.AuthURL: ' + WEBRESTClient1.App.AuthURL);
+      + {'&prompt=' +} ResetPrompt;
+    console.log('WEBRESTClient1.App.CallBackURL: ' + WEBRESTClient1.App.CallbackURL);
     await(string, WebRESTClient1.Authenticate);
-    ResetPrompt := 'none';
-  console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString);
+    ResetPrompt := {'none'}'';
+  console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString
+    + ' or DateTime?: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
   end;
   q :='name = ''' + TableFile + ''' and trashed = false';
 
   rq := await(TJSXMLHttpRequest, WEBRESTClient1.HttpRequest('GET',
     'https://www.googleapis.com/drive/v3/files?q='+WEBRestClient1.URLEncode(q)));
 
-  window.location.href := WebRESTClient1.App.CallbackURL;
+//  window.location.href := WebRESTClient1.App.CallbackURL;
   if Assigned(rq) then
   begin
     AResponse := rq.responseText;
