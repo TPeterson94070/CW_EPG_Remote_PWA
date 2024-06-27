@@ -60,6 +60,7 @@ type
     WebPanel1: TWebPanel;
     WebButton2: TWebButton;
     WebRESTClient1: TWebRESTClient;
+    WebButton3: TWebButton;
 
   procedure LoadWIDBCDS;
   procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
@@ -88,6 +89,8 @@ type
 //    procedure AllCapsGridClickCell(Sender: TObject; ACol, ARow: Integer);
     [async]
     procedure WebButton2Click(Sender: TObject);
+    [async]
+    procedure WebButton3Click(Sender: TObject);
 //    procedure WebClientDataSet1AfterOpen(DataSet: TDataSet);
 private
   { Private declarations }
@@ -128,6 +131,7 @@ uses
 
 var
   ClickedCol,  ClickedRow: Integer;
+  ResetPrompt: string = 'none';
 
 const
   DBFIELDS: array[0..13] of string = ('PSIP', 'Time', 'Title', 'SubTitle', 'Description',
@@ -179,6 +183,8 @@ begin
   Log('Running version:  ' + AppVersion);
   Log('App is ' + IfThen(not Application.IsOnline, 'NOT ') + 'online');
   WebRESTClient1.ReadTokens; // retrieve previous access token
+  WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
+  WEBRESTClient1.App.CallBackURL := window.location.href;
   if TWebLocalStorage.GetValue(NUMDAYS) <> '' then
     seNumDisplayDays.Value := StrToInt(TWebLocalStorage.GetValue(NUMDAYS));
   if TWebLocalStorage.GetValue(NUMHIST) <> '' then
@@ -224,7 +230,7 @@ procedure TCWRmainFrm.WebButton1Click(Sender: TObject);
 begin
   Log('======== "Refresh EPG" clicked');
   WebRadioGroup1.Enabled := False;
-  WebRESTClient1.ClearTokens;
+//  WebRESTClient1.ClearTokens;
   asm await sleep(100) end;
   await (RefreshCSV(WebStringGrid1, 'cwr_epg.csv','EPG'));
   await (LoadWIDBCDS);
@@ -239,6 +245,20 @@ end;
 procedure TCWRmainFrm.WebButton2Click(Sender: TObject);
 begin
   await (RefreshHistory);
+end;
+
+procedure TCWRmainFrm.WebButton3Click(Sender: TObject);
+begin
+  Log('Server reset requested');
+  if await (TModalResult, MessageDlgAsync('Do you want to change HTPC source?',
+    mtConfirmation, [mbYes,mbNo])) = mrYes then
+  begin
+    WebRESTClient1.ClearTokens;
+    ResetPrompt := 'select_account';
+    WebButton1Click(Self);
+    WebButton2Click(Self);
+  end;
+  exit;
 end;
 
 procedure TCWRmainFrm.RefreshHistory;
@@ -261,28 +281,29 @@ var
 
 begin
   Result := '';
-// ??? AccessExpiry is always 12/30/1899 (i.e., 0) ???
-//  console.log('AccessExpiry: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
+// AccessExpiry is number of seconds, not a DateTime/Timestamp !!
+  console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString);
   if WebRESTClient1.AccessToken = '' then
   begin
     console.log('Performing OAuth');
-    WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
-    WEBRESTClient1.App.CallBackURL := window.location.href;
     WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth'
       + '?client_id=' + WebRESTCLient1.App.Key
       + '&state=bf'
       + '&response_type=token'
-      + '&redirect_uri='+WEBRESTClient1.App.CallbackURL
-      + '&scope=https://www.googleapis.com/auth/drive';
+      + '&redirect_uri=' + window.location.href // WEBRESTClient1.App.CallbackURL
+      + '&scope=https://www.googleapis.com/auth/drive'
+      {+ '&prompt=' + ResetPrompt};
+    console.log('WEBRESTClient1.App.AuthURL: ' + WEBRESTClient1.App.AuthURL);
     await(string, WebRESTClient1.Authenticate);
-//    WebRESTClient1.WriteTokens;
-//    console.log('AccessExpiry: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
+    ResetPrompt := 'none';
+  console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString);
   end;
   q :='name = ''' + TableFile + ''' and trashed = false';
 
   rq := await(TJSXMLHttpRequest, WEBRESTClient1.HttpRequest('GET',
     'https://www.googleapis.com/drive/v3/files?q='+WEBRestClient1.URLEncode(q)));
 
+  window.location.href := WebRESTClient1.App.CallbackURL;
   if Assigned(rq) then
   begin
     AResponse := rq.responseText;
@@ -415,6 +436,7 @@ begin
   if WIDBCDS.Active and not WIDBCDS.IsEmpty then
   begin
     WebRadioGroup1.Enabled := False;
+    WebRadioGroup1.ItemIndex := 4;
     WebPanel1.BringToFront;
     asm await sleep(100) end;
     Log('Memo1 is showing');
@@ -642,7 +664,6 @@ begin
     0: begin          {Listings page}
       pnlListings.BringToFront;
       Log('Sender: ' + Sender.ToString);
-//      if EPGChanged and (Sender = Application) then await(RefreshListings);
       Listings.SetFocus;
     end;
     1: begin          {Captures}

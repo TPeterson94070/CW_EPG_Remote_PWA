@@ -1,27 +1,27 @@
 {
-   "short_name":"CW_EPG_Remote",
-   "name":"CW_EPG_Remote",
-   "description":"",
-   "start_url":"index.html",
+   "short_name":"$(ShortName)",
+   "name":"$(Name)",
+   "description":"$(Description)",
+   "start_url":"$(StartURL)",
    "display":"fullscreen",
-   "theme_color":"#FFFFFF",
-   "background_color":"teal",
+   "theme_color":"$(ThemeColor)",
+   "background_color":"$(BackgroundColor)",
    "icons":
    [
     {
-      "src": "IconResLow.png",
+      "src": "$(LowResFileName)",
       "type": "image/png",
       "sizes": "64x64",
       "purpose": "any maskable"
     },
     {
-      "src": "IconResMid.png",
+      "src": "$(MidResFileName)",
       "type": "image/png",
       "sizes": "256x256",
       "purpose": "any maskable"
     },
     {
-      "src": "IconResHigh.png",
+      "src": "$(HighResFileName)",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"

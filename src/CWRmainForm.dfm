@@ -285,10 +285,10 @@ object CWRmainFrm: TCWRmainFrm
           Value = 70
         end>
       object lb12Description: TWebLabel
-        Left = 2
-        Top = 52
-        Width = 608
-        Height = 112
+        Left = 0
+        Top = 0
+        Width = 612
+        Height = 166
         Align = alClient
         AutoSize = False
         Caption = 'Description'
@@ -303,12 +303,16 @@ object CWRmainFrm: TCWRmainFrm
         ParentFont = False
         WordWrap = True
         WidthPercent = 800.000000000000000000
+        ExplicitLeft = 2
+        ExplicitTop = 52
+        ExplicitWidth = 608
+        ExplicitHeight = 112
       end
       object WebGridPanel3: TWebGridPanel
-        Left = 2
-        Top = 2
-        Width = 608
-        Height = 13
+        Left = 0
+        Top = 0
+        Width = 612
+        Height = 166
         ElementID = 'WebGridPanel3'
         HeightStyle = ssAuto
         Align = alClient
@@ -356,6 +360,10 @@ object CWRmainFrm: TCWRmainFrm
           item
             Value = 100
           end>
+        ExplicitLeft = 2
+        ExplicitTop = 2
+        ExplicitWidth = 608
+        ExplicitHeight = 13
         object lb01Title: TWebLabel
           Left = 2
           Top = 2
@@ -447,10 +455,10 @@ object CWRmainFrm: TCWRmainFrm
         end
       end
       object WebGridPanel4: TWebGridPanel
-        Left = 2
-        Top = 19
-        Width = 608
-        Height = 29
+        Left = 0
+        Top = 0
+        Width = 612
+        Height = 166
         ElementID = 'WebGridPanel4'
         HeightStyle = ssAuto
         Align = alClient
@@ -481,11 +489,15 @@ object CWRmainFrm: TCWRmainFrm
           item
             Value = 100
           end>
+        ExplicitLeft = 2
+        ExplicitTop = 19
+        ExplicitWidth = 608
+        ExplicitHeight = 29
         object lb06SubTitle: TWebLabel
-          Left = 2
-          Top = 2
-          Width = 420
-          Height = 25
+          Left = 0
+          Top = 0
+          Width = 612
+          Height = 166
           Align = alClient
           AutoSize = False
           Caption = 'SubTitle'
@@ -500,12 +512,16 @@ object CWRmainFrm: TCWRmainFrm
           ParentFont = False
           WordWrap = True
           WidthPercent = 500.000000000000000000
+          ExplicitLeft = 2
+          ExplicitTop = 2
+          ExplicitWidth = 420
+          ExplicitHeight = 25
         end
         object WebGridPanel1: TWebGridPanel
-          Left = 426
-          Top = 2
-          Width = 206
-          Height = 25
+          Left = 0
+          Top = 0
+          Width = 612
+          Height = 166
           ElementID = 'WebGridPanel1'
           Align = alClient
           ChildOrder = 3
@@ -533,11 +549,15 @@ object CWRmainFrm: TCWRmainFrm
             item
               Value = 50
             end>
+          ExplicitLeft = 426
+          ExplicitTop = 2
+          ExplicitWidth = 206
+          ExplicitHeight = 25
           object WebGridPanel7: TWebGridPanel
-            Left = 2
-            Top = 2
-            Width = 202
-            Height = 8
+            Left = 0
+            Top = 0
+            Width = 612
+            Height = 166
             ElementID = 'WebGridPanel7'
             Align = alClient
             ChildOrder = 4
@@ -577,6 +597,10 @@ object CWRmainFrm: TCWRmainFrm
               item
                 Value = 100
               end>
+            ExplicitLeft = 2
+            ExplicitTop = 2
+            ExplicitWidth = 202
+            ExplicitHeight = 8
             object lb07Dolby: TWebLabel
               Left = 2
               Top = 2
@@ -643,10 +667,10 @@ object CWRmainFrm: TCWRmainFrm
             end
           end
           object WebGridPanel6: TWebGridPanel
-            Left = 2
-            Top = 14
-            Width = 202
-            Height = 8
+            Left = 0
+            Top = 0
+            Width = 612
+            Height = 166
             ElementID = 'WebGridPanel6'
             Align = alClient
             ChildOrder = 4
@@ -674,6 +698,10 @@ object CWRmainFrm: TCWRmainFrm
               item
                 Value = 100
               end>
+            ExplicitLeft = 2
+            ExplicitTop = 14
+            ExplicitWidth = 202
+            ExplicitHeight = 8
             object lb10Channel: TWebLabel
               Left = 2
               Top = 2
@@ -941,6 +969,27 @@ object CWRmainFrm: TCWRmainFrm
       ParentFont = False
       WidthPercent = 100.000000000000000000
       OnClick = WebButton2Click
+    end
+    object WebButton3: TWebButton
+      Left = 32
+      Top = 319
+      Width = 190
+      Height = 19
+      Align = alCustom
+      Caption = 'Change HTPC Account'
+      ChildOrder = 1
+      ElementClassName = 'btn btn-secondary'
+      ElementFont = efCSS
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -9
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      HeightStyle = ssAuto
+      HeightPercent = 6.000000000000000000
+      ParentFont = False
+      WidthPercent = 100.000000000000000000
+      OnClick = WebButton3Click
     end
   end
   object WIDBCDS: TWebIndexedDbClientDataset
