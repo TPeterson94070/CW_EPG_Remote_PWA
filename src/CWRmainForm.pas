@@ -22,7 +22,6 @@ type
   WebMemo1: TWebMemo;
   seNumDisplayDays: TWebSpinEdit;
   WebGroupBox1: TWebGroupBox;
-//  WebHttpRequest1: TWebHttpRequest;
   WebGridPanel2: TWebGridPanel;
   WebGridPanel3: TWebGridPanel;
   lb01Title: TWebLabel;
@@ -32,7 +31,6 @@ type
   WebGridPanel4: TWebGridPanel;
   lb06SubTitle: TWebLabel;
   lb12Description: TWebLabel;
-//  seHttpTimeoutSec: TWebSpinEdit;
   WebGridPanel1: TWebGridPanel;
   WebGridPanel7: TWebGridPanel;
   lb07Dolby: TWebLabel;
@@ -49,7 +47,6 @@ type
   AllCapsGrid: TWebStringGrid;
     HistoryTable: TWebStringGrid;
     Listings: TWebStringGrid;
-    pnlListings: TWebPanel;
     pnlCaptures: TWebPanel;
     pnlHistory: TWebPanel;
     pnlLog: TWebPanel;
@@ -61,6 +58,9 @@ type
     WebButton2: TWebButton;
     WebRESTClient1: TWebRESTClient;
     WebButton3: TWebButton;
+    pnlListingsGrid: TWebGridPanel;
+    WebPanel2: TWebPanel;
+    pnlListings: TWebPanel;
 
   procedure LoadWIDBCDS;
   procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
@@ -131,7 +131,7 @@ uses
 
 var
   ClickedCol,  ClickedRow: Integer;
-  ResetPrompt: string = {'none'}'';
+  ResetPrompt: string = '&prompt=select_account';
 
 const
   DBFIELDS: array[0..13] of string = ('PSIP', 'Time', 'Title', 'SubTitle', 'Description',
@@ -216,7 +216,7 @@ end;
 procedure TCWRmainFrm.WebFormShow;
 begin
   Log('WebFormShow, calling RefreshListings');
-  await (ReFreshListings);
+  await(ReFreshListings);
   Log('WebFormShow, Listings refresh done');
   if Listings.RowCount > 2 then begin
     Listings.SetFocus;
@@ -225,27 +225,28 @@ begin
 end;
 
 procedure TCWRmainFrm.WebButton1Click(Sender: TObject);
+
 begin
   Log('======== "Refresh EPG" clicked');
   WebRadioGroup1.Enabled := False;
-  asm await sleep(100) end;
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   await (RefreshCSV(WebStringGrid1, 'cwr_epg.csv','EPG'));
-  await (LoadWIDBCDS);
+  await(LoadWIDBCDS);
   Log('Finished (re)loading WIDBCDS');
-  await (FetchCapReservations);
-  await (RefreshListings);
+  await(FetchCapReservations);
+  await(RefreshListings);
   WebRadioGroup1.Enabled := True;
 end;
 
 procedure TCWRmainFrm.WebButton2Click(Sender: TObject);
 begin
-  await (RefreshHistory);
+  await(RefreshHistory);
 end;
 
 procedure TCWRmainFrm.WebButton3Click(Sender: TObject);
 begin
   Log('Server reset requested');
-  if await (TModalResult, MessageDlgAsync('Do you want to change HTPC source?',
+  if TAwait.ExecP<TModalResult> (MessageDlgAsync('Do you want to change HTPC source?',
     mtConfirmation, [mbYes,mbNo])) = mrYes then
   begin
     ResetPrompt := '&prompt=select_account';
@@ -258,10 +259,10 @@ end;
 procedure TCWRmainFrm.RefreshHistory;
 begin
   WebRadioGroup1.Enabled := False;
-  asm await sleep(100) end;
-  await (FetchHistory);
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  await(FetchHistory);
   SetPage(2);
-  asm await sleep(100) end;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   WebRadioGroup1.Enabled := True;
 end;
 
@@ -291,14 +292,14 @@ begin
       + '&scope=https://www.googleapis.com/auth/drive'
       + {'&prompt=' +} ResetPrompt;
     console.log('WEBRESTClient1.App.CallBackURL: ' + WEBRESTClient1.App.CallbackURL);
-    await(string, WebRESTClient1.Authenticate);
+    TAwait.ExecP<TJSPromiseResolver> (WebRESTClient1.Authenticate);
     ResetPrompt := {'none'}'';
   console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString
     + ' or DateTime?: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
   end;
   q :='name = ''' + TableFile + ''' and trashed = false';
 
-  rq := await(TJSXMLHttpRequest, WEBRESTClient1.HttpRequest('GET',
+  rq := TAwait.ExecP<TJSXMLHttpRequest> (WEBRESTClient1.HttpRequest('GET',
     'https://www.googleapis.com/drive/v3/files?q='+WEBRestClient1.URLEncode(q)));
 
 //  window.location.href := WebRESTClient1.App.CallbackURL;
@@ -323,7 +324,7 @@ begin
       ja.Free;
       console.log(id);
       if id = '' then exit('');
-      rq := await(TJSXMLHttpRequest, WebRESTClient1.httprequest('GET',
+      rq := TAwait.ExecP<TJSXMLHttpRequest> (WebRESTClient1.httprequest('GET',
         'https://www.googleapis.com/drive/v3/files/'+id+'?alt=media').catch(
         function(AValue: JSValue): JSValue
         begin
@@ -346,13 +347,13 @@ begin
     AlertLabel.Caption := 'Refreshing '+Title+' data <i class="fa-solid fa-spinner fa-spin"></>';
     AlertLabel.Show;
     AlertLabel.BringToFront;
-    asm await sleep(50) end;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 
     WSG.BeginUpdate;
     try
       Log('Requesting: ' + TableFile);
       try
-        Reply := await(string, GetGoogleDriveFile(TableFile));
+        Reply := {TAwait.Exec<string>}await (GetGoogleDriveFile(TableFile));
 
         if Reply <> '' then  // Got a response
         begin
@@ -378,7 +379,7 @@ begin
       WSG.EndUpdate;
       Log('"Finishing" AlertLabel');
       AlertLabel.Caption := 'Finishing up '+Title+' data <i class="fa-solid fa-spinner fa-spin"></>';
-      asm await sleep(100) end;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
       AlertLabel.Hide;
       Log('Done hiding');
     end;
@@ -436,7 +437,7 @@ begin
     WebRadioGroup1.Enabled := False;
     WebRadioGroup1.ItemIndex := 4;
     WebPanel1.BringToFront;
-    asm await sleep(100) end;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
     Log('Memo1 is showing');
     DBIncRecs := TStringList.Create;
     MinDT := now;
@@ -466,7 +467,7 @@ begin
       if k < 2 then
       begin
         Log('No hits in current DB, prompting for EPG fetch');
-        if await (TModalResult, MessageDlgAsync('There are no current listings.'
+        if TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current listings.'
           + #13#13'Do you want to refresh them?',mtConfirmation, [mbYes,mbNo]))
           = mrYes then
         begin
@@ -475,7 +476,7 @@ begin
         end;
         exit;
       end;
-      asm await sleep(100) end;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
       WebProgressBar1.Position := 0;
       WebProgressBar1.Max := k - 2;
       for j := 0 to k - 2  do
@@ -489,7 +490,7 @@ begin
         begin
           WebProgressBar1.Position := j;
 //          Log('j: ' + j.ToString);
-          asm await sleep(2) end;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
         end;
       end;
       Listings.Cells[0,0] := 'Channel';
@@ -500,11 +501,11 @@ begin
     end;
   end else begin
     SetPage(4);
-    asm await sleep(10) end;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
     ShowMessage('Please click "Refresh EPG" button');
   end;
   WebRadioGroup1.Enabled := True;
-  asm await sleep(10) end;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   DBIncRecs := nil;
 end;
 
@@ -553,7 +554,7 @@ begin
   begin
 //    ShowMessage('AllCapsGrid.RowCount: ' + AllCapsGrid.RowCount.ToString);
     Log('No captures listed, prompting for EPG fetch');
-    if await (TModalResult, MessageDlgAsync('There are no scheduled items listed.'
+    if TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no scheduled items listed.'
       + #13#13'Do you want to refresh the list?',mtConfirmation, [mbYes,mbNo]))
       = mrYes then
     begin
@@ -630,34 +631,34 @@ procedure TCWRmainFrm.tbHistoryShow;
 begin
   HistoryTable.Visible := False;
   Log('HistoryTable.RowCount: ' + HistoryTable.RowCount.ToString);
-  if HistoryTable.RowCount <> seNumHistEvents.Value + 1 then FillHistoryDisplay;
-  if {HistoryChanged or}  (HistoryTable.RowCount <> seNumHistEvents.Value + 1) then  // may need History data
+  if HistoryTable.RowCount <> seNumHistEvents.Value + 1 then  // may need History data
   begin
     Log('The History list is empty/incomplete. Prompt for refresh');
-    if await (TModalResult, MessageDlgAsync('The History list '
+    if TAwait.ExecP<TModalResult> (MessageDlgAsync('The History list '
      + IfThen(HistoryTable.RowCount < 2,'is empty','may be incomplete')
       + #13#13'Do you want to refresh it now?',mtConfirmation, [mbYes,mbNo]))
-      = mrYes then await (RefreshHistory);
+      = mrYes then await(RefreshHistory);
   end;
-//  {await (}FillHistoryDisplay{)};
+  await(FillHistoryDisplay);
 //  asm await sleep(10) end;
   HistoryTable.Visible := True;
 end;
 
 procedure TCWRmainFrm.SetPage(PageNum: Integer);
+
 begin
   if PageNum <> WebRadioGroup1.ItemIndex then begin
     Log('Leaving Page: ' + WebRadioGroup1.Items[WebRadioGroup1.ItemIndex]);
   end;
   WebRadioGroup1.ItemIndex := PageNum;
-  await (WebRadioGroup1Change({Application}Self));
+  WebRadioGroup1Change(Self);
 end;
 
 procedure TCWRmainFrm.WebRadioGroup1Change(Sender: TObject);
 begin
   Log('Showing Page: ' + WebRadioGroup1.Items[WebRadioGroup1.ItemIndex]);
   WebRadioGroup1.Enabled := False;
-  asm await sleep(100) end;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   case WebRadioGroup1.ItemIndex of
     0: begin          {Listings page}
       pnlListings.BringToFront;
@@ -680,7 +681,7 @@ begin
     end;
   end;
   WebRadioGroup1.Enabled := True;
-  asm await sleep(100) end;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 end;
 
 procedure SetLabelStyle(lbl: TWebLabel; State: Boolean);
@@ -707,7 +708,7 @@ end;
 //  if AllCapsGrid.cells[1,i] = '' then exit;
 //
 ////  AllCapsGrid.OnGetCellData := nil;
-//  if await (TModalResult, MessageDlgAsync('Erase "' + AllCapsGrid.cells[8,i] + '" ' + AllCapsGrid.cells[3,i] + ' ' + AllCapsGrid.cells[4,i] + ' - ' + AllCapsGrid.cells[5,i] + ' '
+//  if TAwait.ExecP<TModalResult> (MessageDlgAsync('Erase "' + AllCapsGrid.cells[8,i] + '" ' + AllCapsGrid.cells[3,i] + ' ' + AllCapsGrid.cells[4,i] + ' - ' + AllCapsGrid.cells[5,i] + ' '
 //    + ' Schedule Entry?', mtConfirmation, [mbYes, mbNo])) = mrNo then exit;
 ////    Start the delete here...............                                           // Delete schedule Entry
 //  Log('  >>>>>  ' + AllCapsGrid.cells[1,i] + ' - ' + AllCapsGrid.cells[2,i]
@@ -850,6 +851,7 @@ begin
 end;
 
 procedure TCWRmainFrm.FetchCapReservations;  // Fetch CW_EPG-saved file
+
 var
   i: Integer;
   sl: TStrings;
@@ -857,7 +859,7 @@ begin
   Log(' ====== FetchCapReservations called =========');
   // Turn off GetCellData (modifies Cols 1, 2 for display)
   AllCapsGrid.OnGetCellData := nil;
-  await (RefreshCSV(AllCapsGrid, 'cwr_captures.csv', 'Scheduled'));
+  await(RefreshCSV(AllCapsGrid, 'cwr_captures.csv', 'Scheduled'));
   // Save unmodified capture data to Local Storage
   sl := TStringList.Create;
   AllCapsGrid.SaveToStrings(sl, ',', True);
@@ -966,6 +968,7 @@ end;
 //end;
 
 procedure TCWRmainFrm.FetchHistory;
+
 var
   i: Integer;
   sl: TStrings;
@@ -974,7 +977,7 @@ begin
   HistoryTable.BeginUpdate;
   HistoryTable.Visible := False;
   HistoryTable.ColCount := 32;
-  await (RefreshCSV(HistoryTable, 'cwr_history.csv','History'));
+  await(RefreshCSV(HistoryTable, 'cwr_history.csv','History'));
 //  Log('History Rows: '+HistoryTable.RowCount.ToString);
   for i := HistoryTable.RowCount-1 downto 1 do // Remove blanks, add leading zeroes
   begin
@@ -999,7 +1002,7 @@ begin
   for i := 1 to sl.Count-1 do
     TWebLocalStorage.SetValue('hl' + i.ToString, sl[sl.Count - i]);
   sl.Free;
-  await (FillHistoryDisplay);
+  await(FillHistoryDisplay);
   HistoryTable.EndUpdate;
 //  HistoryChanged := False;
   Log(' ====== FetchHistory finished =========');
