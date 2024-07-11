@@ -359,8 +359,9 @@ begin
         begin
           Log(copy(Reply,1,500));
           sl := TStringList.Create;
-          Log('Begin extract strings');
-          ReplyArray := Reply.Split([#13]);
+          Reply := ReplaceStr(Reply, #10, '');
+          ReplyArray := Reply.Split([#13],TStringSplitOptions.ExcludeEmpty);
+          Log('Begin extract ' + IntToStr(Length(ReplyArray)) + ' strings');
           for Line in ReplyArray do sl.Add(Line);
           WSG.LoadFromStrings(sl, ',', True);
           Log(WSG.Name+'.RowCount: ' + WSG.RowCount.ToString);
@@ -527,18 +528,23 @@ var
   i: Integer;
 
 begin
-//  Log('AllCapsGrid.RowCount: ' + AllCapsGrid.RowCount.ToString);
-  if TWebLocalStorage.GetValue('sl1') > '' then  // but have stored value(s)
+  if TWebLocalStorage.GetValue('sl1') > '' then  // have stored value(s)
   begin
     sl := TStringList.Create;
     i := 0;
-    while ReplaceStr(ReplaceStr(TWebLocalStorage.GetValue('sl'+i.ToString),'""',''),',','') > '' do
+    while ReplaceStr(ReplaceStr(TWebLocalStorage.GetValue('sl'+i.ToString),'"',''),',','') > '' do
     begin
       sl.Add(TWebLocalStorage.GetValue('sl'+i.ToString));
       Inc(i);
     end;
     AllCapsGrid.LoadFromStrings(sl, ',', True);
+    Log('AllCapsGrid.RowCount: ' + AllCapsGrid.RowCount.ToString);
     sl.Free;
+    // Discard stale entries (End DateTime < now)
+    for i := AllCapsGrid.RowCount-1 downto 1 do
+      if AllCapsGrid.Cells[3,i] > '' then // not null row
+        if StrToDateTime(AllCapsGrid.Cells[3,i] + ' ' + AllCapsGrid.Cells[5,i]) < now then
+          AllCapsGrid.RemoveRow(i);
   end;
   for i := 0 to AllCapsGrid.ColCount-1 do AllCapsGrid.ColWidths[i] := 0;
   AllCapsGrid.ColWidths[1] := 80; //(08*AllCapsGrid.ClientWidth) div 100;  // Computer
@@ -546,22 +552,33 @@ begin
   AllCapsGrid.ColWidths[3] := 65; //(08*AllCapsGrid.ClientWidth) div 100;  // Date
   AllCapsGrid.ColWidths[4] := 45; // (05*AllCapsGrid.ClientWidth) div 100; // Start
   AllCapsGrid.ColWidths[5] := 45; // (05*AllCapsGrid.ClientWidth) div 100; // End
-  AllCapsGrid.ColWidths[6] := 60; // (07*AllCapsGrid.ClientWidth) div 100; // Channel
+  AllCapsGrid.ColWidths[6] := 70; // (07*AllCapsGrid.ClientWidth) div 100; // Channel
   AllCapsGrid.ColWidths[8] :=  {(35*}AllCapsGrid.ClientWidth{) div 100}; // Title
   for i := 1 to 6 do AllCapsGrid.ColAlignments[i] := taCenter;
-//  Log('AllCapsGrid.RowCount: ' + AllCapsGrid.RowCount.ToString);
-  if AllCapsGrid.RowCount < 2 then  // No captures, reload??
+  Log('AllCapsGrid.RowCount after stale check: ' + AllCapsGrid.RowCount.ToString);
+//  Log('AllCapsGrid.Cells[25,1]: <' + AllCapsGrid.Cells[25,1] + '>');
+  if (AllCapsGrid.RowCount = 2) and (AllCapsGrid.Cells[25,1] = '-1') then  // Valid list, no captures, reload??
   begin
-//    ShowMessage('AllCapsGrid.RowCount: ' + AllCapsGrid.RowCount.ToString);
     Log('No captures listed, prompting for EPG fetch');
-    if TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no scheduled items listed.'
+    if TAwait.ExecP<TModalResult> (MessageDlgAsync('There were no scheduled items at last fetch.'
       + #13#13'Do you want to refresh the list?',mtConfirmation, [mbYes,mbNo]))
       = mrYes then
     begin
       SetPage(4);
       WebButton1Click(Self);
     end;
-  end;
+  end
+  else if AllCapsGrid.RowCount < 2 then // Invalid list
+  begin
+    Log('No fresh captures, prompting for EPG fetch');
+    if TAwait.ExecP<TModalResult> (MessageDlgAsync('The list appears to be stale.'
+      + #13#13'Do you want to refresh the list?',mtConfirmation, [mbYes,mbNo]))
+      = mrYes then
+    begin
+      SetPage(4);
+      WebButton1Click(Self);
+    end;
+  end  ;
 end;
 
 procedure TCWRmainFrm.FillHistoryDisplay;

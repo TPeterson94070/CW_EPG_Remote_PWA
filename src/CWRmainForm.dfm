@@ -466,10 +466,6 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 10
-    ExplicitLeft = 232
-    ExplicitTop = 472
-    ExplicitWidth = 150
-    ExplicitHeight = 60
     object pnlListingsGrid: TWebGridPanel
       Left = 0
       Top = 0
@@ -509,7 +505,6 @@ object CWRmainFrm: TCWRmainFrm
         item
           Value = 7
         end>
-      ExplicitTop = 50
       object lb12Description: TWebLabel
         Left = 2
         Top = 884
@@ -1033,7 +1028,6 @@ object CWRmainFrm: TCWRmainFrm
           HeightPercent = 100.000000000000000000
           WidthPercent = 100.000000000000000000
           OnClickCell = ListingsClickCell
-          ExplicitHeight = 708
         end
       end
     end
