@@ -5,13 +5,13 @@ unit CWRmainForm;
 interface
 
 uses
-  System.SysUtils, System.Classes, JS, Web, WEBLib.Graphics, WEBLib.Controls,
-  WEBLib.Forms, WEBLib.Dialogs, WebLib.DB, WEBLib.IndexedDb, Vcl.Menus,
-  WEBLib.Menus, WEBLib.ComCtrls, Vcl.Controls, WEBLib.Grids, WEBLib.ExtCtrls, DB,
-  Vcl.Grids, System.StrUtils, Vcl.StdCtrls, WEBLib.StdCtrls, WEBLib.DBCtrls,
-  WEBLib.FlexControls, WEBLib.WebCtrls, WEBLib.REST, {System.Types,} Types,
-  WEBLib.Storage, WEBLib.CDS, WEBLib.Auth, WEBLib.JSON, WEBLib.WebTools,
-  WEBLib.Google;
+  System.SysUtils, System.Classes, WEBLib.Graphics, WEBLib.Forms, Vcl.StdCtrls,
+  WEBLib.StdCtrls, Vcl.Controls, WEBLib.Dialogs, Vcl.Imaging.pngimage,
+  WEBLib.ExtCtrls, WEBLib.Controls, Web, JS, WebLib.DB, WEBLib.IndexedDb,
+  Vcl.Menus, WEBLib.Menus, WEBLib.ComCtrls, WEBLib.Grids, DB, Vcl.Grids,
+  System.StrUtils, WEBLib.DBCtrls, WEBLib.FlexControls, WEBLib.WebCtrls,
+  WEBLib.REST, Types, WEBLib.Storage, WEBLib.CDS, WEBLib.Auth, WEBLib.JSON,
+  WEBLib.WebTools, WEBLib.Google;
 
 type
   TGridDrawState = set of (gdSelected, gdFocused, gdFixed, gdRowSelected, gdHotTrack, gdPressed);
@@ -79,6 +79,7 @@ type
     procedure AllCapsGridGetCellData(Sender: TObject; ACol, ARow: Integer;
       AField: TField; var AValue: string);
     procedure ListingsDblClick(Sender: TObject);
+    [async]
     procedure ListingsClickCell(Sender: TObject; ACol, ARow: Integer);
     procedure ListingsSelectCell(Sender: TObject; ACol, ARow: Integer;
       var CanSelect: Boolean);
@@ -125,7 +126,7 @@ var
 implementation
 
 uses
-  System.Math;
+  System.Math, SchedUnit;
 
 {$R *.dfm}
 
@@ -547,13 +548,13 @@ begin
           AllCapsGrid.RemoveRow(i);
   end;
   for i := 0 to AllCapsGrid.ColCount-1 do AllCapsGrid.ColWidths[i] := 0;
-  AllCapsGrid.ColWidths[1] := 80; //(08*AllCapsGrid.ClientWidth) div 100;  // Computer
-  AllCapsGrid.ColWidths[2] := 100; // (05*AllCapsGrid.ClientWidth) div 100; // Tuner
-  AllCapsGrid.ColWidths[3] := 65; //(08*AllCapsGrid.ClientWidth) div 100;  // Date
-  AllCapsGrid.ColWidths[4] := 45; // (05*AllCapsGrid.ClientWidth) div 100; // Start
-  AllCapsGrid.ColWidths[5] := 45; // (05*AllCapsGrid.ClientWidth) div 100; // End
-  AllCapsGrid.ColWidths[6] := 70; // (07*AllCapsGrid.ClientWidth) div 100; // Channel
-  AllCapsGrid.ColWidths[8] :=  {(35*}AllCapsGrid.ClientWidth{) div 100}; // Title
+  AllCapsGrid.ColWidths[1] := 80;  // Computer
+  AllCapsGrid.ColWidths[2] := 100; // Tuner
+  AllCapsGrid.ColWidths[3] := 65; // Date
+  AllCapsGrid.ColWidths[4] := 45; // Start
+  AllCapsGrid.ColWidths[5] := 45; // End
+  AllCapsGrid.ColWidths[6] := 70; // Channel
+  AllCapsGrid.ColWidths[8] := AllCapsGrid.ClientWidth; // Title
   for i := 1 to 6 do AllCapsGrid.ColAlignments[i] := taCenter;
   Log('AllCapsGrid.RowCount after stale check: ' + AllCapsGrid.RowCount.ToString);
 //  Log('AllCapsGrid.Cells[25,1]: <' + AllCapsGrid.Cells[25,1] + '>');
@@ -780,10 +781,40 @@ end;
 
 procedure TCWRmainFrm.ListingsClickCell(Sender: TObject; ACol,
   ARow: Integer);
+var
+  newform: TSchedForm;
 begin
   ClickedCol := ACol;
   ClickedRow := ARow;
-  Log('Clicked Col, Row: ' + ACol.ToString + ', ' + ARow.ToString);
+  Log('Clicked Col, Row: ' + ACol.ToString + ', ' + ARow.ToString + ' contains: ' + Listings.Cells[ACol,ARow] );
+  newform := TSchedForm.Create(Self);
+  newform.Caption := 'Schedule Capture Event';
+  newform.Popup := True;
+  newform.Border := fbDialog;
+
+  // used to manage Back button handling to close subform
+  window.location.hash := 'subform';
+  try
+    // load file HTML template + controls
+    TAwait.ExecP<TSchedForm>(newform.Load());
+
+  // init control after loading
+    newform.mmTitle.Text := Listings.Cells[2,ARow];
+    newform.mmSubTitle.Text := lb06SubTitle.Caption;
+    newform.mmDescrip.Text := lb12Description.Caption;
+    newform.lbChannelValue.Caption := lb10Channel.Caption;
+    newform.lbStartDate.Caption := WIDBCDS.FieldByName('StartTime').AsString.Split([' '])[0];
+    newform.tpStartTime.Time := WIDBCDS.FieldByName('StartTime').AsDateTime;
+    newform.tpEndTime.Time := WIDBCDS.FieldByName('EndTime').AsDateTime;
+  // execute form and wait for close
+    TAwait.ExecP<TModalResult>(newform.Execute);
+    if newform.ModalResult = mrOk then
+    begin
+      ShowMessage('SchedForm closed with new value:"'+newform.mmTitle.Text+'"');
+    end;
+  finally
+    newform.Free;
+  end;
 end;
 
 procedure TCWRmainFrm.ListingsDblClick(Sender: TObject);

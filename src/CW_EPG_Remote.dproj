@@ -69,7 +69,7 @@
         <TMSWebPWAServiceWorkerFile>serviceworker.js</TMSWebPWAServiceWorkerFile>
         <TMSPWAManifestFile>Manifest.json</TMSPWAManifestFile>
         <TMSWebPWAResIconMidFile>IconResMid.png</TMSWebPWAResIconMidFile>
-        <TMSVersion>1.0.1339</TMSVersion>
+        <TMSVersion>1.0.1376</TMSVersion>
         <TMSWebHTMLFile>index.html</TMSWebHTMLFile>
         <TMSWebPWAResIconLowFile>IconResLow.png</TMSWebPWAResIconLowFile>
         <TMSWebPWAResIconHighFile>IconResHigh.png</TMSWebPWAResIconHighFile>
@@ -128,9 +128,12 @@
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <TMSWebBrowser>5</TMSWebBrowser>
-        <TMSPWABackgroundColor>teal</TMSPWABackgroundColor>
-        <TMSWebSingleJS>2</TMSWebSingleJS>
         <TMSWebSingleInstance>2</TMSWebSingleInstance>
+        <TMSWebSingleJS>2</TMSWebSingleJS>
+        <TMSPWABackgroundColor>teal</TMSPWABackgroundColor>
+        <TMSApplicationDescription>Companion app for CW_EPG to view EPG, scheduled captures, and History remotely</TMSApplicationDescription>
+        <TMSWebSkipJavaScript>2</TMSWebSkipJavaScript>
+        <TMSUseJSDebugger>2</TMSUseJSDebugger>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -140,6 +143,7 @@
             <Form>CWRmainFrm</Form>
             <DesignClass>TWebForm</DesignClass>
         </DCCReference>
+        <DCCReference Include="SchedUnit.pas"/>
         <None Include="index.html"/>
         <None Include="Manifest.json"/>
         <None Include="serviceworker.js"/>
@@ -156,6 +160,7 @@
             <ResourceId>PngImage_3</ResourceId>
         </RcItem>
         <None Include="CW_EPG_Remote.todo"/>
+        <None Include="SchedUnit.html"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -231,6 +236,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="ServiceWorker.js" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Untitled1.htm" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

@@ -5,7 +5,8 @@ program CW_EPG_Remote;
 uses
   Vcl.Forms,
   WEBLib.Forms,
-  CWRmainForm in 'CWRmainForm.pas' {CWRmainFrm: TWebForm} {*.html};
+  CWRmainForm in 'CWRmainForm.pas' {CWRmainFrm: TWebForm} {*.html},
+  SchedUnit in 'SchedUnit.pas';
 
 {$R *.res}
 
