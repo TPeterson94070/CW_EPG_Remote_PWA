@@ -115,6 +115,8 @@ private
   [async]
   procedure RefreshHistory;
   [async]
+  procedure UpdateNewCaptures;
+  [async]
   function GetGoogleDriveFile(TableFile: string): string;
 public
   { Public declarations }
@@ -274,6 +276,7 @@ var
   jso: TJSONObject;
   ja: TJSONArray;
   i: integer;
+  AA:
 
 begin
   Result := '';
@@ -325,12 +328,14 @@ begin
       ja.Free;
       console.log(id);
       if id = '' then exit('');
+{$IF PAS2JS}
       rq := TAwait.ExecP<TJSXMLHttpRequest> (WebRESTClient1.httprequest('GET',
         'https://www.googleapis.com/drive/v3/files/'+id+'?alt=media').catch(
         function(AValue: JSValue): JSValue
         begin
           console.log('error here',AValue);
         end));
+{$ENDIF}
       if Assigned(rq) then Result := rq.responseText;
     end;
   end;
@@ -373,7 +378,7 @@ begin
         on E:Exception do
         begin
           Log('HttpRequest Exception: ' + E.Message);
-          ShowMessage('Cannot refresh EPG data while CWHelper is offline');
+          ShowMessage('Cannot refresh EPG data while CW_EPG_Remote is offline');
         end;
       end;
     finally
@@ -761,13 +766,13 @@ var
   el: TJSHTMLElement;
 begin
   WIDBCDS.RecNo := WSG.Cells[3,ARow].ToInteger;
-  Text := {WSG.Cells[7,ARow]}WIDBCDS.Fields[8].AsString; // i.e. ProgramID
+  Text := WIDBCDS.Fields[8].AsString; // i.e. ProgramID
   if Text.Contains('MV') then  // Movie item
     AColor := '#EEE8AA'        // PaleGoldenRod
   else if Text.Contains('SH') then  // Generic item
     AColor := '#D3D3D3'        // LightGray
   else begin
-    if {WSG.Cells[9,ARow]}WIDBCDS.Fields[10].AsString <> '' then  // New item
+    if WIDBCDS.Fields[10].AsString <> '' then  // New item
       AColor := '#98FB98'      // SpringGreen
     else                                // Rerun item
       AColor := '#FFD0DB';
@@ -1056,5 +1061,36 @@ begin
   Log(' ====== FetchHistory finished =========');
 end;
 
+procedure TCWRmainFrm.UpdateNewCaptures;
+
+const
+  HEADINGS: array [0..6] of string = ('PSIP','RecordStart','RecordEnd','Title','SubTitle','StartTime','ProgramID');
+var
+  i: Integer;
+  item: string;
+  sl: TStrings;
+  NewCapturesTable: TWebStringGrid;
+begin
+  Log(' ====== UpdateNewCaptures called =========');
+  NewCapturesTable := TWebStringGrid.Create(nil);
+  NewCapturesTable.Visible := False;
+  NewCapturesTable.ColCount := 7;
+  await(RefreshCSV(NewCapturesTable, 'cwr_newcaptures.csv','NewCaptures'));
+//  Log('NewCaptures Rows: '+NewCapturesTable.RowCount.ToString);
+  if NewCapturesTable.RowCount = 0 then // fnf, create new one
+  begin
+    NewCapturesTable.RowCount := 1;
+    for i := 0 to NewCapturesTable.ColCount-1 do
+      NewCapturesTable.Cells[i,0] := HEADINGS[i];
+  end
+  else
+    for i := NewCapturesTable.RowCount-1 downto 1 do // Remove blank rows
+      if NewCapturesTable.Cells[0,i] = '' then NewCapturesTable.RemoveRow(i);
+  Log('Initial NewCapturesTable Rows: '+NewCapturesTable.RowCount.ToString);
+// Add the new capture to the list
+// Update the file
+  NewCapturesTable.Free;
+  Log(' ====== UpdateNewCaptures finished =========');
+end;
 
 end.
