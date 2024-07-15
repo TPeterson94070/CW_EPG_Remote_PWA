@@ -854,15 +854,6 @@ begin
   end;
 end;
 
-//procedure TCWRmainFrm.WebStringGrid1FixedCellClick(Sender: TObject; ACol,
-//  ARow: Integer);
-// TBD:  Pop up genre-selection ComboBox
-//var
-//  i: Integer;
-//  FilterBox: TWebComboBox;
-//begin
-//end;
-
 procedure TCWRmainFrm.ListingsSelectCell(Sender: TObject; ACol,
   ARow: Integer; var CanSelect: Boolean);
 var x: TArray<string>;
@@ -925,101 +916,6 @@ begin
   Log(' ====== FetchCapReservations finished =========');
 end;
 
-//procedure TCWRmainFrm.FetchCapReservations;  // Fetch directly from CWHelper
-//var
-//  i: Integer;
-//  URL, Response: string;
-//  sl: TStrings;
-//begin
-//  Log(' ====== FetchCapReservations called =========');
-//    URL := 'https://'+ CWHelperIP + ':8443/captures';
-//  Log(' Calling "' + URL + '"');
-//  try
-//    try
-//      Response := await(HttpReq(URL));
-//      if Response > '' then RemoteCaps(Response, URL);
-//    except
-//      on E: Exception do
-//          ShowMessage(' Fetching Captures -- Oops '#10 + E.Message);
-//    end;
-//  // Save unmodified capture data to Local Storage
-////  sl := TStringList.Create;
-////  RemoteCapsGrid.SaveToStrings(sl, ',', True);
-////  for i := 0 to sl.Count - 1 do
-////    TWebLocalStorage.SetValue('sl'+i.ToString, sl[i]);
-////  TWebLocalStorage.RemoveKey('sl'+sl.Count.ToString);  // dump old value
-////  sl.Free;
-//  finally
-//
-//  end;
-//  Log(' ====== FetchCapReservations finished =========');
-//end;
-
-//function ParameterVal(const pname, Capture: string): string;
-//var
-//  ps: Integer;
-//begin
-//  ps := pos(pname + '="', Capture) + Length(pname) + 2;       // +2 for '="' after name
-//  Result := copy(Capture,ps,PosEx('"',Capture,ps)-ps);
-//end;
-//
-////===============================================================
-//  { Parses reply (rstr) from one server's CWHelper instruction and
-//    constructs current capture list (nulled for "decaptureall") }
-//procedure TCWRmainFrm.RemoteCaps(const rstr, URL: string);
-////
-//var
-//  Captures: TArray<System.string>;
-//begin
-//  Log('  >>>>>>>> remotecaps called ......');
-//  Log('  ########## ' + URL + ' Output ###########');
-//  Log(rstr);
-////  RemoteCapGrid.Height := 0;
-//  if rstr.Contains('<xml id="captures">') then               //  Read Remotes Scheduled Entries
-//  begin
-//    Captures := rstr.Split(['<capture ']);
-////    RemoteCapGrid.BeginUpdate;
-////    RemoteCapGrid.RowCount := Length(Captures) - 1;
-////    for var i := 1 to Length(Captures) - 1 do
-////    begin
-////      remotecapgrid.cells[0,i-1] := ParameterVal('sequence', Captures[i]); //.ToInteger;
-////      var x := ParameterVal('start', Captures[i]);
-////      var Splt := {ParameterVal('start', Captures[i])}x.Split([' '], 2);
-////      remotecapgrid.cells[1,i-1] := Splt[0];      // Date
-////      remotecapgrid.cells[2,i-1] := Splt[1];      // StartTime
-////      remotecapgrid.cells[3,i-1] :=               // EndTime
-////        FormatDateTime('hh:nn:ss',StrToDateTime(ParameterVal('end', Captures[i])) + OneSecond);
-////      var channelname := ParameterVal('channelName', Captures[i]);
-////      remotecapgrid.cells[4,i-1] := channelname;
-////      remotecapgrid.cells[15,i-1] := ParameterVal('alphaDescription', Captures[i]);
-//////      remotecapgrid.cells[5,i-1] := ParameterVal('input', Captures[i]);
-////      remotecapgrid.cells[12,i-1] := ParameterVal('tuner', Captures[i]);
-////      remotecapgrid.cells[9,i-1] := ParameterVal('deviceId', Captures[i]);
-////      remotecapgrid.cells[14,i-1] := ParameterVal('tunerType', Captures[i]);
-////      var channelvirtual := ParameterVal('channelVirtual', Captures[i]);
-////      remotecapgrid.cells[16,i-1] := channelvirtual;
-////      remotecapgrid.cells[12,i-1] := 'HR('
-////        + remotecapgrid.cells[12,i-1] + ')';
-////      var ts1 := copy(remotecapgrid.cells[12,i-1],
-////        pos('-',remotecapgrid.cells[12,i-1])+1,1);
-////      remotecapgrid.cells[5,i-1] := ts1;
-////      remotecapgrid.cells[13,i-1] := ParameterVal('fileName', Captures[i]);
-////      remotecapgrid.cells[8,i-1] := IfThen
-////        (remotecapgrid.cells[13,i-1] = '(watch)', 'W', 'C');
-////      remotecapgrid.cells[6,i-1] := ParameterVal('title', Captures[i]);
-////      remotecapgrid.cells[11,i-1] := IfThen
-////        (uppercase(ParameterVal('recurring', Captures[i])) = 'TRUE', 'R');
-////      remotecapgrid.cells[10,i-1] := compname;  // Computername
-//    end;
-////    SaveRemoteCapFile;
-////    RemoteCapGrid.EndUpdate;
-////    RemoteCapGrid.Height := 0;  //118;
-////  end;
-////  // Find Caps in Listings...need to wait for ShowGrid update!
-////
-//  Log('  >>>>>>>> remotecaps finished ......');
-//end;
-
 procedure TCWRmainFrm.FetchHistory;
 
 var
@@ -1039,10 +935,6 @@ begin
   end;
   // Sort Table by ID (field 0)
   HistoryTable.Sort(0,siAscending);
-  // Dump extra History data
-//  for i := 0 to HistoryTable.RowCount-1 do TWebLocalStorage.RemoveKey('hl' + i.ToString);
-//  for i := HistoryTable.RowCount-seNumHistEvents.Value-1 downto 1 do
-//    HistoryTable.RemoveRow(i);
   Log('History Rows: '+HistoryTable.RowCount.ToString);
   // Save history data to Local Storage
   sl := TStringList.Create;
@@ -1057,7 +949,6 @@ begin
   sl.Free;
   await(FillHistoryDisplay);
   HistoryTable.EndUpdate;
-//  HistoryChanged := False;
   Log(' ====== FetchHistory finished =========');
 end;
 
@@ -1092,10 +983,11 @@ begin
   // for debugging:
   NewCapturesTable.Visible := True;
   NewCapturesTable.BringToFront;
-  // Update the file
-  // ==============================
   asm await sleep(20000) end;
   NewCapturesTable.Visible := False;
+  // Update the file
+
+  // ==============================
   Log('Final NewCapturesTable Rows: '+NewCapturesTable.RowCount.ToString);
   Log(' ====== UpdateNewCaptures finished =========');
 end;
