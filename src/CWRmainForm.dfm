@@ -506,10 +506,10 @@ object CWRmainFrm: TCWRmainFrm
           Value = 7
         end>
       object lb12Description: TWebLabel
-        Left = 0
-        Top = 166
-        Width = 612
-        Height = 783
+        Left = 2
+        Top = 884
+        Width = 608
+        Height = 62
         Align = alClient
         Anchors = []
         AutoSize = False
@@ -526,15 +526,11 @@ object CWRmainFrm: TCWRmainFrm
         WordWrap = True
         WidthStyle = ssAuto
         WidthPercent = 100.000000000000000000
-        ExplicitLeft = 2
-        ExplicitTop = 884
-        ExplicitWidth = 608
-        ExplicitHeight = 62
       end
       object WebGridPanel2: TWebGridPanel
-        Left = 0
-        Top = 0
-        Width = 612
+        Left = 2
+        Top = 761
+        Width = 608
         Height = 166
         ElementID = 'WebGridPanel2'
         WidthStyle = ssPercent
@@ -568,13 +564,10 @@ object CWRmainFrm: TCWRmainFrm
           item
             Value = 70
           end>
-        ExplicitLeft = 2
-        ExplicitTop = 761
-        ExplicitWidth = 608
         object WebGridPanel3: TWebGridPanel
-          Left = 0
-          Top = 0
-          Width = 612
+          Left = 2
+          Top = 2
+          Width = 604
           Height = 13
           ElementID = 'WebGridPanel3'
           HeightStyle = ssAuto
@@ -623,9 +616,6 @@ object CWRmainFrm: TCWRmainFrm
             item
               Value = 100
             end>
-          ExplicitLeft = 2
-          ExplicitTop = 2
-          ExplicitWidth = 604
           object lb01Title: TWebLabel
             Left = 2
             Top = 2
@@ -717,9 +707,9 @@ object CWRmainFrm: TCWRmainFrm
           end
         end
         object WebGridPanel4: TWebGridPanel
-          Left = 0
-          Top = 13
-          Width = 612
+          Left = 2
+          Top = 19
+          Width = 604
           Height = 29
           ElementID = 'WebGridPanel4'
           HeightStyle = ssAuto
@@ -751,14 +741,11 @@ object CWRmainFrm: TCWRmainFrm
             item
               Value = 100
             end>
-          ExplicitLeft = 2
-          ExplicitTop = 19
-          ExplicitWidth = 604
           object lb06SubTitle: TWebLabel
-            Left = 0
-            Top = 0
-            Width = 612
-            Height = 29
+            Left = 2
+            Top = 2
+            Width = 420
+            Height = 25
             Align = alClient
             AutoSize = False
             Caption = 'SubTitle'
@@ -773,16 +760,12 @@ object CWRmainFrm: TCWRmainFrm
             ParentFont = False
             WordWrap = True
             WidthPercent = 500.000000000000000000
-            ExplicitLeft = 2
-            ExplicitTop = 2
-            ExplicitWidth = 420
-            ExplicitHeight = 25
           end
           object WebGridPanel1: TWebGridPanel
-            Left = 0
-            Top = 0
-            Width = 612
-            Height = 29
+            Left = 426
+            Top = 2
+            Width = 206
+            Height = 25
             ElementID = 'WebGridPanel1'
             Align = alClient
             ChildOrder = 3
@@ -810,15 +793,11 @@ object CWRmainFrm: TCWRmainFrm
               item
                 Value = 50
               end>
-            ExplicitLeft = 426
-            ExplicitTop = 2
-            ExplicitWidth = 206
-            ExplicitHeight = 25
             object WebGridPanel7: TWebGridPanel
-              Left = 0
-              Top = 0
-              Width = 612
-              Height = 29
+              Left = 2
+              Top = 2
+              Width = 202
+              Height = 8
               ElementID = 'WebGridPanel7'
               Align = alClient
               ChildOrder = 4
@@ -858,10 +837,6 @@ object CWRmainFrm: TCWRmainFrm
                 item
                   Value = 100
                 end>
-              ExplicitLeft = 2
-              ExplicitTop = 2
-              ExplicitWidth = 202
-              ExplicitHeight = 8
               object lb07Dolby: TWebLabel
                 Left = 2
                 Top = 2
@@ -928,10 +903,10 @@ object CWRmainFrm: TCWRmainFrm
               end
             end
             object WebGridPanel6: TWebGridPanel
-              Left = 0
-              Top = 0
-              Width = 612
-              Height = 29
+              Left = 2
+              Top = 14
+              Width = 202
+              Height = 8
               ElementID = 'WebGridPanel6'
               Align = alClient
               ChildOrder = 4
@@ -959,10 +934,6 @@ object CWRmainFrm: TCWRmainFrm
                 item
                   Value = 100
                 end>
-              ExplicitLeft = 2
-              ExplicitTop = 14
-              ExplicitWidth = 202
-              ExplicitHeight = 8
               object lb10Channel: TWebLabel
                 Left = 2
                 Top = 2
@@ -1010,10 +981,10 @@ object CWRmainFrm: TCWRmainFrm
         end
       end
       object WebPanel2: TWebPanel
-        Left = 0
-        Top = 166
-        Width = 612
-        Height = 783
+        Left = 2
+        Top = 2
+        Width = 608
+        Height = 755
         ElementClassName = 'card'
         HeightStyle = ssAuto
         WidthStyle = ssAuto
@@ -1024,10 +995,6 @@ object CWRmainFrm: TCWRmainFrm
         ElementFont = efCSS
         ElementPosition = epIgnore
         TabOrder = 1
-        ExplicitLeft = 2
-        ExplicitTop = 2
-        ExplicitWidth = 608
-        ExplicitHeight = 755
         object Listings: TWebStringGrid
           Left = 0
           Top = 0
@@ -1047,7 +1014,6 @@ object CWRmainFrm: TCWRmainFrm
           Options = [goColSizing, goRowSelect]
           ParentFont = False
           TabOrder = 0
-          OnDblClick = ListingsDblClick
           OnSelectCell = ListingsSelectCell
           ElementFont = efCSS
           FixedFont.Charset = DEFAULT_CHARSET
@@ -1064,6 +1030,28 @@ object CWRmainFrm: TCWRmainFrm
         end
       end
     end
+  end
+  object NewCapturesTable: TWebStringGrid
+    Left = 32
+    Top = 440
+    Width = 553
+    Height = 225
+    ColCount = 7
+    DefaultColWidth = 200
+    DefaultColAlignment = taCenter
+    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goFixedRowDefAlign]
+    TabOrder = 11
+    Visible = False
+    ElementFont = efCSS
+    FixedFont.Charset = DEFAULT_CHARSET
+    FixedFont.Color = clWindowText
+    FixedFont.Height = -12
+    FixedFont.Name = 'Segoe UI'
+    FixedFont.Style = []
+    RangeEdit.Max = 100.000000000000000000
+    RangeEdit.Step = 1.000000000000000000
+    HeightPercent = 100.000000000000000000
+    WidthPercent = 100.000000000000000000
   end
   object WIDBCDS: TWebIndexedDbClientDataset
     IDBDatabaseName = 'CWRDB'

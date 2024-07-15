@@ -2,6 +2,7 @@ object SchedForm: TSchedForm
   Width = 472
   Height = 480
   ElementFont = efCSS
+  OnShow = WebFormShow
   object lbChannelValue: TWebLabel
     Left = 172
     Top = 308
@@ -116,7 +117,7 @@ object SchedForm: TSchedForm
     ParentFont = False
     WidthPercent = 100.000000000000000000
   end
-  object lbStartDate: TWebLabel
+  object lblStartDateValue: TWebLabel
     Left = 130
     Top = 367
     Width = 100
@@ -358,7 +359,7 @@ object SchedForm: TSchedForm
     end
   end
   object tpEndTime: TWebDateTimePicker
-    Left = 234
+    Left = 349
     Top = 367
     Width = 110
     Height = 31
@@ -382,7 +383,7 @@ object SchedForm: TSchedForm
     Time = 45503.862546296300000000
   end
   object tpStartTime: TWebDateTimePicker
-    Left = 349
+    Left = 234
     Top = 367
     Width = 110
     Height = 31

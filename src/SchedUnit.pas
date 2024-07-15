@@ -15,7 +15,7 @@ type
     lblEndTime: TWebLabel;
     lblStartDate: TWebLabel;
     lblStartTime: TWebLabel;
-    lbStartDate: TWebLabel;
+    lblStartDateValue: TWebLabel;
     optcanbutt: TWebButton;
     optokbutt: TWebButton;
     pnlDetails: TWebPanel;
@@ -27,6 +27,7 @@ type
     mmDescrip: TWebMemo;
     tpEndTime: TWebDateTimePicker;
     tpStartTime: TWebDateTimePicker;
+    procedure WebFormShow(Sender: TObject);
   private
     { Private declarations }
   public
@@ -39,5 +40,12 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TSchedForm.WebFormShow(Sender: TObject);
+begin
+//  tpStartTime.ShowSeconds := False;
+//  tpEndTime.ShowSeconds := False;
+//  lblStartDateValue.Caption := DateToStr(tpStartTime.DateTime);
+end;
 
 end.

@@ -61,6 +61,7 @@ type
     pnlListingsGrid: TWebGridPanel;
     WebPanel2: TWebPanel;
     pnlListings: TWebPanel;
+    NewCapturesTable: TWebStringGrid;
 
   procedure LoadWIDBCDS;
   procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
@@ -282,24 +283,25 @@ begin
 // AccessExpiry is number of seconds, not a DateTime/Timestamp !!
   console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString
     + ' or DateTime?: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
+  if WebRESTClient1.AccessToken = '' then ResetPrompt := '&prompt=select_account';
+  WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
+  WEBRESTClient1.App.CallBackURL := window.location.href;
+  WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth'
+    + '?client_id=' + WebRESTCLient1.App.Key
+    + '&scope=https://www.googleapis.com/auth/drive'
+    + '&state=bf'
+    + '&response_type=token'
+    + '&redirect_uri=' + WEBRESTClient1.App.CallbackURL
+    + ResetPrompt;
+  console.log('WEBRESTClient1.App.CallBackURL: ' + WEBRESTClient1.App.CallbackURL);
   if (WebRESTClient1.AccessToken = '') or (ResetPrompt > '') then
   begin
     console.log('Performing OAuth');
-    WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
-    WEBRESTClient1.App.CallBackURL := window.location.href;
-    WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth'
-      + '?client_id=' + WebRESTCLient1.App.Key
-      + '&state=bf'
-      + '&response_type=token'
-      + '&redirect_uri=' + WEBRESTClient1.App.CallbackURL
-      + '&scope=https://www.googleapis.com/auth/drive'
-      + {'&prompt=' +} ResetPrompt;
-    console.log('WEBRESTClient1.App.CallBackURL: ' + WEBRESTClient1.App.CallbackURL);
     TAwait.ExecP<TJSPromiseResolver> (WebRESTClient1.Authenticate);
-    ResetPrompt := {'none'}'';
+  end;
+  ResetPrompt := '';
   console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString
     + ' or DateTime?: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
-  end;
   q :='name = ''' + TableFile + ''' and trashed = false';
 
   rq := TAwait.ExecP<TJSXMLHttpRequest> (WEBRESTClient1.HttpRequest('GET',
@@ -803,22 +805,18 @@ begin
     // load file HTML template + controls
     TAwait.ExecP<TSchedForm>(newform.Load());
 
-  // init control after loading
+  // init controls after loading
     newform.mmTitle.Text := Listings.Cells[2,ARow];
     newform.mmSubTitle.Text := lb06SubTitle.Caption;
     newform.mmDescrip.Text := lb12Description.Caption;
     newform.lbChannelValue.Caption := lb10Channel.Caption;
     newform.lblStartDateValue.Caption := WIDBCDS.FieldByName('StartTime').AsString.Split([' '])[0];
-    newform.tpStartTime.Time := WIDBCDS.FieldByName('StartTime').AsDateTime;
-    newform.tpEndTime.Time := WIDBCDS.FieldByName('EndTime').AsDateTime;
+    newform.tpStartTime.DateTime := WIDBCDS.FieldByName('StartTime').AsDateTime;
+    newform.tpEndTime.DateTime := WIDBCDS.FieldByName('EndTime').AsDateTime;
   // execute form and wait for close
     TAwait.ExecP<TModalResult>(newform.Execute);
     if newform.ModalResult = mrOk then
-    begin
-//      ShowMessage('SchedForm closed with new value:"'+newform.mmTitle.Text+'"');
-
-      await (UpdateNewCaptures(newform.tpStartTime.Date + newform.tpStartTime.Time, newform.tpStartTime.Date + newform.tpEndTime.Time));
-    end;
+      await (UpdateNewCaptures(newform.tpStartTime.DateTime, newform.tpEndTime.DateTime));
   finally
     newform.Free;
   end;
@@ -1069,27 +1067,19 @@ const
   HEADINGS: array [0..6] of string = ('PSIP','RecordStart','RecordEnd','Title','SubTitle','StartTime','ProgramID');
 var
   i: Integer;
-  item: string;
-  sl: TStrings;
-  NewCapturesTable: TWebStringGrid;
 begin
   Log(' ====== UpdateNewCaptures called =========');
-  NewCapturesTable := TWebStringGrid.Create(nil);
-//  NewCapturesTable.Visible := False;
-  NewCapturesTable.ColCount := 7;
-//  NewCapturesTable.FixedRows := 0;
   await(RefreshCSV(NewCapturesTable, 'cwr_newcaptures.csv','NewCaptures'));
   Log('NewCaptures Rows: '+NewCapturesTable.RowCount.ToString);
   if NewCapturesTable.RowCount = 0 then // fnf, create new one
   begin
-    NewCapturesTable.RowCount := 2;
+    NewCapturesTable.RowCount := 1;
     for i := 0 to NewCapturesTable.ColCount-1 do
       NewCapturesTable.Cells[i,0] := HEADINGS[i];
   end
   else
     for i := NewCapturesTable.RowCount-1 downto 1 do // Remove blank rows
       if NewCapturesTable.Cells[0,i] = '' then NewCapturesTable.RemoveRow(i);
-  Log('Initial NewCapturesTable Rows: '+NewCapturesTable.RowCount.ToString);
 // Add the new capture to the list
   NewCapturesTable.RowCount := NewCapturesTable.RowCount + 1;
   NewCapturesTable.Cells[0,NewCapturesTable.RowCount-1] := lb10Channel.Caption; // PSIP
@@ -1099,11 +1089,14 @@ begin
   NewCapturesTable.Cells[4,NewCapturesTable.RowCount-1] := lb06SubTitle.Caption; // Subtitle
   NewCapturesTable.Cells[5,NewCapturesTable.RowCount-1] := WIDBCDS.FieldByName('StartTime').AsString;  // EPG StartTime
   NewCapturesTable.Cells[6,NewCapturesTable.RowCount-1] := WIDBCDS.FieldByName('ProgramID').AsString; // Episode No.
-  for i := 0 to 6 do ShowMessage(NewCapturesTable.Cells[i,0] +': '+NewCapturesTable.Cells[i,NewCapturesTable.RowCount-1]);
-
+  // for debugging:
+  NewCapturesTable.Visible := True;
+  NewCapturesTable.BringToFront;
   // Update the file
   // ==============================
-  NewCapturesTable.Free;
+  asm await sleep(20000) end;
+  NewCapturesTable.Visible := False;
+  Log('Final NewCapturesTable Rows: '+NewCapturesTable.RowCount.ToString);
   Log(' ====== UpdateNewCaptures finished =========');
 end;
 
