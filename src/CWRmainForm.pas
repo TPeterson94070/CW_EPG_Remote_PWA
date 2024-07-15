@@ -372,7 +372,8 @@ begin
           Log(WSG.Name+'.RowCount: ' + WSG.RowCount.ToString);
           Log('Done loading '+WSG.Name);
           sl.Free; // := nil;
-        end;
+        end
+        else WSG.RowCount := 0;
       except
         on E:Exception do
         begin
@@ -1074,13 +1075,14 @@ var
 begin
   Log(' ====== UpdateNewCaptures called =========');
   NewCapturesTable := TWebStringGrid.Create(nil);
-  NewCapturesTable.Visible := False;
+//  NewCapturesTable.Visible := False;
   NewCapturesTable.ColCount := 7;
+//  NewCapturesTable.FixedRows := 0;
   await(RefreshCSV(NewCapturesTable, 'cwr_newcaptures.csv','NewCaptures'));
-//  Log('NewCaptures Rows: '+NewCapturesTable.RowCount.ToString);
+  Log('NewCaptures Rows: '+NewCapturesTable.RowCount.ToString);
   if NewCapturesTable.RowCount = 0 then // fnf, create new one
   begin
-    NewCapturesTable.RowCount := 1;
+    NewCapturesTable.RowCount := 2;
     for i := 0 to NewCapturesTable.ColCount-1 do
       NewCapturesTable.Cells[i,0] := HEADINGS[i];
   end
