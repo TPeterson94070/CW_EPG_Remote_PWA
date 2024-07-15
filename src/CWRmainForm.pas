@@ -115,7 +115,7 @@ private
   [async]
   procedure RefreshHistory;
   [async]
-  procedure UpdateNewCaptures;
+  procedure UpdateNewCaptures(RecordStart, RecordEnd: TDateTime);
   [async]
   function GetGoogleDriveFile(TableFile: string): string;
 public
@@ -276,7 +276,6 @@ var
   jso: TJSONObject;
   ja: TJSONArray;
   i: integer;
-  AA:
 
 begin
   Result := '';
@@ -808,14 +807,16 @@ begin
     newform.mmSubTitle.Text := lb06SubTitle.Caption;
     newform.mmDescrip.Text := lb12Description.Caption;
     newform.lbChannelValue.Caption := lb10Channel.Caption;
-    newform.lbStartDate.Caption := WIDBCDS.FieldByName('StartTime').AsString.Split([' '])[0];
+    newform.lblStartDateValue.Caption := WIDBCDS.FieldByName('StartTime').AsString.Split([' '])[0];
     newform.tpStartTime.Time := WIDBCDS.FieldByName('StartTime').AsDateTime;
     newform.tpEndTime.Time := WIDBCDS.FieldByName('EndTime').AsDateTime;
   // execute form and wait for close
     TAwait.ExecP<TModalResult>(newform.Execute);
     if newform.ModalResult = mrOk then
     begin
-      ShowMessage('SchedForm closed with new value:"'+newform.mmTitle.Text+'"');
+//      ShowMessage('SchedForm closed with new value:"'+newform.mmTitle.Text+'"');
+
+      await (UpdateNewCaptures(newform.tpStartTime.Date + newform.tpStartTime.Time, newform.tpStartTime.Date + newform.tpEndTime.Time));
     end;
   finally
     newform.Free;
@@ -1061,7 +1062,7 @@ begin
   Log(' ====== FetchHistory finished =========');
 end;
 
-procedure TCWRmainFrm.UpdateNewCaptures;
+procedure TCWRmainFrm.UpdateNewCaptures(RecordStart, RecordEnd: TDateTime);
 
 const
   HEADINGS: array [0..6] of string = ('PSIP','RecordStart','RecordEnd','Title','SubTitle','StartTime','ProgramID');
@@ -1088,7 +1089,18 @@ begin
       if NewCapturesTable.Cells[0,i] = '' then NewCapturesTable.RemoveRow(i);
   Log('Initial NewCapturesTable Rows: '+NewCapturesTable.RowCount.ToString);
 // Add the new capture to the list
-// Update the file
+  NewCapturesTable.RowCount := NewCapturesTable.RowCount + 1;
+  NewCapturesTable.Cells[0,NewCapturesTable.RowCount-1] := lb10Channel.Caption; // PSIP
+  NewCapturesTable.Cells[1,NewCapturesTable.RowCount-1] := DateTimeToStr(RecordStart);
+  NewCapturesTable.Cells[2,NewCapturesTable.RowCount-1] := DateTimeToStr(RecordEnd);
+  NewCapturesTable.Cells[3,NewCapturesTable.RowCount-1] := lb01Title.Caption; // Title
+  NewCapturesTable.Cells[4,NewCapturesTable.RowCount-1] := lb06SubTitle.Caption; // Subtitle
+  NewCapturesTable.Cells[5,NewCapturesTable.RowCount-1] := WIDBCDS.FieldByName('StartTime').AsString;  // EPG StartTime
+  NewCapturesTable.Cells[6,NewCapturesTable.RowCount-1] := WIDBCDS.FieldByName('ProgramID').AsString; // Episode No.
+  for i := 0 to 6 do ShowMessage(NewCapturesTable.Cells[i,0] +': '+NewCapturesTable.Cells[i,NewCapturesTable.RowCount-1]);
+
+  // Update the file
+  // ==============================
   NewCapturesTable.Free;
   Log(' ====== UpdateNewCaptures finished =========');
 end;
