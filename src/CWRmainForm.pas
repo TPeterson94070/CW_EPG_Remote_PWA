@@ -965,6 +965,7 @@ const
 var
   i: Integer;
   id, res: string;
+  data: Tstrings;
 begin
   Log(' ====== UpdateNewCaptures called =========');
   await(RefreshCSV(NewCapturesTable, 'cwr_newcaptures.csv','NewCaptures', id));
@@ -994,7 +995,8 @@ begin
   asm await sleep(20000) end;
   NewCapturesTable.Visible := False;
   // Update the file     {Oops, we need the ID of the new/existing csv}
-  res := await(TJSXMLHttpRequest, WEBRESTClient1.HttpRequest('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data));
+  NewCapturesTable.SaveToStrings(data, ',', True);
+  res := await(TJSXMLHttpRequest, WEBRESTClient1.HttpRequest('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data.Text));
   console.log(res);
 
   // ==============================
