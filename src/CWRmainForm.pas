@@ -104,7 +104,7 @@ private
   [async]
   procedure FetchCapReservations;
   [async]
-  procedure RefreshCSV(WSG: TWebStringGrid; TableFile, Title: string);
+  procedure RefreshCSV(WSG: TWebStringGrid; TableFile, Title: string; var id: string);
   [async]
   procedure FetchHistory;
   [async]
@@ -118,7 +118,10 @@ private
   [async]
   procedure UpdateNewCaptures(RecordStart, RecordEnd: TDateTime);
   [async]
-  function GetGoogleDriveFile(TableFile: string): string;
+  function GetGoogleDriveFile(TableFile: string; var id: string): string;
+  [async]
+  procedure CreateGoogleFile(FName: string; var id: string);
+
 public
   { Public declarations }
 end;
@@ -229,12 +232,13 @@ begin
 end;
 
 procedure TCWRmainFrm.WebButton1Click(Sender: TObject);
-
+var
+  id: string;
 begin
   Log('======== "Refresh EPG" clicked');
   WebRadioGroup1.Enabled := False;
 //  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  await (RefreshCSV(WebStringGrid1, 'cwr_epg.csv','EPG'));
+  await (RefreshCSV(WebStringGrid1, 'cwr_epg.csv','EPG', id));
   await(LoadWIDBCDS);
   Log('Finished (re)loading WIDBCDS');
   await(FetchCapReservations);
@@ -270,9 +274,9 @@ begin
   WebRadioGroup1.Enabled := True;
 end;
 
-function TCWRmainFrm.GetGoogleDriveFile(TableFile: string): string;
+function TCWRmainFrm.GetGoogleDriveFile(TableFile: string; var id: string): string;
 var
-  q,id,AResponse: string;
+  q, AResponse: string;
   rq: TJSXMLHttpRequest;
   jso: TJSONObject;
   ja: TJSONArray;
@@ -342,7 +346,7 @@ begin
   end;
 end;
 
-procedure TCWRmainFrm.RefreshCSV(WSG: TWebStringGrid; TableFile, Title: string);
+procedure TCWRmainFrm.RefreshCSV(WSG: TWebStringGrid; TableFile, Title: string; var id: string);
 var
   Reply, Line: string;
   sl: TStrings;
@@ -360,7 +364,7 @@ begin
     try
       Log('Requesting: ' + TableFile);
       try
-        Reply := {TAwait.Exec<string>}await (GetGoogleDriveFile(TableFile));
+        Reply := {TAwait.Exec<string>}await (GetGoogleDriveFile(TableFile, id));
 
         if Reply <> '' then  // Got a response
         begin
@@ -898,12 +902,13 @@ procedure TCWRmainFrm.FetchCapReservations;  // Fetch CW_EPG-saved file
 
 var
   i: Integer;
+  id: string;
   sl: TStrings;
 begin
   Log(' ====== FetchCapReservations called =========');
   // Turn off GetCellData (modifies Cols 1, 2 for display)
   AllCapsGrid.OnGetCellData := nil;
-  await(RefreshCSV(AllCapsGrid, 'cwr_captures.csv', 'Scheduled'));
+  await(RefreshCSV(AllCapsGrid, 'cwr_captures.csv', 'Scheduled', id));
   // Save unmodified capture data to Local Storage
   sl := TStringList.Create;
   AllCapsGrid.SaveToStrings(sl, ',', True);
@@ -920,13 +925,14 @@ procedure TCWRmainFrm.FetchHistory;
 
 var
   i: Integer;
+  id: string;
   sl: TStrings;
 begin
   Log(' ====== FetchHistory called =========');
   HistoryTable.BeginUpdate;
   HistoryTable.Visible := False;
   HistoryTable.ColCount := 32;
-  await(RefreshCSV(HistoryTable, 'cwr_history.csv','History'));
+  await(RefreshCSV(HistoryTable, 'cwr_history.csv','History', id));
 //  Log('History Rows: '+HistoryTable.RowCount.ToString);
   for i := HistoryTable.RowCount-1 downto 1 do // Remove blanks, add leading zeroes
   begin
@@ -958,15 +964,17 @@ const
   HEADINGS: array [0..6] of string = ('PSIP','RecordStart','RecordEnd','Title','SubTitle','StartTime','ProgramID');
 var
   i: Integer;
+  id, res: string;
 begin
   Log(' ====== UpdateNewCaptures called =========');
-  await(RefreshCSV(NewCapturesTable, 'cwr_newcaptures.csv','NewCaptures'));
+  await(RefreshCSV(NewCapturesTable, 'cwr_newcaptures.csv','NewCaptures', id));
   Log('NewCaptures Rows: '+NewCapturesTable.RowCount.ToString);
   if NewCapturesTable.RowCount = 0 then // fnf, create new one
   begin
     NewCapturesTable.RowCount := 1;
     for i := 0 to NewCapturesTable.ColCount-1 do
       NewCapturesTable.Cells[i,0] := HEADINGS[i];
+    await(CreateGoogleFile('cwr_newcaptures.csv', id));
   end
   else
     for i := NewCapturesTable.RowCount-1 downto 1 do // Remove blank rows
@@ -985,11 +993,56 @@ begin
   NewCapturesTable.BringToFront;
   asm await sleep(20000) end;
   NewCapturesTable.Visible := False;
-  // Update the file
+  // Update the file     {Oops, we need the ID of the new/existing csv}
+  res := await(TJSXMLHttpRequest, WEBRESTClient1.HttpRequest('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data));
+  console.log(res);
 
   // ==============================
   Log('Final NewCapturesTable Rows: '+NewCapturesTable.RowCount.ToString);
   Log(' ====== UpdateNewCaptures finished =========');
+end;
+
+//procedure TCWRmainFrm.btnSaveClick(Sender: TObject);
+//var
+//  data: string;
+//  res: TJSXMLHttpRequest;
+//begin
+////  WEBRestClient1.OnRequestResponse := HandleSaveFile;
+//
+//  data := WebMemo1.Lines.Text;
+//
+////  WEBRestClient1.HttpsCommand('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data,'',nil);
+//
+//  res := await(TJSXMLHttpRequest, WEBRESTClient1.HttpRequest('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data));
+//  console.log(res);
+//end;
+
+procedure TCWRmainFrm.CreateGoogleFile(FName: string; var id: string);
+var
+//  id: string;
+  rq: TJSXMLHttpRequest;
+  jso: TJSONObject;
+begin
+
+  rq := TAwait.ExecP<TJSXMLHttpRequest> {await(TJSXMLHttpRequest,} (WEBRestClient1.HttpRequest('POST','https://www.googleapis.com/upload/drive/v3/files'));
+
+  console.log(rq);
+
+  jso := TJSONObject(TJSONObject.ParseJSONValue(rq.responseText));
+
+  if Assigned(jso) then
+  begin
+    id := string(jso.GetJSONValue('id'));
+    console.log('file ID'+id);
+
+    rq := TAwait.ExecP<TJSXMLHttpRequest>{await(TJSXMLHttpRequest,} (WEBRestClient1.HttpRequest('PATCH','https://www.googleapis.com/drive/v3/files/'+id,
+      '{"name":"'+ FName + '", "description":"New Captures CSV list"}'));
+
+//    WebListBox1.Items.AddPair(fname, id);
+//    WebListBox1.ItemIndex := WebListBox1.Items.Count - 1;
+  end;
+
+//  WebMemo1.Lines.Clear;
 end;
 
 end.
