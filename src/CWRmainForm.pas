@@ -62,6 +62,7 @@ type
     WebPanel2: TWebPanel;
     pnlListings: TWebPanel;
     NewCapturesTable: TWebStringGrid;
+    WebPanel3: TWebPanel;
 
   procedure LoadWIDBCDS;
   procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
@@ -132,13 +133,13 @@ var
 implementation
 
 uses
-  System.Math, SchedUnit;
+  System.Math, SchedUnit2;
 
 {$R *.dfm}
 
 var
   ClickedCol,  ClickedRow: Integer;
-  ResetPrompt: string = '&prompt=select_account';
+  ResetPrompt: string = '&prompt=none' ; //'&prompt=select_account';
 
 const
   DBFIELDS: array[0..13] of string = ('PSIP', 'Time', 'Title', 'SubTitle', 'Description',
@@ -236,14 +237,11 @@ var
   id: string;
 begin
   Log('======== "Refresh EPG" clicked');
-  WebRadioGroup1.Enabled := False;
-//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   await (RefreshCSV(WebStringGrid1, 'cwr_epg.csv','EPG', id));
   await(LoadWIDBCDS);
   Log('Finished (re)loading WIDBCDS');
   await(FetchCapReservations);
   await(RefreshListings);
-  WebRadioGroup1.Enabled := True;
 end;
 
 procedure TCWRmainFrm.WebButton2Click(Sender: TObject);
@@ -266,12 +264,11 @@ end;
 
 procedure TCWRmainFrm.RefreshHistory;
 begin
-  WebRadioGroup1.Enabled := False;
-//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//  WebRadioGroup1.Enabled := False;
   await(FetchHistory);
   SetPage(2);
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  WebRadioGroup1.Enabled := True;
+//  WebRadioGroup1.Enabled := True;
 end;
 
 function TCWRmainFrm.GetGoogleDriveFile(TableFile: string; var id: string): string;
@@ -282,38 +279,56 @@ var
   ja: TJSONArray;
   i: integer;
 
+  [async]
+  function TryLogIn: TJSXMLHttpRequest;
+  begin
+  // AccessExpiry is number of seconds, not a DateTime/Timestamp !!
+    console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString
+      + ' or DateTime?: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
+    console.log('AccessToken: ' + WebRESTClient1.AccessToken);
+    if WebRESTClient1.AccessToken = '' then ResetPrompt := 'select_account';
+    WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
+    WEBRESTClient1.App.CallBackURL := window.location.href;
+    WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth'
+      + '?client_id=' + WebRESTCLient1.App.Key
+      + '&include_granted_scopes'
+      + '&scope=https://www.googleapis.com/auth/drive'
+      + '&state=bf'
+      + '&response_type=token'
+      + '&redirect_uri=' + WEBRESTClient1.App.CallbackURL
+      + '&prompt=' + ResetPrompt;
+    console.log('WEBRESTClient1.App.CallBackURL: ' + WEBRESTClient1.App.CallbackURL);
+    if (WebRESTClient1.AccessToken = '') or (ResetPrompt <> 'none') then
+    begin
+      console.log('Performing OAuth');
+      TAwait.ExecP<TJSPromiseResolver> (WebRESTClient1.Authenticate);
+    end;
+    ResetPrompt := 'none';
+    console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString
+      + ' or DateTime?: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
+    q :='name = ''' + TableFile + ''' and trashed = false';
+
+    Result := TAwait.ExecP<TJSXMLHttpRequest> (WEBRESTClient1.HttpRequest('GET',
+      'https://www.googleapis.com/drive/v3/files?q='+WEBRestClient1.URLEncode(q)));
+  end;
+
 begin
   Result := '';
-// AccessExpiry is number of seconds, not a DateTime/Timestamp !!
-  console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString
-    + ' or DateTime?: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
-  if WebRESTClient1.AccessToken = '' then ResetPrompt := '&prompt=select_account';
-  WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
-  WEBRESTClient1.App.CallBackURL := window.location.href;
-  WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth'
-    + '?client_id=' + WebRESTCLient1.App.Key
-    + '&scope=https://www.googleapis.com/auth/drive'
-    + '&state=bf'
-    + '&response_type=token'
-    + '&redirect_uri=' + WEBRESTClient1.App.CallbackURL
-    + ResetPrompt;
-  console.log('WEBRESTClient1.App.CallBackURL: ' + WEBRESTClient1.App.CallbackURL);
-  if (WebRESTClient1.AccessToken = '') or (ResetPrompt > '') then
-  begin
-    console.log('Performing OAuth');
-    TAwait.ExecP<TJSPromiseResolver> (WebRESTClient1.Authenticate);
-  end;
-  ResetPrompt := '';
-  console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString
-    + ' or DateTime?: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
-  q :='name = ''' + TableFile + ''' and trashed = false';
-
-  rq := TAwait.ExecP<TJSXMLHttpRequest> (WEBRESTClient1.HttpRequest('GET',
-    'https://www.googleapis.com/drive/v3/files?q='+WEBRestClient1.URLEncode(q)));
-
-//  window.location.href := WebRESTClient1.App.CallbackURL;
+  rq := await(TJSXMLHttpRequest, TryLogIn);
   if Assigned(rq) then
   begin
+    // Check for error
+    if rq.Status <> 200 then // Set up a retry
+    begin
+      if rq.Status = 301 then // Access token expired
+      begin
+        console.log(rq.StatusText);
+        WebRESTClient1.ClearTokens;
+        console.log('Retrying login');
+        rq := await(TJSXMLHttpRequest, TryLogIn);
+        if rq.Status <> 200 then exit('');
+      end;
+    end;
     AResponse := rq.responseText;
     console.log(rq.responseText);
 
@@ -356,6 +371,7 @@ begin
   if application.IsOnline then
   begin
     AlertLabel.Caption := 'Refreshing '+Title+' data <i class="fa-solid fa-spinner fa-spin"></>';
+    WebRadioGroup1.Hide;
     AlertLabel.Show;
     AlertLabel.BringToFront;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
@@ -370,7 +386,8 @@ begin
         begin
           Log(copy(Reply,1,500));
           sl := TStringList.Create;
-          Reply := ReplaceStr(Reply, #10, '');
+          Reply := ReplaceStr(Reply, #10, ''); // dump linefeeds
+          Reply := ReplaceStr(Reply, #160, ''); // dump &nbsp too
           ReplyArray := Reply.Split([#13],TStringSplitOptions.ExcludeEmpty);
           Log('Begin extract ' + IntToStr(Length(ReplyArray)) + ' strings');
           for Line in ReplyArray do sl.Add(Line);
@@ -394,6 +411,7 @@ begin
       AlertLabel.Caption := 'Finishing up '+Title+' data <i class="fa-solid fa-spinner fa-spin"></>';
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
       AlertLabel.Hide;
+      WebRadioGroup1.Show;
       Log('Done hiding');
     end;
   end
@@ -447,7 +465,7 @@ begin
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   if WIDBCDS.Active and not WIDBCDS.IsEmpty then
   begin
-    WebRadioGroup1.Enabled := False;
+//    WebRadioGroup1.Enabled := False;
     WebRadioGroup1.ItemIndex := 4;
     WebPanel1.BringToFront;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
@@ -509,7 +527,7 @@ begin
       Listings.Cells[0,0] := 'Channel';
     finally
       Listings.EndUpdate;
-      WebRadioGroup1.Enabled := True;
+//      WebRadioGroup1.Enabled := True;
       SetPage(0);
     end;
   end else begin
@@ -517,7 +535,7 @@ begin
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
     ShowMessage('Please click "Refresh EPG" button');
   end;
-  WebRadioGroup1.Enabled := True;
+//  WebRadioGroup1.Enabled := True;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   DBIncRecs := nil;
 end;
@@ -686,7 +704,7 @@ end;
 procedure TCWRmainFrm.WebRadioGroup1Change(Sender: TObject);
 begin
   Log('Showing Page: ' + WebRadioGroup1.Items[WebRadioGroup1.ItemIndex]);
-  WebRadioGroup1.Enabled := False;
+//  WebRadioGroup1.Enabled := False;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   case WebRadioGroup1.ItemIndex of
     0: begin          {Listings page}
@@ -709,7 +727,7 @@ begin
       pnlOptions.BringToFront;
     end;
   end;
-  WebRadioGroup1.Enabled := True;
+//  WebRadioGroup1.Enabled := True;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 end;
 
@@ -812,8 +830,8 @@ begin
   // init controls after loading
     newform.mmTitle.Text := Listings.Cells[2,ARow];
     newform.mmSubTitle.Text := lb06SubTitle.Caption;
-    newform.mmDescrip.Text := lb12Description.Caption;
-    newform.lbChannelValue.Caption := lb10Channel.Caption;
+    newform.mmDescription.Text := lb12Description.Caption;
+    newform.lblChannelValue.Caption := lb10Channel.Caption;
     newform.lblStartDateValue.Caption := WIDBCDS.FieldByName('StartTime').AsString.Split([' '])[0];
     newform.tpStartTime.DateTime := WIDBCDS.FieldByName('StartTime').AsDateTime;
     newform.tpEndTime.DateTime := WIDBCDS.FieldByName('EndTime').AsDateTime;
@@ -973,6 +991,7 @@ begin
   if NewCapturesTable.RowCount = 0 then // fnf, create new one
   begin
     NewCapturesTable.RowCount := 1;
+    NewCapturesTable.ColCount := 7;
     for i := 0 to NewCapturesTable.ColCount-1 do
       NewCapturesTable.Cells[i,0] := HEADINGS[i];
     await(CreateGoogleFile('cwr_newcaptures.csv', id));
@@ -990,13 +1009,18 @@ begin
   NewCapturesTable.Cells[5,NewCapturesTable.RowCount-1] := WIDBCDS.FieldByName('StartTime').AsString;  // EPG StartTime
   NewCapturesTable.Cells[6,NewCapturesTable.RowCount-1] := WIDBCDS.FieldByName('ProgramID').AsString; // Episode No.
   // for debugging:
-  NewCapturesTable.Visible := True;
-  NewCapturesTable.BringToFront;
-  asm await sleep(20000) end;
-  NewCapturesTable.Visible := False;
-  // Update the file     {Oops, we need the ID of the new/existing csv}
+//  NewCapturesTable.Visible := True;
+//  NewCapturesTable.BringToFront;
+//  asm await sleep(20000) end;
+//  NewCapturesTable.Visible := False;
+  // Update the file
+  data := TStringList.Create;
+  data.LineBreak := #13;
   NewCapturesTable.SaveToStrings(data, ',', True);
-  res := await(TJSXMLHttpRequest, WEBRESTClient1.HttpRequest('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data.Text));
+  console.log('id: '+id);
+//  console.log('data: ', data);
+  console.log('data.text: ', data.Text);
+  res := await(string, WEBRESTClient1.HttpRequest('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data.Text));
   console.log(res);
 
   // ==============================

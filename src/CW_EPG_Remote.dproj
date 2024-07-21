@@ -69,7 +69,7 @@
         <TMSWebPWAServiceWorkerFile>serviceworker.js</TMSWebPWAServiceWorkerFile>
         <TMSPWAManifestFile>Manifest.json</TMSPWAManifestFile>
         <TMSWebPWAResIconMidFile>IconResMid.png</TMSWebPWAResIconMidFile>
-        <TMSVersion>1.0.1406</TMSVersion>
+        <TMSVersion>1.0.1447</TMSVersion>
         <TMSWebHTMLFile>index.html</TMSWebHTMLFile>
         <TMSWebPWAResIconLowFile>IconResLow.png</TMSWebPWAResIconLowFile>
         <TMSWebPWAResIconHighFile>IconResHigh.png</TMSWebPWAResIconHighFile>
@@ -143,7 +143,7 @@
             <Form>CWRmainFrm</Form>
             <DesignClass>TWebForm</DesignClass>
         </DCCReference>
-        <DCCReference Include="SchedUnit.pas">
+        <DCCReference Include="SchedUnit2.pas">
             <Form>SchedForm</Form>
             <FormType>dfm</FormType>
             <DesignClass>TWebForm</DesignClass>
@@ -238,12 +238,6 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="ServiceWorker.js" Configuration="Debug" Class="ProjectFile">
-                    <Platform Name="Win32">
-                        <RemoteDir>.\</RemoteDir>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
                 <DeployFile LocalName="Win32\Debug\CW_EPG_Remote.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>CW_EPG_Remote.exe</RemoteName>
@@ -263,6 +257,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="index.html" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="serviceworker.js" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

@@ -6,7 +6,7 @@ uses
   Vcl.Forms,
   WEBLib.Forms,
   CWRmainForm in 'CWRmainForm.pas' {CWRmainFrm: TWebForm} {*.html},
-  SchedUnit in 'SchedUnit.pas' {SchedForm: TWebForm} {*.html};
+  SchedUnit2 in 'SchedUnit2.pas' {SchedForm: TWebForm} {*.html};
 
 {$R *.res}
 

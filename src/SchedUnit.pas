@@ -5,7 +5,7 @@ interface
 uses
   System.SysUtils, System.Classes, JS, Web, WEBLib.Graphics, WEBLib.Controls,
   WEBLib.Forms, WEBLib.Dialogs, WEBLib.StdCtrls, Vcl.StdCtrls, WEBLib.ExtCtrls,
-  Vcl.Controls;
+  Vcl.Controls, WEBLib.Menus;
 
 type
   TSchedForm = class(TWebForm)
@@ -25,8 +25,8 @@ type
     mmTitle: TWebMemo;
     mmSubTitle: TWebMemo;
     mmDescrip: TWebMemo;
-    tpEndTime: TWebDateTimePicker;
     tpStartTime: TWebDateTimePicker;
+    tpEndTime: TWebDateTimePicker;
     procedure WebFormShow(Sender: TObject);
   private
     { Private declarations }
