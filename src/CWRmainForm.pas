@@ -815,7 +815,7 @@ begin
   newform := TSchedForm.Create(Self);
   newform.Caption := 'Schedule Capture Event';
   newform.Popup := True;
-  newform.Border := fbDialog;
+  newform.Border := fbSingle;
 
   // used to manage Back button handling to close subform
   window.location.hash := 'subform';
