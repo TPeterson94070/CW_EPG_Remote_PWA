@@ -4,7 +4,7 @@
         <ProjectVersion>20.1</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Application</AppType>
@@ -69,7 +69,7 @@
         <TMSWebPWAServiceWorkerFile>serviceworker.js</TMSWebPWAServiceWorkerFile>
         <TMSPWAManifestFile>Manifest.json</TMSPWAManifestFile>
         <TMSWebPWAResIconMidFile>IconResMid.png</TMSWebPWAResIconMidFile>
-        <TMSVersion>1.0.1457</TMSVersion>
+        <TMSVersion>1.0.1463</TMSVersion>
         <TMSWebHTMLFile>index.html</TMSWebHTMLFile>
         <TMSWebPWAResIconLowFile>IconResLow.png</TMSWebPWAResIconLowFile>
         <TMSWebPWAResIconHighFile>IconResHigh.png</TMSWebPWAResIconHighFile>

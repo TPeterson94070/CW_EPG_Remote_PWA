@@ -21,8 +21,6 @@ object CWRmainFrm: TCWRmainFrm
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
     TabOrder = 1
-    ExplicitTop = 60
-    ExplicitHeight = 939
     object HistoryTable: TWebStringGrid
       Left = 0
       Top = 0
@@ -48,7 +46,6 @@ object CWRmainFrm: TCWRmainFrm
       HeightStyle = ssPercent
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
-      ExplicitHeight = 939
     end
   end
   object pnlLog: TWebPanel
@@ -62,8 +59,6 @@ object CWRmainFrm: TCWRmainFrm
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
     TabOrder = 2
-    ExplicitTop = 60
-    ExplicitHeight = 939
     object WebMemo2: TWebMemo
       AlignWithMargins = True
       Left = 3
@@ -80,7 +75,6 @@ object CWRmainFrm: TCWRmainFrm
       SelStart = 0
       WidthStyle = ssPercent
       WidthPercent = 100.000000000000000000
-      ExplicitHeight = 933
     end
   end
   object pnlCaptures: TWebPanel
@@ -94,8 +88,6 @@ object CWRmainFrm: TCWRmainFrm
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
     TabOrder = 3
-    ExplicitTop = 60
-    ExplicitHeight = 939
     object AllCapsGrid: TWebStringGrid
       Left = 0
       Top = 0
@@ -115,7 +107,6 @@ object CWRmainFrm: TCWRmainFrm
       RangeEdit.Step = 1.000000000000000000
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
-      ExplicitHeight = 939
     end
   end
   object WebPanel1: TWebPanel
@@ -129,8 +120,6 @@ object CWRmainFrm: TCWRmainFrm
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
     TabOrder = 4
-    ExplicitTop = 60
-    ExplicitHeight = 939
     object WebMemo1: TWebMemo
       Left = 0
       Top = 23
@@ -160,7 +149,6 @@ object CWRmainFrm: TCWRmainFrm
       SelLength = 0
       SelStart = 52
       WidthPercent = 100.000000000000000000
-      ExplicitHeight = 916
     end
     object WebProgressBar1: TWebProgressBar
       Left = 0
@@ -194,8 +182,6 @@ object CWRmainFrm: TCWRmainFrm
     RangeEdit.Step = 1.000000000000000000
     HeightPercent = 100.000000000000000000
     WidthPercent = 100.000000000000000000
-    ExplicitTop = 63
-    ExplicitHeight = 933
   end
   object WebStringGrid2: TWebStringGrid
     Left = 0
@@ -217,8 +203,6 @@ object CWRmainFrm: TCWRmainFrm
     RangeEdit.Step = 1.000000000000000000
     HeightPercent = 100.000000000000000000
     WidthPercent = 100.000000000000000000
-    ExplicitTop = 60
-    ExplicitHeight = 939
   end
   object pnlListings: TWebPanel
     Left = 0
@@ -239,8 +223,6 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 7
-    ExplicitTop = 60
-    ExplicitHeight = 939
     object pnlListingsGrid: TWebGridPanel
       Left = 0
       Top = 0
@@ -279,7 +261,6 @@ object CWRmainFrm: TCWRmainFrm
         item
           Value = 7
         end>
-      ExplicitHeight = 939
       object lb12Description: TWebLabel
         Left = 2
         Top = 903
@@ -856,7 +837,6 @@ object CWRmainFrm: TCWRmainFrm
           HeightPercent = 100.000000000000000000
           WidthPercent = 100.000000000000000000
           OnClickCell = ListingsClickCell
-          ExplicitHeight = 747
         end
       end
     end
@@ -925,8 +905,6 @@ object CWRmainFrm: TCWRmainFrm
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
     TabOrder = 5
-    ExplicitTop = 60
-    ExplicitHeight = 939
     object WebButton1: TWebButton
       Left = 32
       Top = 228
@@ -1129,7 +1107,6 @@ object CWRmainFrm: TCWRmainFrm
       Role = 'button'
       Visible = False
       WidthPercent = 100.000000000000000000
-      ExplicitHeight = 27
     end
   end
   object WIDBCDS: TWebIndexedDbClientDataset
