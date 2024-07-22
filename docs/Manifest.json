@@ -1,7 +1,7 @@
 {
    "short_name":"CW_EPG_Remote",
    "name":"CW_EPG_Remote",
-   "description":"",
+   "description":"Companion app for CW_EPG to view EPG, scheduled captures, and History remotely",
    "start_url":"index.html",
    "display":"fullscreen",
    "theme_color":"#FFFFFF",

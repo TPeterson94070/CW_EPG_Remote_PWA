@@ -139,7 +139,7 @@ uses
 
 var
   ClickedCol,  ClickedRow: Integer;
-  ResetPrompt: string = '&prompt=none' ; //'&prompt=select_account';
+  ResetPrompt: string = 'none' ; //'&prompt=select_account';
 
 const
   DBFIELDS: array[0..13] of string = ('PSIP', 'Time', 'Title', 'SubTitle', 'Description',
@@ -266,7 +266,7 @@ procedure TCWRmainFrm.RefreshHistory;
 begin
 //  WebRadioGroup1.Enabled := False;
   await(FetchHistory);
-  SetPage(2);
+  await(SetPage(2));
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 //  WebRadioGroup1.Enabled := True;
 end;
@@ -320,7 +320,7 @@ begin
     // Check for error
     if rq.Status <> 200 then // Set up a retry
     begin
-      if rq.Status = 301 then // Access token expired
+//      if rq.Status = 401 then // Access token expired
       begin
         console.log(rq.StatusText);
         WebRESTClient1.ClearTokens;
@@ -465,7 +465,6 @@ begin
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   if WIDBCDS.Active and not WIDBCDS.IsEmpty then
   begin
-//    WebRadioGroup1.Enabled := False;
     WebRadioGroup1.ItemIndex := 4;
     WebPanel1.BringToFront;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
@@ -502,7 +501,7 @@ begin
           + #13#13'Do you want to refresh them?',mtConfirmation, [mbYes,mbNo]))
           = mrYes then
         begin
-          SetPage(4);
+          await(SetPage(4));
           WebButton1Click(Self);
         end;
         exit;
@@ -527,15 +526,14 @@ begin
       Listings.Cells[0,0] := 'Channel';
     finally
       Listings.EndUpdate;
-//      WebRadioGroup1.Enabled := True;
-      SetPage(0);
+      await(SetPage(0));
+      console.log('Current ItemIndex: ' + WebRadioGroup1.ItemIndex.ToString);
     end;
   end else begin
-    SetPage(4);
+    await(SetPage(4));
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
     ShowMessage('Please click "Refresh EPG" button');
   end;
-//  WebRadioGroup1.Enabled := True;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   DBIncRecs := nil;
 end;
@@ -594,7 +592,7 @@ begin
       + #13#13'Do you want to refresh the list?',mtConfirmation, [mbYes,mbNo]))
       = mrYes then
     begin
-      SetPage(4);
+      await(SetPage(4));
       WebButton1Click(Self);
     end;
   end
@@ -605,7 +603,7 @@ begin
       + #13#13'Do you want to refresh the list?',mtConfirmation, [mbYes,mbNo]))
       = mrYes then
     begin
-      SetPage(4);
+      await(SetPage(4));
       WebButton1Click(Self);
     end;
   end  ;
@@ -698,13 +696,12 @@ begin
     Log('Leaving Page: ' + WebRadioGroup1.Items[WebRadioGroup1.ItemIndex]);
   end;
   WebRadioGroup1.ItemIndex := PageNum;
-  WebRadioGroup1Change(Self);
+  await(WebRadioGroup1Change(Self));
 end;
 
 procedure TCWRmainFrm.WebRadioGroup1Change(Sender: TObject);
 begin
   Log('Showing Page: ' + WebRadioGroup1.Items[WebRadioGroup1.ItemIndex]);
-//  WebRadioGroup1.Enabled := False;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   case WebRadioGroup1.ItemIndex of
     0: begin          {Listings page}
@@ -727,7 +724,6 @@ begin
       pnlOptions.BringToFront;
     end;
   end;
-//  WebRadioGroup1.Enabled := True;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 end;
 
