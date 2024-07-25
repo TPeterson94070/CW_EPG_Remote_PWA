@@ -1,5 +1,5 @@
 object SchedForm: TSchedForm
-  Width = 439
+  Width = 400
   Height = 480
   Font.Charset = ANSI_CHARSET
   Font.Color = clBlack
@@ -82,7 +82,7 @@ object SchedForm: TSchedForm
     WidthPercent = 100.000000000000000000
   end
   object lblEndTime: TWebLabel
-    Left = 323
+    Left = 302
     Top = 344
     Width = 70
     Height = 16
@@ -137,8 +137,8 @@ object SchedForm: TSchedForm
     Left = 23
     Top = 291
     Width = 67
-    Height = 84
-    Caption = 'EventModeGroup'
+    Height = 55
+    Caption = ''
     Columns = 1
     ItemIndex = 0
     Items.Strings = (
@@ -146,22 +146,22 @@ object SchedForm: TSchedForm
       'Watch')
     Role = ''
     TabOrder = 0
+    Visible = False
   end
   object pnlDetails: TWebPanel
     Left = 0
     Top = 0
-    Width = 439
+    Width = 400
     Height = 275
     Align = alTop
     Caption = 'pnlDetails'
     ChildOrder = 1
     ShowCaption = False
     TabOrder = 1
-    ExplicitWidth = 472
     object lblTitle: TWebLabel
       Left = 0
       Top = 0
-      Width = 439
+      Width = 400
       Height = 14
       Align = alTop
       Caption = 'Program Title'
@@ -172,7 +172,7 @@ object SchedForm: TSchedForm
     object lblSubTitle: TWebLabel
       Left = 0
       Top = 72
-      Width = 439
+      Width = 400
       Height = 14
       Align = alTop
       Caption = 'Program SubTitle'
@@ -183,7 +183,7 @@ object SchedForm: TSchedForm
     object lblDescription: TWebLabel
       Left = 0
       Top = 135
-      Width = 439
+      Width = 400
       Height = 14
       Align = alTop
       Caption = 'Program Description'
@@ -194,7 +194,7 @@ object SchedForm: TSchedForm
     object mmTitle: TWebMemo
       Left = 0
       Top = 14
-      Width = 439
+      Width = 400
       Height = 58
       Align = alTop
       HeightPercent = 100.000000000000000000
@@ -203,12 +203,11 @@ object SchedForm: TSchedForm
       SelLength = 0
       SelStart = 0
       WidthPercent = 100.000000000000000000
-      ExplicitWidth = 472
     end
     object mmSubTitle: TWebMemo
       Left = 0
       Top = 86
-      Width = 439
+      Width = 400
       Height = 49
       Align = alTop
       HeightPercent = 100.000000000000000000
@@ -217,12 +216,11 @@ object SchedForm: TSchedForm
       SelLength = 0
       SelStart = 10
       WidthPercent = 100.000000000000000000
-      ExplicitWidth = 472
     end
     object mmDescription: TWebMemo
       Left = 0
       Top = 158
-      Width = 439
+      Width = 400
       Height = 117
       Align = alBottom
       HeightPercent = 100.000000000000000000
@@ -231,11 +229,10 @@ object SchedForm: TSchedForm
       SelLength = 0
       SelStart = 11
       WidthPercent = 100.000000000000000000
-      ExplicitWidth = 472
     end
   end
   object optcanbutt: TWebButton
-    Left = 28
+    Left = 20
     Top = 421
     Width = 166
     Height = 40
@@ -261,7 +258,7 @@ object SchedForm: TSchedForm
     WidthPercent = 100.000000000000000000
   end
   object optokbutt: TWebButton
-    Left = 245
+    Left = 210
     Top = 421
     Width = 166
     Height = 40
@@ -270,7 +267,7 @@ object SchedForm: TSchedForm
     Margins.Right = 8
     Margins.Bottom = 8
     Anchors = [akLeft, akBottom]
-    Caption = 'Schedule'
+    Caption = 'Submit'
     ChildOrder = 11
     ElementFont = efCSS
     Font.Charset = DEFAULT_CHARSET
@@ -301,7 +298,7 @@ object SchedForm: TSchedForm
     Time = 0.666666666666666600
   end
   object tpEndTime: TWebDateTimePicker
-    Left = 323
+    Left = 302
     Top = 360
     Width = 79
     Height = 24

@@ -1,6 +1,6 @@
 object CWRmainFrm: TCWRmainFrm
-  Width = 493
-  Height = 999
+  Width = 400
+  Height = 800
   CSSLibrary = cssBootstrap
   ElementFont = efCSS
   Font.Charset = ANSI_CHARSET
@@ -12,21 +12,20 @@ object CWRmainFrm: TCWRmainFrm
   OnCreate = WebFormCreate
   object pnlHistory: TWebPanel
     Left = 0
-    Top = 30
-    Width = 493
-    Height = 969
+    Top = 32
+    Width = 400
+    Height = 768
     ElementClassName = 'card'
     Align = alClient
     ChildOrder = 11
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
     TabOrder = 1
-    ExplicitWidth = 612
     object HistoryTable: TWebStringGrid
       Left = 0
       Top = 0
-      Width = 493
-      Height = 969
+      Width = 400
+      Height = 768
       Align = alClient
       ColCount = 32
       DefaultColWidth = 61
@@ -47,27 +46,25 @@ object CWRmainFrm: TCWRmainFrm
       HeightStyle = ssPercent
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
-      ExplicitWidth = 612
     end
   end
   object pnlLog: TWebPanel
     Left = 0
-    Top = 30
-    Width = 493
-    Height = 969
+    Top = 32
+    Width = 400
+    Height = 768
     ElementClassName = 'card'
     Align = alClient
     ChildOrder = 9
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
     TabOrder = 2
-    ExplicitWidth = 612
     object WebMemo2: TWebMemo
       AlignWithMargins = True
       Left = 3
       Top = 3
-      Width = 487
-      Height = 963
+      Width = 394
+      Height = 762
       Align = alClient
       ElementID = 'content'
       ElementFont = efCSS
@@ -78,26 +75,24 @@ object CWRmainFrm: TCWRmainFrm
       SelStart = 0
       WidthStyle = ssPercent
       WidthPercent = 100.000000000000000000
-      ExplicitWidth = 606
     end
   end
   object pnlCaptures: TWebPanel
     Left = 0
-    Top = 30
-    Width = 493
-    Height = 969
+    Top = 32
+    Width = 400
+    Height = 768
     ElementClassName = 'card'
     Align = alClient
     ChildOrder = 9
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
     TabOrder = 3
-    ExplicitWidth = 612
     object AllCapsGrid: TWebStringGrid
       Left = 0
       Top = 0
-      Width = 493
-      Height = 969
+      Width = 400
+      Height = 768
       Align = alClient
       DefaultRowHeight = 22
       Options = [goVertLine, goHorzLine, goRangeSelect]
@@ -112,26 +107,24 @@ object CWRmainFrm: TCWRmainFrm
       RangeEdit.Step = 1.000000000000000000
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
-      ExplicitWidth = 612
     end
   end
   object WebPanel1: TWebPanel
     Left = 0
-    Top = 30
-    Width = 493
-    Height = 969
+    Top = 32
+    Width = 400
+    Height = 768
     ElementClassName = 'card'
     Align = alClient
     ChildOrder = 10
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
     TabOrder = 4
-    ExplicitWidth = 612
     object WebMemo1: TWebMemo
       Left = 0
       Top = 23
-      Width = 493
-      Height = 946
+      Width = 400
+      Height = 745
       Margins.Left = 19
       Margins.Top = 38
       Margins.Right = 19
@@ -156,26 +149,24 @@ object CWRmainFrm: TCWRmainFrm
       SelLength = 0
       SelStart = 52
       WidthPercent = 100.000000000000000000
-      ExplicitWidth = 612
     end
     object WebProgressBar1: TWebProgressBar
       Left = 0
       Top = 0
-      Width = 493
+      Width = 400
       Height = 23
       ElementClassName = 'progress'
       Align = alTop
       ElementBarClassName = 'progress-bar'
       Value = pbvAbsolute
-      ExplicitWidth = 612
     end
   end
   object WebStringGrid1: TWebStringGrid
     AlignWithMargins = True
     Left = 5
-    Top = 33
-    Width = 485
-    Height = 963
+    Top = 35
+    Width = 392
+    Height = 762
     Margins.Left = 5
     Align = alClient
     DefaultRowHeight = 22
@@ -191,13 +182,12 @@ object CWRmainFrm: TCWRmainFrm
     RangeEdit.Step = 1.000000000000000000
     HeightPercent = 100.000000000000000000
     WidthPercent = 100.000000000000000000
-    ExplicitWidth = 604
   end
   object WebStringGrid2: TWebStringGrid
     Left = 0
-    Top = 30
-    Width = 493
-    Height = 969
+    Top = 32
+    Width = 400
+    Height = 768
     Align = alClient
     BorderStyle = bsNone
     DefaultRowHeight = 22
@@ -213,7 +203,6 @@ object CWRmainFrm: TCWRmainFrm
     RangeEdit.Step = 1.000000000000000000
     HeightPercent = 100.000000000000000000
     WidthPercent = 100.000000000000000000
-    ExplicitWidth = 612
   end
   object NewCapturesTable: TWebStringGrid
     Left = 32
@@ -238,49 +227,17 @@ object CWRmainFrm: TCWRmainFrm
     HeightPercent = 100.000000000000000000
     WidthPercent = 100.000000000000000000
   end
-  object WebMessageDlg1: TWebMessageDlg
-    Left = 304
-    Top = 494
-    Width = 24
-    Height = 24
-    Buttons = []
-    CustomButtons = <>
-    DialogText.Strings = (
-      'Warning'
-      'Error'
-      'Information'
-      'Confirm'
-      'Custom'
-      'OK'
-      'Cancel'
-      'Yes'
-      'No'
-      'Abort'
-      'Retry'
-      'Ignore'
-      'All'
-      'Yes to all'
-      'No to all'
-      'Help'
-      'Close')
-    Opacity = 0.200000000000000000
-    ElementButtonClassName = 'btn'
-    ElementDialogClassName = 'shadow-lg p-3 mb-5 bg-white rounded'
-    ElementTitleClassName = 'text-body'
-    ElementContentClassName = 'text-body'
-  end
   object pnlOptions: TWebPanel
     Left = 0
-    Top = 30
-    Width = 493
-    Height = 969
+    Top = 32
+    Width = 400
+    Height = 768
     ElementClassName = 'card'
     Align = alClient
     ChildOrder = 9
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
     TabOrder = 5
-    ExplicitWidth = 612
     object WebButton1: TWebButton
       Left = 32
       Top = 228
@@ -421,8 +378,8 @@ object CWRmainFrm: TCWRmainFrm
   object WebPanel3: TWebPanel
     Left = 0
     Top = 0
-    Width = 493
-    Height = 30
+    Width = 400
+    Height = 32
     ElementClassName = 'card'
     Align = alTop
     AutoSize = True
@@ -432,12 +389,11 @@ object CWRmainFrm: TCWRmainFrm
     ElementFont = efCSS
     ShowCaption = False
     TabOrder = 10
-    ExplicitWidth = 612
     object AlertLabel: TWebButton
       Left = 0
       Top = 0
-      Width = 493
-      Height = 30
+      Width = 400
+      Height = 32
       Margins.Left = 19
       Margins.Top = 24
       Margins.Right = 19
@@ -447,29 +403,35 @@ object CWRmainFrm: TCWRmainFrm
         'Refreshing CW_EPG data <i class="fa-solid fa-spinner fa-spin"></' +
         '>'
       Color = clYellow
+      ElementClassName = 'form-label'
       ElementFont = efCSS
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -19
       Font.Name = 'Segoe UI'
       Font.Style = []
+      HeightStyle = ssAuto
       HeightPercent = 100.000000000000000000
       ParentFont = False
       Role = 'button'
       Visible = False
       WidthPercent = 100.000000000000000000
-      ExplicitWidth = 612
     end
     object WebRadioGroup1: TWebRadioGroup
       Left = 0
       Top = 0
-      Width = 493
-      Height = 30
+      Width = 400
+      Height = 32
+      ElementClassName = 'form-control-sm'
       WidthStyle = ssPercent
       Align = alClient
       Caption = ''
       ChildOrder = 5
       Columns = 5
+      ElementButtonClassName = 'align-content-sm-between'
+      ElementGroupClassName = 'list-group-horizontal-sm'
+      ElementLabelClassName = 'text-sm-start'
+      ElementLegendClassName = 'form-text'
       ElementFont = efCSS
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -479,22 +441,21 @@ object CWRmainFrm: TCWRmainFrm
       ItemIndex = 0
       Items.Strings = (
         'Listings'
-        'Scheduled'
+        'Sched'
         'History'
         'Log'
         'Options')
       ParentFont = False
       Role = ''
-      TabOrder = 0
+      TabOrder = 1
       OnChange = WebRadioGroup1Change
-      ExplicitWidth = 612
     end
   end
   object pnlListings: TWebPanel
     Left = 0
-    Top = 30
-    Width = 493
-    Height = 969
+    Top = 32
+    Width = 400
+    Height = 768
     ElementClassName = 'card'
     Align = alClient
     Caption = 'pnlListings'
@@ -509,12 +470,12 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 7
-    ExplicitWidth = 612
     object pnlListingsGrid: TWebGridPanel
       Left = 0
       Top = 0
-      Width = 493
-      Height = 969
+      Width = 400
+      Height = 768
+      ElementClassName = 'card-body'
       Align = alClient
       ColumnCollection = <
         item
@@ -548,17 +509,20 @@ object CWRmainFrm: TCWRmainFrm
         item
           Value = 7
         end>
-      ExplicitWidth = 612
+      Visible = False
       object lb12Description: TWebLabel
         Left = 2
-        Top = 903
-        Width = 489
-        Height = 64
+        Top = 716
+        Width = 396
+        Height = 50
         Align = alClient
         Anchors = []
         AutoSize = False
         Caption = 'Description'
         ChildOrder = -1
+        ElementClassName = 'form-control'
+        ElementLabelClassName = 'form-label'
+        ElementFont = efCSS
         ElementPosition = epRelative
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -575,10 +539,12 @@ object CWRmainFrm: TCWRmainFrm
       end
       object WebGridPanel2: TWebGridPanel
         Left = 2
-        Top = 777
-        Width = 489
-        Height = 166
+        Top = 616
+        Width = 396
+        Height = 582
+        ElementClassName = 'card-body'
         ElementID = 'WebGridPanel2'
+        HeightStyle = ssAuto
         WidthStyle = ssPercent
         HeightPercent = 15.000000000000000000
         Align = alTop
@@ -613,8 +579,9 @@ object CWRmainFrm: TCWRmainFrm
         object WebGridPanel3: TWebGridPanel
           Left = 2
           Top = 2
-          Width = 485
-          Height = 74
+          Width = 392
+          Height = 156
+          ElementClassName = 'card-body'
           ElementID = 'WebGridPanel3'
           HeightStyle = ssAuto
           WidthStyle = ssPercent
@@ -668,13 +635,15 @@ object CWRmainFrm: TCWRmainFrm
             Left = 2
             Top = 2
             Width = 420
-            Height = 70
+            Height = 152
             Align = alClient
             AutoSize = False
             Caption = 'Title'
             ChildOrder = -1
+            ElementClassName = 'form-label'
             ElementLabelClassName = 'text-body'
             ElementID = 'lb01Title'
+            ElementFont = efCSS
             ElementPosition = epRelative
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clWindowText
@@ -694,13 +663,15 @@ object CWRmainFrm: TCWRmainFrm
             Left = 426
             Top = 2
             Width = 66
-            Height = 70
+            Height = 152
             Align = alClient
             Alignment = taCenter
             AutoSize = False
             Caption = 'New'
             ChildOrder = -1
+            ElementClassName = 'form-label'
             ElementID = 'lb02New'
+            ElementFont = efCSS
             ElementPosition = epRelative
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clWindowText
@@ -719,13 +690,15 @@ object CWRmainFrm: TCWRmainFrm
             Left = 496
             Top = 2
             Width = 66
-            Height = 70
+            Height = 152
             Align = alClient
             Alignment = taCenter
             AutoSize = False
             Caption = 'Stereo'
             ChildOrder = -1
+            ElementClassName = 'form-label'
             ElementID = 'lb03Stereo'
+            ElementFont = efCSS
             ElementPosition = epRelative
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clWindowText
@@ -744,13 +717,15 @@ object CWRmainFrm: TCWRmainFrm
             Left = 566
             Top = 2
             Width = 66
-            Height = 70
+            Height = 152
             Align = alClient
             Alignment = taCenter
             AutoSize = False
             Caption = 'HD'
             ChildOrder = -1
+            ElementClassName = 'form-label'
             ElementID = 'lb04HD'
+            ElementFont = efCSS
             ElementPosition = epRelative
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clWindowText
@@ -768,9 +743,9 @@ object CWRmainFrm: TCWRmainFrm
         end
         object WebGridPanel4: TWebGridPanel
           Left = 2
-          Top = 19
-          Width = 485
-          Height = 249
+          Top = 60
+          Width = 392
+          Height = 380
           ElementID = 'WebGridPanel4'
           HeightStyle = ssAuto
           WidthStyle = ssPercent
@@ -806,12 +781,14 @@ object CWRmainFrm: TCWRmainFrm
             Left = 2
             Top = 2
             Width = 420
-            Height = 245
+            Height = 376
             Align = alClient
             AutoSize = False
             Caption = 'SubTitle'
             ChildOrder = -1
+            ElementClassName = 'form-label'
             ElementID = 'lb06SubTitle'
+            ElementFont = efCSS
             ElementPosition = epRelative
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clWindowText
@@ -830,7 +807,8 @@ object CWRmainFrm: TCWRmainFrm
             Left = 426
             Top = 2
             Width = 206
-            Height = 245
+            Height = 376
+            ElementClassName = 'card-body'
             ElementID = 'WebGridPanel1'
             HeightStyle = ssPercent
             WidthStyle = ssPercent
@@ -864,7 +842,7 @@ object CWRmainFrm: TCWRmainFrm
               Left = 2
               Top = 2
               Width = 202
-              Height = 118
+              Height = 184
               ElementID = 'WebGridPanel7'
               HeightStyle = ssPercent
               WidthStyle = ssPercent
@@ -910,13 +888,15 @@ object CWRmainFrm: TCWRmainFrm
                 Left = 2
                 Top = 2
                 Width = 86
-                Height = 114
+                Height = 180
                 Align = alClient
                 Alignment = taCenter
                 AutoSize = False
                 Caption = 'Dolby'
                 ChildOrder = -1
+                ElementClassName = 'form-label'
                 ElementID = 'lb07Dolby'
+                ElementFont = efCSS
                 ElementPosition = epRelative
                 Font.Charset = DEFAULT_CHARSET
                 Font.Color = clWindowText
@@ -935,13 +915,15 @@ object CWRmainFrm: TCWRmainFrm
                 Left = 92
                 Top = 2
                 Width = 46
-                Height = 114
+                Height = 180
                 Align = alClient
                 Alignment = taCenter
                 AutoSize = False
                 Caption = 'CC'
                 ChildOrder = -1
+                ElementClassName = 'form-label'
                 ElementID = 'lb08CC'
+                ElementFont = efCSS
                 ElementPosition = epRelative
                 Font.Charset = DEFAULT_CHARSET
                 Font.Color = clWindowText
@@ -960,13 +942,15 @@ object CWRmainFrm: TCWRmainFrm
                 Left = 142
                 Top = 2
                 Width = 66
-                Height = 114
+                Height = 180
                 Align = alClient
                 Alignment = taCenter
                 AutoSize = False
                 Caption = 'OrigDate'
                 ChildOrder = -1
+                ElementClassName = 'form-label'
                 ElementID = 'lb09OrigDate'
+                ElementFont = efCSS
                 ElementPosition = epRelative
                 Font.Charset = DEFAULT_CHARSET
                 Font.Color = clWindowText
@@ -985,9 +969,10 @@ object CWRmainFrm: TCWRmainFrm
             end
             object WebGridPanel6: TWebGridPanel
               Left = 2
-              Top = 124
+              Top = 190
               Width = 202
-              Height = 118
+              Height = 184
+              ElementClassName = 'card-body'
               ElementID = 'WebGridPanel6'
               HeightStyle = ssPercent
               WidthStyle = ssPercent
@@ -1021,13 +1006,15 @@ object CWRmainFrm: TCWRmainFrm
                 Left = 2
                 Top = 2
                 Width = 97
-                Height = 114
+                Height = 180
                 Align = alClient
                 Alignment = taCenter
                 AutoSize = False
                 Caption = 'Channel'
                 ChildOrder = -1
+                ElementClassName = 'form-label'
                 ElementID = 'lb10Channel'
+                ElementFont = efCSS
                 ElementPosition = epRelative
                 Font.Charset = DEFAULT_CHARSET
                 Font.Color = clWindowText
@@ -1046,13 +1033,15 @@ object CWRmainFrm: TCWRmainFrm
                 Left = 103
                 Top = 2
                 Width = 97
-                Height = 114
+                Height = 180
                 Align = alClient
                 Alignment = taCenter
                 AutoSize = False
                 Caption = 'Time'
                 ChildOrder = -1
+                ElementClassName = 'form-label'
                 ElementID = 'lb11Time'
+                ElementFont = efCSS
                 ElementPosition = epRelative
                 Font.Charset = DEFAULT_CHARSET
                 Font.Color = clWindowText
@@ -1074,8 +1063,8 @@ object CWRmainFrm: TCWRmainFrm
       object WebPanel2: TWebPanel
         Left = 2
         Top = 2
-        Width = 489
-        Height = 771
+        Width = 396
+        Height = 610
         ElementClassName = 'card'
         HeightStyle = ssPercent
         WidthStyle = ssPercent
@@ -1092,43 +1081,74 @@ object CWRmainFrm: TCWRmainFrm
         Font.Style = []
         ParentFont = False
         TabOrder = 1
-        object Listings: TWebStringGrid
-          Left = 0
-          Top = 0
-          Width = 489
-          Height = 771
-          Align = alClient
-          ColCount = 14
-          DefaultColWidth = 61
-          DefaultRowHeight = 23
-          FixedCols = 0
-          RowCount = 20
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -12
-          Font.Name = 'Segoe UI'
-          Font.Style = []
-          Options = [goColSizing, goRowSelect]
-          ParentFont = False
-          TabOrder = 0
-          StyleElements = []
-          OnSelectCell = ListingsSelectCell
-          ElementFont = efCSS
-          FixedFont.Charset = DEFAULT_CHARSET
-          FixedFont.Color = clWindowText
-          FixedFont.Height = -12
-          FixedFont.Name = 'Segoe UI'
-          FixedFont.Style = []
-          GridLineColor = clRed
-          RangeEdit.Max = 100.000000000000000000
-          RangeEdit.Step = 1.000000000000000000
-          HeightPercent = 100.000000000000000000
-          WidthPercent = 100.000000000000000000
-          OnClickCell = ListingsClickCell
-          ExplicitWidth = 608
-        end
       end
     end
+    object Listings: TWebStringGrid
+      Left = 0
+      Top = 0
+      Width = 400
+      Height = 768
+      Align = alClient
+      ColCount = 14
+      DefaultColWidth = 61
+      DefaultRowHeight = 23
+      FixedCols = 0
+      RowCount = 20
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      Options = [goColSizing, goRowSelect]
+      ParentFont = False
+      TabOrder = 0
+      StyleElements = []
+      OnSelectCell = ListingsSelectCell
+      ElementClassName = 'form-control'
+      ElementFont = efCSS
+      FixedFont.Charset = DEFAULT_CHARSET
+      FixedFont.Color = clWindowText
+      FixedFont.Height = -12
+      FixedFont.Name = 'Segoe UI'
+      FixedFont.Style = []
+      GridLineColor = clRed
+      RangeEdit.Max = 100.000000000000000000
+      RangeEdit.Step = 1.000000000000000000
+      HeightPercent = 100.000000000000000000
+      WidthPercent = 100.000000000000000000
+      OnClickCell = ListingsClickCell
+    end
+  end
+  object WebMessageDlg1: TWebMessageDlg
+    Left = 304
+    Top = 494
+    Width = 24
+    Height = 24
+    Buttons = []
+    CustomButtons = <>
+    DialogText.Strings = (
+      'Warning'
+      'Error'
+      'Information'
+      'Confirm'
+      'Custom'
+      'OK'
+      'Cancel'
+      'Yes'
+      'No'
+      'Abort'
+      'Retry'
+      'Ignore'
+      'All'
+      'Yes to all'
+      'No to all'
+      'Help'
+      'Close')
+    Opacity = 0.200000000000000000
+    ElementButtonClassName = 'btn'
+    ElementDialogClassName = 'shadow-lg p-3 mb-5 bg-white rounded'
+    ElementTitleClassName = 'text-body'
+    ElementContentClassName = 'text-body'
   end
   object WIDBCDS: TWebIndexedDbClientDataset
     IDBDatabaseName = 'CWRDB'

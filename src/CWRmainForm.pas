@@ -94,6 +94,7 @@ type
     procedure WebButton2Click(Sender: TObject);
     [async]
     procedure WebButton3Click(Sender: TObject);
+    procedure WebRadioGroup1Enter(Sender: TObject);
 //    procedure WebClientDataSet1AfterOpen(DataSet: TDataSet);
 private
   { Private declarations }
@@ -133,7 +134,7 @@ var
 implementation
 
 uses
-  System.Math, SchedUnit2;
+  System.Math, SchedUnit2, Details;
 
 {$R *.dfm}
 
@@ -554,6 +555,7 @@ procedure TCWRmainFrm.tbCapturesShow;
 var
   sl: TStrings;
   i: Integer;
+  st, et: TDateTime;
 
 begin
   if TWebLocalStorage.GetValue('sl1') > '' then  // have stored value(s)
@@ -571,8 +573,16 @@ begin
     // Discard stale entries (End DateTime < now)
     for i := AllCapsGrid.RowCount-1 downto 1 do
       if AllCapsGrid.Cells[3,i] > '' then // not null row
-        if StrToDateTime(AllCapsGrid.Cells[3,i] + ' ' + AllCapsGrid.Cells[5,i]) < now then
+      begin
+        st := StrToDateTime(AllCapsGrid.Cells[3,i] + ' ' + AllCapsGrid.Cells[4,i]);
+        et := StrToDateTime(AllCapsGrid.Cells[3,i] + ' ' + AllCapsGrid.Cells[5,i]);
+        if et < st then et := et + 1;     // wraps midnight
+        if et < now then
+        begin
+          console.log('Stale entry date: ' + DateTimeToStr(et));
           AllCapsGrid.RemoveRow(i);
+        end;
+      end;
   end;
   for i := 0 to AllCapsGrid.ColCount-1 do AllCapsGrid.ColWidths[i] := 0;
   AllCapsGrid.ColWidths[1] := 80;  // Computer
@@ -727,6 +737,12 @@ begin
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 end;
 
+procedure TCWRmainFrm.WebRadioGroup1Enter(Sender: TObject);
+begin
+  // Force a page change?
+  Setpage(WebRadioGroup1.ItemIndex);
+end;
+
 procedure SetLabelStyle(lbl: TWebLabel; State: Boolean);
 //  Show detail items in red (on) or lt. gray (off)
 begin
@@ -807,36 +823,75 @@ end;
 procedure TCWRmainFrm.ListingsClickCell(Sender: TObject; ACol,
   ARow: Integer);
 var
-  newform: TSchedForm;
+  DetailsFrm: TDetailsFrm;
+  SchedFrm: TSchedForm;
+  x: TArray<string>;
+
 begin
   ClickedCol := ACol;
   ClickedRow := ARow;
   Log('Clicked Col, Row: ' + ACol.ToString + ', ' + ARow.ToString + ' contains: ' + Listings.Cells[ACol,ARow] );
-  newform := TSchedForm.Create(Self);
-  newform.Caption := 'Schedule Capture Event';
-  newform.Popup := True;
-  newform.Border := fbSingle;
-
-  // used to manage Back button handling to close subform
-  window.location.hash := 'subform';
+  DetailsFrm := TDetailsFrm.Create(Self);
+  DetailsFrm.Popup := True;
+  DetailsFrm.Border := fbSingle;
   try
     // load file HTML template + controls
-    TAwait.ExecP<TSchedForm>(newform.Load());
+    TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load());
 
   // init controls after loading
-    newform.mmTitle.Text := Listings.Cells[2,ARow];
-    newform.mmSubTitle.Text := lb06SubTitle.Caption;
-    newform.mmDescription.Text := lb12Description.Caption;
-    newform.lblChannelValue.Caption := lb10Channel.Caption;
-    newform.lblStartDateValue.Caption := WIDBCDS.FieldByName('StartTime').AsString.Split([' '])[0];
-    newform.tpStartTime.DateTime := WIDBCDS.FieldByName('StartTime').AsDateTime;
-    newform.tpEndTime.DateTime := WIDBCDS.FieldByName('EndTime').AsDateTime;
+    WIDBCDS.RecNo := Listings.Cells[3,ARow].ToInteger;
+    DetailsFrm.lb01Title.Caption := ReplaceStr(WIDBCDS.Fields[1+2].AsString, '&', '&&');
+    DetailsFrm.lb06SubTitle.Caption := WIDBCDS.Fields[1+3].AsString;
+    DetailsFrm.lb09OrigDate.Caption := IfThen(WIDBCDS.Fields[1+12].AsString > '', 'Movie Yr', '1st Aired') + '  ';
+    DetailsFrm.lb11Time.Caption := WIDBCDS.Fields[1+1].AsString;
+    DetailsFrm.lb10Channel.Caption := WIDBCDS.Fields[1+0].AsString;
+    x := WIDBCDS.Fields[1+8].AsString.Split(['-']);
+    if Length(x) = 3 then
+      DetailsFrm.lb09OrigDate.Caption := DetailsFrm.lb09OrigDate.Caption + x[1] + '/' + x[2] + '/' + RightStr(x[0],2)
+    else
+      DetailsFrm.lb09OrigDate.Caption := DetailsFrm.lb09OrigDate.Caption + WIDBCDS.Fields[1+12].AsString;
+    SetLabelStyle(DetailsFrm.lb02New, WIDBCDS.Fields[1+9].AsString <> '');
+    SetLabelStyle(DetailsFrm.lb08CC, WIDBCDS.Fields[1+10].AsString.Contains('cc'));
+    SetLabelStyle(DetailsFrm.lb03Stereo, WIDBCDS.Fields[1+10].AsString.Contains('stereo'));
+    SetLabelStyle(DetailsFrm.lb07Dolby, WIDBCDS.Fields[1+10].AsString.Contains('DD'));
+    DetailsFrm.lb04HD.Caption := 'SD';
+    if WIDBCDS.Fields[1+11].AsString > '' then
+      DetailsFrm.lb04HD.Caption := WIDBCDS.Fields[1+11].AsString.Split(['["HD ','"'])[1] ; //,[TStringSplitOptions.ExcludeEmpty]);
+    SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
+    DetailsFrm.lb12Description.Caption := WIDBCDS.Fields[1+4].AsString;
   // execute form and wait for close
-    TAwait.ExecP<TModalResult>(newform.Execute);
-    if newform.ModalResult = mrOk then
-      await (UpdateNewCaptures(newform.tpStartTime.DateTime, newform.tpEndTime.DateTime));
+    TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
+    if DetailsFrm.ModalResult = mrOk then
+    begin
+      SchedFrm := TSchedForm.Create(Self);
+      SchedFrm.Caption := 'Schedule Capture Event';
+      SchedFrm.Popup := True;
+      SchedFrm.Border := fbSingle;
+
+      // used to manage Back button handling to close subform  (???)
+      window.location.hash := 'subform';
+      try
+        // load file HTML template + controls
+        TAwait.ExecP<TSchedForm>(SchedFrm.Load());
+
+      // init controls after loading
+        SchedFrm.mmTitle.Text := DetailsFrm.lb01Title.Caption;
+        SchedFrm.mmSubTitle.Text := DetailsFrm.lb06SubTitle.Caption;
+        SchedFrm.mmDescription.Text := DetailsFrm.lb12Description.Caption;
+        SchedFrm.lblChannelValue.Caption := DetailsFrm.lb10Channel.Caption;
+        SchedFrm.lblStartDateValue.Caption := WIDBCDS.FieldByName('StartTime').AsString.Split([' '])[0];
+        SchedFrm.tpStartTime.DateTime := WIDBCDS.FieldByName('StartTime').AsDateTime;
+        SchedFrm.tpEndTime.DateTime := WIDBCDS.FieldByName('EndTime').AsDateTime;
+      // execute form and wait for close
+        TAwait.ExecP<TModalResult>(SchedFrm.Execute);
+        if SchedFrm.ModalResult = mrOk then
+          await (UpdateNewCaptures(SchedFrm.tpStartTime.DateTime, SchedFrm.tpEndTime.DateTime));
+      finally
+        SchedFrm.Free;
+      end;
+    end;
   finally
-    newform.Free;
+    DetailsFrm.Free;
   end;
 end;
 
@@ -877,26 +932,26 @@ procedure TCWRmainFrm.ListingsSelectCell(Sender: TObject; ACol,
 var x: TArray<string>;
 begin
   { display details of the new record}
-  WIDBCDS.RecNo := Listings.Cells[3,ARow].ToInteger;
-  lb01Title.Caption := ReplaceStr(WIDBCDS.Fields[1+2].AsString, '&', '&&');
-  lb06SubTitle.Caption := WIDBCDS.Fields[1+3].AsString;
-  lb09OrigDate.Caption := IfThen(WIDBCDS.Fields[1+12].AsString > '', 'Movie Yr', '1st Aired') + '  ';
-  lb11Time.Caption := WIDBCDS.Fields[1+1].AsString;
-  lb10Channel.Caption := WIDBCDS.Fields[1+0].AsString;
-  x := WIDBCDS.Fields[1+8].AsString.Split(['-']);
-  if Length(x) = 3 then
-    lb09OrigDate.Caption := lb09OrigDate.Caption + x[1] + '/' + x[2] + '/' + RightStr(x[0],2)
-  else
-    lb09OrigDate.Caption := lb09OrigDate.Caption + WIDBCDS.Fields[1+12].AsString;
-  SetLabelStyle(lb02New, WIDBCDS.Fields[1+9].AsString <> '');
-  SetLabelStyle(lb08CC, WIDBCDS.Fields[1+10].AsString.Contains('cc'));
-  SetLabelStyle(lb03Stereo, WIDBCDS.Fields[1+10].AsString.Contains('stereo'));
-  SetLabelStyle(lb07Dolby, WIDBCDS.Fields[1+10].AsString.Contains('DD'));
-  lb04HD.Caption := 'SD';
-  if WIDBCDS.Fields[1+11].AsString > '' then
-    lb04HD.Caption := WIDBCDS.Fields[1+11].AsString.Split(['["HD ','"'])[1] ; //,[TStringSplitOptions.ExcludeEmpty]);
-  SetLabelStyle(lb04HD, lb04HD.Caption <> 'SD');
-  lb12Description.Caption := WIDBCDS.Fields[1+4].AsString;
+//  WIDBCDS.RecNo := Listings.Cells[3,ARow].ToInteger;
+//  lb01Title.Caption := ReplaceStr(WIDBCDS.Fields[1+2].AsString, '&', '&&');
+//  lb06SubTitle.Caption := WIDBCDS.Fields[1+3].AsString;
+//  lb09OrigDate.Caption := IfThen(WIDBCDS.Fields[1+12].AsString > '', 'Movie Yr', '1st Aired') + '  ';
+//  lb11Time.Caption := WIDBCDS.Fields[1+1].AsString;
+//  lb10Channel.Caption := WIDBCDS.Fields[1+0].AsString;
+//  x := WIDBCDS.Fields[1+8].AsString.Split(['-']);
+//  if Length(x) = 3 then
+//    lb09OrigDate.Caption := lb09OrigDate.Caption + x[1] + '/' + x[2] + '/' + RightStr(x[0],2)
+//  else
+//    lb09OrigDate.Caption := lb09OrigDate.Caption + WIDBCDS.Fields[1+12].AsString;
+//  SetLabelStyle(lb02New, WIDBCDS.Fields[1+9].AsString <> '');
+//  SetLabelStyle(lb08CC, WIDBCDS.Fields[1+10].AsString.Contains('cc'));
+//  SetLabelStyle(lb03Stereo, WIDBCDS.Fields[1+10].AsString.Contains('stereo'));
+//  SetLabelStyle(lb07Dolby, WIDBCDS.Fields[1+10].AsString.Contains('DD'));
+//  lb04HD.Caption := 'SD';
+//  if WIDBCDS.Fields[1+11].AsString > '' then
+//    lb04HD.Caption := WIDBCDS.Fields[1+11].AsString.Split(['["HD ','"'])[1] ; //,[TStringSplitOptions.ExcludeEmpty]);
+//  SetLabelStyle(lb04HD, lb04HD.Caption <> 'SD');
+//  lb12Description.Caption := WIDBCDS.Fields[1+4].AsString;
 end;
 
 procedure TCWRmainFrm.WebStringGrid2DblClick(Sender: TObject);
