@@ -22,23 +22,6 @@ type
   WebMemo1: TWebMemo;
   seNumDisplayDays: TWebSpinEdit;
   WebGroupBox1: TWebGroupBox;
-  WebGridPanel2: TWebGridPanel;
-  WebGridPanel3: TWebGridPanel;
-  lb01Title: TWebLabel;
-  lb02New: TWebLabel;
-  lb03Stereo: TWebLabel;
-  lb04HD: TWebLabel;
-  WebGridPanel4: TWebGridPanel;
-  lb06SubTitle: TWebLabel;
-  lb12Description: TWebLabel;
-  WebGridPanel1: TWebGridPanel;
-  WebGridPanel7: TWebGridPanel;
-  lb07Dolby: TWebLabel;
-  lb08CC: TWebLabel;
-  lb09OrigDate: TWebLabel;
-  WebGridPanel6: TWebGridPanel;
-  lb10Channel: TWebLabel;
-  lb11Time: TWebLabel;
   WebMemo2: TWebMemo;
   WebProgressBar1: TWebProgressBar;
   WebRadioGroup1: TWebRadioGroup;
@@ -58,8 +41,6 @@ type
     WebButton2: TWebButton;
     WebRESTClient1: TWebRESTClient;
     WebButton3: TWebButton;
-    pnlListingsGrid: TWebGridPanel;
-    WebPanel2: TWebPanel;
     pnlListings: TWebPanel;
     NewCapturesTable: TWebStringGrid;
     WebPanel3: TWebPanel;
@@ -139,7 +120,7 @@ uses
 {$R *.dfm}
 
 var
-  ClickedCol,  ClickedRow: Integer;
+//  ClickedCol,  ClickedRow: Integer;
   ResetPrompt: string = 'none' ; //'&prompt=select_account';
 
 const
@@ -896,40 +877,40 @@ begin
 end;
 
 procedure TCWRmainFrm.ListingsDblClick(Sender: TObject);
-var
-  i: Integer;
+//var
+//  i: Integer;
 begin
-  Log('DblClick at [' + ClickedCol.ToString + ',' + ClickedRow.ToString + ']');
-  case ClickedCol of
-    0, 2: begin  // Filter channels, Titles
-      Log('Filtering Channels on ' + Listings.Cells[ClickedCol, ClickedRow]);
-      WebStringGrid2.RowCount := 1;
-      WebStringGrid2.ColCount := Listings.ColCount;
-      for i := 0 to Listings.ColCount-1 do
-        WebStringGrid2.ColWidths[i] := Listings.ColWidths[i];
-      WebStringGrid2.ColAlignments[0] := taCenter;
-      WebStringGrid2.ColAlignments[1] := taCenter;
-      WebStringGrid2.Cells[1,0] := 'List of matching ';
-      WebStringGrid2.Cells[2,0] :=  Listings.Cells[ClickedCol,0] + ' (Dbl clk to return)';
-      WebStringGrid2.Show;
-      WebGridPanel2.Hide;
-      WebStringGrid2.BringToFront;
-      WebStringGrid2.BeginUpdate;
-      for i := 1 to Listings.RowCount - 1 do
-        if Listings.Cells[ClickedCol, i] = Listings.Cells[ClickedCol, ClickedRow] then
-        begin
-          WebStringGrid2.RowCount := WebStringGrid2.RowCount + 1;
-          WebStringGrid2.Rows[WebStringGrid2.RowCount-1].Assign(Listings.Rows[i]);
-          ColorGridRow(WebStringGrid2, WebStringGrid2.RowCount-1);
-        end;
-      WebStringGrid2.EndUpdate;
-    end;
-  end;
+//  Log('DblClick at [' + ClickedCol.ToString + ',' + ClickedRow.ToString + ']');
+//  case ClickedCol of
+//    0, 2: begin  // Filter channels, Titles
+//      Log('Filtering Channels on ' + Listings.Cells[ClickedCol, ClickedRow]);
+//      WebStringGrid2.RowCount := 1;
+//      WebStringGrid2.ColCount := Listings.ColCount;
+//      for i := 0 to Listings.ColCount-1 do
+//        WebStringGrid2.ColWidths[i] := Listings.ColWidths[i];
+//      WebStringGrid2.ColAlignments[0] := taCenter;
+//      WebStringGrid2.ColAlignments[1] := taCenter;
+//      WebStringGrid2.Cells[1,0] := 'List of matching ';
+//      WebStringGrid2.Cells[2,0] :=  Listings.Cells[ClickedCol,0] + ' (Dbl clk to return)';
+//      WebStringGrid2.Show;
+//      WebGridPanel2.Hide;
+//      WebStringGrid2.BringToFront;
+//      WebStringGrid2.BeginUpdate;
+//      for i := 1 to Listings.RowCount - 1 do
+//        if Listings.Cells[ClickedCol, i] = Listings.Cells[ClickedCol, ClickedRow] then
+//        begin
+//          WebStringGrid2.RowCount := WebStringGrid2.RowCount + 1;
+//          WebStringGrid2.Rows[WebStringGrid2.RowCount-1].Assign(Listings.Rows[i]);
+//          ColorGridRow(WebStringGrid2, WebStringGrid2.RowCount-1);
+//        end;
+//      WebStringGrid2.EndUpdate;
+//    end;
+//  end;
 end;
 
 procedure TCWRmainFrm.ListingsSelectCell(Sender: TObject; ACol,
   ARow: Integer; var CanSelect: Boolean);
-var x: TArray<string>;
+//var x: TArray<string>;
 begin
   { display details of the new record}
 //  WIDBCDS.RecNo := Listings.Cells[3,ARow].ToInteger;
@@ -958,7 +939,7 @@ procedure TCWRmainFrm.WebStringGrid2DblClick(Sender: TObject);
 // Hide WSG2 to go back to EPG list
 begin
   WebStringGrid2.Hide;
-  WebGridPanel2.Show;
+//  WebGridPanel2.Show;
 end;
 
 procedure TCWRmainFrm.WIDBCDSIDBError(DataSet: TDataSet;
@@ -1052,21 +1033,16 @@ begin
       if NewCapturesTable.Cells[0,i] = '' then NewCapturesTable.RemoveRow(i);
 // Add the new capture to the list
   NewCapturesTable.RowCount := NewCapturesTable.RowCount + 1;
-  NewCapturesTable.Cells[0,NewCapturesTable.RowCount-1] := lb10Channel.Caption; // PSIP
+  NewCapturesTable.Cells[0,NewCapturesTable.RowCount-1] := WIDBCDS.FieldByName('PSIP').AsString;
   NewCapturesTable.Cells[1,NewCapturesTable.RowCount-1] := DateTimeToStr(RecordStart);
   NewCapturesTable.Cells[2,NewCapturesTable.RowCount-1] := DateTimeToStr(RecordEnd);
-  NewCapturesTable.Cells[3,NewCapturesTable.RowCount-1] := lb01Title.Caption; // Title
-  NewCapturesTable.Cells[4,NewCapturesTable.RowCount-1] := lb06SubTitle.Caption; // Subtitle
-  NewCapturesTable.Cells[5,NewCapturesTable.RowCount-1] := WIDBCDS.FieldByName('StartTime').AsString;  // EPG StartTime
+  NewCapturesTable.Cells[3,NewCapturesTable.RowCount-1] := ReplaceStr(WIDBCDS.FieldByName('Title').AsString, '&', '&&');
+  NewCapturesTable.Cells[4,NewCapturesTable.RowCount-1] := WIDBCDS.FieldByName('SubTitle').AsString;
+  NewCapturesTable.Cells[5,NewCapturesTable.RowCount-1] := WIDBCDS.FieldByName('StartTime').AsString; // EPG StartTime
   NewCapturesTable.Cells[6,NewCapturesTable.RowCount-1] := WIDBCDS.FieldByName('ProgramID').AsString; // Episode No.
-  // for debugging:
-//  NewCapturesTable.Visible := True;
-//  NewCapturesTable.BringToFront;
-//  asm await sleep(20000) end;
-//  NewCapturesTable.Visible := False;
   // Update the file
   data := TStringList.Create;
-  data.LineBreak := #13;
+  data.LineBreak := #13#10;
   NewCapturesTable.SaveToStrings(data, ',', True);
   console.log('id: '+id);
 //  console.log('data: ', data);

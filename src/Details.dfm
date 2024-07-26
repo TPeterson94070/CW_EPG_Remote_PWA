@@ -1,6 +1,6 @@
 object DetailsFrm: TDetailsFrm
-  Width = 400
-  Height = 296
+  Width = 350
+  Height = 223
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
@@ -10,9 +10,9 @@ object DetailsFrm: TDetailsFrm
   ShowClose = False
   Visible = True
   object lb02New: TWebLabel
-    Left = 222
-    Top = 215
-    Width = 60
+    Left = 200
+    Top = 128
+    Width = 40
     Height = 15
     Alignment = taCenter
     AutoSize = False
@@ -31,9 +31,9 @@ object DetailsFrm: TDetailsFrm
     WidthPercent = 100.000000000000000000
   end
   object lb03Stereo: TWebLabel
-    Left = 149
-    Top = 215
-    Width = 60
+    Left = 146
+    Top = 128
+    Width = 50
     Height = 15
     Alignment = taCenter
     AutoSize = False
@@ -52,8 +52,8 @@ object DetailsFrm: TDetailsFrm
     WidthPercent = 100.000000000000000000
   end
   object lb04HD: TWebLabel
-    Left = 9
-    Top = 215
+    Left = 6
+    Top = 128
     Width = 40
     Height = 15
     Alignment = taCenter
@@ -74,7 +74,7 @@ object DetailsFrm: TDetailsFrm
   end
   object lb10Channel: TWebLabel
     Left = 10
-    Top = 182
+    Top = 95
     Width = 100
     Height = 15
     Alignment = taCenter
@@ -95,7 +95,7 @@ object DetailsFrm: TDetailsFrm
   end
   object lb11Time: TWebLabel
     Left = 93
-    Top = 182
+    Top = 95
     Width = 160
     Height = 15
     Alignment = taCenter
@@ -115,9 +115,9 @@ object DetailsFrm: TDetailsFrm
     WidthPercent = 100.000000000000000000
   end
   object lb07Dolby: TWebLabel
-    Left = 87
-    Top = 215
-    Width = 60
+    Left = 84
+    Top = 128
+    Width = 50
     Height = 15
     Alignment = taCenter
     AutoSize = False
@@ -136,8 +136,8 @@ object DetailsFrm: TDetailsFrm
     WidthPercent = 100.000000000000000000
   end
   object lb08CC: TWebLabel
-    Left = 49
-    Top = 215
+    Left = 46
+    Top = 128
     Width = 40
     Height = 15
     Alignment = taCenter
@@ -157,8 +157,8 @@ object DetailsFrm: TDetailsFrm
     WidthPercent = 100.000000000000000000
   end
   object lb09OrigDate: TWebLabel
-    Left = 288
-    Top = 215
+    Left = 243
+    Top = 128
     Width = 100
     Height = 15
     Alignment = taCenter
@@ -180,7 +180,7 @@ object DetailsFrm: TDetailsFrm
   object lb12Description: TWebLabel
     Left = 0
     Top = 30
-    Width = 400
+    Width = 350
     Height = 15
     Align = alTop
     AutoSize = False
@@ -205,7 +205,7 @@ object DetailsFrm: TDetailsFrm
   object lb01Title: TWebLabel
     Left = 0
     Top = 0
-    Width = 400
+    Width = 350
     Height = 15
     Align = alTop
     AutoSize = False
@@ -230,7 +230,7 @@ object DetailsFrm: TDetailsFrm
   object lb06SubTitle: TWebLabel
     Left = 0
     Top = 15
-    Width = 400
+    Width = 350
     Height = 15
     Align = alTop
     AutoSize = False
@@ -253,8 +253,8 @@ object DetailsFrm: TDetailsFrm
   end
   object btnAddCap: TWebButton
     Left = 210
-    Top = 244
-    Width = 166
+    Top = 171
+    Width = 120
     Height = 40
     Margins.Left = 8
     Margins.Top = 8
@@ -275,11 +275,12 @@ object DetailsFrm: TDetailsFrm
     Role = 'button'
     TabOrder = 4
     WidthPercent = 100.000000000000000000
+    ExplicitTop = 244
   end
   object btnReturn: TWebButton
     Left = 20
-    Top = 244
-    Width = 166
+    Top = 171
+    Width = 120
     Height = 40
     Margins.Left = 8
     Margins.Top = 8
@@ -301,5 +302,6 @@ object DetailsFrm: TDetailsFrm
     Role = 'button'
     TabOrder = 3
     WidthPercent = 100.000000000000000000
+    ExplicitTop = 244
   end
 end
