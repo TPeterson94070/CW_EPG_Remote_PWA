@@ -249,156 +249,6 @@ object CWRmainFrm: TCWRmainFrm
     HeightPercent = 100.000000000000000000
     WidthPercent = 100.000000000000000000
   end
-  object pnlOptions: TWebPanel
-    Left = 0
-    Top = 40
-    Width = 400
-    Height = 760
-    ElementClassName = 'card'
-    HeightStyle = ssPercent
-    Align = alClient
-    ChildOrder = 9
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    TabOrder = 5
-    object WebButton1: TWebButton
-      Left = 32
-      Top = 228
-      Width = 190
-      Height = 38
-      Align = alCustom
-      Caption = 'Refresh EPG'
-      ChildOrder = 1
-      ElementClassName = 'btn btn-primary'
-      ElementFont = efCSS
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWhite
-      Font.Height = -9
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      HeightStyle = ssAuto
-      HeightPercent = 6.000000000000000000
-      ParentFont = False
-      Role = 'button'
-      WidthPercent = 100.000000000000000000
-      OnClick = WebButton1Click
-    end
-    object WebGroupBox1: TWebGroupBox
-      Left = 15
-      Top = 22
-      Width = 238
-      Height = 76
-      ElementClassName = 'btn-group'
-      WidthPercent = 25.000000000000000000
-      Align = alCustom
-      BorderColor = clSilver
-      Caption = '   EPG Days Displayed'
-      ElementFont = efCSS
-      ElementLegendClassName = 'caption-top'
-      object seNumDisplayDays: TWebSpinEdit
-        AlignWithMargins = True
-        Left = 57
-        Top = 24
-        Width = 124
-        Height = 28
-        Margins.Left = 57
-        Margins.Top = 24
-        Margins.Right = 57
-        Margins.Bottom = 24
-        ElementClassName = 'form-control'
-        Align = alClient
-        AutoSize = True
-        BorderStyle = bsNone
-        Color = clBtnFace
-        ElementFont = efCSS
-        Increment = 1
-        MaxValue = 20
-        MinValue = 1
-        Role = ''
-        Value = 1
-        OnChange = seNumDisplayDaysChange
-      end
-    end
-    object WebGroupBox3: TWebGroupBox
-      Left = 15
-      Top = 115
-      Width = 238
-      Height = 76
-      ElementClassName = 'card'
-      WidthPercent = 25.000000000000000000
-      Align = alCustom
-      BorderColor = clSilver
-      Caption = '   History Events Displayed'
-      ElementFont = efCSS
-      object seNumHistEvents: TWebSpinEdit
-        AlignWithMargins = True
-        Left = 57
-        Top = 24
-        Width = 124
-        Height = 28
-        Margins.Left = 57
-        Margins.Top = 24
-        Margins.Right = 57
-        Margins.Bottom = 24
-        ElementClassName = 'form-control'
-        Align = alClient
-        AutoSize = True
-        BorderStyle = bsNone
-        Color = clBtnFace
-        ElementFont = efCSS
-        Increment = 100
-        MaxValue = 8000
-        MinValue = 100
-        Role = ''
-        Value = 100
-        OnChange = seNumHistEventsChange
-      end
-    end
-    object WebButton2: TWebButton
-      Left = 32
-      Top = 274
-      Width = 190
-      Height = 38
-      Align = alCustom
-      Caption = 'Refresh History'
-      ChildOrder = 1
-      ElementClassName = 'btn btn-secondary'
-      ElementFont = efCSS
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWhite
-      Font.Height = -9
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      HeightStyle = ssAuto
-      HeightPercent = 6.000000000000000000
-      ParentFont = False
-      Role = 'button'
-      WidthPercent = 100.000000000000000000
-      OnClick = WebButton2Click
-    end
-    object WebButton3: TWebButton
-      Left = 32
-      Top = 319
-      Width = 190
-      Height = 38
-      Align = alCustom
-      Caption = 'Change HTPC Account'
-      ChildOrder = 1
-      ElementClassName = 'btn btn-secondary'
-      ElementFont = efCSS
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWhite
-      Font.Height = -9
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      HeightStyle = ssAuto
-      HeightPercent = 6.000000000000000000
-      ParentFont = False
-      Role = 'button'
-      WidthPercent = 100.000000000000000000
-      OnClick = WebButton3Click
-    end
-  end
   object WebPanel3: TWebPanel
     Left = 0
     Top = 0
@@ -555,6 +405,156 @@ object CWRmainFrm: TCWRmainFrm
     ElementDialogClassName = 'shadow-lg p-3 mb-5 bg-white rounded'
     ElementTitleClassName = 'text-body'
     ElementContentClassName = 'text-body'
+  end
+  object pnlOptions: TWebPanel
+    Left = 0
+    Top = 40
+    Width = 400
+    Height = 760
+    ElementClassName = 'card'
+    HeightStyle = ssPercent
+    Align = alClient
+    ChildOrder = 9
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    TabOrder = 5
+    object WebButton1: TWebButton
+      Left = 32
+      Top = 228
+      Width = 190
+      Height = 38
+      Align = alCustom
+      Caption = 'Refresh EPG'
+      ChildOrder = 1
+      ElementClassName = 'btn btn-primary'
+      ElementFont = efCSS
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -9
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      HeightStyle = ssAuto
+      HeightPercent = 6.000000000000000000
+      ParentFont = False
+      Role = 'button'
+      WidthPercent = 100.000000000000000000
+      OnClick = WebButton1Click
+    end
+    object WebGroupBox1: TWebGroupBox
+      Left = 15
+      Top = 22
+      Width = 238
+      Height = 76
+      ElementClassName = 'btn-group'
+      WidthPercent = 25.000000000000000000
+      Align = alCustom
+      BorderColor = clSilver
+      Caption = '   EPG Days Displayed'
+      ElementFont = efCSS
+      ElementLegendClassName = 'caption-top'
+      object seNumDisplayDays: TWebSpinEdit
+        AlignWithMargins = True
+        Left = 57
+        Top = 24
+        Width = 124
+        Height = 28
+        Margins.Left = 57
+        Margins.Top = 24
+        Margins.Right = 57
+        Margins.Bottom = 24
+        ElementClassName = 'form-control'
+        Align = alClient
+        AutoSize = True
+        BorderStyle = bsNone
+        Color = clBtnFace
+        ElementFont = efCSS
+        Increment = 1
+        MaxValue = 20
+        MinValue = 1
+        Role = ''
+        Value = 1
+        OnChange = seNumDisplayDaysChange
+      end
+    end
+    object WebGroupBox3: TWebGroupBox
+      Left = 15
+      Top = 115
+      Width = 238
+      Height = 76
+      ElementClassName = 'card'
+      WidthPercent = 25.000000000000000000
+      Align = alCustom
+      BorderColor = clSilver
+      Caption = '   History Events Displayed'
+      ElementFont = efCSS
+      object seNumHistEvents: TWebSpinEdit
+        AlignWithMargins = True
+        Left = 57
+        Top = 24
+        Width = 124
+        Height = 28
+        Margins.Left = 57
+        Margins.Top = 24
+        Margins.Right = 57
+        Margins.Bottom = 24
+        ElementClassName = 'form-control'
+        Align = alClient
+        AutoSize = True
+        BorderStyle = bsNone
+        Color = clBtnFace
+        ElementFont = efCSS
+        Increment = 100
+        MaxValue = 8000
+        MinValue = 100
+        Role = ''
+        Value = 100
+        OnChange = seNumHistEventsChange
+      end
+    end
+    object WebButton2: TWebButton
+      Left = 32
+      Top = 274
+      Width = 190
+      Height = 38
+      Align = alCustom
+      Caption = 'Refresh History'
+      ChildOrder = 1
+      ElementClassName = 'btn btn-secondary'
+      ElementFont = efCSS
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -9
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      HeightStyle = ssAuto
+      HeightPercent = 6.000000000000000000
+      ParentFont = False
+      Role = 'button'
+      WidthPercent = 100.000000000000000000
+      OnClick = WebButton2Click
+    end
+    object WebButton3: TWebButton
+      Left = 32
+      Top = 319
+      Width = 190
+      Height = 38
+      Align = alCustom
+      Caption = 'Change HTPC Account'
+      ChildOrder = 1
+      ElementClassName = 'btn btn-secondary'
+      ElementFont = efCSS
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -9
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      HeightStyle = ssAuto
+      HeightPercent = 6.000000000000000000
+      ParentFont = False
+      Role = 'button'
+      WidthPercent = 100.000000000000000000
+      OnClick = WebButton3Click
+    end
   end
   object WIDBCDS: TWebIndexedDbClientDataset
     IDBDatabaseName = 'CWRDB'

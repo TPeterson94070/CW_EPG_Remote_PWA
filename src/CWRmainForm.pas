@@ -212,21 +212,32 @@ begin
   end;
 end;
 
+procedure AllowButtonClicks(YesNo: Boolean);
+begin
+  CWRmainFrm.WebButton1.Enabled := YesNo;
+  CWRmainFrm.WebButton2.Enabled := YesNo;
+  CWRmainFrm.WebButton3.Enabled := YesNo;
+end;
+
 procedure TCWRmainFrm.WebButton1Click(Sender: TObject);
 var
   id: string;
 begin
   Log('======== "Refresh EPG" clicked');
+  AllowButtonClicks(False);
   await (RefreshCSV(WebStringGrid1, 'cwr_epg.csv','EPG', id));
   await(LoadWIDBCDS);
   Log('Finished (re)loading WIDBCDS');
   await(FetchCapReservations);
   await(RefreshListings);
+  AllowButtonClicks(True);
 end;
 
 procedure TCWRmainFrm.WebButton2Click(Sender: TObject);
 begin
+  AllowButtonClicks(False);
   await(RefreshHistory);
+  AllowButtonClicks(True);
 end;
 
 procedure TCWRmainFrm.WebButton3Click(Sender: TObject);
@@ -244,11 +255,9 @@ end;
 
 procedure TCWRmainFrm.RefreshHistory;
 begin
-//  WebRadioGroup1.Enabled := False;
   await(FetchHistory);
   await(SetPage(2));
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-//  WebRadioGroup1.Enabled := True;
 end;
 
 function TCWRmainFrm.GetGoogleDriveFile(TableFile: string; var id: string): string;
