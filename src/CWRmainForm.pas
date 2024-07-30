@@ -64,8 +64,6 @@ type
     procedure ListingsDblClick(Sender: TObject);
     [async]
     procedure ListingsClickCell(Sender: TObject; ACol, ARow: Integer);
-    procedure ListingsSelectCell(Sender: TObject; ACol, ARow: Integer;
-      var CanSelect: Boolean);
     procedure seNumHistEventsChange(Sender: TObject);
     procedure HistoryTableFixedCellClick(Sender: TObject; ACol, ARow: Integer);
 //    [async]
@@ -120,7 +118,7 @@ uses
 {$R *.dfm}
 
 var
-//  ClickedCol,  ClickedRow: Integer;
+  ClickedCol,  ClickedRow: Integer;
   ResetPrompt: string = 'none' ; //'&prompt=select_account';
 
 const
@@ -264,9 +262,10 @@ var
   [async]
   function TryLogIn: TJSXMLHttpRequest;
   begin
-  // AccessExpiry is number of seconds, not a DateTime/Timestamp !!
-    console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString
-      + ' or DateTime?: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
+  // AccessExpiry does not appear to be useful here.
+  // It is supposed to be a number of seconds, not a DateTime/Timestamp, and does not seem to change
+//    console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString
+//      + ' or DateTime?: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
     console.log('AccessToken: ' + WebRESTClient1.AccessToken);
     if WebRESTClient1.AccessToken = '' then ResetPrompt := 'select_account';
     WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
@@ -286,8 +285,8 @@ var
       TAwait.ExecP<TJSPromiseResolver> (WebRESTClient1.Authenticate);
     end;
     ResetPrompt := 'none';
-    console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString
-      + ' or DateTime?: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
+//    console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString
+//      + ' or DateTime?: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
     q :='name = ''' + TableFile + ''' and trashed = false';
 
     Result := TAwait.ExecP<TJSXMLHttpRequest> (WEBRESTClient1.HttpRequest('GET',
@@ -302,14 +301,12 @@ begin
     // Check for error
     if rq.Status <> 200 then // Set up a retry
     begin
-//      if rq.Status = 401 then // Access token expired
-      begin
-        console.log(rq.StatusText);
-        WebRESTClient1.ClearTokens;
-        console.log('Retrying login');
-        rq := await(TJSXMLHttpRequest, TryLogIn);
-        if rq.Status <> 200 then exit('');
-      end;
+// if rq.Status = 401 then Access token expired, but <>200 is enough for a retry
+      console.log(rq.StatusText);
+      WebRESTClient1.ClearTokens;
+      console.log('Retrying login');
+      rq := await(TJSXMLHttpRequest, TryLogIn);
+      if rq.Status <> 200 then exit('');
     end;
     AResponse := rq.responseText;
     console.log(rq.responseText);
@@ -518,6 +515,8 @@ begin
   end;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   DBIncRecs := nil;
+  WebPanel1.SendToBack;
+  pnlListings.BringToFront;
 end;
 
 procedure TCWRmainFrm.seNumDisplayDaysChange(Sender: TObject);
@@ -908,33 +907,6 @@ begin
 //  end;
 end;
 
-procedure TCWRmainFrm.ListingsSelectCell(Sender: TObject; ACol,
-  ARow: Integer; var CanSelect: Boolean);
-//var x: TArray<string>;
-begin
-  { display details of the new record}
-//  WIDBCDS.RecNo := Listings.Cells[3,ARow].ToInteger;
-//  lb01Title.Caption := ReplaceStr(WIDBCDS.Fields[1+2].AsString, '&', '&&');
-//  lb06SubTitle.Caption := WIDBCDS.Fields[1+3].AsString;
-//  lb09OrigDate.Caption := IfThen(WIDBCDS.Fields[1+12].AsString > '', 'Movie Yr', '1st Aired') + '  ';
-//  lb11Time.Caption := WIDBCDS.Fields[1+1].AsString;
-//  lb10Channel.Caption := WIDBCDS.Fields[1+0].AsString;
-//  x := WIDBCDS.Fields[1+8].AsString.Split(['-']);
-//  if Length(x) = 3 then
-//    lb09OrigDate.Caption := lb09OrigDate.Caption + x[1] + '/' + x[2] + '/' + RightStr(x[0],2)
-//  else
-//    lb09OrigDate.Caption := lb09OrigDate.Caption + WIDBCDS.Fields[1+12].AsString;
-//  SetLabelStyle(lb02New, WIDBCDS.Fields[1+9].AsString <> '');
-//  SetLabelStyle(lb08CC, WIDBCDS.Fields[1+10].AsString.Contains('cc'));
-//  SetLabelStyle(lb03Stereo, WIDBCDS.Fields[1+10].AsString.Contains('stereo'));
-//  SetLabelStyle(lb07Dolby, WIDBCDS.Fields[1+10].AsString.Contains('DD'));
-//  lb04HD.Caption := 'SD';
-//  if WIDBCDS.Fields[1+11].AsString > '' then
-//    lb04HD.Caption := WIDBCDS.Fields[1+11].AsString.Split(['["HD ','"'])[1] ; //,[TStringSplitOptions.ExcludeEmpty]);
-//  SetLabelStyle(lb04HD, lb04HD.Caption <> 'SD');
-//  lb12Description.Caption := WIDBCDS.Fields[1+4].AsString;
-end;
-
 procedure TCWRmainFrm.WebStringGrid2DblClick(Sender: TObject);
 // Hide WSG2 to go back to EPG list
 begin
@@ -1014,7 +986,8 @@ const
   HEADINGS: array [0..6] of string = ('PSIP','RecordStart','RecordEnd','Title','SubTitle','StartTime','ProgramID');
 var
   i: Integer;
-  id, res: string;
+  id: string;
+  res: TJSXMLHttpRequest;
   data: Tstrings;
 begin
   Log(' ====== UpdateNewCaptures called =========');
@@ -1045,39 +1018,25 @@ begin
   data.LineBreak := #13#10;
   NewCapturesTable.SaveToStrings(data, ',', True);
   console.log('id: '+id);
-//  console.log('data: ', data);
   console.log('data.text: ', data.Text);
-  res := await(string, WEBRESTClient1.HttpRequest('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data.Text));
+  res := TAwait.ExecP<TJSXMLHttpRequest>(WEBRESTClient1.HttpRequest('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data.Text));
   console.log(res);
+  if res.Status = 200 then
+    ShowMessage('Request successfully submitted to CW_EPG'#13#13'It will be scheduled upon CW_EPG''s next run.')
+  else ShowMessage('Request submission failed.'#13#13'If this is the first failure, please retry.');
 
   // ==============================
   Log('Final NewCapturesTable Rows: '+NewCapturesTable.RowCount.ToString);
   Log(' ====== UpdateNewCaptures finished =========');
 end;
 
-//procedure TCWRmainFrm.btnSaveClick(Sender: TObject);
-//var
-//  data: string;
-//  res: TJSXMLHttpRequest;
-//begin
-////  WEBRestClient1.OnRequestResponse := HandleSaveFile;
-//
-//  data := WebMemo1.Lines.Text;
-//
-////  WEBRestClient1.HttpsCommand('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data,'',nil);
-//
-//  res := await(TJSXMLHttpRequest, WEBRESTClient1.HttpRequest('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data));
-//  console.log(res);
-//end;
-
 procedure TCWRmainFrm.CreateGoogleFile(FName: string; var id: string);
 var
-//  id: string;
   rq: TJSXMLHttpRequest;
   jso: TJSONObject;
 begin
 
-  rq := TAwait.ExecP<TJSXMLHttpRequest> {await(TJSXMLHttpRequest,} (WEBRestClient1.HttpRequest('POST','https://www.googleapis.com/upload/drive/v3/files'));
+  rq := TAwait.ExecP<TJSXMLHttpRequest>(WEBRestClient1.HttpRequest('POST','https://www.googleapis.com/upload/drive/v3/files'));
 
   console.log(rq);
 
@@ -1088,14 +1047,10 @@ begin
     id := string(jso.GetJSONValue('id'));
     console.log('file ID'+id);
 
-    rq := TAwait.ExecP<TJSXMLHttpRequest>{await(TJSXMLHttpRequest,} (WEBRestClient1.HttpRequest('PATCH','https://www.googleapis.com/drive/v3/files/'+id,
+    rq := TAwait.ExecP<TJSXMLHttpRequest>(WEBRestClient1.HttpRequest('PATCH','https://www.googleapis.com/drive/v3/files/'+id,
       '{"name":"'+ FName + '", "description":"New Captures CSV list"}'));
 
-//    WebListBox1.Items.AddPair(fname, id);
-//    WebListBox1.ItemIndex := WebListBox1.Items.Count - 1;
   end;
-
-//  WebMemo1.Lines.Clear;
 end;
 
 end.

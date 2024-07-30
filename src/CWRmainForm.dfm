@@ -2,6 +2,7 @@ object CWRmainFrm: TCWRmainFrm
   Width = 400
   Height = 800
   CSSLibrary = cssBootstrap
+  ElementClassName = 'container-fluid'
   ElementFont = efCSS
   Font.Charset = ANSI_CHARSET
   Font.Color = clBlack
@@ -12,20 +13,29 @@ object CWRmainFrm: TCWRmainFrm
   OnCreate = WebFormCreate
   object pnlHistory: TWebPanel
     Left = 0
-    Top = 32
+    Top = 40
     Width = 400
-    Height = 768
+    Height = 760
     ElementClassName = 'card'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
     Align = alClient
     ChildOrder = 11
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -11
+    Font.Name = 'Arial'
+    Font.Style = []
+    ParentFont = False
+    ShowCaption = False
     TabOrder = 1
     object HistoryTable: TWebStringGrid
       Left = 0
       Top = 0
       Width = 400
-      Height = 768
+      Height = 760
       Align = alClient
       ColCount = 32
       DefaultColWidth = 61
@@ -50,10 +60,11 @@ object CWRmainFrm: TCWRmainFrm
   end
   object pnlLog: TWebPanel
     Left = 0
-    Top = 32
+    Top = 40
     Width = 400
-    Height = 768
+    Height = 760
     ElementClassName = 'card'
+    HeightStyle = ssPercent
     Align = alClient
     ChildOrder = 9
     ElementBodyClassName = 'card-body'
@@ -64,7 +75,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 3
       Top = 3
       Width = 394
-      Height = 762
+      Height = 754
       Align = alClient
       ElementID = 'content'
       ElementFont = efCSS
@@ -79,20 +90,29 @@ object CWRmainFrm: TCWRmainFrm
   end
   object pnlCaptures: TWebPanel
     Left = 0
-    Top = 32
+    Top = 40
     Width = 400
-    Height = 768
+    Height = 760
     ElementClassName = 'card'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
     Align = alClient
     ChildOrder = 9
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -11
+    Font.Name = 'Arial'
+    Font.Style = []
+    ParentFont = False
+    ShowCaption = False
     TabOrder = 3
     object AllCapsGrid: TWebStringGrid
       Left = 0
       Top = 0
       Width = 400
-      Height = 768
+      Height = 760
       Align = alClient
       DefaultRowHeight = 22
       Options = [goVertLine, goHorzLine, goRangeSelect]
@@ -105,16 +125,18 @@ object CWRmainFrm: TCWRmainFrm
       FixedFont.Style = []
       RangeEdit.Max = 100.000000000000000000
       RangeEdit.Step = 1.000000000000000000
+      HeightStyle = ssPercent
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
     end
   end
   object WebPanel1: TWebPanel
     Left = 0
-    Top = 32
+    Top = 40
     Width = 400
-    Height = 768
-    ElementClassName = 'card'
+    Height = 760
+    ElementClassName = 'container-fluid'
+    HeightStyle = ssPercent
     Align = alClient
     ChildOrder = 10
     ElementBodyClassName = 'card-body'
@@ -124,7 +146,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 23
       Width = 400
-      Height = 745
+      Height = 737
       Margins.Left = 19
       Margins.Top = 38
       Margins.Right = 19
@@ -164,9 +186,9 @@ object CWRmainFrm: TCWRmainFrm
   object WebStringGrid1: TWebStringGrid
     AlignWithMargins = True
     Left = 5
-    Top = 35
+    Top = 43
     Width = 392
-    Height = 762
+    Height = 754
     Margins.Left = 5
     Align = alClient
     DefaultRowHeight = 22
@@ -185,9 +207,9 @@ object CWRmainFrm: TCWRmainFrm
   end
   object WebStringGrid2: TWebStringGrid
     Left = 0
-    Top = 32
+    Top = 40
     Width = 400
-    Height = 768
+    Height = 760
     Align = alClient
     BorderStyle = bsNone
     DefaultRowHeight = 22
@@ -229,10 +251,11 @@ object CWRmainFrm: TCWRmainFrm
   end
   object pnlOptions: TWebPanel
     Left = 0
-    Top = 32
+    Top = 40
     Width = 400
-    Height = 768
+    Height = 760
     ElementClassName = 'card'
+    HeightStyle = ssPercent
     Align = alClient
     ChildOrder = 9
     ElementBodyClassName = 'card-body'
@@ -265,12 +288,13 @@ object CWRmainFrm: TCWRmainFrm
       Top = 22
       Width = 238
       Height = 76
-      ElementClassName = 'container'
+      ElementClassName = 'btn-group'
       WidthPercent = 25.000000000000000000
       Align = alCustom
       BorderColor = clSilver
       Caption = '   EPG Days Displayed'
       ElementFont = efCSS
+      ElementLegendClassName = 'caption-top'
       object seNumDisplayDays: TWebSpinEdit
         AlignWithMargins = True
         Left = 57
@@ -300,7 +324,7 @@ object CWRmainFrm: TCWRmainFrm
       Top = 115
       Width = 238
       Height = 76
-      ElementClassName = 'container'
+      ElementClassName = 'card'
       WidthPercent = 25.000000000000000000
       Align = alCustom
       BorderColor = clSilver
@@ -379,21 +403,18 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 0
     Width = 400
-    Height = 32
-    ElementClassName = 'card'
+    Height = 40
+    ElementClassName = 'container'
     Align = alTop
-    AutoSize = True
     Caption = 'WebPanel3'
     ChildOrder = 12
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
     ShowCaption = False
     TabOrder = 10
     object AlertLabel: TWebButton
       Left = 0
       Top = 0
       Width = 400
-      Height = 32
+      Height = 40
       Margins.Left = 19
       Margins.Top = 24
       Margins.Right = 19
@@ -421,23 +442,20 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 400
-      Height = 32
-      ElementClassName = 'form-control-sm'
+      Height = 40
+      ElementClassName = 'form-check form-check-inline'
+      HeightStyle = ssAuto
       WidthStyle = ssPercent
       Align = alClient
       Caption = ''
       ChildOrder = 5
       Columns = 5
-      ElementButtonClassName = 'align-content-sm-between'
-      ElementGroupClassName = 'list-group-horizontal-sm'
-      ElementLabelClassName = 'text-sm-start'
-      ElementLegendClassName = 'form-text'
       ElementFont = efCSS
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
       Font.Name = 'Segoe UI'
-      Font.Style = [fsBold]
+      Font.Style = []
       ItemIndex = 0
       Items.Strings = (
         'Listings'
@@ -453,12 +471,13 @@ object CWRmainFrm: TCWRmainFrm
   end
   object pnlListings: TWebPanel
     Left = 0
-    Top = 32
+    Top = 40
     Width = 400
-    Height = 768
+    Height = 760
     ElementClassName = 'card'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
     Align = alClient
-    AutoSize = True
     Caption = 'pnlListings'
     ChildOrder = 11
     ElementBodyClassName = 'card-body'
@@ -475,7 +494,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 400
-      Height = 768
+      Height = 760
       Align = alClient
       ColCount = 14
       DefaultColWidth = 61
@@ -491,8 +510,6 @@ object CWRmainFrm: TCWRmainFrm
       ParentFont = False
       TabOrder = 0
       StyleElements = []
-      OnSelectCell = ListingsSelectCell
-      ElementClassName = 'form-control'
       ElementFont = efCSS
       FixedFont.Charset = DEFAULT_CHARSET
       FixedFont.Color = clWindowText
@@ -502,6 +519,7 @@ object CWRmainFrm: TCWRmainFrm
       GridLineColor = clRed
       RangeEdit.Max = 100.000000000000000000
       RangeEdit.Step = 1.000000000000000000
+      HeightStyle = ssPercent
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
       OnClickCell = ListingsClickCell
