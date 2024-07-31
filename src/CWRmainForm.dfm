@@ -274,7 +274,6 @@ object CWRmainFrm: TCWRmainFrm
         'Refreshing CW_EPG data <i class="fa-solid fa-spinner fa-spin"></' +
         '>'
       Color = clYellow
-      ElementClassName = 'form-label'
       ElementFont = efCSS
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -286,6 +285,7 @@ object CWRmainFrm: TCWRmainFrm
       ParentFont = False
       Role = 'button'
       Visible = False
+      WidthStyle = ssPercent
       WidthPercent = 100.000000000000000000
     end
     object WebRadioGroup1: TWebRadioGroup
@@ -294,7 +294,7 @@ object CWRmainFrm: TCWRmainFrm
       Width = 400
       Height = 40
       ElementClassName = 'form-check form-check-inline'
-      HeightStyle = ssAuto
+      HeightStyle = ssPercent
       WidthStyle = ssPercent
       Align = alClient
       Caption = ''

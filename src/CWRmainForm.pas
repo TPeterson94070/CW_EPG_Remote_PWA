@@ -73,7 +73,6 @@ type
     procedure WebButton2Click(Sender: TObject);
     [async]
     procedure WebButton3Click(Sender: TObject);
-    procedure WebRadioGroup1Enter(Sender: TObject);
 //    procedure WebClientDataSet1AfterOpen(DataSet: TDataSet);
 private
   { Private declarations }
@@ -231,6 +230,7 @@ begin
   await(FetchCapReservations);
   await(RefreshListings);
   AllowButtonClicks(True);
+  WebRadioGroup1.ItemIndex := 0;
 end;
 
 procedure TCWRmainFrm.WebButton2Click(Sender: TObject);
@@ -724,12 +724,6 @@ begin
     end;
   end;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-end;
-
-procedure TCWRmainFrm.WebRadioGroup1Enter(Sender: TObject);
-begin
-  // Force a page change?
-  Setpage(WebRadioGroup1.ItemIndex);
 end;
 
 procedure SetLabelStyle(lbl: TWebLabel; State: Boolean);
