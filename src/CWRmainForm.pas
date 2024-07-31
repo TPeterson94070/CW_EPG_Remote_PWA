@@ -247,8 +247,8 @@ begin
     mtConfirmation, [mbYes,mbNo])) = mrYes then
   begin
     ResetPrompt := '&prompt=select_account';
-    WebButton1Click(Self);
-    WebButton2Click(Self);
+    await (WebButton1Click(Self));
+    await (WebButton2Click(Self));
   end;
   exit;
 end;
@@ -490,7 +490,7 @@ begin
           = mrYes then
         begin
           await(SetPage(4));
-          WebButton1Click(Self);
+          await (WebButton1Click(Self));
         end;
         exit;
       end;
@@ -592,7 +592,7 @@ begin
       = mrYes then
     begin
       await(SetPage(4));
-      WebButton1Click(Self);
+      await (WebButton1Click(Self));
     end;
   end
   else if AllCapsGrid.RowCount < 2 then // Invalid list
@@ -603,7 +603,7 @@ begin
       = mrYes then
     begin
       await(SetPage(4));
-      WebButton1Click(Self);
+      await (WebButton1Click(Self));
     end;
   end  ;
 end;
