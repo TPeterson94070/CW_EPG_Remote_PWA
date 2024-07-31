@@ -255,6 +255,7 @@ object CWRmainFrm: TCWRmainFrm
     Width = 400
     Height = 40
     ElementClassName = 'container'
+    WidthStyle = ssPercent
     Align = alTop
     Caption = 'WebPanel3'
     ChildOrder = 12
@@ -293,13 +294,15 @@ object CWRmainFrm: TCWRmainFrm
       Top = 0
       Width = 400
       Height = 40
-      ElementClassName = 'form-check form-check-inline'
+      ElementClassName = 'form-check-inline'
       HeightStyle = ssPercent
       WidthStyle = ssPercent
+      WidthPercent = 90.000000000000000000
       Align = alClient
       Caption = ''
       ChildOrder = 5
       Columns = 5
+      ElementGroupClassName = 'w-90 p-3'
       ElementFont = efCSS
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
