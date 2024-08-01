@@ -1,6 +1,8 @@
 object SchedForm: TSchedForm
   Width = 350
   Height = 480
+  CSSLibrary = cssBootstrap
+  ElementFont = efCSS
   Font.Charset = ANSI_CHARSET
   Font.Color = clBlack
   Font.Height = -11
@@ -9,50 +11,28 @@ object SchedForm: TSchedForm
   ParentFont = False
   object lblChannel: TWebLabel
     Left = 83
-    Top = 286
+    Top = 293
     Width = 217
     Height = 15
     Alignment = taCenter
     AutoSize = False
-    Caption = 'Channel'
+    Caption = 'On Channel'
+    ElementLabelClassName = 'h6'
+    ElementFont = efCSS
     HeightPercent = 100.000000000000000000
     WidthPercent = 100.000000000000000000
   end
   object lblChannelValue: TWebLabel
     Left = 83
-    Top = 304
+    Top = 311
     Width = 217
     Height = 15
     Alignment = taCenter
     AutoSize = False
     Caption = 'PSIP'
-    HeightPercent = 100.000000000000000000
-    WidthPercent = 100.000000000000000000
-  end
-  object lblStartDate: TWebLabel
-    Left = 41
-    Top = 344
-    Width = 100
-    Height = 16
-    Margins.Left = 11
-    Margins.Top = 11
-    Margins.Right = 11
-    Margins.Bottom = 11
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'Date'
-    Color = clBtnFace
+    ElementLabelClassName = 'h6'
     ElementFont = efCSS
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -12
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    HeightStyle = ssAuto
     HeightPercent = 100.000000000000000000
-    Layout = tlCenter
-    ParentFont = False
-    Transparent = False
     WidthPercent = 100.000000000000000000
   end
   object lblStartTime: TWebLabel
@@ -109,7 +89,7 @@ object SchedForm: TSchedForm
   end
   object lblStartDateValue: TWebLabel
     Left = 41
-    Top = 360
+    Top = 364
     Width = 100
     Height = 16
     Margins.Left = 11
@@ -158,7 +138,6 @@ object SchedForm: TSchedForm
     ChildOrder = 1
     ShowCaption = False
     TabOrder = 1
-    ExplicitWidth = 400
     object lblTitle: TWebLabel
       Left = 0
       Top = 0
@@ -198,13 +177,14 @@ object SchedForm: TSchedForm
       Width = 350
       Height = 58
       Align = alTop
+      ElementClassName = 'h5'
+      ElementFont = efCSS
       HeightPercent = 100.000000000000000000
       Lines.Strings = (
         'mmTitle')
       SelLength = 0
       SelStart = 0
       WidthPercent = 100.000000000000000000
-      ExplicitWidth = 400
     end
     object mmSubTitle: TWebMemo
       Left = 0
@@ -212,13 +192,14 @@ object SchedForm: TSchedForm
       Width = 350
       Height = 49
       Align = alTop
+      ElementClassName = 'h6'
+      ElementFont = efCSS
       HeightPercent = 100.000000000000000000
       Lines.Strings = (
         'mmSubTitle')
       SelLength = 0
       SelStart = 10
       WidthPercent = 100.000000000000000000
-      ExplicitWidth = 400
     end
     object mmDescription: TWebMemo
       Left = 0
@@ -232,7 +213,6 @@ object SchedForm: TSchedForm
       SelLength = 0
       SelStart = 11
       WidthPercent = 100.000000000000000000
-      ExplicitWidth = 400
     end
   end
   object optcanbutt: TWebButton
@@ -248,6 +228,7 @@ object SchedForm: TSchedForm
     Cancel = True
     Caption = 'Cancel'
     ChildOrder = 10
+    ElementClassName = 'btn btn-outline-warning'
     ElementFont = efCSS
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -273,6 +254,7 @@ object SchedForm: TSchedForm
     Anchors = [akLeft, akBottom]
     Caption = 'Submit'
     ChildOrder = 11
+    ElementClassName = 'btn btn-outline-primary'
     ElementFont = efCSS
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -288,7 +270,7 @@ object SchedForm: TSchedForm
   end
   object tpStartTime: TWebDateTimePicker
     Left = 145
-    Top = 360
+    Top = 364
     Width = 79
     Height = 24
     BorderStyle = bsSingle
@@ -303,7 +285,7 @@ object SchedForm: TSchedForm
   end
   object tpEndTime: TWebDateTimePicker
     Left = 239
-    Top = 360
+    Top = 364
     Width = 79
     Height = 24
     BorderStyle = bsSingle

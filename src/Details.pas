@@ -22,6 +22,7 @@ type
     lb11Time: TWebLabel;
     btnAddCap: TWebButton;
     btnReturn: TWebButton;
+    WebGridPanel1: TWebGridPanel;
   private
     { Private declarations }
   public

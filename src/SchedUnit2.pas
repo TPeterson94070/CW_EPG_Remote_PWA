@@ -19,7 +19,6 @@ type
     lblDescription: TWebLabel;
     lblChannel: TWebLabel;
     lblChannelValue: TWebLabel;
-    lblStartDate: TWebLabel;
     lblStartTime: TWebLabel;
     lblEndTime: TWebLabel;
     lblStartDateValue: TWebLabel;
