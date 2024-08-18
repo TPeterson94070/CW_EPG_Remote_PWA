@@ -73,6 +73,9 @@ type
     procedure WebButton2Click(Sender: TObject);
     [async]
     procedure WebButton3Click(Sender: TObject);
+    procedure ListingsGesture(Sender: TObject;
+      const EventInfo: TGestureEventInfo; var Handled: Boolean);
+    procedure ListingsFixedCellClick(Sender: TObject; ACol, ARow: LongInt);
 //    procedure WebClientDataSet1AfterOpen(DataSet: TDataSet);
 private
   { Private declarations }
@@ -246,7 +249,7 @@ begin
   if TAwait.ExecP<TModalResult> (MessageDlgAsync('Do you want to change HTPC source?',
     mtConfirmation, [mbYes,mbNo])) = mrYes then
   begin
-    ResetPrompt := '&prompt=select_account';
+    ResetPrompt := 'select_account';
     await (WebButton1Click(Self));
     await (WebButton2Click(Self));
   end;
@@ -304,7 +307,7 @@ var
 
 begin
   Result := '';
-  rq := await(TJSXMLHttpRequest, TryLogIn);
+  rq := TAwait.ExecP<TJSXMLHttpRequest> (TryLogIn);
   if Assigned(rq) then
   begin
     // Check for error
@@ -314,7 +317,7 @@ begin
       console.log(rq.StatusText);
       WebRESTClient1.ClearTokens;
       console.log('Retrying login');
-      rq := await(TJSXMLHttpRequest, TryLogIn);
+      rq := TAwait.ExecP<TJSXMLHttpRequest> (TryLogIn);
       if rq.Status <> 200 then exit('');
     end;
     AResponse := rq.responseText;
@@ -908,6 +911,19 @@ begin
 //      WebStringGrid2.EndUpdate;
 //    end;
 //  end;
+end;
+
+procedure TCWRmainFrm.ListingsFixedCellClick(Sender: TObject; ACol,
+  ARow: LongInt);
+begin
+  ShowMessage('Clicked RC: ('+Arow.ToString+', '+ACol.ToString+')');
+end;
+
+procedure TCWRmainFrm.ListingsGesture(Sender: TObject;
+  const EventInfo: TGestureEventInfo; var Handled: Boolean);
+begin
+  ShowMessage(IntToStr(EventInfo.GestureID));
+  Handled := True;
 end;
 
 procedure TCWRmainFrm.WebStringGrid2DblClick(Sender: TObject);
