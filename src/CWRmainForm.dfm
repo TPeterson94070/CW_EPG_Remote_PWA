@@ -255,7 +255,7 @@ object CWRmainFrm: TCWRmainFrm
     Width = 400
     Height = 30
     ElementClassName = 'container'
-    WidthStyle = ssPercent
+    WidthStyle = ssAuto
     Align = alTop
     Caption = 'WebPanel3'
     ChildOrder = 12
@@ -305,7 +305,7 @@ object CWRmainFrm: TCWRmainFrm
       ElementButtonClassName = 'custom-control-input'
       ElementGroupClassName = 'modal-content'
       ElementLabelClassName = 'custom-control-label'
-      ElementLegendClassName = 'h6'
+      ElementLegendClassName = 'small'
       ElementFont = efCSS
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
