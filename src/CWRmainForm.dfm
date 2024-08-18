@@ -297,7 +297,7 @@ object CWRmainFrm: TCWRmainFrm
       Height = 30
       ElementClassName = 'custom-control custom-radio'
       HeightStyle = ssPercent
-      WidthStyle = ssAuto
+      WidthStyle = ssPercent
       Align = alClient
       Caption = ''
       ChildOrder = 5
