@@ -147,7 +147,6 @@ object SchedForm: TSchedForm
       Caption = 'Program Title'
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
-      ExplicitWidth = 62
     end
     object lblSubTitle: TWebLabel
       Left = 0
@@ -158,7 +157,6 @@ object SchedForm: TSchedForm
       Caption = 'Program SubTitle'
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
-      ExplicitWidth = 81
     end
     object lblDescription: TWebLabel
       Left = 0
@@ -169,7 +167,6 @@ object SchedForm: TSchedForm
       Caption = 'Program Description'
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
-      ExplicitWidth = 97
     end
     object mmTitle: TWebMemo
       Left = 0

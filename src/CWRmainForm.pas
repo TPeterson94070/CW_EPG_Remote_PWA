@@ -1,7 +1,7 @@
 unit CWRmainForm;
                        { TODO : Add search function to Listings (and History?) }
                        { TODO : Add item deletion to Scheduled list }
-                       { TODO : Add one-off scheduling of Listing item }
+                       { DONE : Add one-off scheduling of Listing item }
 interface
 
 uses
@@ -16,73 +16,76 @@ uses
 type
   TGridDrawState = set of (gdSelected, gdFocused, gdFixed, gdRowSelected, gdHotTrack, gdPressed);
   TCWRmainFrm = class(TWebForm)
-  WebStringGrid1: TWebStringGrid;
   WIDBCDS: TWebIndexedDbClientDataset;
-  WebButton1: TWebButton;
   WebMemo1: TWebMemo;
   seNumDisplayDays: TWebSpinEdit;
   WebGroupBox1: TWebGroupBox;
   WebMemo2: TWebMemo;
   WebProgressBar1: TWebProgressBar;
-  WebRadioGroup1: TWebRadioGroup;
   AlertLabel: TWebButton;
-  WebStringGrid2: TWebStringGrid;
-  AllCapsGrid: TWebStringGrid;
-    HistoryTable: TWebStringGrid;
-    Listings: TWebStringGrid;
-    pnlCaptures: TWebPanel;
-    pnlHistory: TWebPanel;
-    pnlLog: TWebPanel;
-    pnlOptions: TWebPanel;
-    WebMessageDlg1: TWebMessageDlg;
-    WebGroupBox3: TWebGroupBox;
-    seNumHistEvents: TWebSpinEdit;
-    WebPanel1: TWebPanel;
-    WebButton2: TWebButton;
-    WebRESTClient1: TWebRESTClient;
-    WebButton3: TWebButton;
-    pnlListings: TWebPanel;
-    NewCapturesTable: TWebStringGrid;
-    WebPanel3: TWebPanel;
+  SearchResults: TWebStringGrid;
+  Captures: TWebStringGrid;
+  HistoryTable: TWebStringGrid;
+  Listings: TWebStringGrid;
+  pnlCaptures: TWebPanel;
+  pnlHistory: TWebPanel;
+  pnlLog: TWebPanel;
+  pnlOptions: TWebPanel;
+  WebGroupBox3: TWebGroupBox;
+  seNumHistEvents: TWebSpinEdit;
+  WebPanel1: TWebPanel;
+  WebRESTClient1: TWebRESTClient;
+  pnlListings: TWebPanel;
+  NewCaptures: TWebStringGrid;
+  WebPanel3: TWebPanel;
+  WebMainMenu1: TWebMainMenu;
+  Listing: TMenuItem;
+  Scheduled: TMenuItem;
+  History: TMenuItem;
+  Options: TMenuItem;
+  RefreshEPG: TMenuItem;
+  RefreshHistory1: TMenuItem;
+  ChangeHTPC1: TMenuItem;
+  ViewLog1: TMenuItem;
+  Settings1: TMenuItem;
+  WebPanel2: TWebPanel;
 
   procedure LoadWIDBCDS;
   procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
     errorName, errorMsg: string);
   procedure WIDBCDSAfterOpen(DataSet: TDataSet);
   [async]
-  procedure WebButton1Click(Sender: TObject);
+  procedure UpdateEPG(Sender: TObject);
   [async]
   procedure WebFormCreate(Sender: TObject);
   procedure seNumDisplayDaysChange(Sender: TObject);
-  [async]
-  procedure WebRadioGroup1Change(Sender: TObject);
   procedure WebStringGrid2DblClick(Sender: TObject);
   [async]
   procedure tbCapturesShow;
-    procedure AllCapsGridGetCellData(Sender: TObject; ACol, ARow: Integer;
-      AField: TField; var AValue: string);
-    procedure ListingsDblClick(Sender: TObject);
-    [async]
-    procedure ListingsClickCell(Sender: TObject; ACol, ARow: Integer);
-    procedure seNumHistEventsChange(Sender: TObject);
-    procedure HistoryTableFixedCellClick(Sender: TObject; ACol, ARow: Integer);
-//    [async]
-//    procedure AllCapsGridDblClick(Sender: TObject);
-//    procedure AllCapsGridClickCell(Sender: TObject; ACol, ARow: Integer);
-    [async]
-    procedure WebButton2Click(Sender: TObject);
-    [async]
-    procedure WebButton3Click(Sender: TObject);
-    procedure ListingsGesture(Sender: TObject;
-      const EventInfo: TGestureEventInfo; var Handled: Boolean);
-    procedure ListingsFixedCellClick(Sender: TObject; ACol, ARow: LongInt);
-//    procedure WebClientDataSet1AfterOpen(DataSet: TDataSet);
+  procedure AllCapsGridGetCellData(Sender: TObject; ACol, ARow: Integer;
+    AField: TField; var AValue: string);
+//  procedure ListingsDblClick(Sender: TObject);
+  [async]
+  procedure ListingsClickCell(Sender: TObject; ACol, ARow: Integer);
+  procedure seNumHistEventsChange(Sender: TObject);
+  procedure HistoryTableFixedCellClick(Sender: TObject; ACol, ARow: Integer);
+  [async]
+  procedure UpdateHistory(Sender: TObject);
+  [async]
+  procedure ChangeTargetHTPC(Sender: TObject);
+//  procedure ListingsGesture(Sender: TObject;
+//    const EventInfo: TGestureEventInfo; var Handled: Boolean);
+  procedure ListingsFixedCellClick(Sender: TObject; ACol, ARow: LongInt);
+  procedure ListingClick(Sender: TObject);
+  procedure HistoryClick(Sender: TObject);
+  procedure ScheduledClick(Sender: TObject);
+  procedure ViewLog1Click(Sender: TObject);
+  procedure Settings1Click(Sender: TObject);
 private
   { Private declarations }
   [async]
   procedure WebFormShow;
   procedure ColorGridRow(WSG: TWebStringGrid; ARow: Integer);
-  [async]
   procedure SetPage(PageNum: Integer);
   [async]
   procedure FetchCapReservations;
@@ -120,7 +123,7 @@ uses
 {$R *.dfm}
 
 var
-  ClickedCol,  ClickedRow: Integer;
+//  ClickedCol,  ClickedRow: Integer;
   ResetPrompt: string = 'none' ; //'&prompt=select_account';
 
 const
@@ -157,6 +160,7 @@ var
   AppVersion: string;
 begin
   Log('FormCreate is called');
+//  WebMainMenu1.Height := 20;   // Works someday, I hope
 {$IFDEF PAS2JS}
   asm
     console.log('Starting ' + ProjectName);
@@ -180,16 +184,13 @@ begin
   FillHistoryDisplay;
   Listings.RowCount := 1;
   SetTableDefaults(Listings, 70, 150, ClientWidth, 0);
-  WebStringGrid1.RowCount := 1;
-  WebStringGrid1.ColCount := Length(DBFIELDS);
   WIDBCDS.FieldDefs.Clear;
   // add key field
   WIDBCDS.FieldDefs.Add('id',ftInteger, 0, true);
   // add normal fields
-  for i := 0 to WebStringGrid1.ColCount - 1 do
+  for i := 0 to Length(DBFIELDS) - 1 do
   begin
     WIDBCDS.FieldDefs.Add(DBFIELDS[i],ftString);
-    WebStringGrid1.Cells[i,0] := DBFIELDS[i];
     if i < 3 then Listings.Cells[i,0] := DBFIELDS[i];
   end;
   Log('FormCreate, calling DB.Open');
@@ -214,52 +215,40 @@ begin
   end;
 end;
 
-procedure AllowButtonClicks(YesNo: Boolean);
-begin
-  CWRmainFrm.WebButton1.Enabled := YesNo;
-  CWRmainFrm.WebButton2.Enabled := YesNo;
-  CWRmainFrm.WebButton3.Enabled := YesNo;
-end;
-
-procedure TCWRmainFrm.WebButton1Click(Sender: TObject);
+procedure TCWRmainFrm.UpdateEPG(Sender: TObject);
 var
   id: string;
 begin
-  Log('======== "Refresh EPG" clicked');
-  AllowButtonClicks(False);
-  await (RefreshCSV(WebStringGrid1, 'cwr_epg.csv','EPG', id));
+  Log('======== "Update EPG" clicked');
+  await (RefreshCSV(Listings, 'cwr_epg.csv','EPG', id));
   await(LoadWIDBCDS);
   Log('Finished (re)loading WIDBCDS');
   await(FetchCapReservations);
   await(RefreshListings);
-  AllowButtonClicks(True);
-  WebRadioGroup1.ItemIndex := 0;
 end;
 
-procedure TCWRmainFrm.WebButton2Click(Sender: TObject);
+procedure TCWRmainFrm.UpdateHistory(Sender: TObject);
 begin
-  AllowButtonClicks(False);
   await(RefreshHistory);
-  AllowButtonClicks(True);
 end;
 
-procedure TCWRmainFrm.WebButton3Click(Sender: TObject);
+procedure TCWRmainFrm.ChangeTargetHTPC(Sender: TObject);
 begin
   Log('Server reset requested');
   if TAwait.ExecP<TModalResult> (MessageDlgAsync('Do you want to change HTPC source?',
     mtConfirmation, [mbYes,mbNo])) = mrYes then
   begin
     ResetPrompt := 'select_account';
-    await (WebButton1Click(Self));
-    await (WebButton2Click(Self));
+    await (UpdateEPG(Self));
+    await (UpdateHistory(Self));
   end;
-  exit;
+//  exit;
 end;
 
 procedure TCWRmainFrm.RefreshHistory;
 begin
   await(FetchHistory);
-  await(SetPage(2));
+  SetPage(2);
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 end;
 
@@ -274,10 +263,6 @@ var
   [async]
   function TryLogIn: TJSXMLHttpRequest;
   begin
-  // AccessExpiry does not appear to be useful here.
-  // It is supposed to be a number of seconds, not a DateTime/Timestamp, and does not seem to change
-//    console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString
-//      + ' or DateTime?: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
     console.log('AccessToken: ' + WebRESTClient1.AccessToken);
     if WebRESTClient1.AccessToken = '' then ResetPrompt := 'select_account';
     WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
@@ -297,8 +282,6 @@ var
       TAwait.ExecP<TJSPromiseResolver> (WebRESTClient1.Authenticate);
     end;
     ResetPrompt := 'none';
-//    console.log('AccessExpiry: ' + Double(WebRESTClient1.AccessExpiry).toString
-//      + ' or DateTime?: ' + DateTimeToStr(WebRESTClient1.AccessExpiry));
     q :='name = ''' + TableFile + ''' and trashed = false';
 
     Result := TAwait.ExecP<TJSXMLHttpRequest> (WEBRESTClient1.HttpRequest('GET',
@@ -362,9 +345,7 @@ begin
   if application.IsOnline then
   begin
     AlertLabel.Caption := 'Refreshing '+Title+' data <i class="fa-solid fa-spinner fa-spin"></>';
-    WebRadioGroup1.Hide;
-    AlertLabel.Show;
-    AlertLabel.BringToFront;
+    WebPanel2.Show;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 
     WSG.BeginUpdate;
@@ -401,8 +382,8 @@ begin
       Log('"Finishing" AlertLabel');
       AlertLabel.Caption := 'Finishing up '+Title+' data <i class="fa-solid fa-spinner fa-spin"></>';
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-      AlertLabel.Hide;
-      WebRadioGroup1.Show;
+      WebPanel2.Hide;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
       Log('Done hiding');
     end;
   end
@@ -418,30 +399,25 @@ procedure TCWRmainFrm.LoadWIDBCDS;
 var i,j: Integer;
 begin
   Log('LoadWIDBCDS, DB is ' + IfThen(not WIDBCDS.Active, 'not ') + 'Active');
-  if WIDBCDS.Active and (WebStringGrid1.RowCount > 1) then
+  if WIDBCDS.Active and (Listings.RowCount > 1) then
   begin
     Log('LoadWIDBCDS, DB is ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'empty');
-    if not WIDBCDS.IsEmpty then
-    begin
-      Log('LoadWIDBCDS, DB.RecordCount: ' + WIDBCDS.RecordCount.ToString);
-      WIDBCDS.RecNo := 1;
-    end;
+    Log('LoadWIDBCDS (before empty) DB.RecordCount: ' + WIDBCDS.RecordCount.ToString);
     // Empty the DB
     while not WIDBCDS.IsEmpty do WIDBCDS.Delete;
-    Log('LoadWIDBCDS (after empty), DB.RecordCount: ' + WIDBCDS.RecordCount.ToString);
-    Log('LoadWIDBCDS, WSG1.RowCount: ' + WebStringGrid1.RowCount.ToString);
-    // Lose superfluous <">
-    for j := 1 to WebStringGrid1.RowCount - 1 do
-      WebStringGrid1.Cells[0,j] := ReplaceStr(WebStringGrid1.Cells[0,j],'"','');
-    for j := 1 to WebStringGrid1.RowCount - 1 do
+    Log('LoadWIDBCDS (after empty) DB.RecordCount: ' + WIDBCDS.RecordCount.ToString);
+    Log('LoadWIDBCDS, Listings Row Count: ' + Listings.RowCount.ToString);
+    for j := 1 to Listings.RowCount - 1 do
     begin
+    // Lose superfluous <">
+      Listings.Cells[0,j] := ReplaceStr(Listings.Cells[0,j],'"','');
       WIDBCDS.Append;
-      for i := 1 to WebStringGrid1.ColCount do
-        WIDBCDS.Fields[i].Value := WebStringGrid1.Cells[i-1,j];
+      WIDBCDS.Fields[0].Value := j;
+      for i := 1 to Listings.ColCount do
+        WIDBCDS.Fields[i].Value := Listings.Cells[i-1,j];
     end;
     WIDBCDS.Post;
     Log('LoadWIDBCDS, DB.RecordCount: ' + WIDBCDS.RecordCount.ToString);
-    WebStringGrid1.RowCount := 0;
   end;
 end;
 
@@ -456,7 +432,6 @@ begin
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   if WIDBCDS.Active and not WIDBCDS.IsEmpty then
   begin
-    WebRadioGroup1.ItemIndex := 4;
     WebPanel1.BringToFront;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
     Log('Memo1 is showing');
@@ -492,8 +467,7 @@ begin
           + #13#13'Do you want to refresh them?',mtConfirmation, [mbYes,mbNo]))
           = mrYes then
         begin
-          await(SetPage(4));
-          await (WebButton1Click(Self));
+          await (UpdateEPG(Self));
         end;
         exit;
       end;
@@ -510,25 +484,25 @@ begin
         if (j mod (k div 100)) = 0 then
         begin
           WebProgressBar1.Position := j;
-//          Log('j: ' + j.ToString);
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
         end;
       end;
       Listings.Cells[0,0] := 'Channel';
     finally
       Listings.EndUpdate;
-      await(SetPage(0));
-      console.log('Current ItemIndex: ' + WebRadioGroup1.ItemIndex.ToString);
     end;
   end else begin
-    await(SetPage(4));
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-    ShowMessage('Please click "Refresh EPG" button');
+    ShowMessage('Please select "Refresh EPG" from Options submenu');
   end;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   DBIncRecs := nil;
   WebPanel1.SendToBack;
   pnlListings.BringToFront;
+end;
+
+procedure TCWRmainFrm.ScheduledClick(Sender: TObject);
+begin
+  SetPage(1);
 end;
 
 procedure TCWRmainFrm.seNumDisplayDaysChange(Sender: TObject);
@@ -559,54 +533,52 @@ begin
       sl.Add(TWebLocalStorage.GetValue('sl'+i.ToString));
       Inc(i);
     end;
-    AllCapsGrid.LoadFromStrings(sl, ',', True);
-    Log('AllCapsGrid.RowCount: ' + AllCapsGrid.RowCount.ToString);
+    Captures.LoadFromStrings(sl, ',', True);
+    Log('Captures Row Count: ' + Captures.RowCount.ToString);
     sl.Free;
     // Discard stale entries (End DateTime < now)
-    for i := AllCapsGrid.RowCount-1 downto 1 do
-      if AllCapsGrid.Cells[3,i] > '' then // not null row
+    for i := Captures.RowCount-1 downto 1 do
+      if Captures.Cells[3,i] > '' then // not null row
       begin
-        st := StrToDateTime(AllCapsGrid.Cells[3,i] + ' ' + AllCapsGrid.Cells[4,i]);
-        et := StrToDateTime(AllCapsGrid.Cells[3,i] + ' ' + AllCapsGrid.Cells[5,i]);
+        st := StrToDateTime(Captures.Cells[3,i] + ' ' + Captures.Cells[4,i]);
+        et := StrToDateTime(Captures.Cells[3,i] + ' ' + Captures.Cells[5,i]);
         if et < st then et := et + 1;     // wraps midnight
         if et < now then
         begin
           console.log('Stale entry date: ' + DateTimeToStr(et));
-          AllCapsGrid.RemoveRow(i);
+          Captures.RemoveRow(i);
         end;
       end;
   end;
-  for i := 0 to AllCapsGrid.ColCount-1 do AllCapsGrid.ColWidths[i] := 0;
-  AllCapsGrid.ColWidths[1] := 80;  // Computer
-  AllCapsGrid.ColWidths[2] := 100; // Tuner
-  AllCapsGrid.ColWidths[3] := 65; // Date
-  AllCapsGrid.ColWidths[4] := 45; // Start
-  AllCapsGrid.ColWidths[5] := 45; // End
-  AllCapsGrid.ColWidths[6] := 70; // Channel
-  AllCapsGrid.ColWidths[8] := AllCapsGrid.ClientWidth; // Title
-  for i := 1 to 6 do AllCapsGrid.ColAlignments[i] := taCenter;
-  Log('AllCapsGrid.RowCount after stale check: ' + AllCapsGrid.RowCount.ToString);
+  for i := 0 to Captures.ColCount-1 do Captures.ColWidths[i] := 0;
+  Captures.ColWidths[1] := 80;  // Computer
+  Captures.ColWidths[2] := 100; // Tuner
+  Captures.ColWidths[3] := 65; // Date
+  Captures.ColWidths[4] := 45; // Start
+  Captures.ColWidths[5] := 45; // End
+  Captures.ColWidths[6] := 70; // Channel
+  Captures.ColWidths[8] := Captures.ClientWidth; // Title
+  for i := 1 to 6 do Captures.ColAlignments[i] := taCenter;
+  Log('AllCapsGrid.RowCount after stale check: ' + Captures.RowCount.ToString);
 //  Log('AllCapsGrid.Cells[25,1]: <' + AllCapsGrid.Cells[25,1] + '>');
-  if (AllCapsGrid.RowCount = 2) and (AllCapsGrid.Cells[25,1] = '-1') then  // Valid list, no captures, reload??
+  if (Captures.RowCount = 2) and (Captures.Cells[25,1] = '-1') then  // Valid list, no captures, reload??
   begin
     Log('No captures listed, prompting for EPG fetch');
     if TAwait.ExecP<TModalResult> (MessageDlgAsync('There were no scheduled items at last fetch.'
       + #13#13'Do you want to refresh the list?',mtConfirmation, [mbYes,mbNo]))
       = mrYes then
     begin
-      await(SetPage(4));
-      await (WebButton1Click(Self));
+      await (UpdateEPG(Self));
     end;
   end
-  else if AllCapsGrid.RowCount < 2 then // Invalid list
+  else if Captures.RowCount < 2 then // Invalid list
   begin
     Log('No fresh captures, prompting for EPG fetch');
     if TAwait.ExecP<TModalResult> (MessageDlgAsync('The list appears to be stale.'
       + #13#13'Do you want to refresh the list?',mtConfirmation, [mbYes,mbNo]))
       = mrYes then
     begin
-      await(SetPage(4));
-      await (WebButton1Click(Self));
+      await (UpdateEPG(Self));
     end;
   end  ;
 end;
@@ -648,8 +620,12 @@ begin
   end;
   HistoryTable.Cells[0,0] := HistoryTable.Cells[0,0] + ' v'; // Show descending time sort
   HistoryTable.EndUpdate;
-//  HistoryChanged := False;
   Log('FillHistoryDisplay finished');
+end;
+
+procedure TCWRmainFrm.HistoryClick(Sender: TObject);
+begin
+  SetPage(2);
 end;
 
 procedure TCWRmainFrm.HistoryTableFixedCellClick(Sender: TObject; ACol,
@@ -687,28 +663,15 @@ begin
       = mrYes then await(RefreshHistory);
   end;
   await(FillHistoryDisplay);
-//  asm await sleep(10) end;
   HistoryTable.Visible := True;
 end;
 
 procedure TCWRmainFrm.SetPage(PageNum: Integer);
 
 begin
-  if PageNum <> WebRadioGroup1.ItemIndex then begin
-    Log('Leaving Page: ' + WebRadioGroup1.Items[WebRadioGroup1.ItemIndex]);
-  end;
-  WebRadioGroup1.ItemIndex := PageNum;
-  await(WebRadioGroup1Change(Self));
-end;
-
-procedure TCWRmainFrm.WebRadioGroup1Change(Sender: TObject);
-begin
-  Log('Showing Page: ' + WebRadioGroup1.Items[WebRadioGroup1.ItemIndex]);
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  case WebRadioGroup1.ItemIndex of
+  case PageNum of
     0: begin          {Listings page}
       pnlListings.BringToFront;
-      Log('Sender: ' + Sender.ToString);
       Listings.SetFocus;
     end;
     1: begin          {Captures}
@@ -726,7 +689,11 @@ begin
       pnlOptions.BringToFront;
     end;
   end;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+end;
+
+procedure TCWRmainFrm.Settings1Click(Sender: TObject);
+begin
+  SetPage(4);
 end;
 
 procedure SetLabelStyle(lbl: TWebLabel; State: Boolean);
@@ -734,14 +701,6 @@ procedure SetLabelStyle(lbl: TWebLabel; State: Boolean);
 begin
   lbl.Font.Color := IfThen(State, clRed, clLtGray);
 end;
-
-//procedure TCWRmainFrm.AllCapsGridClickCell(Sender: TObject; ACol,
-//  ARow: Integer);
-//begin
-//  ClickedCol := ACol;
-//  ClickedRow := ARow;
-//  Log('Clicked Col, Row: ' + ACol.ToString + ', ' + ARow.ToString);
-//end;
 
 //procedure TCWRmainFrm.AllCapsGridDblClick(Sender: TObject);
 //var
@@ -806,6 +765,11 @@ begin
   end;
 end;
 
+procedure TCWRmainFrm.ListingClick(Sender: TObject);
+begin
+  SetPage(0);
+end;
+
 procedure TCWRmainFrm.ListingsClickCell(Sender: TObject; ACol,
   ARow: Integer);
 var
@@ -814,9 +778,9 @@ var
   x: TArray<string>;
 
 begin
-  ClickedCol := ACol;
-  ClickedRow := ARow;
-  Log('Clicked Col, Row: ' + ACol.ToString + ', ' + ARow.ToString + ' contains: ' + Listings.Cells[ACol,ARow] );
+//  ClickedCol := ACol;
+//  ClickedRow := ARow;
+//  Log('Clicked Col, Row: ' + ACol.ToString + ', ' + ARow.ToString + ' contains: ' + Listings.Cells[ACol,ARow] );
   DetailsFrm := TDetailsFrm.Create(Self);
   DetailsFrm.Popup := True;
   DetailsFrm.Border := fbSingle;
@@ -881,10 +845,10 @@ begin
   end;
 end;
 
-procedure TCWRmainFrm.ListingsDblClick(Sender: TObject);
+//procedure TCWRmainFrm.ListingsDblClick(Sender: TObject);
 //var
 //  i: Integer;
-begin
+//begin
 //  Log('DblClick at [' + ClickedCol.ToString + ',' + ClickedRow.ToString + ']');
 //  case ClickedCol of
 //    0, 2: begin  // Filter channels, Titles
@@ -911,7 +875,7 @@ begin
 //      WebStringGrid2.EndUpdate;
 //    end;
 //  end;
-end;
+//end;
 
 procedure TCWRmainFrm.ListingsFixedCellClick(Sender: TObject; ACol,
   ARow: LongInt);
@@ -919,17 +883,17 @@ begin
   ShowMessage('Clicked RC: ('+Arow.ToString+', '+ACol.ToString+')');
 end;
 
-procedure TCWRmainFrm.ListingsGesture(Sender: TObject;
-  const EventInfo: TGestureEventInfo; var Handled: Boolean);
-begin
-  ShowMessage(IntToStr(EventInfo.GestureID));
-  Handled := True;
-end;
+//procedure TCWRmainFrm.ListingsGesture(Sender: TObject;
+//  const EventInfo: TGestureEventInfo; var Handled: Boolean);
+//begin
+//  ShowMessage(IntToStr(EventInfo.GestureID));
+//  Handled := True;
+//end;
 
 procedure TCWRmainFrm.WebStringGrid2DblClick(Sender: TObject);
 // Hide WSG2 to go back to EPG list
 begin
-  WebStringGrid2.Hide;
+  SearchResults.Hide;
 //  WebGridPanel2.Show;
 end;
 
@@ -948,17 +912,17 @@ var
 begin
   Log(' ====== FetchCapReservations called =========');
   // Turn off GetCellData (modifies Cols 1, 2 for display)
-  AllCapsGrid.OnGetCellData := nil;
-  await(RefreshCSV(AllCapsGrid, 'cwr_captures.csv', 'Scheduled', id));
+  Captures.OnGetCellData := nil;
+  await(RefreshCSV(Captures, 'cwr_captures.csv', 'Scheduled', id));
   // Save unmodified capture data to Local Storage
   sl := TStringList.Create;
-  AllCapsGrid.SaveToStrings(sl, ',', True);
+  Captures.SaveToStrings(sl, ',', True);
   for i := 0 to sl.Count - 1 do
     TWebLocalStorage.SetValue('sl'+i.ToString, sl[i]);
   TWebLocalStorage.RemoveKey('sl'+sl.Count.ToString);  // dump old value
   sl.Free;
   // Turn GetCellData formatting back on
-  AllCapsGrid.OnGetCellData := AllCapsGridGetCellData;
+  Captures.OnGetCellData := AllCapsGridGetCellData;
   Log(' ====== FetchCapReservations finished =========');
 end;
 
@@ -1010,32 +974,32 @@ var
   data: Tstrings;
 begin
   Log(' ====== UpdateNewCaptures called =========');
-  await(RefreshCSV(NewCapturesTable, 'cwr_newcaptures.csv','NewCaptures', id));
-  Log('NewCaptures Rows: '+NewCapturesTable.RowCount.ToString);
-  if NewCapturesTable.RowCount = 0 then // fnf, create new one
+  await(RefreshCSV(NewCaptures, 'cwr_newcaptures.csv','NewCaptures', id));
+  Log('NewCaptures Rows: '+NewCaptures.RowCount.ToString);
+  if NewCaptures.RowCount = 0 then // fnf, create new one
   begin
-    NewCapturesTable.RowCount := 1;
-    NewCapturesTable.ColCount := 7;
-    for i := 0 to NewCapturesTable.ColCount-1 do
-      NewCapturesTable.Cells[i,0] := HEADINGS[i];
+    NewCaptures.RowCount := 1;
+    NewCaptures.ColCount := 7;
+    for i := 0 to NewCaptures.ColCount-1 do
+      NewCaptures.Cells[i,0] := HEADINGS[i];
     await(CreateGoogleFile('cwr_newcaptures.csv', id));
   end
   else
-    for i := NewCapturesTable.RowCount-1 downto 1 do // Remove blank rows
-      if NewCapturesTable.Cells[0,i] = '' then NewCapturesTable.RemoveRow(i);
+    for i := NewCaptures.RowCount-1 downto 1 do // Remove blank rows
+      if NewCaptures.Cells[0,i] = '' then NewCaptures.RemoveRow(i);
 // Add the new capture to the list
-  NewCapturesTable.RowCount := NewCapturesTable.RowCount + 1;
-  NewCapturesTable.Cells[0,NewCapturesTable.RowCount-1] := WIDBCDS.FieldByName('PSIP').AsString;
-  NewCapturesTable.Cells[1,NewCapturesTable.RowCount-1] := DateTimeToStr(RecordStart);
-  NewCapturesTable.Cells[2,NewCapturesTable.RowCount-1] := DateTimeToStr(RecordEnd);
-  NewCapturesTable.Cells[3,NewCapturesTable.RowCount-1] := ReplaceStr(WIDBCDS.FieldByName('Title').AsString, '&', '&&');
-  NewCapturesTable.Cells[4,NewCapturesTable.RowCount-1] := WIDBCDS.FieldByName('SubTitle').AsString;
-  NewCapturesTable.Cells[5,NewCapturesTable.RowCount-1] := WIDBCDS.FieldByName('StartTime').AsString; // EPG StartTime
-  NewCapturesTable.Cells[6,NewCapturesTable.RowCount-1] := WIDBCDS.FieldByName('ProgramID').AsString; // Episode No.
+  NewCaptures.RowCount := NewCaptures.RowCount + 1;
+  NewCaptures.Cells[0,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('PSIP').AsString;
+  NewCaptures.Cells[1,NewCaptures.RowCount-1] := DateTimeToStr(RecordStart);
+  NewCaptures.Cells[2,NewCaptures.RowCount-1] := DateTimeToStr(RecordEnd);
+  NewCaptures.Cells[3,NewCaptures.RowCount-1] := ReplaceStr(WIDBCDS.FieldByName('Title').AsString, '&', '&&');
+  NewCaptures.Cells[4,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('SubTitle').AsString;
+  NewCaptures.Cells[5,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('StartTime').AsString; // EPG StartTime
+  NewCaptures.Cells[6,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('ProgramID').AsString; // Episode No.
   // Update the file
   data := TStringList.Create;
   data.LineBreak := #13#10;
-  NewCapturesTable.SaveToStrings(data, ',', True);
+  NewCaptures.SaveToStrings(data, ',', True);
   console.log('id: '+id);
   console.log('data.text: ', data.Text);
   res := TAwait.ExecP<TJSXMLHttpRequest>(WEBRESTClient1.HttpRequest('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data.Text));
@@ -1045,8 +1009,13 @@ begin
   else ShowMessage('Request submission failed.'#13#13'If this is the first failure, please retry.');
 
   // ==============================
-  Log('Final NewCapturesTable Rows: '+NewCapturesTable.RowCount.ToString);
+  Log('Final NewCaptures Table Rows: '+NewCaptures.RowCount.ToString);
   Log(' ====== UpdateNewCaptures finished =========');
+end;
+
+procedure TCWRmainFrm.ViewLog1Click(Sender: TObject);
+begin
+  SetPage(3);
 end;
 
 procedure TCWRmainFrm.CreateGoogleFile(FName: string; var id: string);
