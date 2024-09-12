@@ -132,6 +132,7 @@ const
     'audioProperties', 'videoProperties', 'movieYear', 'genres');
   NUMDAYS = 'NumDisplayDays';
   NUMHIST = 'NumHistoryItems';
+  EMAILADDR = 'emailAddress';
 
 procedure Log(const s: string);
 begin
@@ -181,6 +182,8 @@ begin
     seNumDisplayDays.Value := StrToInt(TWebLocalStorage.GetValue(NUMDAYS));
   if TWebLocalStorage.GetValue(NUMHIST) <> '' then
     seNumHistEvents.Value := StrToInt(TWebLocalStorage.GetValue(NUMHIST));
+//  if TWebLocalStorage.GetValue(EMAILADDR) <> '' then
+    WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
   FillHistoryDisplay;
   Listings.RowCount := 1;
   SetTableDefaults(Listings, 70, 150, ClientWidth, 0);
@@ -235,12 +238,14 @@ end;
 procedure TCWRmainFrm.ChangeTargetHTPC(Sender: TObject);
 begin
   Log('Server reset requested');
-  if TAwait.ExecP<TModalResult> (MessageDlgAsync('Do you want to change HTPC source?',
+  if TAwait.ExecP<TModalResult> (MessageDlgAsync('Current HTPC account: '
+    + TWebLocalStorage.GetValue(EMAILADDR)
+    + #13#13'Do you want to change it?',
     mtConfirmation, [mbYes,mbNo])) = mrYes then
   begin
     ResetPrompt := 'select_account';
-    await (UpdateEPG(Self));
     await (UpdateHistory(Self));
+    await (UpdateEPG(Self));
   end;
 //  exit;
 end;
@@ -280,6 +285,16 @@ var
     begin
       console.log('Performing OAuth');
       TAwait.ExecP<TJSPromiseResolver> (WebRESTClient1.Authenticate);
+    end;
+    rq := TAwait.ExecP<TJSXMLHttpRequest> (WebRESTClient1.httprequest('GET','https://www.googleapis.com/drive/v3/about/?fields=kind,user'));
+    if rq.Status = 200 then
+    begin
+//      console.log('rq.responseText:', rq.responseText);
+      jso := TJSONOBJect(TJSONObject.ParseJSONValue(rq.responseText));
+      jso := TJSONObject(jso.GetValue('user'));
+      TWebLocalStorage.SetValue(EMAILADDR, string(jso.GetJSONValue('emailAddress')));
+//      console.log('jso:',jso);
+      WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
     end;
     ResetPrompt := 'none';
     q :='name = ''' + TableFile + ''' and trashed = false';

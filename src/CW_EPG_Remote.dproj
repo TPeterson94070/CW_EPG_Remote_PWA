@@ -69,7 +69,7 @@
         <TMSWebPWAServiceWorkerFile>serviceworker.js</TMSWebPWAServiceWorkerFile>
         <TMSPWAManifestFile>Manifest.json</TMSPWAManifestFile>
         <TMSWebPWAResIconMidFile>IconResMid.png</TMSWebPWAResIconMidFile>
-        <TMSVersion>1.0.1714</TMSVersion>
+        <TMSVersion>1.0.1730</TMSVersion>
         <TMSWebHTMLFile>index.html</TMSWebHTMLFile>
         <TMSWebPWAResIconLowFile>IconResLow.png</TMSWebPWAResIconLowFile>
         <TMSWebPWAResIconHighFile>IconResHigh.png</TMSWebPWAResIconHighFile>
@@ -107,11 +107,11 @@
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <TMSPWAApplicationShortName>CW_Remote</TMSPWAApplicationShortName>
-        <TMSWebBrowser>8</TMSWebBrowser>
         <TMSPWAApplicationName>CW_Remote app</TMSPWAApplicationName>
         <TMSApplicationDescription>Installable CW_EPG_Remote PWA</TMSApplicationDescription>
         <TMSPWABackgroundColor>Coral</TMSPWABackgroundColor>
         <TMSWebPWAThemeColor>Coral</TMSWebPWAThemeColor>
+        <TMSWebBrowser>8</TMSWebBrowser>
         <Debugger_RunParams>?cwhelper=192.168.1.25:8181</Debugger_RunParams>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
