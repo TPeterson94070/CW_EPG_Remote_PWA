@@ -1,6 +1,7 @@
 object SchedForm: TSchedForm
   Width = 350
   Height = 480
+  Color = clDarkolivegreen
   CSSLibrary = cssBootstrap
   ElementFont = efCSS
   Font.Charset = ANSI_CHARSET
@@ -9,6 +10,7 @@ object SchedForm: TSchedForm
   Font.Name = 'Arial'
   Font.Style = []
   ParentFont = False
+  OnShow = WebFormShow
   object lblChannel: TWebLabel
     Left = 83
     Top = 293
@@ -17,6 +19,7 @@ object SchedForm: TSchedForm
     Alignment = taCenter
     AutoSize = False
     Caption = 'On Channel'
+    Color = clDarkolivegreen
     ElementLabelClassName = 'h6'
     ElementFont = efCSS
     HeightPercent = 100.000000000000000000
@@ -30,6 +33,7 @@ object SchedForm: TSchedForm
     Alignment = taCenter
     AutoSize = False
     Caption = 'PSIP'
+    Color = clDarkolivegreen
     ElementLabelClassName = 'h6'
     ElementFont = efCSS
     HeightPercent = 100.000000000000000000
@@ -37,7 +41,7 @@ object SchedForm: TSchedForm
   end
   object lblStartTime: TWebLabel
     Left = 145
-    Top = 344
+    Top = 342
     Width = 70
     Height = 16
     Margins.Left = 11
@@ -47,7 +51,7 @@ object SchedForm: TSchedForm
     Alignment = taCenter
     AutoSize = False
     Caption = 'Start'
-    Color = clBtnFace
+    Color = clDarkolivegreen
     ElementFont = efCSS
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -63,7 +67,7 @@ object SchedForm: TSchedForm
   end
   object lblEndTime: TWebLabel
     Left = 239
-    Top = 344
+    Top = 342
     Width = 70
     Height = 16
     Margins.Left = 11
@@ -73,7 +77,7 @@ object SchedForm: TSchedForm
     Alignment = taCenter
     AutoSize = False
     Caption = 'End'
-    Color = clBtnFace
+    Color = clDarkolivegreen
     ElementFont = efCSS
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -99,7 +103,7 @@ object SchedForm: TSchedForm
     Alignment = taCenter
     AutoSize = False
     Caption = 'Date'
-    Color = clBtnFace
+    Color = clDarkolivegreen
     ElementFont = efCSS
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -145,7 +149,9 @@ object SchedForm: TSchedForm
       Height = 14
       Align = alTop
       Caption = 'Program Title'
+      Color = clMoneyGreen
       HeightPercent = 100.000000000000000000
+      Transparent = False
       WidthPercent = 100.000000000000000000
     end
     object lblSubTitle: TWebLabel
@@ -155,7 +161,9 @@ object SchedForm: TSchedForm
       Height = 14
       Align = alTop
       Caption = 'Program SubTitle'
+      Color = clMoneyGreen
       HeightPercent = 100.000000000000000000
+      Transparent = False
       WidthPercent = 100.000000000000000000
     end
     object lblDescription: TWebLabel
@@ -165,7 +173,9 @@ object SchedForm: TSchedForm
       Height = 14
       Align = alTop
       Caption = 'Program Description'
+      Color = clMoneyGreen
       HeightPercent = 100.000000000000000000
+      Transparent = False
       WidthPercent = 100.000000000000000000
     end
     object mmTitle: TWebMemo
@@ -174,6 +184,7 @@ object SchedForm: TSchedForm
       Width = 350
       Height = 58
       Align = alTop
+      Color = clDarkolivegreen
       ElementClassName = 'h5'
       ElementFont = efCSS
       HeightPercent = 100.000000000000000000
@@ -189,6 +200,7 @@ object SchedForm: TSchedForm
       Width = 350
       Height = 49
       Align = alTop
+      Color = clDarkolivegreen
       ElementClassName = 'h6'
       ElementFont = efCSS
       HeightPercent = 100.000000000000000000
@@ -204,6 +216,7 @@ object SchedForm: TSchedForm
       Width = 350
       Height = 117
       Align = alBottom
+      Color = clDarkolivegreen
       HeightPercent = 100.000000000000000000
       Lines.Strings = (
         'Description')
@@ -212,7 +225,7 @@ object SchedForm: TSchedForm
       WidthPercent = 100.000000000000000000
     end
   end
-  object optcanbutt: TWebButton
+  object btnCancel: TWebButton
     Left = 20
     Top = 421
     Width = 120
@@ -239,7 +252,7 @@ object SchedForm: TSchedForm
     TabOrder = 3
     WidthPercent = 100.000000000000000000
   end
-  object optokbutt: TWebButton
+  object btnOK: TWebButton
     Left = 208
     Top = 421
     Width = 120

@@ -1,6 +1,7 @@
 object DetailsFrm: TDetailsFrm
   Width = 350
   Height = 281
+  Color = clSilver
   CSSLibrary = cssBootstrap
   ElementFont = efCSS
   Font.Charset = DEFAULT_CHARSET
@@ -11,6 +12,7 @@ object DetailsFrm: TDetailsFrm
   ParentFont = False
   ShowClose = False
   Visible = True
+  OnShow = WebFormShow
   object lb02New: TWebLabel
     Left = 200
     Top = 190
@@ -19,6 +21,7 @@ object DetailsFrm: TDetailsFrm
     Alignment = taCenter
     AutoSize = False
     Caption = 'New'
+    Color = clSilver
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -40,6 +43,7 @@ object DetailsFrm: TDetailsFrm
     Alignment = taCenter
     AutoSize = False
     Caption = 'Stereo'
+    Color = clSilver
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -61,6 +65,7 @@ object DetailsFrm: TDetailsFrm
     Alignment = taCenter
     AutoSize = False
     Caption = 'HD'
+    Color = clSilver
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -82,6 +87,7 @@ object DetailsFrm: TDetailsFrm
     Alignment = taCenter
     AutoSize = False
     Caption = 'Channel'
+    Color = clSilver
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -103,6 +109,7 @@ object DetailsFrm: TDetailsFrm
     Alignment = taCenter
     AutoSize = False
     Caption = 'Time'
+    Color = clSilver
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -124,6 +131,7 @@ object DetailsFrm: TDetailsFrm
     Alignment = taCenter
     AutoSize = False
     Caption = 'Dolby'
+    Color = clSilver
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -145,6 +153,7 @@ object DetailsFrm: TDetailsFrm
     Alignment = taCenter
     AutoSize = False
     Caption = 'CC'
+    Color = clSilver
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -166,6 +175,7 @@ object DetailsFrm: TDetailsFrm
     Alignment = taCenter
     AutoSize = False
     Caption = 'OrigDate'
+    Color = clSilver
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -204,7 +214,6 @@ object DetailsFrm: TDetailsFrm
     Role = 'button'
     TabOrder = 4
     WidthPercent = 100.000000000000000000
-    ExplicitTop = 171
   end
   object btnReturn: TWebButton
     Left = 20
@@ -232,7 +241,6 @@ object DetailsFrm: TDetailsFrm
     Role = 'button'
     TabOrder = 3
     WidthPercent = 100.000000000000000000
-    ExplicitTop = 171
   end
   object WebGridPanel1: TWebGridPanel
     Left = 0
@@ -274,9 +282,6 @@ object DetailsFrm: TDetailsFrm
       item
         Value = 33
       end>
-    ExplicitLeft = 120
-    ExplicitTop = 88
-    ExplicitWidth = 100
     object lb01Title: TWebLabel
       Left = 2
       Top = 2
@@ -285,7 +290,7 @@ object DetailsFrm: TDetailsFrm
       Align = alTop
       Anchors = []
       Caption = 'Title'
-      Color = clSkyBlue
+      Color = clGray
       ElementLabelClassName = 'h5'
       ElementFont = efCSS
       Font.Charset = DEFAULT_CHARSET
@@ -311,6 +316,7 @@ object DetailsFrm: TDetailsFrm
       Align = alTop
       Anchors = []
       Caption = 'SubTitle'
+      Color = clGray
       ElementLabelClassName = 'h6'
       ElementFont = efCSS
       Font.Charset = DEFAULT_CHARSET
@@ -335,7 +341,7 @@ object DetailsFrm: TDetailsFrm
       Align = alTop
       Anchors = []
       Caption = 'Description'
-      Color = clBeige
+      Color = clGray
       ElementLabelClassName = 'small'
       ElementPosition = epRelative
       Font.Charset = DEFAULT_CHARSET

@@ -22,10 +22,11 @@ type
     lblStartTime: TWebLabel;
     lblEndTime: TWebLabel;
     lblStartDateValue: TWebLabel;
-    optcanbutt: TWebButton;
-    optokbutt: TWebButton;
+    btnCancel: TWebButton;
+    btnOK: TWebButton;
     tpStartTime: TWebDateTimePicker;
     tpEndTime: TWebDateTimePicker;
+    procedure WebFormShow(Sender: TObject);
   private
     { Private declarations }
   public
@@ -38,5 +39,11 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TSchedForm.WebFormShow(Sender: TObject);
+begin
+  // Start with Cancel button active
+  btnCancel.SetFocus;
+end;
 
 end.

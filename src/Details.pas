@@ -23,6 +23,7 @@ type
     btnAddCap: TWebButton;
     btnReturn: TWebButton;
     WebGridPanel1: TWebGridPanel;
+    procedure WebFormShow(Sender: TObject);
   private
     { Private declarations }
   public
@@ -35,5 +36,10 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TDetailsFrm.WebFormShow(Sender: TObject);
+begin
+  btnReturn.SetFocus;
+end;
 
 end.

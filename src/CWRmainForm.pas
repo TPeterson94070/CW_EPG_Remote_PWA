@@ -18,10 +18,7 @@ type
   TCWRmainFrm = class(TWebForm)
   WIDBCDS: TWebIndexedDbClientDataset;
   WebMemo1: TWebMemo;
-  seNumDisplayDays: TWebSpinEdit;
-  WebGroupBox1: TWebGroupBox;
   WebMemo2: TWebMemo;
-  WebProgressBar1: TWebProgressBar;
   AlertLabel: TWebButton;
   SearchResults: TWebStringGrid;
   Captures: TWebStringGrid;
@@ -31,8 +28,6 @@ type
   pnlHistory: TWebPanel;
   pnlLog: TWebPanel;
   pnlOptions: TWebPanel;
-  WebGroupBox3: TWebGroupBox;
-  seNumHistEvents: TWebSpinEdit;
   WebPanel1: TWebPanel;
   WebRESTClient1: TWebRESTClient;
   pnlListings: TWebPanel;
@@ -49,6 +44,12 @@ type
   ViewLog1: TMenuItem;
   Settings1: TMenuItem;
   WebPanel2: TWebPanel;
+  WebGroupBox3: TWebGroupBox;
+  seNumHistEvents: TWebSpinEdit;
+  WebGroupBox1: TWebGroupBox;
+  seNumDisplayDays: TWebSpinEdit;
+    WebDBGrid1: TWebDBGrid;
+    WebDataSource1: TWebDataSource;
 
   procedure LoadWIDBCDS;
   procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
@@ -58,7 +59,7 @@ type
   procedure UpdateEPG(Sender: TObject);
   [async]
   procedure WebFormCreate(Sender: TObject);
-  procedure seNumDisplayDaysChange(Sender: TObject);
+//  procedure seNumDisplayDaysChange(Sender: TObject);
   procedure WebStringGrid2DblClick(Sender: TObject);
   [async]
   procedure tbCapturesShow;
@@ -67,7 +68,7 @@ type
 //  procedure ListingsDblClick(Sender: TObject);
   [async]
   procedure ListingsClickCell(Sender: TObject; ACol, ARow: Integer);
-  procedure seNumHistEventsChange(Sender: TObject);
+//  procedure seNumHistEventsChange(Sender: TObject);
   procedure HistoryTableFixedCellClick(Sender: TObject; ACol, ARow: Integer);
   [async]
   procedure UpdateHistory(Sender: TObject);
@@ -81,11 +82,17 @@ type
   procedure ScheduledClick(Sender: TObject);
   procedure ViewLog1Click(Sender: TObject);
   procedure Settings1Click(Sender: TObject);
+  [async]
+    procedure WebDBGrid1ClickCell(Sender: TObject; ACol, ARow: Integer);
+    procedure WebDBGrid1GetCellClass(Sender: TObject; ACol, ARow: Integer;
+      AField: TField; AValue: string; var AClassName: string);
 private
   { Private declarations }
   [async]
   procedure WebFormShow;
+  procedure ColorDBGridRow(WDBG: TWebDBGrid; ARow: Integer);
   procedure ColorGridRow(WSG: TWebStringGrid; ARow: Integer);
+  [async]
   procedure SetPage(PageNum: Integer);
   [async]
   procedure FetchCapReservations;
@@ -107,6 +114,8 @@ private
   function GetGoogleDriveFile(TableFile: string; var id: string): string;
   [async]
   procedure CreateGoogleFile(FName: string; var id: string);
+  [async]
+  procedure CheckSettingsForUpdate;
 
 public
   { Public declarations }
@@ -118,7 +127,7 @@ var
 implementation
 
 uses
-  System.Math, SchedUnit2, Details;
+  System.Math, DateUtils, SchedUnit2, Details;
 
 {$R *.dfm}
 
@@ -155,6 +164,7 @@ begin
 end;
 
 
+
 procedure TCWRmainFrm.WebFormCreate(Sender: TObject);
 var
   i: Integer;
@@ -184,19 +194,28 @@ begin
     seNumHistEvents.Value := StrToInt(TWebLocalStorage.GetValue(NUMHIST));
 //  if TWebLocalStorage.GetValue(EMAILADDR) <> '' then
     WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
+  SetPage(0);
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+
   FillHistoryDisplay;
-  Listings.RowCount := 1;
-  SetTableDefaults(Listings, 70, 150, ClientWidth, 0);
+//  Listings.RowCount := 1;
+//  SetTableDefaults(Listings, 70, 150, ClientWidth, 0);
+  WebDBGrid1.OnGetCellClass := nil;
+  WIDBCDS.DisableControls;
   WIDBCDS.FieldDefs.Clear;
   // add key field
   WIDBCDS.FieldDefs.Add('id',ftInteger, 0, true);
   // add normal fields
   for i := 0 to Length(DBFIELDS) - 1 do
   begin
-    WIDBCDS.FieldDefs.Add(DBFIELDS[i],ftString);
+    if (DBFIELDS[i] = 'StartTime') or (DBFIELDS[i] = 'EndTime') then
+      WIDBCDS.FieldDefs.Add(DBFIELDS[i],ftDateTime)
+    else
+      WIDBCDS.FieldDefs.Add(DBFIELDS[i],ftString);
     if i < 3 then Listings.Cells[i,0] := DBFIELDS[i];
   end;
   Log('FormCreate, calling DB.Open');
+  WIDBCDS.EnableControls;
   WIDBCDS.Open;
   Log('FormCreate is finished');
 end;
@@ -210,12 +229,18 @@ end;
 procedure TCWRmainFrm.WebFormShow;
 begin
   Log('WebFormShow, calling RefreshListings');
+//  WebDBGrid1.OnGetCellClass := WebDBGrid1GetCellClass;
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   await(ReFreshListings);
+  WebDBGrid1.OnGetCellClass := WebDBGrid1GetCellClass;
+  WebDBGrid1.Refresh;
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//  WIDBCDS.EnableControls;
+  WebDBGrid1.SetFocus;
+
+//  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+  WebDBGrid1.OnGetCellClass := nil;
   Log('WebFormShow, Listings refresh done');
-  if Listings.RowCount > 2 then begin
-    Listings.SetFocus;
-    Listings.SelectCell(0,1);
-  end;
 end;
 
 procedure TCWRmainFrm.UpdateEPG(Sender: TObject);
@@ -223,11 +248,13 @@ var
   id: string;
 begin
   Log('======== "Update EPG" clicked');
-  await (RefreshCSV(Listings, 'cwr_epg.csv','EPG', id));
+  await(RefreshCSV(Listings, 'cwr_epg.csv','EPG', id));
+//  WIDBCDS.DisableControls;
   await(LoadWIDBCDS);
   Log('Finished (re)loading WIDBCDS');
   await(FetchCapReservations);
   await(RefreshListings);
+  WIDBCDS.DisableControls;
 end;
 
 procedure TCWRmainFrm.UpdateHistory(Sender: TObject);
@@ -367,7 +394,7 @@ begin
     try
       Log('Requesting: ' + TableFile);
       try
-        Reply := {TAwait.Exec<string>}await (GetGoogleDriveFile(TableFile, id));
+        Reply := TAwait.ExecP<string>{await} (GetGoogleDriveFile(TableFile, id));
 
         if Reply <> '' then  // Got a response
         begin
@@ -411,108 +438,127 @@ begin
 end;
 
 procedure TCWRmainFrm.LoadWIDBCDS;
-var i,j: Integer;
+var
+  i,j: Integer;
+  t: TDateTime;
 begin
+  WIDBCDS.DisableControls;
   Log('LoadWIDBCDS, DB is ' + IfThen(not WIDBCDS.Active, 'not ') + 'Active');
   if WIDBCDS.Active and (Listings.RowCount > 1) then
   begin
     Log('LoadWIDBCDS, DB is ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'empty');
     Log('LoadWIDBCDS (before empty) DB.RecordCount: ' + WIDBCDS.RecordCount.ToString);
     // Empty the DB
-    while not WIDBCDS.IsEmpty do WIDBCDS.Delete;
+    while not WIDBCDS.IsEmpty do
+    begin
+      WIDBCDS.RecNo := 1;
+      WIDBCDS.Delete;
+    end;
     Log('LoadWIDBCDS (after empty) DB.RecordCount: ' + WIDBCDS.RecordCount.ToString);
     Log('LoadWIDBCDS, Listings Row Count: ' + Listings.RowCount.ToString);
     for j := 1 to Listings.RowCount - 1 do
     begin
-    // Lose superfluous <">
+      // Lose superfluous <">
       Listings.Cells[0,j] := ReplaceStr(Listings.Cells[0,j],'"','');
       WIDBCDS.Append;
       WIDBCDS.Fields[0].Value := j;
       for i := 1 to Listings.ColCount do
-        WIDBCDS.Fields[i].Value := Listings.Cells[i-1,j];
+        if WIDBCDS.Fields[i].DataType = ftString then
+          WIDBCDS.Fields[i].Value := Listings.Cells[i-1,j]
+        else  // Keep UTC StartTime/EndTime strings
+          if TryStrToDateTime(Listings.Cells[i-1,j],t) then
+            WIDBCDS.Fields[i].Value := {TTimeZone.Local.ToLocalTime(}t{)};
     end;
     WIDBCDS.Post;
     Log('LoadWIDBCDS, DB.RecordCount: ' + WIDBCDS.RecordCount.ToString);
   end;
+  WIDBCDS.EnableControls;
+end;
+
+procedure TCWRmainFrm.CheckSettingsForUpdate;
+begin
+  if TWebLocalStorage.GetValue(NUMDAYS) <> seNumDisplayDays.Value.ToString then
+  begin
+    TWebLocalStorage.SetValue(NUMDAYS,seNumDisplayDays.Value.ToString);
+    Log('Number EPG Display Days: ' + seNumDisplayDays.Value.ToString);
+    await(ReFreshListings);
+  end;
+
+  if TWebLocalStorage.GetValue(NUMHIST) <> seNumHistEvents.Value.ToString then
+  begin
+    TWebLocalStorage.SetValue(NUMHIST,seNumHistEvents.Value.ToString);
+    Log('Number History Items: ' + seNumHistEvents.Value.ToString);
+    await(FillHistoryDisplay);
+  end;
+
 end;
 
 procedure TCWRmainFrm.ReFreshListings;
 var
-  i, j, k: Integer;
-  EndDT, MinDT, MaxDT: TDateTime;
-  DBincRecs: TStringList;
+  NRows: Integer;
 
 begin
   Log('ReFreshListings, DB is ' + IfThen(not WIDBCDS.Active, 'not ')
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   if WIDBCDS.Active and not WIDBCDS.IsEmpty then
   begin
+  WIDBCDS.DisableControls;
+//    WebDataSource1.Enabled := True;
+//    WebDBGrid1.OnGetCellClass := WebDBGrid1GetCellClass;
     WebPanel1.BringToFront;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
     Log('Memo1 is showing');
-    DBIncRecs := TStringList.Create;
-    MinDT := now;
-    Log('EPG Starting time: ' + DateTimeToStr(MinDT));
-    MaxDT := MinDT + seNumDisplayDays.Value;
-    Log('EPG Ending time: ' + DateTimeToStr(MaxDT));
-    Log('DB Record Count: ' + WIDBCDS.RecordCount.ToString);
-    k := 1;
-    for i := {1}2 to WIDBCDS.RecordCount do
-    begin
-      // Add only records between now and now + NumDisplayDays
-      WIDBCDS.RecNo := i;
-      if WIDBCDS.Fields[6].AsString > '' then // trap nulls
-      begin
-        EndDT := WIDBCDS.Fields[6].AsDateTime;
-        if (EndDT >= MinDT) and (EndDT < MaxDT) then
-        begin
-          DBIncRecs.Add(WIDBCDS.RecNo.ToString);
-          inc(k);
-        end;
-      end;
-    end;
-    Listings.BeginUpdate;
+//    WebDBGrid1.OnGetCellClass := nil;
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+    WIDBCDS.Filtered := False;
+    WIDBCDS.First;
+    Log('StartTime of First record ('+WIDBCDS.RecNo.ToString+'): '+WIDBCDS.FieldByName('StartTime').AsString);
+    Log('Unfiltered IDBCDS records: ' + WIDBCDS.RecordCount.ToString);
+    WIDBCDS.Filter := 'StartTime > ' + FloatToStr(TTimeZone.Local.ToUniversalTime(Now))
+      + ' and StartTime < ' + FloatToStr(TTimeZone.Local.ToUniversalTime(Now) + seNumDisplayDays.Value);
+    Log('Filter: ' + WIDBCDS.Filter);
     try
-      Listings.RowCount := k;
-      Log('ReFreshListings, No. recs to add: ' + (k - 1).ToString);
-      if k < 2 then
+      WIDBCDS.Filtered := True;
+      Log('Filtered IDBCDS record count: '+WIDBCDS.RecordCount.ToString);
+//      Log('WebDBGrid1 row count: '+WebDBGrid1....); // No relevant param!
+  //    Log('Filter enabled');
+      WIDBCDS.First;
+      NRows := WIDBCDS.RecNo;
+      Log('First filtered IDBCDS record: ' + WIDBCDS.RecNo.ToString);
+      WIDBCDS.Last;
+      Log('Last filtered IDBCDS record: ' + WIDBCDS.RecNo.ToString);
+      NRows := WIDBCDS.RecNo - NRows;
+      Log('ReFreshListings, No. recs to display: ' + NRows.ToString);
+//    WebDBGrid1.OnGetCellClass := WebDBGrid1GetCellClass;
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+    except
+      on E:Exception do
       begin
-        Log('No hits in current DB, prompting for EPG fetch');
-        if TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current listings.'
-          + #13#13'Do you want to refresh them?',mtConfirmation, [mbYes,mbNo]))
-          = mrYes then
-        begin
-          await (UpdateEPG(Self));
-        end;
-        exit;
+        NRows := 0;
       end;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-      WebProgressBar1.Position := 0;
-      WebProgressBar1.Max := k - 2;
-      for j := 0 to k - 2  do
-      begin
-        WIDBCDS.RecNo := DBIncRecs[j].ToInteger;
-        Listings.Cells[3,j+1] := DBIncRecs[j];
-        for i := 0 to 2 do
-          Listings.Cells[i,j+1] := WIDBCDS.Fields[i+1].AsString;
-        ColorGridRow(Listings, j+1);
-        if (j mod (k div 100)) = 0 then
-        begin
-          WebProgressBar1.Position := j;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-        end;
-      end;
-      Listings.Cells[0,0] := 'Channel';
-    finally
-      Listings.EndUpdate;
     end;
+    if NRows < 2 then
+    begin
+      Log('No current DB items, prompting for EPG fetch');
+      if TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current listings.'
+        + #13#13'Do you want to refresh them?',mtConfirmation, [mbYes,mbNo]))
+        = mrYes then await (UpdateEPG(Self));
+      exit;
+    end;
+    WIDBCDS.EnableControls;
+    WebDBGrid1.Columns[0].Alignment := taCenter;
+    WebDBGrid1.Columns[2].Alignment := taLeftJustify;
   end else begin
     ShowMessage('Please select "Refresh EPG" from Options submenu');
   end;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  DBIncRecs := nil;
   WebPanel1.SendToBack;
+  WebDBGrid1.OnGetCellClass := WebDBGrid1GetCellClass;
+  WebDBGrid1.Refresh;
+  WebDBGrid1.OnGetCellClass := nil;
   pnlListings.BringToFront;
+//  WebDBGrid1.OnGetCellClass := nil;
+//  WebDataSource1.Enabled := False;
 end;
 
 procedure TCWRmainFrm.ScheduledClick(Sender: TObject);
@@ -520,17 +566,17 @@ begin
   SetPage(1);
 end;
 
-procedure TCWRmainFrm.seNumDisplayDaysChange(Sender: TObject);
-begin
-  Log('Number EPG Display Days: ' + seNumDisplayDays.Value.ToString);
-  TWebLocalStorage.SetValue(NUMDAYS,seNumDisplayDays.Value.ToString);
-end;
+//procedure TCWRmainFrm.seNumDisplayDaysChange(Sender: TObject);
+//begin
+//  Log('Number EPG Display Days: ' + seNumDisplayDays.Value.ToString);
+//  TWebLocalStorage.SetValue(NUMDAYS,seNumDisplayDays.Value.ToString);
+//end;
 
-procedure TCWRmainFrm.seNumHistEventsChange(Sender: TObject);
-begin
-  Log('Number History Items: ' + seNumHistEvents.Value.ToString);
-  TWebLocalStorage.SetValue(NUMHIST,seNumHistEvents.Value.ToString);
-end;
+//procedure TCWRmainFrm.seNumHistEventsChange(Sender: TObject);
+//begin
+//  Log('Number History Items: ' + seNumHistEvents.Value.ToString);
+//  TWebLocalStorage.SetValue(NUMHIST,seNumHistEvents.Value.ToString);
+//end;
 
 procedure TCWRmainFrm.tbCapturesShow;
 var
@@ -684,10 +730,11 @@ end;
 procedure TCWRmainFrm.SetPage(PageNum: Integer);
 
 begin
+  await(CheckSettingsForUpdate);
   case PageNum of
     0: begin          {Listings page}
       pnlListings.BringToFront;
-      Listings.SetFocus;
+//      Listings.SetFocus;
     end;
     1: begin          {Captures}
       pnlCaptures.BringToFront;
@@ -780,10 +827,159 @@ begin
   end;
 end;
 
+procedure TCWRmainFrm.ColorDBGridRow(WDBG: TWebDBGrid; ARow: Integer);
+{ show listings in color code for type based on current IDB record }
+var
+  i: Integer;
+  AColor: string;
+  Text: string;
+  el: TJSHTMLElement;
+begin
+  WIDBCDS.RecNo := ARow;
+  Text := WIDBCDS.Fields[8].AsString; // i.e. ProgramID
+  if Text.Contains('MV') then  // Movie item
+    AColor := '#EEE8AA'        // PaleGoldenRod
+  else if Text.Contains('SH') then  // Generic item
+    AColor := '#D3D3D3'        // LightGray
+  else begin
+    if WIDBCDS.Fields[10].AsString <> '' then  // New item
+      AColor := '#98FB98'      // SpringGreen
+    else                                // Rerun item
+      AColor := '#FFD0DB';
+  end;
+  // So I've got the color...what do I do with it?
+  // This doesn't work....
+//  for i := 0 to 2 do
+//  begin
+//    el := WDBG.CellElements[i,ARow];
+//    el['bgcolor'] := AColor;
+//  end;
+end;
+
 procedure TCWRmainFrm.ListingClick(Sender: TObject);
 begin
   SetPage(0);
 end;
+
+procedure TCWRmainFrm.WebDBGrid1GetCellClass(Sender: TObject; ACol,
+  ARow: Integer; AField: TField; AValue: string; var AClassName: string);
+{ show listings in color code for type based on current IDB record }
+var
+  AColor: string;
+  Text: string;
+begin
+  if (ARow = 0) {or (ACol > 0)} then exit;
+//  if not WebDataSource1.Enabled then exit;
+  // Prevent recursion
+//  WebDBGrid1.OnGetCellClass := nil;
+  AClassName := 'redfont';
+  AColor := '';
+  if WIDBCDS.Locate('id', WebDBGrid1.Cells[3,ARow],[]) then
+  begin
+    Text := WIDBCDS.Fields[8].AsString; // i.e. ProgramID
+  //  if not Text.Contains('EP') then console.log(Text);
+    if Text.Contains('MV') then  // Movie item
+      AColor := 'goldenRod'
+    else if Text.Contains('SH') then  // Generic item
+      AColor := 'gray'
+    else begin
+      if WIDBCDS.Fields[10].AsString <> '' then  // New item
+        AColor := 'green'
+      else                                // Rerun item
+        AColor := 'rose';
+    end;
+    if AColor > '' then AClassName := AColor;
+  end;
+  // Restore link
+//  WebDBGrid1.OnGetCellClass := WebDBGrid1GetCellClass;
+end;
+
+procedure TCWRmainFrm.WebDBGrid1ClickCell(Sender: TObject; ACol, ARow: Integer);
+var
+  DetailsFrm: TDetailsFrm;
+  SchedFrm: TSchedForm;
+  x: TArray<string>;
+  t: TDateTime;
+
+begin
+  Log('WebDBGrid1SelectCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
+//  WebDBGrid1.OnGetCellClass := nil;
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//  WIDBCDS.DisableControls;
+  DetailsFrm := TDetailsFrm.Create(Self);
+  DetailsFrm.Popup := True;
+  DetailsFrm.Border := fbSingle;
+  try
+    // load file HTML template + controls
+    TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load());
+
+  // init controls after loading
+    if WIDBCDS.Locate('id', WebDBGrid1.Cells[3,ARow],[]) then
+    begin
+      DetailsFrm.lb01Title.Caption := ReplaceStr(WIDBCDS.Fields[1+2].AsString, '&', '&&');
+      DetailsFrm.lb06SubTitle.Caption := WIDBCDS.Fields[1+3].AsString;
+      DetailsFrm.lb09OrigDate.Caption := IfThen(WIDBCDS.Fields[1+12].AsString > '', 'Movie Yr', '1st Aired') + '  ';
+      DetailsFrm.lb11Time.Caption := WIDBCDS.Fields[1+1].AsString;
+      DetailsFrm.lb10Channel.Caption := WIDBCDS.Fields[1+0].AsString;
+      x := WIDBCDS.Fields[1+8].AsString.Split(['-']);
+      if Length(x) = 3 then
+        DetailsFrm.lb09OrigDate.Caption := DetailsFrm.lb09OrigDate.Caption + x[1] + '/' + x[2] + '/' + RightStr(x[0],2)
+      else
+        DetailsFrm.lb09OrigDate.Caption := DetailsFrm.lb09OrigDate.Caption + WIDBCDS.Fields[1+12].AsString;
+      SetLabelStyle(DetailsFrm.lb02New, WIDBCDS.Fields[1+9].AsString <> '');
+      SetLabelStyle(DetailsFrm.lb08CC, WIDBCDS.Fields[1+10].AsString.Contains('cc'));
+      SetLabelStyle(DetailsFrm.lb03Stereo, WIDBCDS.Fields[1+10].AsString.Contains('stereo'));
+      SetLabelStyle(DetailsFrm.lb07Dolby, WIDBCDS.Fields[1+10].AsString.Contains('DD'));
+      DetailsFrm.lb04HD.Caption := 'SD';
+      if WIDBCDS.Fields[1+11].AsString > '' then
+        DetailsFrm.lb04HD.Caption := WIDBCDS.Fields[1+11].AsString.Split(['["HD ','"'])[1] ; //,[TStringSplitOptions.ExcludeEmpty]);
+      SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
+      DetailsFrm.lb12Description.Caption := WIDBCDS.Fields[1+4].AsString;
+    // execute form and wait for close
+      TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
+      if DetailsFrm.ModalResult = mrOk then
+      begin
+        SchedFrm := TSchedForm.Create(Self);
+        SchedFrm.Caption := 'Schedule Capture Event';
+        SchedFrm.Popup := True;
+        SchedFrm.Border := fbSingle;
+
+        // used to manage Back button handling to close subform  (???)
+        window.location.hash := 'subform';
+        try
+          // load file HTML template + controls
+          TAwait.ExecP<TSchedForm>(SchedFrm.Load());
+
+        // init controls after loading
+          SchedFrm.mmTitle.Text := DetailsFrm.lb01Title.Caption;
+          SchedFrm.mmSubTitle.Text := DetailsFrm.lb06SubTitle.Caption;
+          SchedFrm.mmDescription.Text := DetailsFrm.lb12Description.Caption;
+          SchedFrm.lblChannelValue.Caption := DetailsFrm.lb10Channel.Caption;
+          // N.B.:  WIDBCDS DateTimes are UTC, but we need to specify HTPC's TZ for capture!
+          // So we decode the times from the "Time" field (format: mm/yy HH:nn--HH:nn)
+          x := WIDBCDS.FieldByName('Time').AsString.Split([' ','--']);
+          console.log(x);
+          t := TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('StartTime').AsDateTime);
+          SchedFrm.lblStartDateValue.Caption := x[0];
+          SchedFrm.tpStartTime.DateTime := StrToDateTime(x[0] + ' ' + x[1]); // WIDBCDS.FieldByName('StartTime').AsDateTime;
+          SchedFrm.tpEndTime.DateTime := StrToDateTime(x[0] + ' ' + x[2]); // WIDBCDS.FieldByName('EndTime').AsDateTime;
+          // execute form and wait for close
+          TAwait.ExecP<TModalResult>(SchedFrm.Execute);
+          if SchedFrm.ModalResult = mrOk then
+            await (UpdateNewCaptures(SchedFrm.tpStartTime.DateTime, SchedFrm.tpEndTime.DateTime));
+        finally
+          SchedFrm.Free;
+        end;
+      end;
+    end
+  finally
+    DetailsFrm.Free;
+//    WIDBCDS.EnableControls;
+//    WebDBGrid1.OnGetCellClass := WebDBGrid1GetCellClass;
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  end;
+end;
+
 
 procedure TCWRmainFrm.ListingsClickCell(Sender: TObject; ACol,
   ARow: Integer);
@@ -804,7 +1000,7 @@ begin
     TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load());
 
   // init controls after loading
-    WIDBCDS.RecNo := Listings.Cells[3,ARow].ToInteger;
+    WIDBCDS.RecNo := {Listings.Cells[3,}ARow{].ToInteger};
     DetailsFrm.lb01Title.Caption := ReplaceStr(WIDBCDS.Fields[1+2].AsString, '&', '&&');
     DetailsFrm.lb06SubTitle.Caption := WIDBCDS.Fields[1+3].AsString;
     DetailsFrm.lb09OrigDate.Caption := IfThen(WIDBCDS.Fields[1+12].AsString > '', 'Movie Yr', '1st Aired') + '  ';
@@ -1009,7 +1205,7 @@ begin
   NewCaptures.Cells[2,NewCaptures.RowCount-1] := DateTimeToStr(RecordEnd);
   NewCaptures.Cells[3,NewCaptures.RowCount-1] := ReplaceStr(WIDBCDS.FieldByName('Title').AsString, '&', '&&');
   NewCaptures.Cells[4,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('SubTitle').AsString;
-  NewCaptures.Cells[5,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('StartTime').AsString; // EPG StartTime
+  NewCaptures.Cells[5,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('Time').AsString.Split(['--'])[0]; // EPG StartTime (HTPC TZ)
   NewCaptures.Cells[6,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('ProgramID').AsString; // Episode No.
   // Update the file
   data := TStringList.Create;
