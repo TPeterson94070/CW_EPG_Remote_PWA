@@ -4,7 +4,7 @@
         <ProjectVersion>20.2</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Application</AppType>
@@ -69,7 +69,7 @@
         <TMSWebPWAServiceWorkerFile>serviceworker.js</TMSWebPWAServiceWorkerFile>
         <TMSPWAManifestFile>Manifest.json</TMSPWAManifestFile>
         <TMSWebPWAResIconMidFile>IconResMid.png</TMSWebPWAResIconMidFile>
-        <TMSVersion>1.0.1911</TMSVersion>
+        <TMSVersion>1.0.1965</TMSVersion>
         <TMSWebHTMLFile>index.html</TMSWebHTMLFile>
         <TMSWebPWAResIconLowFile>IconResLow.png</TMSWebPWAResIconLowFile>
         <TMSWebPWAResIconHighFile>IconResHigh.png</TMSWebPWAResIconHighFile>
@@ -125,13 +125,13 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
-        <TMSWebBrowser>5</TMSWebBrowser>
         <TMSWebSingleInstance>2</TMSWebSingleInstance>
         <TMSWebSingleJS>2</TMSWebSingleJS>
         <TMSPWABackgroundColor>teal</TMSPWABackgroundColor>
         <TMSApplicationDescription>Companion app for CW_EPG to view EPG, scheduled captures, and History remotely</TMSApplicationDescription>
         <TMSWebSkipJavaScript>2</TMSWebSkipJavaScript>
         <TMSUseJSDebugger>2</TMSUseJSDebugger>
+        <TMSWebBrowser>5</TMSWebBrowser>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">

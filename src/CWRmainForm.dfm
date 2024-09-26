@@ -12,54 +12,11 @@ object CWRmainFrm: TCWRmainFrm
   Menu = WebMainMenu1
   ParentFont = False
   OnCreate = WebFormCreate
-  object WebPanel1: TWebPanel
-    Left = 0
-    Top = 80
-    Width = 400
-    Height = 720
-    ElementClassName = 'container-fluid'
-    HeightStyle = ssPercent
-    Align = alClient
-    ChildOrder = 10
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    TabOrder = 4
-    object WebMemo1: TWebMemo
-      Left = 0
-      Top = 0
-      Width = 400
-      Height = 720
-      Margins.Left = 19
-      Margins.Top = 38
-      Margins.Right = 19
-      Margins.Bottom = 228
-      Align = alClient
-      Color = clYellow
-      ElementClassName = 'redcell'
-      ElementFont = efCSS
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -32
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      HeightPercent = 100.000000000000000000
-      Lines.Strings = (
-        '   '
-        '   Preparing EPG Display'
-        '  '
-        '   Please Wait . . .')
-      ParentFont = False
-      ReadOnly = True
-      SelLength = 0
-      SelStart = 52
-      WidthPercent = 100.000000000000000000
-    end
-  end
   object pnlHistory: TWebPanel
     Left = 0
     Top = 80
     Width = 400
-    Height = 720
+    Height = 700
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -106,7 +63,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 80
     Width = 400
-    Height = 720
+    Height = 700
     ElementClassName = 'card'
     HeightStyle = ssPercent
     Align = alClient
@@ -119,7 +76,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 3
       Top = 3
       Width = 394
-      Height = 714
+      Height = 694
       Align = alClient
       ElementID = 'content'
       ElementFont = efCSS
@@ -136,7 +93,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 80
     Width = 400
-    Height = 720
+    Height = 700
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -178,7 +135,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 80
     Width = 400
-    Height = 720
+    Height = 700
     Align = alClient
     BorderStyle = bsNone
     DefaultRowHeight = 22
@@ -274,7 +231,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 80
     Width = 400
-    Height = 720
+    Height = 700
     ElementClassName = 'card'
     HeightStyle = ssPercent
     Align = alClient
@@ -359,7 +316,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 80
     Width = 400
-    Height = 720
+    Height = 700
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -408,7 +365,6 @@ object CWRmainFrm: TCWRmainFrm
       HeightStyle = ssPercent
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
-      OnClickCell = ListingsClickCell
     end
     object WebDBGrid1: TWebDBGrid
       Left = 0
@@ -471,6 +427,34 @@ object CWRmainFrm: TCWRmainFrm
         150
         300
         0)
+    end
+  end
+  object WebPanel1: TWebPanel
+    Left = 0
+    Top = 80
+    Width = 400
+    Height = 700
+    ElementClassName = 'container-fluid'
+    HeightStyle = ssPercent
+    Align = alClient
+    ChildOrder = 10
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    TabOrder = 4
+    object WebButton1: TWebButton
+      Left = 0
+      Top = 0
+      Width = 400
+      Height = 700
+      Align = alClient
+      Caption = 'WebButton1'
+      Color = clYellow
+      ChildOrder = 1
+      ElementClassName = 'btn-lg'
+      ElementFont = efCSS
+      HeightStyle = ssPercent
+      HeightPercent = 100.000000000000000000
+      WidthPercent = 100.000000000000000000
     end
   end
   object WebMainMenu1: TWebMainMenu
