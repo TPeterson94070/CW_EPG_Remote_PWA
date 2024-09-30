@@ -1,7 +1,7 @@
 object DetailsFrm: TDetailsFrm
-  Width = 350
-  Height = 281
-  Color = clSilver
+  Width = 353
+  Height = 447
+  Color = clHoneydew
   CSSLibrary = cssBootstrap
   ElementFont = efCSS
   Font.Charset = DEFAULT_CHARSET
@@ -12,16 +12,15 @@ object DetailsFrm: TDetailsFrm
   ParentFont = False
   ShowClose = False
   Visible = True
-  OnShow = WebFormShow
   object lb02New: TWebLabel
     Left = 200
-    Top = 190
+    Top = 331
     Width = 40
     Height = 15
     Alignment = taCenter
     AutoSize = False
     Caption = 'New'
-    Color = clSilver
+    Color = clHoneydew
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -37,13 +36,13 @@ object DetailsFrm: TDetailsFrm
   end
   object lb03Stereo: TWebLabel
     Left = 146
-    Top = 190
+    Top = 331
     Width = 50
     Height = 15
     Alignment = taCenter
     AutoSize = False
     Caption = 'Stereo'
-    Color = clSilver
+    Color = clHoneydew
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -59,57 +58,13 @@ object DetailsFrm: TDetailsFrm
   end
   object lb04HD: TWebLabel
     Left = 6
-    Top = 190
-    Width = 40
+    Top = 331
+    Width = 45
     Height = 15
     Alignment = taCenter
     AutoSize = False
     Caption = 'HD'
-    Color = clSilver
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -12
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    HTMLType = tSPAN
-    Layout = tlCenter
-    ParentFont = False
-    ShowAccelChar = False
-    WidthPercent = 100.000000000000000000
-  end
-  object lb10Channel: TWebLabel
-    Left = 10
-    Top = 157
-    Width = 100
-    Height = 15
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'Channel'
-    Color = clSilver
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -12
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    HTMLType = tSPAN
-    Layout = tlCenter
-    ParentFont = False
-    ShowAccelChar = False
-    WidthPercent = 100.000000000000000000
-  end
-  object lb11Time: TWebLabel
-    Left = 93
-    Top = 157
-    Width = 160
-    Height = 15
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'Time'
-    Color = clSilver
+    Color = clHoneydew
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -125,13 +80,13 @@ object DetailsFrm: TDetailsFrm
   end
   object lb07Dolby: TWebLabel
     Left = 84
-    Top = 190
+    Top = 331
     Width = 50
     Height = 15
     Alignment = taCenter
     AutoSize = False
     Caption = 'Dolby'
-    Color = clSilver
+    Color = clHoneydew
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -147,13 +102,13 @@ object DetailsFrm: TDetailsFrm
   end
   object lb08CC: TWebLabel
     Left = 46
-    Top = 190
+    Top = 331
     Width = 40
     Height = 15
     Alignment = taCenter
     AutoSize = False
     Caption = 'CC'
-    Color = clSilver
+    Color = clHoneydew
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -169,13 +124,13 @@ object DetailsFrm: TDetailsFrm
   end
   object lb09OrigDate: TWebLabel
     Left = 243
-    Top = 190
+    Top = 331
     Width = 100
     Height = 15
     Alignment = taCenter
     AutoSize = False
     Caption = 'OrigDate'
-    Color = clSilver
+    Color = clHoneydew
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -189,16 +144,184 @@ object DetailsFrm: TDetailsFrm
     ShowAccelChar = False
     WidthPercent = 100.000000000000000000
   end
+  object lb10Channel: TWebLabel
+    Left = 10
+    Top = 303
+    Width = 100
+    Height = 15
+    Alignment = taCenter
+    AutoSize = False
+    Caption = 'Channel'
+    Color = clHoneydew
+    ElementFont = efCSS
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -12
+    Font.Name = 'Segoe UI'
+    Font.Style = []
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    HTMLType = tSPAN
+    Layout = tlCenter
+    ParentFont = False
+    ShowAccelChar = False
+    WidthPercent = 100.000000000000000000
+  end
+  object lb11Time: TWebLabel
+    Left = 114
+    Top = 304
+    Width = 160
+    Height = 15
+    Alignment = taCenter
+    AutoSize = False
+    Caption = 'Time'
+    Color = clHoneydew
+    ElementFont = efCSS
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -12
+    Font.Name = 'Segoe UI'
+    Font.Style = []
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    HTMLType = tSPAN
+    Layout = tlCenter
+    ParentFont = False
+    ShowAccelChar = False
+    WidthPercent = 100.000000000000000000
+  end
+  object pnlDetails: TWebPanel
+    Left = 1
+    Top = 0
+    Width = 350
+    Height = 275
+    Center.Horizontal = True
+    ElementClassName = 'card'
+    WidthStyle = ssPercent
+    Anchors = [akLeft, akTop, akRight]
+    BorderStyle = bsNone
+    Caption = 'pnlDetails'
+    ChildOrder = 1
+    Color = clHoneydew
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    ShowCaption = False
+    TabOrder = 0
+    object lblTitle: TWebLabel
+      Left = 0
+      Top = 0
+      Width = 350
+      Height = 10
+      Align = alTop
+      Caption = 'Program Title'
+      Color = clNone
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -8
+      Font.Name = 'Arial'
+      Font.Style = []
+      HeightStyle = ssAuto
+      HeightPercent = 100.000000000000000000
+      ParentFont = False
+      WidthPercent = 100.000000000000000000
+    end
+    object lblSubTitle: TWebLabel
+      Left = 0
+      Top = 68
+      Width = 350
+      Height = 10
+      Align = alTop
+      Caption = 'Program SubTitle'
+      Color = clNone
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -8
+      Font.Name = 'Arial'
+      Font.Style = []
+      HeightStyle = ssAuto
+      HeightPercent = 100.000000000000000000
+      ParentFont = False
+      WidthPercent = 100.000000000000000000
+    end
+    object lblDescription: TWebLabel
+      Left = 0
+      Top = 127
+      Width = 350
+      Height = 10
+      Align = alTop
+      Caption = 'Program Description'
+      Color = clNone
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -8
+      Font.Name = 'Arial'
+      Font.Style = []
+      HeightStyle = ssAuto
+      HeightPercent = 100.000000000000000000
+      ParentFont = False
+      WidthPercent = 100.000000000000000000
+    end
+    object mmTitle: TWebMemo
+      Left = 0
+      Top = 10
+      Width = 350
+      Height = 58
+      Align = alTop
+      Color = clDarkseagreen
+      ElementClassName = 'form-control-sm'
+      ElementFont = efCSS
+      HeightPercent = 100.000000000000000000
+      Lines.Strings = (
+        'mmTitle')
+      SelLength = 0
+      SelStart = 0
+      WidthPercent = 100.000000000000000000
+    end
+    object mmSubTitle: TWebMemo
+      Left = 0
+      Top = 78
+      Width = 350
+      Height = 49
+      Align = alTop
+      Color = clDarkseagreen
+      ElementClassName = 'form-control-sm'
+      ElementFont = efCSS
+      HeightPercent = 100.000000000000000000
+      Lines.Strings = (
+        'mmSubTitle')
+      SelLength = 0
+      SelStart = 10
+      WidthPercent = 100.000000000000000000
+    end
+    object mmDescription: TWebMemo
+      Left = 0
+      Top = 137
+      Width = 350
+      Height = 117
+      Align = alTop
+      Color = clDarkseagreen
+      ElementClassName = 'form-control-sm'
+      ElementFont = efCSS
+      HeightStyle = ssPercent
+      HeightPercent = 100.000000000000000000
+      Lines.Strings = (
+        'Description')
+      ReadOnly = True
+      ScrollBars = ssNone
+      SelLength = 0
+      SelStart = 11
+      WidthPercent = 100.000000000000000000
+    end
+  end
   object btnAddCap: TWebButton
     Left = 210
-    Top = 229
+    Top = 376
     Width = 120
     Height = 40
     Margins.Left = 8
     Margins.Top = 8
     Margins.Right = 8
     Margins.Bottom = 8
-    Anchors = [akLeft, akBottom]
     Caption = 'Add Capture'
     ChildOrder = 11
     ElementClassName = 'btn btn-outline-success'
@@ -208,6 +331,7 @@ object DetailsFrm: TDetailsFrm
     Font.Height = -12
     Font.Name = 'Segoe UI'
     Font.Style = []
+    HeightStyle = ssAuto
     HeightPercent = 100.000000000000000000
     ModalResult = 1
     ParentFont = False
@@ -217,14 +341,13 @@ object DetailsFrm: TDetailsFrm
   end
   object btnReturn: TWebButton
     Left = 20
-    Top = 229
+    Top = 376
     Width = 120
     Height = 40
     Margins.Left = 8
     Margins.Top = 8
     Margins.Right = 8
     Margins.Bottom = 8
-    Anchors = [akLeft, akBottom]
     Cancel = True
     Caption = 'Return'
     ChildOrder = 10
@@ -235,128 +358,12 @@ object DetailsFrm: TDetailsFrm
     Font.Height = -12
     Font.Name = 'Segoe UI'
     Font.Style = []
+    HeightStyle = ssAuto
     HeightPercent = 100.000000000000000000
     ModalResult = 2
     ParentFont = False
     Role = 'button'
     TabOrder = 3
     WidthPercent = 100.000000000000000000
-  end
-  object WebGridPanel1: TWebGridPanel
-    Left = 0
-    Top = 0
-    Width = 350
-    Height = 41
-    HeightStyle = ssAuto
-    Align = alTop
-    ChildOrder = 13
-    ColumnCollection = <
-      item
-        Value = 100
-      end>
-    ControlCollection = <
-      item
-        Column = 0
-        Row = 0
-        Control = lb01Title
-      end
-      item
-        Column = 0
-        Row = 0
-        Control = lb06SubTitle
-      end
-      item
-        Column = 0
-        Row = 0
-        Control = lb12Description
-      end>
-    Color = clWhite
-    GridLineColor = clBlack
-    RowCollection = <
-      item
-        Value = 33
-      end
-      item
-        Value = 33
-      end
-      item
-        Value = 33
-      end>
-    object lb01Title: TWebLabel
-      Left = 2
-      Top = 2
-      Width = 346
-      Height = 15
-      Align = alTop
-      Anchors = []
-      Caption = 'Title'
-      Color = clGray
-      ElementLabelClassName = 'h5'
-      ElementFont = efCSS
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -12
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      HeightStyle = ssAuto
-      HeightPercent = 100.000000000000000000
-      HTMLType = tSPAN
-      Layout = tlCenter
-      ParentFont = False
-      ShowAccelChar = False
-      Transparent = False
-      WordWrap = True
-      WidthPercent = 100.000000000000000000
-    end
-    object lb06SubTitle: TWebLabel
-      Left = 2
-      Top = 16
-      Width = 346
-      Height = 15
-      Align = alTop
-      Anchors = []
-      Caption = 'SubTitle'
-      Color = clGray
-      ElementLabelClassName = 'h6'
-      ElementFont = efCSS
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -12
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      HeightStyle = ssAuto
-      HeightPercent = 100.000000000000000000
-      HTMLType = tSPAN
-      ParentFont = False
-      ShowAccelChar = False
-      Transparent = False
-      WordWrap = True
-      WidthPercent = 100.000000000000000000
-    end
-    object lb12Description: TWebLabel
-      Left = 2
-      Top = 30
-      Width = 346
-      Height = 15
-      Align = alTop
-      Anchors = []
-      Caption = 'Description'
-      Color = clGray
-      ElementLabelClassName = 'small'
-      ElementPosition = epRelative
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -12
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      HeightStyle = ssAuto
-      HeightPercent = 100.000000000000000000
-      HTMLType = tDIV
-      ParentFont = False
-      ShowAccelChar = False
-      Transparent = False
-      WordWrap = True
-      WidthPercent = 100.000000000000000000
-    end
   end
 end

@@ -50,7 +50,11 @@ type
     WebDBGrid1: TWebDBGrid;
     WebDataSource1: TWebDataSource;
     WebButton1: TWebButton;
+    WebGridPanel1: TWebGridPanel;
+    WebLabel1: TWebLabel;
+    WebLabel2: TWebLabel;
 
+  [async]
   procedure LoadWIDBCDS;
   procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
     errorName, errorMsg: string);
@@ -59,24 +63,16 @@ type
   procedure UpdateEPG(Sender: TObject);
   [async]
   procedure WebFormCreate(Sender: TObject);
-//  procedure seNumDisplayDaysChange(Sender: TObject);
   procedure WebStringGrid2DblClick(Sender: TObject);
   [async]
   procedure tbCapturesShow;
   procedure AllCapsGridGetCellData(Sender: TObject; ACol, ARow: Integer;
     AField: TField; var AValue: string);
-//  procedure ListingsDblClick(Sender: TObject);
-//  [async]
-//  procedure ListingsClickCell(Sender: TObject; ACol, ARow: Integer);
-//  procedure seNumHistEventsChange(Sender: TObject);
   procedure HistoryTableFixedCellClick(Sender: TObject; ACol, ARow: Integer);
   [async]
   procedure UpdateHistory(Sender: TObject);
   [async]
   procedure ChangeTargetHTPC(Sender: TObject);
-//  procedure ListingsGesture(Sender: TObject;
-//    const EventInfo: TGestureEventInfo; var Handled: Boolean);
-  procedure ListingsFixedCellClick(Sender: TObject; ACol, ARow: LongInt);
   procedure ListingClick(Sender: TObject);
   procedure HistoryClick(Sender: TObject);
   procedure ScheduledClick(Sender: TObject);
@@ -135,9 +131,9 @@ var
   ResetPrompt: string = 'none' ; //'&prompt=select_account';
 
 const
-  DBFIELDS: array[0..13] of string = ('PSIP', 'Time', 'Title', 'SubTitle', 'Description',
-  	'StartTime', 'EndTime', 'programID', 'originalAirDate', 'new',
-    'audioProperties', 'videoProperties', 'movieYear', 'genres');
+//  DBFIELDS: array[0..13] of string = ('PSIP', 'Time', 'Title', 'SubTitle', 'Description',
+//  	'StartTime', 'EndTime', 'programID', 'originalAirDate', 'new',
+//    'audioProperties', 'videoProperties', 'movieYear', 'genres');
   NUMDAYS = 'NumDisplayDays';
   NUMHIST = 'NumHistoryItems';
   EMAILADDR = 'emailAddress';
@@ -165,6 +161,10 @@ end;
 
 
 procedure TCWRmainFrm.WebFormCreate(Sender: TObject);
+const
+  DBFIELDS: array[0..14] of string = ('PSIP', 'Time', 'Title', 'SubTitle', 'Description',
+  	'StartTime', 'EndTime', 'programID', 'originalAirDate', 'new',
+    'audioProperties', 'videoProperties', 'movieYear', 'genres', 'Class');
 var
   i: Integer;
   AppVersion: string;
@@ -193,7 +193,7 @@ begin
     seNumHistEvents.Value := StrToInt(TWebLocalStorage.GetValue(NUMHIST));
 //  if TWebLocalStorage.GetValue(EMAILADDR) <> '' then
     WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
-  WebButton1.Caption := 'Preparing EPG Display. Please wait... <i class="fa-solid fa-spinner fa-spin"></>';
+//  WebButton1.Caption := 'Preparing EPG Display. Please wait... <i class="fa-solid fa-spinner fa-spin"></>';
   SetPage(0);
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 
@@ -424,6 +424,8 @@ procedure TCWRmainFrm.LoadWIDBCDS;
 var
   i,j: Integer;
   t: TDateTime;
+  AColor: string;
+  Text: string;
 begin
   Log('Starting LoadWIDBCDS, DB is ' + IfThen(not WIDBCDS.Active, 'not ') + 'Active');
   WIDBCDS.Filtered := False;
@@ -446,19 +448,34 @@ begin
         // Lose superfluous <">
         Listings.Cells[0,j] := ReplaceStr(Listings.Cells[0,j],'"','');
         WIDBCDS.Append;
-//        WIDBCDS.Fields[0].Value := j;
+        WIDBCDS.Fields[0].Value := j;
         for i := 1 to Listings.ColCount do
           if WIDBCDS.Fields[i].DataType = ftString then
             WIDBCDS.Fields[i].Value := Listings.Cells[i-1,j]
           else  // Keep UTC StartTime/EndTime strings
             if TryStrToDateTime(Listings.Cells[i-1,j],t) then
               WIDBCDS.Fields[i].Value := t;
+        Text := WIDBCDS.Fields[8].AsString; // i.e. ProgramID
+        if Text.Contains('MV') then  // Movie item
+          AColor := 'goldenRod'
+        else if Text.Contains('SH') then  // Generic item
+          AColor := 'gray'
+        else begin
+          if WIDBCDS.Fields[10].AsString <> '' then  // New item
+            AColor := 'green'
+          else                                // Rerun item
+            AColor := 'rose';
+        end;
+        WIDBCDS.Fields[15].Value := AColor;
+        WIDBCDS.Post;
       end;
-      WIDBCDS.Post;
     end;
   finally
-    WIDBCDS.EnableControls;
-    WebDBGrid1.EndUpdate;
+    await(WIDBCDS.EnableControls);
+//    WebDBGrid1.OnGetCellClass := WebDBGrid1GetCellClass;
+    await(WebDBGrid1.EndUpdate);
+//    await(WebDBGrid1.Refresh);
+//    WebDBGrid1.OnGetCellClass := nil;
     Log('Finished LoadWIDBCDS, DB.RecordCount: ' + WIDBCDS.RecordCount.ToString);
   end;
 end;
@@ -545,7 +562,7 @@ begin
     WebPanel1.SendToBack;
     WebDBGrid1.OnGetCellClass := WebDBGrid1GetCellClass;
     pnlListings.BringToFront;
-    WebDBGrid1.EndUpdate;
+    await(WebDBGrid1.EndUpdate);
     await(WebDBGrid1.Refresh);
     WebDBGrid1.OnGetCellClass := nil;
     Log('RefreshListings finished');
@@ -755,31 +772,6 @@ begin
   lbl.Font.Color := IfThen(State, clRed, clLtGray);
 end;
 
-//procedure TCWRmainFrm.AllCapsGridDblClick(Sender: TObject);
-//var
-//  i: Integer;
-//  URL, Response: string;
-//begin
-//  i := ClickedRow;
-//
-//  if AllCapsGrid.cells[1,i] = '' then exit;
-//
-////  AllCapsGrid.OnGetCellData := nil;
-//  if TAwait.ExecP<TModalResult> (MessageDlgAsync('Erase "' + AllCapsGrid.cells[8,i] + '" ' + AllCapsGrid.cells[3,i] + ' ' + AllCapsGrid.cells[4,i] + ' - ' + AllCapsGrid.cells[5,i] + ' '
-//    + ' Schedule Entry?', mtConfirmation, [mbYes, mbNo])) = mrNo then exit;
-////    Start the delete here...............                                           // Delete schedule Entry
-//  Log('  >>>>>  ' + AllCapsGrid.cells[1,i] + ' - ' + AllCapsGrid.cells[2,i]
-//    + '  Delete : (' + AllCapsGrid.cells[0,i]
-//    + ') ' + AllCapsGrid.cells[8,i] + ' - ' + AllCapsGrid.cells[3,i] + ' '
-//    + AllCapsGrid.cells[4,i] + '-' + AllCapsGrid.cells[5,i]);
-//  URL := 'https://' + CWHelperIP + ':8443/decapture?sequence=' + AllCapsGrid.cells[0,i];
-//  Response := await(HttpReq(URL));
-//  // Assume success, delete AllCapsGrid row i
-////  showmessage('Response: ' + Response);
-//  if Response<>'' then AllCapsGrid.RemoveRow(i);
-////  AllCapsGrid.OnGetCellData := AllCapsGridGetCellData;
-//end;
-
 procedure TCWRmainFrm.AllCapsGridGetCellData(Sender: TObject; ACol,
   ARow: Integer; AField: TField; var AValue: string);
 begin
@@ -791,33 +783,6 @@ begin
   end;
 end;
 
-//procedure TCWRmainFrm.ColorGridRow(WSG: TWebStringGrid; ARow: Integer);
-//{ show listings in color code for type based on current IDB record }
-//var
-//  i: Integer;
-//  AColor: string;
-//  Text: string;
-//  el: TJSHTMLElement;
-//begin
-//  WIDBCDS.RecNo := WSG.Cells[3,ARow].ToInteger;
-//  Text := WIDBCDS.Fields[8].AsString; // i.e. ProgramID
-//  if Text.Contains('MV') then  // Movie item
-//    AColor := '#EEE8AA'        // PaleGoldenRod
-//  else if Text.Contains('SH') then  // Generic item
-//    AColor := '#D3D3D3'        // LightGray
-//  else begin
-//    if WIDBCDS.Fields[10].AsString <> '' then  // New item
-//      AColor := '#98FB98'      // SpringGreen
-//    else                                // Rerun item
-//      AColor := '#FFD0DB';
-//  end;
-//  for i := 0 to 2 do
-//  begin
-//    el := WSG.CellElements[i,ARow];
-//    el['bgcolor'] := AColor;
-//  end;
-//end;
-
 procedure TCWRmainFrm.ListingClick(Sender: TObject);
 begin
   SetPage(0);
@@ -826,35 +791,32 @@ end;
 procedure TCWRmainFrm.WebDBGrid1GetCellClass(Sender: TObject; ACol,
   ARow: Integer; AField: TField; AValue: string; var AClassName: string);
 { show listings in color code for type based on current IDB record }
-var
-  AColor: string;
-  Text: string;
+//var
+//  AColor: string;
+//  Text: string;
 begin
-//  exit;
-  if (ARow = 0) {or (ACol > 0)} then exit;
-//  if not WebDataSource1.Enabled then exit;
-  // Prevent recursion
-//  WebDBGrid1.OnGetCellClass := nil;
-  AClassName := 'redfont';
-  AColor := '';
-  if WIDBCDS.Locate('id', WebDBGrid1.Cells[3,ARow],[]) then
-  begin
-    Text := WIDBCDS.Fields[8].AsString; // i.e. ProgramID
-  //  if not Text.Contains('EP') then console.log(Text);
-    if Text.Contains('MV') then  // Movie item
-      AColor := 'goldenRod'
-    else if Text.Contains('SH') then  // Generic item
-      AColor := 'gray'
-    else begin
-      if WIDBCDS.Fields[10].AsString <> '' then  // New item
-        AColor := 'green'
-      else                                // Rerun item
-        AColor := 'rose';
-    end;
-    if AColor > '' then AClassName := AColor;
-  end;
-  // Restore link
-//  WebDBGrid1.OnGetCellClass := WebDBGrid1GetCellClass;
+  if (ARow = 0) then exit;
+  AClassName := WIDBCDS.Fields[15].AsString;
+///// Following has been superseded by setting in LoadWIDBCDS of Fields[15]
+//  if ACol>0 then
+////  ACla/ssName := WebDBGrid1.Cells[0,ARow].
+//  AColor := '';
+//  if WIDBCDS.Locate('id', WebDBGrid1.Cells[3,ARow],[]) then
+//  begin
+//    Text := WIDBCDS.Fields[8].AsString; // i.e. ProgramID
+//  //  if not Text.Contains('EP') then console.log(Text);
+//    if Text.Contains('MV') then  // Movie item
+//      AColor := 'goldenRod'
+//    else if Text.Contains('SH') then  // Generic item
+//      AColor := 'gray'
+//    else begin
+//      if WIDBCDS.Fields[10].AsString <> '' then  // New item
+//        AColor := 'green'
+//      else                                // Rerun item
+//        AColor := 'rose';
+//    end;
+//    if AColor > '' then AClassName := AColor;
+//  end;
 end;
 
 procedure TCWRmainFrm.WebDBGrid1ClickCell(Sender: TObject; ACol, ARow: Integer);
@@ -865,9 +827,6 @@ var
 
 begin
   Log('WebDBGrid1SelectCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
-//  WebDBGrid1.OnGetCellClass := nil;
-//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-//  WIDBCDS.DisableControls;
   DetailsFrm := TDetailsFrm.Create(Self);
   DetailsFrm.Popup := True;
   DetailsFrm.Border := fbSingle;
@@ -878,8 +837,8 @@ begin
   // init controls after loading
     if WIDBCDS.Locate('id', WebDBGrid1.Cells[3,ARow],[]) then
     begin
-      DetailsFrm.lb01Title.Caption := ReplaceStr(WIDBCDS.Fields[1+2].AsString, '&', '&&');
-      DetailsFrm.lb06SubTitle.Caption := WIDBCDS.Fields[1+3].AsString;
+      DetailsFrm.mmTitle.Text := WIDBCDS.Fields[1+2].AsString;
+      DetailsFrm.mmSubTitle.Text := WIDBCDS.Fields[1+3].AsString;
       DetailsFrm.lb09OrigDate.Caption := IfThen(WIDBCDS.Fields[1+12].AsString > '', 'Movie Yr', '1st Aired') + '  ';
       DetailsFrm.lb11Time.Caption := WIDBCDS.Fields[1+1].AsString;
       DetailsFrm.lb10Channel.Caption := WIDBCDS.Fields[1+0].AsString;
@@ -896,7 +855,7 @@ begin
       if WIDBCDS.Fields[1+11].AsString > '' then
         DetailsFrm.lb04HD.Caption := WIDBCDS.Fields[1+11].AsString.Split(['["HD ','"'])[1] ; //,[TStringSplitOptions.ExcludeEmpty]);
       SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
-      DetailsFrm.lb12Description.Caption := WIDBCDS.Fields[1+4].AsString;
+      DetailsFrm.mmDescription.Text := WIDBCDS.Fields[1+4].AsString;
     // execute form and wait for close
       TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
       if DetailsFrm.ModalResult = mrOk then
@@ -913,17 +872,19 @@ begin
           TAwait.ExecP<TSchedForm>(SchedFrm.Load());
 
         // init controls after loading
-          SchedFrm.mmTitle.Text := DetailsFrm.lb01Title.Caption;
-          SchedFrm.mmSubTitle.Text := DetailsFrm.lb06SubTitle.Caption;
-          SchedFrm.mmDescription.Text := DetailsFrm.lb12Description.Caption;
+          SchedFrm.mmTitle.Text := DetailsFrm.mmTitle.Text;
+          SchedFrm.mmSubTitle.Text := DetailsFrm.mmSubTitle.Text;
+          SchedFrm.mmDescription.Text := DetailsFrm.mmDescription.Text;
           SchedFrm.lblChannelValue.Caption := DetailsFrm.lb10Channel.Caption;
           // N.B.:  WIDBCDS DateTimes are UTC, but we need to specify HTPC's TZ for capture!
           // So we decode the times from the "Time" field (format: mm/yy HH:nn--HH:nn)
-          x := WIDBCDS.FieldByName('Time').AsString.Split([' ','--']);
+          x := string(DetailsFrm.lb11Time.Caption).Split([' ','--']);
           console.log(x);
           SchedFrm.lblStartDateValue.Caption := x[0];
-          SchedFrm.tpStartTime.DateTime := StrToDateTime(x[0] + ' ' + x[1]); // WIDBCDS.FieldByName('StartTime').AsDateTime;
-          SchedFrm.tpEndTime.DateTime := StrToDateTime(x[0] + ' ' + x[2]); // WIDBCDS.FieldByName('EndTime').AsDateTime;
+          SchedFrm.tpStartTime.DateTime := StrToDateTime(x[0] + ' ' + x[1]);
+          SchedFrm.tpEndTime.DateTime := StrToDateTime(x[0] + ' ' + x[2]);
+          if SchedFrm.tpEndTime.DateTime < SchedFrm.tpStartTime.DateTime then  // wrapped midnight
+            SchedFrm.tpEndTime.DateTime := SchedFrm.tpEndTime.DateTime + 1;
           // execute form and wait for close
           TAwait.ExecP<TModalResult>(SchedFrm.Execute);
           if SchedFrm.ModalResult = mrOk then
@@ -935,87 +896,9 @@ begin
     end
   finally
     DetailsFrm.Free;
-//    WIDBCDS.EnableControls;
-//    WebDBGrid1.OnGetCellClass := WebDBGrid1GetCellClass;
-//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   end;
 end;
 
-
-//procedure TCWRmainFrm.ListingsClickCell(Sender: TObject; ACol,
-//  ARow: Integer);
-//var
-//  DetailsFrm: TDetailsFrm;
-//  SchedFrm: TSchedForm;
-//  x: TArray<string>;
-//
-//begin
-////  ClickedCol := ACol;
-////  ClickedRow := ARow;
-////  Log('Clicked Col, Row: ' + ACol.ToString + ', ' + ARow.ToString + ' contains: ' + Listings.Cells[ACol,ARow] );
-//  DetailsFrm := TDetailsFrm.Create(Self);
-//  DetailsFrm.Popup := True;
-//  DetailsFrm.Border := fbSingle;
-//  try
-//    // load file HTML template + controls
-//    TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load());
-//
-//  // init controls after loading
-//    WIDBCDS.RecNo := {Listings.Cells[3,}ARow{].ToInteger};
-//    DetailsFrm.lb01Title.Caption := ReplaceStr(WIDBCDS.Fields[1+2].AsString, '&', '&&');
-//    DetailsFrm.lb06SubTitle.Caption := WIDBCDS.Fields[1+3].AsString;
-//    DetailsFrm.lb09OrigDate.Caption := IfThen(WIDBCDS.Fields[1+12].AsString > '', 'Movie Yr', '1st Aired') + '  ';
-//    DetailsFrm.lb11Time.Caption := WIDBCDS.Fields[1+1].AsString;
-//    DetailsFrm.lb10Channel.Caption := WIDBCDS.Fields[1+0].AsString;
-//    x := WIDBCDS.Fields[1+8].AsString.Split(['-']);
-//    if Length(x) = 3 then
-//      DetailsFrm.lb09OrigDate.Caption := DetailsFrm.lb09OrigDate.Caption + x[1] + '/' + x[2] + '/' + RightStr(x[0],2)
-//    else
-//      DetailsFrm.lb09OrigDate.Caption := DetailsFrm.lb09OrigDate.Caption + WIDBCDS.Fields[1+12].AsString;
-//    SetLabelStyle(DetailsFrm.lb02New, WIDBCDS.Fields[1+9].AsString <> '');
-//    SetLabelStyle(DetailsFrm.lb08CC, WIDBCDS.Fields[1+10].AsString.Contains('cc'));
-//    SetLabelStyle(DetailsFrm.lb03Stereo, WIDBCDS.Fields[1+10].AsString.Contains('stereo'));
-//    SetLabelStyle(DetailsFrm.lb07Dolby, WIDBCDS.Fields[1+10].AsString.Contains('DD'));
-//    DetailsFrm.lb04HD.Caption := 'SD';
-//    if WIDBCDS.Fields[1+11].AsString > '' then
-//      DetailsFrm.lb04HD.Caption := WIDBCDS.Fields[1+11].AsString.Split(['["HD ','"'])[1] ; //,[TStringSplitOptions.ExcludeEmpty]);
-//    SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
-//    DetailsFrm.lb12Description.Caption := WIDBCDS.Fields[1+4].AsString;
-//  // execute form and wait for close
-//    TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
-//    if DetailsFrm.ModalResult = mrOk then
-//    begin
-//      SchedFrm := TSchedForm.Create(Self);
-//      SchedFrm.Caption := 'Schedule Capture Event';
-//      SchedFrm.Popup := True;
-//      SchedFrm.Border := fbSingle;
-//
-//      // used to manage Back button handling to close subform  (???)
-//      window.location.hash := 'subform';
-//      try
-//        // load file HTML template + controls
-//        TAwait.ExecP<TSchedForm>(SchedFrm.Load());
-//
-//      // init controls after loading
-//        SchedFrm.mmTitle.Text := DetailsFrm.lb01Title.Caption;
-//        SchedFrm.mmSubTitle.Text := DetailsFrm.lb06SubTitle.Caption;
-//        SchedFrm.mmDescription.Text := DetailsFrm.lb12Description.Caption;
-//        SchedFrm.lblChannelValue.Caption := DetailsFrm.lb10Channel.Caption;
-//        SchedFrm.lblStartDateValue.Caption := WIDBCDS.FieldByName('StartTime').AsString.Split([' '])[0];
-//        SchedFrm.tpStartTime.DateTime := WIDBCDS.FieldByName('StartTime').AsDateTime;
-//        SchedFrm.tpEndTime.DateTime := WIDBCDS.FieldByName('EndTime').AsDateTime;
-//      // execute form and wait for close
-//        TAwait.ExecP<TModalResult>(SchedFrm.Execute);
-//        if SchedFrm.ModalResult = mrOk then
-//          await (UpdateNewCaptures(SchedFrm.tpStartTime.DateTime, SchedFrm.tpEndTime.DateTime));
-//      finally
-//        SchedFrm.Free;
-//      end;
-//    end;
-//  finally
-//    DetailsFrm.Free;
-//  end;
-//end;
 
 //procedure TCWRmainFrm.ListingsDblClick(Sender: TObject);
 //var
@@ -1047,19 +930,6 @@ end;
 //      WebStringGrid2.EndUpdate;
 //    end;
 //  end;
-//end;
-
-procedure TCWRmainFrm.ListingsFixedCellClick(Sender: TObject; ACol,
-  ARow: LongInt);
-begin
-  ShowMessage('Clicked RC: ('+Arow.ToString+', '+ACol.ToString+')');
-end;
-
-//procedure TCWRmainFrm.ListingsGesture(Sender: TObject;
-//  const EventInfo: TGestureEventInfo; var Handled: Boolean);
-//begin
-//  ShowMessage(IntToStr(EventInfo.GestureID));
-//  Handled := True;
 //end;
 
 procedure TCWRmainFrm.WebStringGrid2DblClick(Sender: TObject);
@@ -1177,8 +1047,8 @@ begin
   res := TAwait.ExecP<TJSXMLHttpRequest>(WEBRESTClient1.HttpRequest('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data.Text));
   console.log(res);
   if res.Status = 200 then
-    ShowMessage('Request successfully submitted to CW_EPG'#13#13'It will be scheduled upon CW_EPG''s next run.')
-  else ShowMessage('Request submission failed.'#13#13'If this is the first failure, please retry.');
+    ShowMessage('Request successfully posted.'#13#13'N.B.:  It will NOT be scheduled until CW_EPG''s next run.')
+  else ShowMessage('Request submission FAILED.'#13#13'If this is the first failure, please retry.');
 
   // ==============================
   Log('Final NewCaptures Table Rows: '+NewCaptures.RowCount.ToString);

@@ -9,20 +9,23 @@ uses
 
 type
   TDetailsFrm = class(TWebForm)
-    lb12Description: TWebLabel;
-    lb01Title: TWebLabel;
+    pnlDetails: TWebPanel;
+    lblTitle: TWebLabel;
+    lblSubTitle: TWebLabel;
+    lblDescription: TWebLabel;
+    mmTitle: TWebMemo;
+    mmSubTitle: TWebMemo;
+    mmDescription: TWebMemo;
+    btnAddCap: TWebButton;
+    btnReturn: TWebButton;
     lb02New: TWebLabel;
     lb03Stereo: TWebLabel;
     lb04HD: TWebLabel;
-    lb06SubTitle: TWebLabel;
     lb07Dolby: TWebLabel;
     lb08CC: TWebLabel;
     lb09OrigDate: TWebLabel;
     lb10Channel: TWebLabel;
     lb11Time: TWebLabel;
-    btnAddCap: TWebButton;
-    btnReturn: TWebButton;
-    WebGridPanel1: TWebGridPanel;
     procedure WebFormShow(Sender: TObject);
   private
     { Private declarations }

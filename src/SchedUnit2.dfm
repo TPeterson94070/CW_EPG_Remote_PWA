@@ -137,9 +137,11 @@ object SchedForm: TSchedForm
     Top = 0
     Width = 350
     Height = 275
-    Align = alTop
+    Center.Horizontal = True
+    WidthStyle = ssPercent
     Caption = 'pnlDetails'
     ChildOrder = 1
+    Color = clDarkgreen
     ShowCaption = False
     TabOrder = 1
     object lblTitle: TWebLabel
@@ -149,9 +151,15 @@ object SchedForm: TSchedForm
       Height = 14
       Align = alTop
       Caption = 'Program Title'
-      Color = clMoneyGreen
+      Color = clNone
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = []
+      HeightStyle = ssAuto
       HeightPercent = 100.000000000000000000
-      Transparent = False
+      ParentFont = False
       WidthPercent = 100.000000000000000000
     end
     object lblSubTitle: TWebLabel
@@ -161,9 +169,15 @@ object SchedForm: TSchedForm
       Height = 14
       Align = alTop
       Caption = 'Program SubTitle'
-      Color = clMoneyGreen
+      Color = clNone
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = []
+      HeightStyle = ssAuto
       HeightPercent = 100.000000000000000000
-      Transparent = False
+      ParentFont = False
       WidthPercent = 100.000000000000000000
     end
     object lblDescription: TWebLabel
@@ -173,9 +187,15 @@ object SchedForm: TSchedForm
       Height = 14
       Align = alTop
       Caption = 'Program Description'
-      Color = clMoneyGreen
+      Color = clNone
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = []
+      HeightStyle = ssAuto
       HeightPercent = 100.000000000000000000
-      Transparent = False
+      ParentFont = False
       WidthPercent = 100.000000000000000000
     end
     object mmTitle: TWebMemo
@@ -238,7 +258,7 @@ object SchedForm: TSchedForm
     Cancel = True
     Caption = 'Cancel'
     ChildOrder = 10
-    ElementClassName = 'btn btn-outline-warning'
+    ElementClassName = 'btn btn-warning'
     ElementFont = efCSS
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -264,7 +284,7 @@ object SchedForm: TSchedForm
     Anchors = [akLeft, akBottom]
     Caption = 'Submit'
     ChildOrder = 11
-    ElementClassName = 'btn btn-outline-primary'
+    ElementClassName = 'btn btn-primary'
     ElementFont = efCSS
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText

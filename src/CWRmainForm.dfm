@@ -89,48 +89,6 @@ object CWRmainFrm: TCWRmainFrm
       WidthPercent = 100.000000000000000000
     end
   end
-  object pnlCaptures: TWebPanel
-    Left = 0
-    Top = 80
-    Width = 400
-    Height = 700
-    ElementClassName = 'card'
-    HeightStyle = ssPercent
-    WidthStyle = ssPercent
-    Align = alClient
-    ChildOrder = 9
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    Font.Charset = ANSI_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-    ShowCaption = False
-    TabOrder = 3
-    object Captures: TWebStringGrid
-      Left = 0
-      Top = 0
-      Width = 400
-      Height = 700
-      Align = alClient
-      DefaultRowHeight = 22
-      Options = [goVertLine, goHorzLine, goRangeSelect]
-      TabOrder = 0
-      StyleElements = []
-      FixedFont.Charset = ANSI_CHARSET
-      FixedFont.Color = clBlack
-      FixedFont.Height = -11
-      FixedFont.Name = 'Arial'
-      FixedFont.Style = []
-      RangeEdit.Max = 100.000000000000000000
-      RangeEdit.Step = 1.000000000000000000
-      HeightStyle = ssPercent
-      HeightPercent = 100.000000000000000000
-      WidthPercent = 100.000000000000000000
-    end
-  end
   object SearchResults: TWebStringGrid
     Left = 0
     Top = 80
@@ -353,7 +311,6 @@ object CWRmainFrm: TCWRmainFrm
       TabOrder = 1
       Visible = False
       StyleElements = []
-      OnFixedCellClick = ListingsFixedCellClick
       ElementFont = efCSS
       FixedFont.Charset = DEFAULT_CHARSET
       FixedFont.Color = clWindowText
@@ -372,7 +329,7 @@ object CWRmainFrm: TCWRmainFrm
       Width = 400
       Height = 700
       Align = alClient
-      Color = clMidnightblue
+      Color = clDarkblue
       Columns = <
         item
           Alignment = taCenter
@@ -398,6 +355,7 @@ object CWRmainFrm: TCWRmainFrm
         item
           AutoFormatDateTime = False
           DataField = 'id'
+          Editor = geNone
           Title = 'ID'
           Width = 0
         end>
@@ -441,17 +399,135 @@ object CWRmainFrm: TCWRmainFrm
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
     TabOrder = 4
-    object WebButton1: TWebButton
+    object WebGridPanel1: TWebGridPanel
       Left = 0
       Top = 0
       Width = 400
       Height = 700
       Align = alClient
-      Caption = 'WebButton1'
+      ChildOrder = 2
+      ColumnCollection = <
+        item
+          Value = 100
+        end>
+      ControlCollection = <
+        item
+          Column = 0
+          Row = 0
+          Control = WebButton1
+        end
+        item
+          Column = 0
+          Row = 0
+          Control = WebLabel1
+        end
+        item
+          Column = 0
+          Row = 0
+          Control = WebLabel2
+        end>
       Color = clYellow
-      ChildOrder = 1
-      ElementClassName = 'btn-lg'
-      ElementFont = efCSS
+      GridLineColor = clBlack
+      RowCollection = <
+        item
+          Value = 25
+        end
+        item
+          Value = 25
+        end
+        item
+          Value = 25
+        end
+        item
+          Value = 25
+        end>
+      object WebLabel1: TWebLabel
+        Left = 2
+        Top = 177
+        Width = 396
+        Height = 171
+        Align = alClient
+        Alignment = taCenter
+        Caption = 'Preparing EPG Listings.'
+        Color = clYellow
+        ElementLabelClassName = 'h1'
+        ElementFont = efCSS
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        HTMLType = tH1
+        Transparent = False
+        WidthPercent = 100.000000000000000000
+      end
+      object WebLabel2: TWebLabel
+        Left = 2
+        Top = 352
+        Width = 396
+        Height = 171
+        Align = alClient
+        Alignment = taCenter
+        Caption = 'Please Wait...'
+        Color = clYellow
+        ElementLabelClassName = 'h1'
+        ElementFont = efCSS
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        Transparent = False
+        WidthPercent = 100.000000000000000000
+      end
+      object WebButton1: TWebButton
+        Left = 2
+        Top = 2
+        Width = 396
+        Height = 171
+        Align = alClient
+        Caption = '<i class="fa-solid fa-spinner fa-spin"></>'
+        Color = clYellow
+        ChildOrder = 1
+        ElementClassName = 'btn btn-lg'
+        ElementFont = efCSS
+        HeightPercent = 100.000000000000000000
+        Role = 'button'
+        WidthPercent = 100.000000000000000000
+      end
+    end
+  end
+  object pnlCaptures: TWebPanel
+    Left = 0
+    Top = 80
+    Width = 400
+    Height = 700
+    ElementClassName = 'card'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
+    Align = alClient
+    ChildOrder = 9
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -11
+    Font.Name = 'Arial'
+    Font.Style = []
+    ParentFont = False
+    ShowCaption = False
+    TabOrder = 3
+    object Captures: TWebStringGrid
+      Left = 0
+      Top = 0
+      Width = 400
+      Height = 700
+      Align = alClient
+      DefaultRowHeight = 22
+      Options = [goHorzLine, goRowSelect]
+      TabOrder = 0
+      StyleElements = []
+      FixedFont.Charset = ANSI_CHARSET
+      FixedFont.Color = clBlack
+      FixedFont.Height = -11
+      FixedFont.Name = 'Arial'
+      FixedFont.Style = []
+      RangeEdit.Max = 100.000000000000000000
+      RangeEdit.Step = 1.000000000000000000
       HeightStyle = ssPercent
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
@@ -517,10 +593,10 @@ object CWRmainFrm: TCWRmainFrm
     end
   end
   object WIDBCDS: TWebIndexedDbClientDataset
-    IDBDatabaseName = 'CWRDB'
+    IDBDatabaseName = 'CWRDB-Manual-id'
     IDBObjectStoreName = 'epg'
     IDBKeyFieldName = 'id'
-    IDBAutoIncrement = True
+    IDBAutoIncrement = False
     Params = <>
     OnIDBError = WIDBCDSIDBError
     AfterOpen = WIDBCDSAfterOpen
@@ -537,7 +613,7 @@ object CWRmainFrm: TCWRmainFrm
   end
   object WebDataSource1: TWebDataSource
     DataSet = WIDBCDS
-    Left = 184
-    Top = 384
+    Left = 296
+    Top = 216
   end
 end
