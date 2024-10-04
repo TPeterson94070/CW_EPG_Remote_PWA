@@ -1,5 +1,5 @@
 object CWRmainFrm: TCWRmainFrm
-  Width = 400
+  Width = 450
   Height = 800
   CSSLibrary = cssBootstrap
   ElementClassName = 'container-fluid'
@@ -15,7 +15,7 @@ object CWRmainFrm: TCWRmainFrm
   object pnlHistory: TWebPanel
     Left = 0
     Top = 80
-    Width = 400
+    Width = 450
     Height = 700
     ElementClassName = 'card'
     HeightStyle = ssPercent
@@ -35,7 +35,7 @@ object CWRmainFrm: TCWRmainFrm
     object HistoryTable: TWebStringGrid
       Left = 0
       Top = 0
-      Width = 400
+      Width = 450
       Height = 700
       Align = alClient
       ColCount = 32
@@ -62,7 +62,7 @@ object CWRmainFrm: TCWRmainFrm
   object pnlLog: TWebPanel
     Left = 0
     Top = 80
-    Width = 400
+    Width = 450
     Height = 700
     ElementClassName = 'card'
     HeightStyle = ssPercent
@@ -75,7 +75,7 @@ object CWRmainFrm: TCWRmainFrm
       AlignWithMargins = True
       Left = 3
       Top = 3
-      Width = 394
+      Width = 444
       Height = 694
       Align = alClient
       ElementID = 'content'
@@ -92,7 +92,7 @@ object CWRmainFrm: TCWRmainFrm
   object SearchResults: TWebStringGrid
     Left = 0
     Top = 80
-    Width = 400
+    Width = 450
     Height = 700
     Align = alClient
     BorderStyle = bsNone
@@ -136,7 +136,7 @@ object CWRmainFrm: TCWRmainFrm
   object WebPanel3: TWebPanel
     Left = 0
     Top = 0
-    Width = 400
+    Width = 450
     Height = 50
     ElementClassName = 'container'
     WidthStyle = ssAuto
@@ -149,7 +149,7 @@ object CWRmainFrm: TCWRmainFrm
   object WebPanel2: TWebPanel
     Left = 0
     Top = 50
-    Width = 400
+    Width = 450
     Height = 30
     ElementClassName = 'container'
     WidthStyle = ssAuto
@@ -164,7 +164,7 @@ object CWRmainFrm: TCWRmainFrm
     object AlertLabel: TWebButton
       Left = 0
       Top = 0
-      Width = 400
+      Width = 450
       Height = 30
       Margins.Left = 19
       Margins.Top = 24
@@ -188,7 +188,7 @@ object CWRmainFrm: TCWRmainFrm
   object pnlOptions: TWebPanel
     Left = 0
     Top = 80
-    Width = 400
+    Width = 450
     Height = 700
     ElementClassName = 'card'
     HeightStyle = ssPercent
@@ -273,12 +273,12 @@ object CWRmainFrm: TCWRmainFrm
   object pnlListings: TWebPanel
     Left = 0
     Top = 80
-    Width = 400
+    Width = 450
     Height = 700
     ElementClassName = 'card'
     HeightStyle = ssPercent
-    WidthStyle = ssPercent
     Align = alClient
+    AutoSize = True
     Caption = 'pnlListings'
     ChildOrder = 11
     ElementBodyClassName = 'card-body'
@@ -291,44 +291,13 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 6
-    object Listings: TWebStringGrid
-      Left = 0
-      Top = 0
-      Width = 383
-      Height = 798
-      ColCount = 14
-      DefaultColWidth = 61
-      DefaultRowHeight = 23
-      FixedCols = 0
-      RowCount = 20
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -12
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      Options = [goColSizing, goRowSelect]
-      ParentFont = False
-      TabOrder = 1
-      Visible = False
-      StyleElements = []
-      ElementFont = efCSS
-      FixedFont.Charset = DEFAULT_CHARSET
-      FixedFont.Color = clWindowText
-      FixedFont.Height = -12
-      FixedFont.Name = 'Segoe UI'
-      FixedFont.Style = []
-      RangeEdit.Max = 100.000000000000000000
-      RangeEdit.Step = 1.000000000000000000
-      HeightStyle = ssPercent
-      HeightPercent = 100.000000000000000000
-      WidthPercent = 100.000000000000000000
-    end
     object WebDBGrid1: TWebDBGrid
       Left = 0
       Top = 0
-      Width = 400
+      Width = 450
       Height = 700
       Align = alClient
+      BorderStyle = bsNone
       Color = clDarkblue
       Columns = <
         item
@@ -344,7 +313,7 @@ object CWRmainFrm: TCWRmainFrm
           DataField = 'Time'
           Title = 'HTPC Local Time'
           TitleElementClassName = 'h6'
-          Width = 150
+          Width = 155
         end
         item
           AutoFormatDateTime = False
@@ -382,7 +351,7 @@ object CWRmainFrm: TCWRmainFrm
       OnGetCellClass = WebDBGrid1GetCellClass
       ColWidths = (
         70
-        150
+        155
         300
         0)
     end
@@ -390,7 +359,7 @@ object CWRmainFrm: TCWRmainFrm
   object WebPanel1: TWebPanel
     Left = 0
     Top = 80
-    Width = 400
+    Width = 450
     Height = 700
     ElementClassName = 'container-fluid'
     HeightStyle = ssPercent
@@ -402,7 +371,7 @@ object CWRmainFrm: TCWRmainFrm
     object WebGridPanel1: TWebGridPanel
       Left = 0
       Top = 0
-      Width = 400
+      Width = 450
       Height = 700
       Align = alClient
       ChildOrder = 2
@@ -444,7 +413,7 @@ object CWRmainFrm: TCWRmainFrm
       object WebLabel1: TWebLabel
         Left = 2
         Top = 177
-        Width = 396
+        Width = 446
         Height = 171
         Align = alClient
         Alignment = taCenter
@@ -461,7 +430,7 @@ object CWRmainFrm: TCWRmainFrm
       object WebLabel2: TWebLabel
         Left = 2
         Top = 352
-        Width = 396
+        Width = 446
         Height = 171
         Align = alClient
         Alignment = taCenter
@@ -477,7 +446,7 @@ object CWRmainFrm: TCWRmainFrm
       object WebButton1: TWebButton
         Left = 2
         Top = 2
-        Width = 396
+        Width = 446
         Height = 171
         Align = alClient
         Caption = '<i class="fa-solid fa-spinner fa-spin"></>'
@@ -494,7 +463,7 @@ object CWRmainFrm: TCWRmainFrm
   object pnlCaptures: TWebPanel
     Left = 0
     Top = 80
-    Width = 400
+    Width = 450
     Height = 700
     ElementClassName = 'card'
     HeightStyle = ssPercent
@@ -514,7 +483,7 @@ object CWRmainFrm: TCWRmainFrm
     object Captures: TWebStringGrid
       Left = 0
       Top = 0
-      Width = 400
+      Width = 450
       Height = 700
       Align = alClient
       DefaultRowHeight = 22
@@ -532,6 +501,38 @@ object CWRmainFrm: TCWRmainFrm
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
     end
+  end
+  object Listings: TWebStringGrid
+    Left = 0
+    Top = -18
+    Width = 383
+    Height = 798
+    ColCount = 14
+    DefaultColWidth = 61
+    DefaultRowHeight = 23
+    FixedCols = 0
+    RowCount = 20
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -12
+    Font.Name = 'Segoe UI'
+    Font.Style = []
+    Options = [goColSizing, goRowSelect]
+    ParentFont = False
+    TabOrder = 10
+    Visible = False
+    StyleElements = []
+    ElementFont = efCSS
+    FixedFont.Charset = DEFAULT_CHARSET
+    FixedFont.Color = clWindowText
+    FixedFont.Height = -12
+    FixedFont.Name = 'Segoe UI'
+    FixedFont.Style = []
+    RangeEdit.Max = 100.000000000000000000
+    RangeEdit.Step = 1.000000000000000000
+    HeightStyle = ssPercent
+    HeightPercent = 100.000000000000000000
+    WidthPercent = 100.000000000000000000
   end
   object WebMainMenu1: TWebMainMenu
     Appearance.BackgroundColor = clSilver
@@ -599,7 +600,6 @@ object CWRmainFrm: TCWRmainFrm
     IDBAutoIncrement = False
     Params = <>
     OnIDBError = WIDBCDSIDBError
-    AfterOpen = WIDBCDSAfterOpen
     Left = 296
     Top = 152
   end

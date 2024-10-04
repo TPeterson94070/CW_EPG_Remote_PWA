@@ -227,7 +227,7 @@ object DetailsFrm: TDetailsFrm
     end
     object lblSubTitle: TWebLabel
       Left = 0
-      Top = 68
+      Top = 80
       Width = 350
       Height = 10
       Align = alTop
@@ -245,7 +245,7 @@ object DetailsFrm: TDetailsFrm
     end
     object lblDescription: TWebLabel
       Left = 0
-      Top = 127
+      Top = 145
       Width = 350
       Height = 10
       Align = alTop
@@ -265,37 +265,39 @@ object DetailsFrm: TDetailsFrm
       Left = 0
       Top = 10
       Width = 350
-      Height = 58
+      Height = 70
       Align = alTop
       Color = clDarkseagreen
-      ElementClassName = 'form-control-sm'
+      ElementClassName = 'form-control-lg'
       ElementFont = efCSS
       HeightPercent = 100.000000000000000000
       Lines.Strings = (
         'mmTitle')
+      ScrollBars = ssNone
       SelLength = 0
       SelStart = 0
       WidthPercent = 100.000000000000000000
     end
     object mmSubTitle: TWebMemo
       Left = 0
-      Top = 78
+      Top = 90
       Width = 350
-      Height = 49
+      Height = 55
       Align = alTop
       Color = clDarkseagreen
-      ElementClassName = 'form-control-sm'
+      ElementClassName = 'form-control'
       ElementFont = efCSS
       HeightPercent = 100.000000000000000000
       Lines.Strings = (
         'mmSubTitle')
+      ScrollBars = ssNone
       SelLength = 0
       SelStart = 10
       WidthPercent = 100.000000000000000000
     end
     object mmDescription: TWebMemo
       Left = 0
-      Top = 137
+      Top = 155
       Width = 350
       Height = 117
       Align = alTop
@@ -307,7 +309,7 @@ object DetailsFrm: TDetailsFrm
       Lines.Strings = (
         'Description')
       ReadOnly = True
-      ScrollBars = ssNone
+      ScrollBars = ssVertical
       SelLength = 0
       SelStart = 11
       WidthPercent = 100.000000000000000000
