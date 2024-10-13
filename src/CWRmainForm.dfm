@@ -76,7 +76,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 3
       Top = 3
       Width = 444
-      Height = 694
+      Height = 714
       Align = alClient
       ElementID = 'content'
       ElementFont = efCSS
@@ -372,7 +372,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 450
-      Height = 700
+      Height = 720
       Align = alClient
       ChildOrder = 2
       ColumnCollection = <
@@ -412,9 +412,9 @@ object CWRmainFrm: TCWRmainFrm
         end>
       object WebLabel1: TWebLabel
         Left = 2
-        Top = 177
+        Top = 182
         Width = 446
-        Height = 171
+        Height = 176
         Align = alClient
         Alignment = taCenter
         Caption = 'Preparing EPG Listings.'
@@ -429,9 +429,9 @@ object CWRmainFrm: TCWRmainFrm
       end
       object WebLabel2: TWebLabel
         Left = 2
-        Top = 352
+        Top = 362
         Width = 446
-        Height = 171
+        Height = 176
         Align = alClient
         Alignment = taCenter
         Caption = 'Please Wait...'
@@ -447,7 +447,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 2
         Top = 2
         Width = 446
-        Height = 171
+        Height = 176
         Align = alClient
         Caption = '<i class="fa-solid fa-spinner fa-spin"></>'
         Color = clYellow

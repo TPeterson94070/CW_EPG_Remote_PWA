@@ -111,6 +111,8 @@ private
   procedure CreateGoogleFile(FName: string; var id: string);
   [async]
   procedure CheckSettingsForUpdate;
+  [async]
+  procedure SetupWIDBCDS;
 
 public
   { Public declarations }
@@ -158,15 +160,8 @@ begin
 
 end;
 
-
-
 procedure TCWRmainFrm.WebFormCreate(Sender: TObject);
-const
-  DBFIELDS: array[0..14] of string = ('PSIP', 'Time', 'Title', 'SubTitle', 'Description',
-  	'StartTime', 'EndTime', 'programID', 'originalAirDate', 'new',
-    'audioProperties', 'videoProperties', 'movieYear', 'genres', 'Class');
 var
-  i: Integer;
   AppVersion: string;
 begin
   Log('FormCreate is called');
@@ -196,19 +191,7 @@ begin
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 
   FillHistoryDisplay;
-  WIDBCDS.FieldDefs.Clear;
-  // add key field
-  WIDBCDS.FieldDefs.Add('id',ftInteger, 0, False);
-  // add normal fields
-  for i := 0 to Length(DBFIELDS) - 1 do
-  begin
-    if (DBFIELDS[i] = 'StartTime') or (DBFIELDS[i] = 'EndTime') then
-      WIDBCDS.FieldDefs.Add(DBFIELDS[i],ftDateTime)
-    else
-      WIDBCDS.FieldDefs.Add(DBFIELDS[i],ftString);
-  end;
-  Log('FormCreate, calling DB.Open');
-  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
+  await(SetupWIDBCDS);
   Log('FormCreate, ' + WIDBCDS.Name + ' record count: ' + WIDBCDS.RecordCount.ToString);
   await(ShowForm);
   Log('FormCreate is finished');
@@ -235,9 +218,7 @@ begin
   Log('======== "Update EPG" clicked');
   await(RefreshCSV(Listings, 'cwr_epg.csv','EPG', id));
   await(LoadWIDBCDS);
-//  pnlListings.BeginUpdate;
   await(FetchCapReservations);
-//  pnlListings.EndUpdate;
   await(ReFreshListings);
 end;
 
@@ -371,13 +352,13 @@ begin
   begin
     AlertLabel.Caption := 'Refreshing '+Title+' data <i class="fa-solid fa-spinner fa-spin"></>';
     WebPanel2.Show;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+    {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 
     WSG.BeginUpdate;
     try
       Log('Requesting: ' + TableFile);
       try
-        Reply := TAwait.ExecP<string>{await} (GetGoogleDriveFile(TableFile, id));
+        Reply := TAwait.ExecP<string>(GetGoogleDriveFile(TableFile, id));
 
         if Reply <> '' then  // Got a response
         begin
@@ -404,11 +385,8 @@ begin
     finally
       Log('Enter finally section');
       WSG.EndUpdate;
-      Log('"Finishing" AlertLabel');
-      AlertLabel.Caption := 'Finishing up '+Title+' data <i class="fa-solid fa-spinner fa-spin"></>';
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
       WebPanel2.Hide;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+      {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
       Log('Done hiding');
     end;
   end
@@ -428,7 +406,12 @@ var
   Text: string;
 begin
   Log('Starting LoadWIDBCDS, DB is ' + IfThen(not WIDBCDS.Active, 'not ') + 'Active');
-  WIDBCDS.Filtered := False;
+  WebPanel1.BringToFront;
+  AlertLabel.Caption := 'Refreshing IndexedDB data <i class="fa-solid fa-spinner fa-spin"></>';
+  WebPanel2.Show;
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+  if WIDBCDS.Filtered then WIDBCDS.Filtered := False;
+  Log('WIDBCDS is ' + IfThen(not WIDBCDS.Filtered, 'UN') + 'filtered');
   WIDBCDS.DisableControls;
   WebDBGrid1.BeginUpdate;
   try
@@ -437,17 +420,18 @@ begin
       Log('LoadWIDBCDS, DB is ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'empty');
       Log('LoadWIDBCDS (before empty) DB.RecordCount: ' + WIDBCDS.RecordCount.ToString);
       // Empty the DB
-      while not WIDBCDS.IsEmpty do
+      if not WIDBCDS.IsEmpty then
       begin
-        WIDBCDS.EmptyDataSet; //   .Delete;
+//        while not WIDBCDS.IsEmpty do
+        WIDBCDS.EmptyDataSet; //}Delete);
+        Log('LoadWIDBCDS (after empty) DB.RecordCount: ' + WIDBCDS.RecordCount.ToString);
       end;
-      Log('LoadWIDBCDS (after empty) DB.RecordCount: ' + WIDBCDS.RecordCount.ToString);
       Log('LoadWIDBCDS, Listings Row Count: ' + Listings.RowCount.ToString);
       for j := 1 to Listings.RowCount - 1 do
       begin
         // Lose superfluous <">
         Listings.Cells[0,j] := ReplaceStr(Listings.Cells[0,j],'"','');
-        TAwait.ExecP<Boolean>(WIDBCDS.AppendAsync);
+        WIDBCDS.Append;
         WIDBCDS.Fields[0].Value := j;
         for i := 1 to Listings.ColCount do
           if WIDBCDS.Fields[i].DataType = ftString then
@@ -460,21 +444,41 @@ begin
           AColor := 'goldenRod'
         else if Text.StartsWith('SH') then  // Generic item
           AColor := IfThen(WIDBCDS.Fields[14].AsString.Contains('"News"'),
-            'green',  // News assumed "new"
+            'green',  // News genre assumed "new"
             'gray')   // Otherwise generic episode is "unknown time"
         else
           AColor := IfThen(WIDBCDS.Fields[10].AsString <> '',
             'green',  // Non-generic episode declared "new"
             'rose');  // Otherwise "rerun"
         WIDBCDS.Fields[15].Value := AColor;
-        TAwait.ExecP<Boolean>(WIDBCDS.PostAsync);
+        WIDBCDS.Post;
       end;
     end;
+    Log('Finished Loading WIDBCDS, RecordCount: ' + WIDBCDS.RecordCount.ToString);
   finally
-    await(WIDBCDS.Refresh);
+    WIDBCDS.Close;
+    Log('WIDBCDS is ' + IfThen(WIDBCDS.Active,'NOT ') + 'closed');
+    Log('calling await WIDBCDS.EnableControls at ' + TimeToStr(Now));
     await(WIDBCDS.EnableControls);
+    Log('finished await WIDBCDS.EnableControls at ' + TimeToStr(Now));
+    TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
+    Log('finished await WIDBCDS.OpenAsync at ' + TimeToStr(Now));
+    Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active,'NOT ') + 'Open');
+    Log('WebDBGrid1 update ' + IfThen(WebDBGrid1.IsUpdating,'NOT ') + 'ended');
+    Log('WIDBCDS Controls are ' + IfThen(WIDBCDS.ControlsDisabled,'NOT ') + 'Enabled');
+//    while WIDBCDS.ControlsDisabled do
+//    begin
+//      Log('Trying to enable WIDBCDS controls');
+//      WIDBCDS.EnableControls;
+//      {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+//      Log('Waited 0.1 sec for controls enabled');
+//    end;
+//    Log('WIDBCDS Controls are ' + IfThen(WIDBCDS.ControlsDisabled,'NOT ') + 'Enabled');
     await(WebDBGrid1.EndUpdate);
-    Log('Finished LoadWIDBCDS, DB.RecordCount: ' + WIDBCDS.RecordCount.ToString);
+    Log('WebDBGrid1 update ' + IfThen(WebDBGrid1.IsUpdating,'NOT ') + 'ended');
+    WebPanel2.Hide;
+    {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+    Log('Finished LoadWIDBCDS');
   end;
 end;
 
@@ -496,6 +500,33 @@ begin
 
 end;
 
+procedure TCWRmainFrm.SetupWIDBCDS;
+var
+  i: Integer;
+const
+  DBFIELDS: array[0..14] of string = ('PSIP', 'Time', 'Title', 'SubTitle',
+  'Description', 'StartTime', 'EndTime', 'programID', 'originalAirDate', 'new',
+  'audioProperties', 'videoProperties', 'movieYear', 'genres', 'Class');
+begin
+  Log('Setting up to (re)open WIDBCDS');
+  WIDBCDS.FieldDefs.Clear;
+  // add key field
+  WIDBCDS.FieldDefs.Add('id', ftInteger, 0, False);
+  // add normal fields
+  for i := 0 to Length(DBFIELDS) - 1 do
+  begin
+    if (DBFIELDS[i] = 'StartTime') or (DBFIELDS[i] = 'EndTime') then
+      WIDBCDS.FieldDefs.Add(DBFIELDS[i], ftDateTime)
+    else
+      WIDBCDS.FieldDefs.Add(DBFIELDS[i], ftString);
+  end;
+  {TAwait.ExecP<Boolean>(}WIDBCDS.Open{Async)};
+  while not WIDBCDS.Active do
+    {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+  Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active, 'not ')
+    + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
+end;
+
 procedure TCWRmainFrm.ReFreshListings;
 var
   NRows: Integer;
@@ -503,6 +534,11 @@ var
 begin
   Log('ReFreshListings, DB is ' + IfThen(not WIDBCDS.Active, 'not ')
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
+  if not WIDBCDS.Active then
+  begin
+    WebPanel1.BringToFront;
+    await(SetupWIDBCDS);
+  end;
   Log('Days to Display: ' + seNumDisplayDays.Value.ToString);
   WebDBGrid1.BeginUpdate;
   try
@@ -807,9 +843,11 @@ begin
     // load file HTML template + controls
     TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load());
 
+    WIDBCDS.DisableControls;  // Speed up form opening
   // init controls after loading
-//    if WIDBCDS.Locate('id', WebDBGrid1.Cells[3,ARow],[]) then
-    WIDBCDS.RecNo := WebDBGrid1.Cells[3,ARow].ToInteger;
+
+    if WIDBCDS.Locate('id', WebDBGrid1.Cells[3,ARow],[]) then
+//    WIDBCDS.RecNo := WebDBGrid1.Cells[3,ARow].ToInteger;
     begin
       DetailsFrm.mmTitle.Text := WIDBCDS.Fields[3].AsString;
       DetailsFrm.mmSubTitle.Text := WIDBCDS.Fields[4].AsString;
@@ -839,8 +877,8 @@ begin
         SchedFrm.Popup := True;
         SchedFrm.Border := fbSingle;
 
-        // used to manage Back button handling to close subform  (???)
-        window.location.hash := 'subform';
+//       //  used to manage Back button handling to close subform  (???)
+//        window.location.hash := 'subform';
         try
           // load file HTML template + controls
           TAwait.ExecP<TSchedForm>(SchedFrm.Load());
@@ -870,6 +908,7 @@ begin
     end
   finally
     DetailsFrm.Free;
+    WIDBCDS.EnableControls;
   end;
 end;
 
