@@ -38,11 +38,14 @@ var
 
 implementation
 
+uses CWRmainForm;
+
 {$R *.dfm}
 
 procedure TDetailsFrm.WebFormShow(Sender: TObject);
 begin
   btnReturn.SetFocus;
+  CWRmainFrm.WIDBCDS.EnableControls;
 end;
 
 end.

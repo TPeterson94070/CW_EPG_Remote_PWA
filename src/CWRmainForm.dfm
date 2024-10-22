@@ -16,7 +16,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 80
     Width = 450
-    Height = 700
+    Height = 720
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -24,12 +24,6 @@ object CWRmainFrm: TCWRmainFrm
     ChildOrder = 11
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
-    Font.Charset = ANSI_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
     ShowCaption = False
     TabOrder = 1
     object HistoryTable: TWebStringGrid
@@ -63,13 +57,15 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 80
     Width = 450
-    Height = 700
+    Height = 720
     ElementClassName = 'card'
     HeightStyle = ssPercent
+    WidthStyle = ssPercent
     Align = alClient
     ChildOrder = 9
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
+    ShowCaption = False
     TabOrder = 2
     object WebMemo2: TWebMemo
       AlignWithMargins = True
@@ -88,27 +84,6 @@ object CWRmainFrm: TCWRmainFrm
       WidthStyle = ssPercent
       WidthPercent = 100.000000000000000000
     end
-  end
-  object SearchResults: TWebStringGrid
-    Left = 0
-    Top = 80
-    Width = 450
-    Height = 700
-    Align = alClient
-    BorderStyle = bsNone
-    DefaultRowHeight = 22
-    Options = [goVertLine, goHorzLine, goRangeSelect]
-    TabOrder = 8
-    StyleElements = []
-    FixedFont.Charset = ANSI_CHARSET
-    FixedFont.Color = clBlack
-    FixedFont.Height = -11
-    FixedFont.Name = 'Arial'
-    FixedFont.Style = []
-    RangeEdit.Max = 100.000000000000000000
-    RangeEdit.Step = 1.000000000000000000
-    HeightPercent = 100.000000000000000000
-    WidthPercent = 100.000000000000000000
   end
   object NewCaptures: TWebStringGrid
     Left = 32
@@ -133,20 +108,20 @@ object CWRmainFrm: TCWRmainFrm
     HeightPercent = 100.000000000000000000
     WidthPercent = 100.000000000000000000
   end
-  object WebPanel3: TWebPanel
+  object pnlMenu: TWebPanel
     Left = 0
     Top = 0
     Width = 450
     Height = 50
     ElementClassName = 'container'
-    WidthStyle = ssAuto
+    WidthStyle = ssPercent
     Align = alTop
     BorderStyle = bsNone
-    Caption = 'WebPanel3'
+    Caption = 'pnlMenu'
     ChildOrder = 12
-    TabOrder = 9
+    TabOrder = 8
   end
-  object WebPanel2: TWebPanel
+  object pnlStatus: TWebPanel
     Left = 0
     Top = 50
     Width = 450
@@ -155,7 +130,7 @@ object CWRmainFrm: TCWRmainFrm
     WidthStyle = ssAuto
     Align = alTop
     BorderStyle = bsNone
-    Caption = 'WebPanel2'
+    Caption = 'pnlStatus'
     ChildOrder = 12
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
@@ -189,13 +164,15 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 80
     Width = 450
-    Height = 700
+    Height = 720
     ElementClassName = 'card'
     HeightStyle = ssPercent
+    WidthStyle = ssPercent
     Align = alClient
     ChildOrder = 9
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
+    ShowCaption = False
     TabOrder = 5
     object WebGroupBox3: TWebGroupBox
       Left = 15
@@ -274,24 +251,18 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 80
     Width = 450
-    Height = 700
+    Height = 720
     ElementClassName = 'card'
     HeightStyle = ssPercent
+    WidthStyle = ssPercent
     Align = alClient
-    AutoSize = True
     Caption = 'pnlListings'
     ChildOrder = 11
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -12
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ParentFont = False
     ShowCaption = False
     TabOrder = 6
-    object WebDBGrid1: TWebDBGrid
+    object EPG: TWebDBGrid
       Left = 0
       Top = 0
       Width = 450
@@ -347,8 +318,8 @@ object CWRmainFrm: TCWRmainFrm
       HeightPercent = 100.000000000000000000
       StyleElements = []
       WidthPercent = 100.000000000000000000
-      OnClickCell = WebDBGrid1ClickCell
-      OnGetCellClass = WebDBGrid1GetCellClass
+      OnClickCell = EPGClickCell
+      OnGetCellClass = EPGGetCellClass
       ColWidths = (
         70
         155
@@ -356,13 +327,14 @@ object CWRmainFrm: TCWRmainFrm
         0)
     end
   end
-  object WebPanel1: TWebPanel
+  object pnlWaitPls: TWebPanel
     Left = 0
     Top = 80
     Width = 450
-    Height = 700
+    Height = 720
     ElementClassName = 'container-fluid'
     HeightStyle = ssPercent
+    WidthStyle = ssPercent
     Align = alClient
     ChildOrder = 10
     ElementBodyClassName = 'card-body'
@@ -373,6 +345,7 @@ object CWRmainFrm: TCWRmainFrm
       Top = 0
       Width = 450
       Height = 720
+      WidthStyle = ssPercent
       Align = alClient
       ChildOrder = 2
       ColumnCollection = <
@@ -464,7 +437,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 80
     Width = 450
-    Height = 700
+    Height = 720
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -472,12 +445,6 @@ object CWRmainFrm: TCWRmainFrm
     ChildOrder = 9
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
-    Font.Charset = ANSI_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
     ShowCaption = False
     TabOrder = 3
     object Captures: TWebStringGrid
@@ -502,7 +469,7 @@ object CWRmainFrm: TCWRmainFrm
       WidthPercent = 100.000000000000000000
     end
   end
-  object Listings: TWebStringGrid
+  object BufferGrid: TWebStringGrid
     Left = 0
     Top = -18
     Width = 383
@@ -519,7 +486,7 @@ object CWRmainFrm: TCWRmainFrm
     Font.Style = []
     Options = [goColSizing, goRowSelect]
     ParentFont = False
-    TabOrder = 10
+    TabOrder = 9
     Visible = False
     StyleElements = []
     ElementFont = efCSS
@@ -542,7 +509,7 @@ object CWRmainFrm: TCWRmainFrm
     Appearance.HoverFontColor = clWhite
     Appearance.ImageSize = 8
     Appearance.SubmenuIndicator = '&#9658;'
-    Container = WebPanel3
+    Container = pnlMenu
     ElementFont = efCSS
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack

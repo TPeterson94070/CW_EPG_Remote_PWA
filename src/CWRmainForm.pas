@@ -19,19 +19,18 @@ type
   WIDBCDS: TWebIndexedDbClientDataset;
   WebMemo2: TWebMemo;
   AlertLabel: TWebButton;
-  SearchResults: TWebStringGrid;
   Captures: TWebStringGrid;
   HistoryTable: TWebStringGrid;
-  Listings: TWebStringGrid;
+  BufferGrid: TWebStringGrid;
   pnlCaptures: TWebPanel;
   pnlHistory: TWebPanel;
   pnlLog: TWebPanel;
   pnlOptions: TWebPanel;
-  WebPanel1: TWebPanel;
+  pnlWaitPls: TWebPanel;
   WebRESTClient1: TWebRESTClient;
   pnlListings: TWebPanel;
   NewCaptures: TWebStringGrid;
-  WebPanel3: TWebPanel;
+  pnlMenu: TWebPanel;        // Container for MainMenu
   WebMainMenu1: TWebMainMenu;
   Listing: TMenuItem;
   Scheduled: TMenuItem;
@@ -42,28 +41,26 @@ type
   ChangeHTPC1: TMenuItem;
   ViewLog1: TMenuItem;
   Settings1: TMenuItem;
-  WebPanel2: TWebPanel;
+  pnlStatus: TWebPanel;
   WebGroupBox3: TWebGroupBox;
   seNumHistEvents: TWebSpinEdit;
   WebGroupBox1: TWebGroupBox;
   seNumDisplayDays: TWebSpinEdit;
-    WebDBGrid1: TWebDBGrid;
-    WebDataSource1: TWebDataSource;
-    WebButton1: TWebButton;
-    WebGridPanel1: TWebGridPanel;
-    WebLabel1: TWebLabel;
-    WebLabel2: TWebLabel;
+  EPG: TWebDBGrid;
+  WebDataSource1: TWebDataSource;
+  WebButton1: TWebButton;
+  WebGridPanel1: TWebGridPanel;
+  WebLabel1: TWebLabel;
+  WebLabel2: TWebLabel;
 
   [async]
   procedure LoadWIDBCDS;
   procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
     errorName, errorMsg: string);
-//  procedure WIDBCDSAfterOpen(DataSet: TDataSet);
   [async]
   procedure UpdateEPG(Sender: TObject);
   [async]
   procedure WebFormCreate(Sender: TObject);
-  procedure WebStringGrid2DblClick(Sender: TObject);
   [async]
   procedure tbCapturesShow;
   procedure AllCapsGridGetCellData(Sender: TObject; ACol, ARow: Integer;
@@ -79,14 +76,15 @@ type
   procedure ViewLog1Click(Sender: TObject);
   procedure Settings1Click(Sender: TObject);
   [async]
-    procedure WebDBGrid1ClickCell(Sender: TObject; ACol, ARow: Integer);
-    procedure WebDBGrid1GetCellClass(Sender: TObject; ACol, ARow: Integer;
-      AField: TField; AValue: string; var AClassName: string);
+  procedure FinalizeWIDBCDSUpdate;
+  [async]
+  procedure EPGClickCell(Sender: TObject; ACol, ARow: Integer);
+  procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;
+    AField: TField; AValue: string; var AClassName: string);
 private
   { Private declarations }
   [async]
   procedure ShowForm;
-//  procedure ColorGridRow(WSG: TWebStringGrid; ARow: Integer);
   [async]
   procedure SetPage(PageNum: Integer);
   [async]
@@ -129,13 +127,9 @@ uses
 {$R *.dfm}
 
 var
-//  ClickedCol,  ClickedRow: Integer;
-  ResetPrompt: string = 'none' ; //'&prompt=select_account';
+  ResetPrompt: string = 'none' ;
 
 const
-//  DBFIELDS: array[0..13] of string = ('PSIP', 'Time', 'Title', 'SubTitle', 'Description',
-//  	'StartTime', 'EndTime', 'programID', 'originalAirDate', 'new',
-//    'audioProperties', 'videoProperties', 'movieYear', 'genres');
   NUMDAYS = 'NumDisplayDays';
   NUMHIST = 'NumHistoryItems';
   EMAILADDR = 'emailAddress';
@@ -188,7 +182,7 @@ begin
     seNumHistEvents.Value := StrToInt(TWebLocalStorage.GetValue(NUMHIST));
     WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
   SetPage(0);
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+
 
   FillHistoryDisplay;
   await(SetupWIDBCDS);
@@ -196,13 +190,6 @@ begin
   await(ShowForm);
   Log('FormCreate is finished');
 end;
-
-//procedure TCWRmainFrm.WIDBCDSAfterOpen(DataSet: TDataSet);
-//begin
-//  Log('WIDBCDSAfterOpen, ' + DataSet.Name + ' record count: ' + WIDBCDS.RecordCount.ToString);
-//  WIDBCDS.AfterOpen := nil;
-//  ShowForm;
-//end;
 
 procedure TCWRmainFrm.ShowForm;
 begin
@@ -216,7 +203,7 @@ var
   id: string; {param used only by UpdateNewcaptures}
 begin
   Log('======== "Update EPG" clicked');
-  await(RefreshCSV(Listings, 'cwr_epg.csv','EPG', id));
+  await(RefreshCSV(BufferGrid, 'cwr_epg.csv','EPG', id));
   await(LoadWIDBCDS);
   await(FetchCapReservations);
   await(ReFreshListings);
@@ -245,7 +232,6 @@ procedure TCWRmainFrm.RefreshHistory;
 begin
   await(FetchHistory);
   SetPage(2);
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 end;
 
 function TCWRmainFrm.GetGoogleDriveFile(TableFile: string; var id: string): string;
@@ -351,7 +337,7 @@ begin
   if application.IsOnline then
   begin
     AlertLabel.Caption := 'Refreshing '+Title+' data <i class="fa-solid fa-spinner fa-spin"></>';
-    WebPanel2.Show;
+    pnlStatus.Show;
     {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 
     WSG.BeginUpdate;
@@ -385,7 +371,7 @@ begin
     finally
       Log('Enter finally section');
       WSG.EndUpdate;
-      WebPanel2.Hide;
+      pnlStatus.Hide;
       {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
       Log('Done hiding');
     end;
@@ -406,38 +392,31 @@ var
   Text: string;
 begin
   Log('Starting LoadWIDBCDS, DB is ' + IfThen(not WIDBCDS.Active, 'not ') + 'Active');
-  WebPanel1.BringToFront;
+  pnlWaitPls.BringToFront;
   AlertLabel.Caption := 'Refreshing IndexedDB data <i class="fa-solid fa-spinner fa-spin"></>';
-  WebPanel2.Show;
-  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
-  if WIDBCDS.Filtered then WIDBCDS.Filtered := False;
-  Log('WIDBCDS is ' + IfThen(not WIDBCDS.Filtered, 'UN') + 'filtered');
   WIDBCDS.DisableControls;
-  WebDBGrid1.BeginUpdate;
+  EPG.BeginUpdate;
+  pnlStatus.Show;
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+  WIDBCDS.Filtered := False;
+  Log('WIDBCDS is ' + IfThen(not WIDBCDS.Filtered, 'UN') + 'filtered');
   try
-    if WIDBCDS.Active and (Listings.RowCount > 1) then
+    if WIDBCDS.Active and (BufferGrid.RowCount > 1) then
     begin
-      Log('LoadWIDBCDS, DB is ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'empty');
-      Log('LoadWIDBCDS (before empty) DB.RecordCount: ' + WIDBCDS.RecordCount.ToString);
-      // Empty the DB
-      if not WIDBCDS.IsEmpty then
-      begin
-//        while not WIDBCDS.IsEmpty do
-        WIDBCDS.EmptyDataSet; //}Delete);
-        Log('LoadWIDBCDS (after empty) DB.RecordCount: ' + WIDBCDS.RecordCount.ToString);
-      end;
-      Log('LoadWIDBCDS, Listings Row Count: ' + Listings.RowCount.ToString);
-      for j := 1 to Listings.RowCount - 1 do
+      Log('LoadWIDBCDS, CDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
+      Log('LoadWIDBCDS, Buffer Row Count: ' + BufferGrid.RowCount.ToString);
+      WIDBCDS.First;
+      for j := 1 to BufferGrid.RowCount - 1 do
       begin
         // Lose superfluous <">
-        Listings.Cells[0,j] := ReplaceStr(Listings.Cells[0,j],'"','');
-        WIDBCDS.Append;
+        BufferGrid.Cells[0,j] := ReplaceStr(BufferGrid.Cells[0,j],'"','');
+        if WIDBCDS.Eof then WIDBCDS.Append else WIDBCDS.Edit;
         WIDBCDS.Fields[0].Value := j;
-        for i := 1 to Listings.ColCount do
+        for i := 1 to BufferGrid.ColCount do
           if WIDBCDS.Fields[i].DataType = ftString then
-            WIDBCDS.Fields[i].Value := Listings.Cells[i-1,j]
+            WIDBCDS.Fields[i].Value := BufferGrid.Cells[i-1,j]
           else  // Keep UTC StartTime/EndTime strings
-            if TryStrToDateTime(Listings.Cells[i-1,j],t) then
+            if TryStrToDateTime(BufferGrid.Cells[i-1,j],t) then
               WIDBCDS.Fields[i].Value := t;
         Text := WIDBCDS.Fields[8].AsString; // i.e. ProgramID
         if Text.StartsWith('MV') then  // Movie item
@@ -454,29 +433,32 @@ begin
         WIDBCDS.Post;
       end;
     end;
-    Log('Finished Loading WIDBCDS, RecordCount: ' + WIDBCDS.RecordCount.ToString);
+    Log('Finished editing WIDBCDS, RecordCount: ' + WIDBCDS.RecordCount.ToString);
+    // Handle smaller new data set
+    if WIDBCDS.RecordCount > BufferGrid.RowCount - 1 then
+    begin
+      Log('Removing ' + (WIDBCDS.RecordCount - BufferGrid.RowCount).ToString
+        + ' excess old CDS records');
+      for j := WIDBCDS.RecordCount downto BufferGrid.RowCount do
+      begin
+        WIDBCDS.Last;
+        WIDBCDS.Delete;
+      end;
+    end;
   finally
-    WIDBCDS.Close;
-    Log('WIDBCDS is ' + IfThen(WIDBCDS.Active,'NOT ') + 'closed');
-    Log('calling await WIDBCDS.EnableControls at ' + TimeToStr(Now));
+    WIDBCDS.Close;  // This seems necessary to finish update
+    Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
+    Log('calling await WIDBCDS.EnableControls');
     await(WIDBCDS.EnableControls);
-    Log('finished await WIDBCDS.EnableControls at ' + TimeToStr(Now));
-    TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
-    Log('finished await WIDBCDS.OpenAsync at ' + TimeToStr(Now));
-    Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active,'NOT ') + 'Open');
-    Log('WebDBGrid1 update ' + IfThen(WebDBGrid1.IsUpdating,'NOT ') + 'ended');
     Log('WIDBCDS Controls are ' + IfThen(WIDBCDS.ControlsDisabled,'NOT ') + 'Enabled');
-//    while WIDBCDS.ControlsDisabled do
-//    begin
-//      Log('Trying to enable WIDBCDS controls');
-//      WIDBCDS.EnableControls;
-//      {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
-//      Log('Waited 0.1 sec for controls enabled');
-//    end;
-//    Log('WIDBCDS Controls are ' + IfThen(WIDBCDS.ControlsDisabled,'NOT ') + 'Enabled');
-    await(WebDBGrid1.EndUpdate);
-    Log('WebDBGrid1 update ' + IfThen(WebDBGrid1.IsUpdating,'NOT ') + 'ended');
-    WebPanel2.Hide;
+    Log('calling WIDBCDS.OpenAsync');
+    TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
+    Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active,'NOT ') + 'Open');
+    Log('calling await EPG.EndUpdate');
+    await(EPG.EndUpdate);
+    Log('EPG update is ' + IfThen(EPG.IsUpdating,'NOT ') + 'ended');
+    Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
+    pnlStatus.Hide;
     {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
     Log('Finished LoadWIDBCDS');
   end;
@@ -520,11 +502,23 @@ begin
     else
       WIDBCDS.FieldDefs.Add(DBFIELDS[i], ftString);
   end;
-  {TAwait.ExecP<Boolean>(}WIDBCDS.Open{Async)};
-  while not WIDBCDS.Active do
-    {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
+//  while not WIDBCDS.Active do
+//    {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active, 'not ')
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
+end;
+
+procedure TCWRmainFrm.FinalizeWIDBCDSUpdate; // This method seems to fail (even though marked with [async]
+begin
+  WIDBCDS.Close;  // This seems necessary to finish update
+  Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
+  Log('calling await WIDBCDS.EnableControls');
+  await(WIDBCDS.EnableControls);
+  Log('finished await WIDBCDS.EnableControls');
+  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
+  Log('finished await WIDBCDS.OpenAsync');
+  Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
 end;
 
 procedure TCWRmainFrm.ReFreshListings;
@@ -536,18 +530,19 @@ begin
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   if not WIDBCDS.Active then
   begin
-    WebPanel1.BringToFront;
-    await(SetupWIDBCDS);
+    pnlWaitPls.BringToFront;
+//    await(SetupWIDBCDS);
+    TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   end;
   Log('Days to Display: ' + seNumDisplayDays.Value.ToString);
-  WebDBGrid1.BeginUpdate;
+  EPG.BeginUpdate;
   try
     if WIDBCDS.Active and not WIDBCDS.IsEmpty then
     begin
       WIDBCDS.DisableControls;
-      WebPanel1.BringToFront;
+      pnlWaitPls.BringToFront;
       {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-      Log('Memo1 is showing');
+      Log('"Pls Wait" is showing');
       WIDBCDS.Filtered := False;
       Log('WIDBCDS Filter is '+IfThen(WIDBCDS.Filtered,'enabled','disabled'));
       WIDBCDS.First;
@@ -584,16 +579,15 @@ begin
           = mrYes then await (UpdateEPG(Self));
         exit;
       end;
-      WebDBGrid1.Columns[0].Alignment := taCenter;
-      WebDBGrid1.Columns[2].Alignment := taLeftJustify;
+      EPG.Columns[0].Alignment := taCenter;
+      EPG.Columns[2].Alignment := taLeftJustify;
     end else begin
       ShowMessage('Please select "Refresh EPG" from Options submenu');
     end;
   finally
-    await(WIDBCDS.EnableControls);
-//    await(WIDBCDS.refresh);
-//    await(WebPanel1.SendToBack);
-    await(WebDBGrid1.EndUpdate);
+    if NRows > 1 then
+      await(WIDBCDS.EnableControls);
+    await(EPG.EndUpdate);
     await(pnlListings.BringToFront);
     Log('RefreshListings finished');
   end;
@@ -603,18 +597,6 @@ procedure TCWRmainFrm.ScheduledClick(Sender: TObject);
 begin
   SetPage(1);
 end;
-
-//procedure TCWRmainFrm.seNumDisplayDaysChange(Sender: TObject);
-//begin
-//  Log('Number EPG Display Days: ' + seNumDisplayDays.Value.ToString);
-//  TWebLocalStorage.SetValue(NUMDAYS,seNumDisplayDays.Value.ToString);
-//end;
-
-//procedure TCWRmainFrm.seNumHistEventsChange(Sender: TObject);
-//begin
-//  Log('Number History Items: ' + seNumHistEvents.Value.ToString);
-//  TWebLocalStorage.SetValue(NUMHIST,seNumHistEvents.Value.ToString);
-//end;
 
 procedure TCWRmainFrm.tbCapturesShow;
 var
@@ -772,7 +754,6 @@ begin
   case PageNum of
     0: begin          {Listings page}
       pnlListings.BringToFront;
-//      Listings.SetFocus;
     end;
     1: begin          {Captures}
       pnlCaptures.BringToFront;
@@ -789,6 +770,7 @@ begin
       pnlOptions.BringToFront;
     end;
   end;
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
 end;
 
 procedure TCWRmainFrm.Settings1Click(Sender: TObject);
@@ -818,17 +800,17 @@ begin
   SetPage(0);
 end;
 
-procedure TCWRmainFrm.WebDBGrid1GetCellClass(Sender: TObject; ACol,
+procedure TCWRmainFrm.EPGGetCellClass(Sender: TObject; ACol,
   ARow: Integer; AField: TField; AValue: string; var AClassName: string);
 { show listings in color code for type based on current IDB record }
 begin
   if ARow = 0 then exit;
-  if WebDBGrid1.Cells[3,ARow] = WIDBCDS.Fields[0].AsString then
+  if EPG.Cells[3,ARow] = WIDBCDS.Fields[0].AsString then
     AClassName := WIDBCDS.Fields[15].AsString
   else AClassName := 'white'; // Should not occur!
 end;
 
-procedure TCWRmainFrm.WebDBGrid1ClickCell(Sender: TObject; ACol, ARow: Integer);
+procedure TCWRmainFrm.EPGClickCell(Sender: TObject; ACol, ARow: Integer);
 var
   DetailsFrm: TDetailsFrm;
   SchedFrm: TSchedForm;
@@ -846,7 +828,7 @@ begin
     WIDBCDS.DisableControls;  // Speed up form opening
   // init controls after loading
 
-    if WIDBCDS.Locate('id', WebDBGrid1.Cells[3,ARow],[]) then
+    if WIDBCDS.Locate('id', EPG.Cells[3,ARow],[]) then
 //    WIDBCDS.RecNo := WebDBGrid1.Cells[3,ARow].ToInteger;
     begin
       DetailsFrm.mmTitle.Text := WIDBCDS.Fields[3].AsString;
@@ -908,48 +890,7 @@ begin
     end
   finally
     DetailsFrm.Free;
-    WIDBCDS.EnableControls;
   end;
-end;
-
-
-//procedure TCWRmainFrm.ListingsDblClick(Sender: TObject);
-//var
-//  i: Integer;
-//begin
-//  Log('DblClick at [' + ClickedCol.ToString + ',' + ClickedRow.ToString + ']');
-//  case ClickedCol of
-//    0, 2: begin  // Filter channels, Titles
-//      Log('Filtering Channels on ' + Listings.Cells[ClickedCol, ClickedRow]);
-//      WebStringGrid2.RowCount := 1;
-//      WebStringGrid2.ColCount := Listings.ColCount;
-//      for i := 0 to Listings.ColCount-1 do
-//        WebStringGrid2.ColWidths[i] := Listings.ColWidths[i];
-//      WebStringGrid2.ColAlignments[0] := taCenter;
-//      WebStringGrid2.ColAlignments[1] := taCenter;
-//      WebStringGrid2.Cells[1,0] := 'List of matching ';
-//      WebStringGrid2.Cells[2,0] :=  Listings.Cells[ClickedCol,0] + ' (Dbl clk to return)';
-//      WebStringGrid2.Show;
-//      WebGridPanel2.Hide;
-//      WebStringGrid2.BringToFront;
-//      WebStringGrid2.BeginUpdate;
-//      for i := 1 to Listings.RowCount - 1 do
-//        if Listings.Cells[ClickedCol, i] = Listings.Cells[ClickedCol, ClickedRow] then
-//        begin
-//          WebStringGrid2.RowCount := WebStringGrid2.RowCount + 1;
-//          WebStringGrid2.Rows[WebStringGrid2.RowCount-1].Assign(Listings.Rows[i]);
-//          ColorGridRow(WebStringGrid2, WebStringGrid2.RowCount-1);
-//        end;
-//      WebStringGrid2.EndUpdate;
-//    end;
-//  end;
-//end;
-
-procedure TCWRmainFrm.WebStringGrid2DblClick(Sender: TObject);
-// Hide WSG2 to go back to EPG list
-begin
-  SearchResults.Hide;
-//  WebGridPanel2.Show;
 end;
 
 procedure TCWRmainFrm.WIDBCDSIDBError(DataSet: TDataSet;
