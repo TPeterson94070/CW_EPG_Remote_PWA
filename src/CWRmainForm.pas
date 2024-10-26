@@ -35,6 +35,7 @@ type
   Listing: TMenuItem;
   Scheduled: TMenuItem;
   History: TMenuItem;
+  fltrGenre: TMenuItem;
   Options: TMenuItem;
   RefreshEPG: TMenuItem;
   RefreshHistory1: TMenuItem;
@@ -52,7 +53,12 @@ type
   WebGridPanel1: TWebGridPanel;
   WebLabel1: TWebLabel;
   WebLabel2: TWebLabel;
-
+  WebComboBox1: TWebComboBox;
+  Filter: TMenuItem;
+  fltrTitle: TMenuItem;
+  WebComboBox2: TWebComboBox;
+  fltrNone: TMenuItem;
+  lblEmptyEPG: TWebLabel;
   [async]
   procedure LoadWIDBCDS;
   procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
@@ -81,6 +87,13 @@ type
   procedure EPGClickCell(Sender: TObject; ACol, ARow: Integer);
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;
     AField: TField; AValue: string; var AClassName: string);
+  procedure HistoryTableGetCellClass(Sender: TObject; ACol, ARow: Integer;
+    AField: TField; AValue: string; var AClassName: string);
+  [async] procedure fltrGenreClick(Sender: TObject);
+  [async] procedure WebComboBox1Change(Sender: TObject);
+  [async] procedure fltrTitleClick(Sender: TObject);
+  [async] procedure WebComboBox2Change(Sender: TObject);
+  [async] procedure fltrNoneClick(Sender: TObject);
 private
   { Private declarations }
   [async]
@@ -100,8 +113,6 @@ private
   [async]
   procedure FillHistoryDisplay;
   [async]
-  procedure RefreshHistory;
-  [async]
   procedure UpdateNewCaptures(RecordStart, RecordEnd: TDateTime);
   [async]
   function GetGoogleDriveFile(TableFile: string; var id: string): string;
@@ -111,6 +122,8 @@ private
   procedure CheckSettingsForUpdate;
   [async]
   procedure SetupWIDBCDS;
+//  procedure SetupGenreList;
+  procedure SetupFilterLists;
 
 public
   { Public declarations }
@@ -128,6 +141,9 @@ uses
 
 var
   ResetPrompt: string = 'none' ;
+  BaseFilter: string = ''; // Filter time interval
+  GenreFilter: string = ''; // Filter genre
+  TitleFilter: string = ''; // Filter title
 
 const
   NUMDAYS = 'NumDisplayDays';
@@ -152,6 +168,36 @@ begin
   WSG.ColAlignments[0] := taCenter;
   WSG.ColAlignments[1] := taCenter;
 
+end;
+
+procedure TCWRmainFrm.WebComboBox1Change(Sender: TObject);
+begin
+  EPG.Columns[2].Title := IfThen(WebComboBox1.Text = 'None', 'Title', 'Programs in genre "' + WebComboBox1.Text + '"');
+  Log('WebComboBox1.Text: ' + WebComboBox1.Text);
+  WebComboBox1.Hide;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  // Restore any esc "\" chars
+  GenreFilter := IfThen(WebComboBox1.Text <> 'None', ' and genres like '
+    + QuotedStr('%"'+ReplaceStr(WebComboBox1.Text, '/', '\/')+'"%'));
+  TitleFilter := '';
+  fltrGenre.Checked := WebComboBox1.Text <> 'None';
+  fltrNone.Checked := not fltrGenre.Checked;
+  await(RefreshListings);
+end;
+
+procedure TCWRmainFrm.WebComboBox2Change(Sender: TObject);
+begin
+  EPG.Columns[2].Title := 'Title'
+    + IfThen(WebComboBox2.Text <> 'None', ': "' + WebComboBox2.Text + '"');
+  Log('WebComboBox2.Text: ' + WebComboBox2.Text);
+  WebComboBox2.Hide;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  TitleFilter := IfThen(WebComboBox2.Text <> 'None', ' and Title like '
+    + QuotedStr('%'+WebComboBox2.Text+'%'));
+  GenreFilter := '';
+  fltrTitle.Checked := WebComboBox2.Text <> 'None';
+  fltrNone.Checked := not fltrTitle.Checked;
+  await(RefreshListings);
 end;
 
 procedure TCWRmainFrm.WebFormCreate(Sender: TObject);
@@ -211,7 +257,8 @@ end;
 
 procedure TCWRmainFrm.UpdateHistory(Sender: TObject);
 begin
-  await(RefreshHistory);
+  await(FetchHistory);
+  SetPage(2);
 end;
 
 procedure TCWRmainFrm.ChangeTargetHTPC(Sender: TObject);
@@ -228,10 +275,20 @@ begin
   end;
 end;
 
-procedure TCWRmainFrm.RefreshHistory;
+procedure TCWRmainFrm.fltrGenreClick(Sender: TObject);
 begin
-  await(FetchHistory);
-  SetPage(2);
+  Log('fltrGenreClick called');
+  WebComboBox1.Show;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+end;
+
+procedure TCWRmainFrm.fltrTitleClick(Sender: TObject);
+begin
+  Log('fltrTitleClick called');
+  WebComboBox2.ItemIndex := WebComboBox2.Items.IndexOf(WIDBCDS.FieldByName('Title').AsString);
+  WebComboBox2.Show;
+  WebComboBox2.SetFocus;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 end;
 
 function TCWRmainFrm.GetGoogleDriveFile(TableFile: string; var id: string): string;
@@ -410,7 +467,10 @@ begin
       begin
         // Lose superfluous <">
         BufferGrid.Cells[0,j] := ReplaceStr(BufferGrid.Cells[0,j],'"','');
-        if WIDBCDS.Eof then WIDBCDS.Append else WIDBCDS.Edit;
+        if WIDBCDS.Eof then
+          TAwait.ExecP<Boolean>(WIDBCDS.AppendAsync)
+        else
+          WIDBCDS.Edit;
         WIDBCDS.Fields[0].Value := j;
         for i := 1 to BufferGrid.ColCount do
           if WIDBCDS.Fields[i].DataType = ftString then
@@ -430,7 +490,7 @@ begin
             'green',  // Non-generic episode declared "new"
             'rose');  // Otherwise "rerun"
         WIDBCDS.Fields[15].Value := AColor;
-        WIDBCDS.Post;
+        TAwait.ExecP<Boolean>(WIDBCDS.PostAsync);
       end;
     end;
     Log('Finished editing WIDBCDS, RecordCount: ' + WIDBCDS.RecordCount.ToString);
@@ -462,6 +522,16 @@ begin
     {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
     Log('Finished LoadWIDBCDS');
   end;
+end;
+
+procedure TCWRmainFrm.fltrNoneClick(Sender: TObject);
+begin
+  Log('fltrNoneClick called');
+  GenreFilter := '';
+  TitleFilter := '';
+  EPG.Columns[2].Title := 'Title';
+  fltrNone.Checked := True;
+  await(RefreshListings);
 end;
 
 procedure TCWRmainFrm.CheckSettingsForUpdate;
@@ -521,17 +591,59 @@ begin
   Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
 end;
 
+procedure TCWRmainFrm.SetupFilterLists;
+var
+  x,y: string;
+  slg, slt: TStringList;
+  i: Integer;
+  procedure slSetup(var sl: TStringList);
+  begin
+    sl := TStringList.Create;
+    sl.Sorted := True;
+    sl.Duplicates := dupIgnore;
+    sl.BeginUpdate;
+  end;
+  procedure ComboBoxSetup(var cb: TWebComboBox; sl: TStringList);
+  begin
+    sl.EndUpdate;
+    cb.BeginUpdate;
+    cb.Clear;
+    Log('Adding first '+cb.Name+' Item: "None"');
+    cb.Items.Add('None');
+    cb.Items.AddStrings(sl);
+    cb.EndUpdate;
+    sl.Free;
+    cb.ItemIndex := 0;
+  end;
+begin
+  slSetup(slg);
+  slSetup(slt);
+  WIDBCDS.First;
+  Log('Looping over WIDBCDS "Title", "genres" fields');
+  while not WIDBCDS.Eof do
+  begin
+    slt.Add(WIDBCDS.FieldByName('Title').AsString);
+    y := ReplaceStr(WIDBCDS.FieldByName('genres').AsString, '\', ''); // Remove escape "\" char
+    // Split the string 'xxx;yyy;zzz' into array xxx, yyy, zzz
+    // ignoring JSON "punctuation" around items
+    for x in y.Split([';','[',']','"',','], TStringSplitOptions.ExcludeEmpty) do
+      slg.Add(x);
+    WIDBCDS.Next;
+  end;
+  ComboBoxSetup(WebComboBox1, slg);
+  ComboBoxSetup(WebComboBox2, slt);
+end;
+
 procedure TCWRmainFrm.ReFreshListings;
 var
   NRows: Integer;
-
+  x, y: string;
 begin
   Log('ReFreshListings, DB is ' + IfThen(not WIDBCDS.Active, 'not ')
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   if not WIDBCDS.Active then
   begin
     pnlWaitPls.BringToFront;
-//    await(SetupWIDBCDS);
     TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   end;
   Log('Days to Display: ' + seNumDisplayDays.Value.ToString);
@@ -549,21 +661,28 @@ begin
       Log('StartTime of First (unfiltered) record ('+WIDBCDS.RecNo.ToString+'): '
         +DateTimeToStr(TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('StartTime').AsDateTime)));
       Log('Unfiltered IDBCDS records: ' + WIDBCDS.RecordCount.ToString);
-      WIDBCDS.Filter := '(StartTime > ' + FloatToStr(TTimeZone.Local.ToUniversalTime(Now))
+      BaseFilter := '(StartTime > ' + FloatToStr(TTimeZone.Local.ToUniversalTime(Now))
         + ') and (StartTime < ' + FloatToStr(TTimeZone.Local.ToUniversalTime(Now) + seNumDisplayDays.Value)+')';
+      WIDBCDS.Filter := BaseFilter + GenreFilter + TitleFilter;
       Log('Filter: ' + WIDBCDS.Filter);
       try
         WIDBCDS.Filtered := True;
         Log('WIDBCDS Filter is '+IfThen(WIDBCDS.Filtered,'enabled','disabled'));
-        Log('Filtered IDBCDS record count: '+WIDBCDS.RecordCount.ToString);
+        if WebComboBox1.ItemIndex < 0 then SetupFilterLists; // i.e., 1st call
+//        Log('Filtered IDBCDS record count: '+WIDBCDS.RecordCount.ToString);
         WIDBCDS.First;
-        NRows := WIDBCDS.RecNo;
+        NRows := 0;
         Log('StartTime of First (filtered) record ('+WIDBCDS.RecNo.ToString+'): '
         +DateTimeToStr(TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('StartTime').AsDateTime)));
+        while not WIDBCDS.Eof do
+        begin
+          Inc(NRows);
+          WIDBCDS.Next;
+        end;
         WIDBCDS.Last;
         Log('StartTime of Last (filtered) record ('+WIDBCDS.RecNo.ToString+'): '
         +DateTimeToStr(TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('StartTime').AsDateTime)));
-        NRows := WIDBCDS.RecNo - NRows;
+//        NRows := WIDBCDS.RecNo - NRows;
         Log('ReFreshListings, No. recs to display: ' + NRows.ToString);
       except
         on E:Exception do
@@ -571,7 +690,7 @@ begin
           NRows := 0;
         end;
       end;
-      if NRows < 2 then
+      if NRows < 1 then
       begin
         Log('No current DB items, prompting for EPG fetch');
         if TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current listings.'
@@ -584,11 +703,14 @@ begin
     end else begin
       ShowMessage('Please select "Refresh EPG" from Options submenu');
     end;
+    lblEmptyEPG.Visible := NRows < 1;
   finally
-    if NRows > 1 then
-      await(WIDBCDS.EnableControls);
+    await(WIDBCDS.EnableControls);
     await(EPG.EndUpdate);
+//    await(WIDBCDS.Close);
+//    TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
     await(pnlListings.BringToFront);
+    EPG.Refresh;
     Log('RefreshListings finished');
   end;
 end;
@@ -677,22 +799,31 @@ begin
       sl.Add(TWebLocalStorage.GetValue('hl'+i.ToString));
   Log('sl.Count: ' + sl.Count.ToString);
   if sl.Count > 1 then begin
-    Log('HistoryTable.BeginUpdate');
-    HistoryTable.BeginUpdate;
-    Log('HistoryTable.LoadFromStrings');
-    HistoryTable.LoadFromStrings(sl,',',True);
-    Log('HistoryTable.RowCount: ' + HistoryTable.RowCount.ToString);
+    Log('BufferGrid.BeginUpdate');
+    BufferGrid.BeginUpdate;
+    Log('BufferGrid.LoadFromStrings');
+    BufferGrid.LoadFromStrings(sl,',',True);
+    Log('BufferGrid.RowCount: ' + BufferGrid.RowCount.ToString);
   end;
-  HistoryTable.RowCount := Min(seNumHistEvents.Value + 1,sl.Count);
-  Log('sl.Free');
-  sl.Free;
-  Log('HistoryTable.RowCount: ' + HistoryTable.RowCount.ToString);
-  for i := HistoryTable.ColCount-1 downto 0 do
+  BufferGrid.RowCount := Min(seNumHistEvents.Value + 1,sl.Count);
+  Log('BufferGrid.RowCount: ' + BufferGrid.RowCount.ToString);
+  for i := BufferGrid.ColCount-1 downto 0 do
   begin
     if i in [8,10,12,13,14] then continue;
-    HistoryTable.RemoveColumn(i);
+    BufferGrid.RemoveColumn(i);
   end;
-  HistoryTable.ColCount := 5;
+  Log('BufferGrid.ColCount: ' + BufferGrid.ColCount.ToString);
+//  for i := 0 to BufferGrid.ColCount-1 do
+//    Log('BufferGrid.Cells['+i.ToString+',1]: '+BufferGrid.Cells[i,1]);
+  sl.Clear;
+  BufferGrid.SaveToStrings(sl,',',True);
+  BufferGrid.EndUpdate;
+  HistoryTable.BeginUpdate;
+  HistoryTable.LoadFromStrings(sl,',',True);
+  sl.Free;
+//  for i := 0 to HistoryTable.ColCount-1 do
+//    Log('HistoryTable.Cells['+i.ToString+',1]: '+HistoryTable.Cells[i,1]);
+//  HistoryTable.ColCount := 5;
   SetTableDefaults(HistoryTable, 120, 150, 250, 300);
   for i := 1 to HistoryTable.RowCount - 1 do
   begin
@@ -731,6 +862,20 @@ begin
   HistoryTable.Cells[ACol,0] := HistoryTable.Cells[ACol,0] + IfThen(SortDir=siDescending, ' v', ' ^');
 end;
 
+procedure TCWRmainFrm.HistoryTableGetCellClass(Sender: TObject; ACol,
+  ARow: Integer; AField: TField; AValue: string; var AClassName: string);
+var EP: Char;
+begin
+  if (ARow > 0) and (HistoryTable.Cells[0,ARow] > '') then
+  begin
+    EP := HistoryTable.Cells[1,ARow][1];
+    if EP = 'E' then AClassName := 'green'
+    else if EP = 'S' then AClassName := 'gray'
+    else if EP = 'M' then AClassName := 'goldenRod'
+    else AClassName := 'white';
+  end;
+end;
+
 procedure TCWRmainFrm.tbHistoryShow;
 begin
   HistoryTable.Visible := False;
@@ -741,7 +886,7 @@ begin
     if TAwait.ExecP<TModalResult> (MessageDlgAsync('The History list '
      + IfThen(HistoryTable.RowCount < 2,'is empty','may be incomplete')
       + #13#13'Do you want to refresh it now?',mtConfirmation, [mbYes,mbNo]))
-      = mrYes then await(RefreshHistory);
+      = mrYes then await(UpdateHistory(Self));
   end;
   await(FillHistoryDisplay);
   HistoryTable.Visible := True;
@@ -804,7 +949,7 @@ procedure TCWRmainFrm.EPGGetCellClass(Sender: TObject; ACol,
   ARow: Integer; AField: TField; AValue: string; var AClassName: string);
 { show listings in color code for type based on current IDB record }
 begin
-  if ARow = 0 then exit;
+  if (ARow = 0) {or (GenreFilter > '')} then exit;
   if EPG.Cells[3,ARow] = WIDBCDS.Fields[0].AsString then
     AClassName := WIDBCDS.Fields[15].AsString
   else AClassName := 'white'; // Should not occur!
@@ -930,23 +1075,23 @@ var
   sl: TStrings;
 begin
   Log(' ====== FetchHistory called =========');
-  HistoryTable.BeginUpdate;
-  HistoryTable.Visible := False;
-  HistoryTable.ColCount := 32;
-  await(RefreshCSV(HistoryTable, 'cwr_history.csv','History', id));
-//  Log('History Rows: '+HistoryTable.RowCount.ToString);
-  for i := HistoryTable.RowCount-1 downto 1 do // Remove blanks, add leading zeroes
+  BufferGrid.BeginUpdate;
+//  BufferGrid.Visible := False;
+  BufferGrid.ColCount := 32;
+  await(RefreshCSV(BufferGrid, 'cwr_history.csv','History', id));
+//  Log('History Rows: '+BufferGrid.RowCount.ToString);
+  for i := BufferGrid.RowCount-1 downto 1 do // Remove blanks, add leading zeroes
   begin
-    if HistoryTable.Cells[0,i] = '' then HistoryTable.RemoveRow(i)
-    else HistoryTable.Cells[0,i] := RightStr('000000' + HistoryTable.Cells[0,i],6);
+    if BufferGrid.Cells[0,i] = '' then BufferGrid.RemoveRow(i)
+    else BufferGrid.Cells[0,i] := RightStr('000000' + BufferGrid.Cells[0,i],6);
   end;
   // Sort Table by ID (field 0)
-  HistoryTable.Sort(0,siAscending);
-  Log('History Rows: '+HistoryTable.RowCount.ToString);
+  BufferGrid.Sort(0,siAscending);
+  Log('History Rows: '+BufferGrid.RowCount.ToString);
   // Save history data to Local Storage
   sl := TStringList.Create;
-  HistoryTable.SaveToStrings(sl, ',', True);
-  HistoryTable.RowCount := 1;  // Free memory??
+  BufferGrid.SaveToStrings(sl, ',', True);
+  BufferGrid.RowCount := 1;  // Free memory??
   Log('sl Count: '+sl.Count.ToString);
   // Save Headings in Fixed Row
   TWebLocalStorage.SetValue('hl0', sl[0]);
@@ -954,8 +1099,8 @@ begin
   for i := 1 to sl.Count-1 do
     TWebLocalStorage.SetValue('hl' + i.ToString, sl[sl.Count - i]);
   sl.Free;
-  await(FillHistoryDisplay);
-  HistoryTable.EndUpdate;
+//  await(FillHistoryDisplay);
+  BufferGrid.EndUpdate;
   Log(' ====== FetchHistory finished =========');
 end;
 

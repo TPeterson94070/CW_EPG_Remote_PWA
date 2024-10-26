@@ -12,11 +12,41 @@ object CWRmainFrm: TCWRmainFrm
   Menu = WebMainMenu1
   ParentFont = False
   OnCreate = WebFormCreate
+  object BufferGrid: TWebStringGrid
+    Left = 96
+    Top = 632
+    Width = 257
+    Height = 50
+    ColCount = 14
+    DefaultColWidth = 61
+    DefaultRowHeight = 23
+    FixedCols = 0
+    RowCount = 20
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -12
+    Font.Name = 'Segoe UI'
+    Font.Style = []
+    Options = []
+    ParentFont = False
+    TabOrder = 9
+    Visible = False
+    StyleElements = []
+    FixedFont.Charset = DEFAULT_CHARSET
+    FixedFont.Color = clWindowText
+    FixedFont.Height = -12
+    FixedFont.Name = 'Segoe UI'
+    FixedFont.Style = []
+    RangeEdit.Max = 100.000000000000000000
+    RangeEdit.Step = 1.000000000000000000
+    HeightPercent = 100.000000000000000000
+    WidthPercent = 100.000000000000000000
+  end
   object pnlHistory: TWebPanel
     Left = 0
     Top = 80
     Width = 450
-    Height = 720
+    Height = 700
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -32,11 +62,18 @@ object CWRmainFrm: TCWRmainFrm
       Width = 450
       Height = 700
       Align = alClient
+      Color = clDarkslategray
       ColCount = 32
       DefaultColWidth = 61
       DefaultRowHeight = 23
       FixedCols = 0
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clGray
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = []
       Options = [goRowSelect, goFixedRowClick]
+      ParentFont = False
       TabOrder = 0
       StyleElements = []
       OnFixedCellClick = HistoryTableFixedCellClick
@@ -51,38 +88,7 @@ object CWRmainFrm: TCWRmainFrm
       HeightStyle = ssPercent
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
-    end
-  end
-  object pnlLog: TWebPanel
-    Left = 0
-    Top = 80
-    Width = 450
-    Height = 720
-    ElementClassName = 'card'
-    HeightStyle = ssPercent
-    WidthStyle = ssPercent
-    Align = alClient
-    ChildOrder = 9
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    ShowCaption = False
-    TabOrder = 2
-    object WebMemo2: TWebMemo
-      AlignWithMargins = True
-      Left = 3
-      Top = 3
-      Width = 444
-      Height = 714
-      Align = alClient
-      ElementID = 'content'
-      ElementFont = efCSS
-      HeightStyle = ssPercent
-      HeightPercent = 100.000000000000000000
-      ReadOnly = True
-      SelLength = 0
-      SelStart = 0
-      WidthStyle = ssPercent
-      WidthPercent = 100.000000000000000000
+      OnGetCellClass = HistoryTableGetCellClass
     end
   end
   object NewCaptures: TWebStringGrid
@@ -160,178 +166,11 @@ object CWRmainFrm: TCWRmainFrm
       WidthPercent = 100.000000000000000000
     end
   end
-  object pnlOptions: TWebPanel
-    Left = 0
-    Top = 80
-    Width = 450
-    Height = 720
-    ElementClassName = 'card'
-    HeightStyle = ssPercent
-    WidthStyle = ssPercent
-    Align = alClient
-    ChildOrder = 9
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    ShowCaption = False
-    TabOrder = 5
-    object WebGroupBox3: TWebGroupBox
-      Left = 15
-      Top = 115
-      Width = 264
-      Height = 104
-      ElementClassName = 'btn-group'
-      WidthPercent = 25.000000000000000000
-      Align = alCustom
-      BorderColor = clSilver
-      Caption = 'History Events Displayed'
-      ElementFont = efCSS
-      ElementLegendClassName = 'h6'
-      object seNumHistEvents: TWebSpinEdit
-        AlignWithMargins = True
-        Left = 57
-        Top = 35
-        Width = 150
-        Height = 45
-        Margins.Left = 57
-        Margins.Top = 35
-        Margins.Right = 57
-        Margins.Bottom = 24
-        ElementClassName = 'form-control'
-        HeightStyle = ssAuto
-        Align = alClient
-        AutoSize = True
-        BorderStyle = bsNone
-        Color = clBtnFace
-        ElementFont = efCSS
-        Increment = 100
-        MaxValue = 8000
-        MinValue = 100
-        Role = ''
-        Value = 100
-      end
-    end
-    object WebGroupBox1: TWebGroupBox
-      Left = 15
-      Top = 0
-      Width = 264
-      Height = 100
-      ElementClassName = 'btn-group'
-      WidthPercent = 25.000000000000000000
-      Align = alCustom
-      BorderColor = clSilver
-      Caption = 'EPG Days Displayed'
-      ElementFont = efCSS
-      ElementLegendClassName = 'h6'
-      object seNumDisplayDays: TWebSpinEdit
-        AlignWithMargins = True
-        Left = 57
-        Top = 35
-        Width = 150
-        Height = 41
-        Margins.Left = 57
-        Margins.Top = 35
-        Margins.Right = 57
-        Margins.Bottom = 24
-        ElementClassName = 'form-control'
-        HeightStyle = ssAuto
-        Align = alClient
-        AutoSize = False
-        BorderStyle = bsNone
-        Color = clBtnFace
-        ElementFont = efCSS
-        Increment = 1
-        MaxValue = 20
-        MinValue = 1
-        Role = ''
-        Value = 1
-      end
-    end
-  end
-  object pnlListings: TWebPanel
-    Left = 0
-    Top = 80
-    Width = 450
-    Height = 720
-    ElementClassName = 'card'
-    HeightStyle = ssPercent
-    WidthStyle = ssPercent
-    Align = alClient
-    Caption = 'pnlListings'
-    ChildOrder = 11
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    ShowCaption = False
-    TabOrder = 6
-    object EPG: TWebDBGrid
-      Left = 0
-      Top = 0
-      Width = 450
-      Height = 700
-      Align = alClient
-      BorderStyle = bsNone
-      Color = clDarkblue
-      Columns = <
-        item
-          Alignment = taCenter
-          AutoFormatDateTime = False
-          DataField = 'PSIP'
-          Title = 'Channel'
-          Width = 70
-        end
-        item
-          Alignment = taCenter
-          AutoFormatDateTime = False
-          DataField = 'Time'
-          Title = 'HTPC Local Time'
-          TitleElementClassName = 'h6'
-          Width = 155
-        end
-        item
-          AutoFormatDateTime = False
-          DataField = 'Title'
-          Title = 'Title'
-          Width = 300
-        end
-        item
-          AutoFormatDateTime = False
-          DataField = 'id'
-          Editor = geNone
-          Title = 'ID'
-          Width = 0
-        end>
-      DataSource = WebDataSource1
-      ElementFont = efCSS
-      FixedFont.Charset = ANSI_CHARSET
-      FixedFont.Color = clBlack
-      FixedFont.Height = -11
-      FixedFont.Name = 'Arial'
-      FixedFont.Style = []
-      FixedCols = 0
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -12
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      Options = [goRowSelect]
-      ParentFont = False
-      TabOrder = 0
-      HeightPercent = 100.000000000000000000
-      StyleElements = []
-      WidthPercent = 100.000000000000000000
-      OnClickCell = EPGClickCell
-      OnGetCellClass = EPGGetCellClass
-      ColWidths = (
-        70
-        155
-        300
-        0)
-    end
-  end
   object pnlWaitPls: TWebPanel
     Left = 0
     Top = 80
     Width = 450
-    Height = 720
+    Height = 700
     ElementClassName = 'container-fluid'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -344,7 +183,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 450
-      Height = 720
+      Height = 700
       WidthStyle = ssPercent
       Align = alClient
       ChildOrder = 2
@@ -385,9 +224,9 @@ object CWRmainFrm: TCWRmainFrm
         end>
       object WebLabel1: TWebLabel
         Left = 2
-        Top = 182
+        Top = 177
         Width = 446
-        Height = 176
+        Height = 171
         Align = alClient
         Alignment = taCenter
         Caption = 'Preparing EPG Listings.'
@@ -402,9 +241,9 @@ object CWRmainFrm: TCWRmainFrm
       end
       object WebLabel2: TWebLabel
         Left = 2
-        Top = 362
+        Top = 352
         Width = 446
-        Height = 176
+        Height = 171
         Align = alClient
         Alignment = taCenter
         Caption = 'Please Wait...'
@@ -420,7 +259,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 2
         Top = 2
         Width = 446
-        Height = 176
+        Height = 171
         Align = alClient
         Caption = '<i class="fa-solid fa-spinner fa-spin"></>'
         Color = clYellow
@@ -437,7 +276,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 80
     Width = 450
-    Height = 720
+    Height = 700
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -453,10 +292,14 @@ object CWRmainFrm: TCWRmainFrm
       Width = 450
       Height = 700
       Align = alClient
+      Color = clCadetblue
       DefaultRowHeight = 22
+      FixedColor = clCornflowerblue
       Options = [goHorzLine, goRowSelect]
       TabOrder = 0
       StyleElements = []
+      ElementClassName = 'white'
+      ElementFont = efCSS
       FixedFont.Charset = ANSI_CHARSET
       FixedFont.Color = clBlack
       FixedFont.Height = -11
@@ -469,37 +312,274 @@ object CWRmainFrm: TCWRmainFrm
       WidthPercent = 100.000000000000000000
     end
   end
-  object BufferGrid: TWebStringGrid
+  object pnlOptions: TWebPanel
     Left = 0
-    Top = -18
-    Width = 383
-    Height = 798
-    ColCount = 14
-    DefaultColWidth = 61
-    DefaultRowHeight = 23
-    FixedCols = 0
-    RowCount = 20
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -12
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    Options = [goColSizing, goRowSelect]
-    ParentFont = False
-    TabOrder = 9
-    Visible = False
-    StyleElements = []
-    ElementFont = efCSS
-    FixedFont.Charset = DEFAULT_CHARSET
-    FixedFont.Color = clWindowText
-    FixedFont.Height = -12
-    FixedFont.Name = 'Segoe UI'
-    FixedFont.Style = []
-    RangeEdit.Max = 100.000000000000000000
-    RangeEdit.Step = 1.000000000000000000
+    Top = 80
+    Width = 450
+    Height = 700
+    ElementClassName = 'card'
     HeightStyle = ssPercent
-    HeightPercent = 100.000000000000000000
-    WidthPercent = 100.000000000000000000
+    WidthStyle = ssPercent
+    Align = alClient
+    ChildOrder = 9
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    ShowCaption = False
+    TabOrder = 5
+    object WebGroupBox3: TWebGroupBox
+      Left = 15
+      Top = 115
+      Width = 264
+      Height = 104
+      ElementClassName = 'btn-group'
+      WidthPercent = 25.000000000000000000
+      Align = alCustom
+      BorderColor = clSilver
+      Caption = 'History Events Displayed'
+      Color = clAqua
+      ElementFont = efCSS
+      ElementLegendClassName = 'h6'
+      object seNumHistEvents: TWebSpinEdit
+        AlignWithMargins = True
+        Left = 57
+        Top = 35
+        Width = 150
+        Height = 45
+        Margins.Left = 57
+        Margins.Top = 35
+        Margins.Right = 57
+        Margins.Bottom = 24
+        ElementClassName = 'form-control'
+        HeightStyle = ssAuto
+        Align = alClient
+        AutoSize = True
+        BorderStyle = bsNone
+        Color = clBtnFace
+        ElementFont = efCSS
+        Increment = 100
+        MaxValue = 8000
+        MinValue = 100
+        Role = ''
+        Value = 100
+      end
+    end
+    object WebGroupBox1: TWebGroupBox
+      Left = 15
+      Top = 0
+      Width = 264
+      Height = 100
+      ElementClassName = 'btn-group'
+      WidthPercent = 25.000000000000000000
+      Align = alCustom
+      BorderColor = clSilver
+      Caption = 'EPG Days Displayed'
+      Color = clAqua
+      ElementFont = efCSS
+      ElementLegendClassName = 'h6'
+      object seNumDisplayDays: TWebSpinEdit
+        AlignWithMargins = True
+        Left = 57
+        Top = 35
+        Width = 150
+        Height = 41
+        Margins.Left = 57
+        Margins.Top = 35
+        Margins.Right = 57
+        Margins.Bottom = 24
+        ElementClassName = 'form-control'
+        HeightStyle = ssAuto
+        Align = alClient
+        AutoSize = False
+        BorderStyle = bsNone
+        Color = clBtnFace
+        ElementFont = efCSS
+        Increment = 1
+        MaxValue = 20
+        MinValue = 1
+        Role = ''
+        Value = 1
+      end
+    end
+  end
+  object pnlLog: TWebPanel
+    Left = 0
+    Top = 80
+    Width = 450
+    Height = 700
+    ElementClassName = 'card'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
+    Align = alClient
+    ChildOrder = 9
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    ShowCaption = False
+    TabOrder = 2
+    object WebMemo2: TWebMemo
+      AlignWithMargins = True
+      Left = 3
+      Top = 3
+      Width = 444
+      Height = 694
+      Align = alClient
+      Color = clBlack
+      ElementClassName = 'white'
+      ElementID = 'content'
+      ElementFont = efCSS
+      HeightStyle = ssPercent
+      HeightPercent = 100.000000000000000000
+      ReadOnly = True
+      SelLength = 0
+      SelStart = 0
+      WidthStyle = ssPercent
+      WidthPercent = 100.000000000000000000
+    end
+  end
+  object pnlListings: TWebPanel
+    Left = 0
+    Top = 80
+    Width = 450
+    Height = 700
+    ElementClassName = 'card'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
+    Align = alClient
+    Caption = 'pnlListings'
+    ChildOrder = 11
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    ShowCaption = False
+    TabOrder = 6
+    DesignSize = (
+      450
+      700)
+    object lblEmptyEPG: TWebLabel
+      Left = 60
+      Top = 58
+      Width = 318
+      Height = 32
+      Anchors = [akLeft, akTop, akRight]
+      Caption = 
+        'There are no current listings to see.  (Try "Refresh EPG" to upd' +
+        'ate)'
+      Color = clBlack
+      ElementClassName = 'white'
+      ElementFont = efCSS
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = []
+      HeightStyle = ssAuto
+      HeightPercent = 100.000000000000000000
+      ParentFont = False
+      Transparent = False
+      Visible = False
+      WordWrap = True
+      WidthPercent = 100.000000000000000000
+    end
+    object EPG: TWebDBGrid
+      Left = 0
+      Top = 0
+      Width = 450
+      Height = 700
+      Align = alClient
+      BorderStyle = bsNone
+      Color = clDarkblue
+      Columns = <
+        item
+          Alignment = taCenter
+          AutoFormatDateTime = False
+          DataField = 'PSIP'
+          Title = 'Channel'
+          Width = 70
+        end
+        item
+          Alignment = taCenter
+          AutoFormatDateTime = False
+          DataField = 'Time'
+          Title = 'HTPC Local Time'
+          TitleElementClassName = 'h6'
+          Width = 155
+        end
+        item
+          AutoFormatDateTime = False
+          DataField = 'Title'
+          Title = 'Title'
+          Width = 300
+        end
+        item
+          AutoFormatDateTime = False
+          DataField = 'id'
+          Editor = geNone
+          Title = 'ID'
+          Width = 0
+        end
+        item
+          AutoFormatDateTime = False
+          ElementClassName = 'white'
+          DataField = 'Class'
+          Title = 'Class'
+        end>
+      DataSource = WebDataSource1
+      ElementFont = efCSS
+      FixedFont.Charset = ANSI_CHARSET
+      FixedFont.Color = clBlack
+      FixedFont.Height = -11
+      FixedFont.Name = 'Arial'
+      FixedFont.Style = []
+      FixedCols = 0
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      Options = [goRowSelect]
+      ParentFont = False
+      TabOrder = 0
+      HeightPercent = 100.000000000000000000
+      StyleElements = []
+      WidthPercent = 100.000000000000000000
+      OnClickCell = EPGClickCell
+      OnGetCellClass = EPGGetCellClass
+      ColWidths = (
+        70
+        155
+        300
+        0
+        64)
+    end
+    object WebComboBox1: TWebComboBox
+      Left = 152
+      Top = 23
+      Width = 145
+      Height = 22
+      ElementClassName = 'form-select'
+      ElementFont = efCSS
+      HeightStyle = ssAuto
+      HeightPercent = 100.000000000000000000
+      Text = 'Choose Genre Filter'
+      Visible = False
+      WidthPercent = 100.000000000000000000
+      OnChange = WebComboBox1Change
+      ItemIndex = -1
+    end
+    object WebComboBox2: TWebComboBox
+      Left = 160
+      Top = 23
+      Width = 145
+      Height = 22
+      ElementClassName = 'form-select'
+      ElementFont = efCSS
+      HeightStyle = ssAuto
+      HeightPercent = 100.000000000000000000
+      Text = 'Choose Title Filter'
+      Visible = False
+      WidthPercent = 100.000000000000000000
+      OnChange = WebComboBox2Change
+      OnDblClick = WebComboBox2Change
+      ItemIndex = -1
+    end
   end
   object WebMainMenu1: TWebMainMenu
     Appearance.BackgroundColor = clSilver
@@ -534,6 +614,26 @@ object CWRmainFrm: TCWRmainFrm
       Caption = 'History'
       RadioItem = True
       OnClick = HistoryClick
+    end
+    object Filter: TMenuItem
+      Caption = 'Filter'
+      object fltrGenre: TMenuItem
+        Caption = 'By Genre'
+        RadioItem = True
+        OnClick = fltrGenreClick
+      end
+      object fltrTitle: TMenuItem
+        Caption = 'By Title'
+        RadioItem = True
+        OnClick = fltrTitleClick
+      end
+      object fltrNone: TMenuItem
+        Caption = 'None'
+        Checked = True
+        Default = True
+        RadioItem = True
+        OnClick = fltrNoneClick
+      end
     end
     object Options: TMenuItem
       Caption = 'Options'
