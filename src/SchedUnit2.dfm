@@ -1,7 +1,7 @@
 object SchedForm: TSchedForm
   Width = 350
   Height = 480
-  Color = clDarkolivegreen
+  Color = clBurlywood
   CSSLibrary = cssBootstrap
   ElementFont = efCSS
   Font.Charset = ANSI_CHARSET
@@ -19,7 +19,7 @@ object SchedForm: TSchedForm
     Alignment = taCenter
     AutoSize = False
     Caption = 'On Channel'
-    Color = clDarkolivegreen
+    Color = clBurlywood
     ElementLabelClassName = 'h6'
     ElementFont = efCSS
     HeightPercent = 100.000000000000000000
@@ -33,7 +33,7 @@ object SchedForm: TSchedForm
     Alignment = taCenter
     AutoSize = False
     Caption = 'PSIP'
-    Color = clDarkolivegreen
+    Color = clBurlywood
     ElementLabelClassName = 'h6'
     ElementFont = efCSS
     HeightPercent = 100.000000000000000000
@@ -51,7 +51,7 @@ object SchedForm: TSchedForm
     Alignment = taCenter
     AutoSize = False
     Caption = 'Start'
-    Color = clDarkolivegreen
+    Color = clBurlywood
     ElementFont = efCSS
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -77,7 +77,7 @@ object SchedForm: TSchedForm
     Alignment = taCenter
     AutoSize = False
     Caption = 'End'
-    Color = clDarkolivegreen
+    Color = clBurlywood
     ElementFont = efCSS
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -103,7 +103,7 @@ object SchedForm: TSchedForm
     Alignment = taCenter
     AutoSize = False
     Caption = 'Date'
-    Color = clDarkolivegreen
+    Color = clBurlywood
     ElementFont = efCSS
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -204,7 +204,7 @@ object SchedForm: TSchedForm
       Width = 350
       Height = 58
       Align = alTop
-      Color = clDarkolivegreen
+      Color = clBurlywood
       ElementClassName = 'h5'
       ElementFont = efCSS
       HeightPercent = 100.000000000000000000
@@ -220,7 +220,7 @@ object SchedForm: TSchedForm
       Width = 350
       Height = 49
       Align = alTop
-      Color = clDarkolivegreen
+      Color = clBurlywood
       ElementClassName = 'h6'
       ElementFont = efCSS
       HeightPercent = 100.000000000000000000
@@ -236,7 +236,7 @@ object SchedForm: TSchedForm
       Width = 350
       Height = 117
       Align = alBottom
-      Color = clDarkolivegreen
+      Color = clBurlywood
       HeightPercent = 100.000000000000000000
       Lines.Strings = (
         'Description')
