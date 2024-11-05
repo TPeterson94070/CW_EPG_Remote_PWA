@@ -621,6 +621,7 @@ object CWRmainFrm: TCWRmainFrm
       Caption = 'Listings'
       Default = True
       RadioItem = True
+      OnClick = ListingClick
       object ByAll: TMenuItem
         Caption = 'All'
         Checked = True

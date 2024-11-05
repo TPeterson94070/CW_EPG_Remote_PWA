@@ -45,7 +45,6 @@ uses CWRmainForm;
 procedure TDetailsFrm.WebFormShow(Sender: TObject);
 begin
   btnReturn.SetFocus;
-//  CWRmainFrm.WIDBCDS.EnableControls;
 end;
 
 end.

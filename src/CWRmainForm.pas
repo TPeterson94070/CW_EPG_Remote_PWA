@@ -1103,17 +1103,15 @@ begin
   // Prevent duplicate clicks
   EPG.OnClickCell := nil;
   Log('WebDBGrid1SelectCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   DetailsFrm := TDetailsFrm.Create(Self);
-  if WIDBCDS.Locate('id', EPG.Cells[3,ARow],[]) then  { TODO : Check that WebIndexedDBCDS.Locate does not throw exceptions! }
-//  WIDBCDS.RecNo := EPG.Cells[3,ARow].ToInteger; {Less safe alternative}
+  // Speed up form opening
+  WIDBCDS.DisableControls;
+  if WIDBCDS.Locate('id', EPG.Cells[3,ARow],[]) then
   try
     DetailsFrm.Popup := True;
     DetailsFrm.Border := fbSingle;
     // load file HTML template + controls
     TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load());
-    // Speed up form opening
-//    WIDBCDS.DisableControls;
     // init controls after loading
     DetailsFrm.mmTitle.Text := WIDBCDS.Fields[3].AsString;
     DetailsFrm.mmSubTitle.Text := WIDBCDS.Fields[4].AsString;
@@ -1154,7 +1152,7 @@ begin
         // N.B.:  WIDBCDS DateTimes are UTC, but we need to specify HTPC's TZ for capture!
         // So we decode the times from the "Time" field (format: mm/yy HH:nn--HH:nn)
         x := string(DetailsFrm.lb11Time.Caption).Split([' ','--']);
-        console.log(x);
+//        console.log(x);
         SchedFrm.lblStartDateValue.Caption := x[0];
         SchedFrm.tpStartTime.DateTime := StrToDateTime(x[0] + ' ' + x[1]);
         SchedFrm.tpEndTime.DateTime := StrToDateTime(x[0] + ' ' + x[2]);
@@ -1170,9 +1168,10 @@ begin
     end;
   finally
     DetailsFrm.Free;
+    {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   end;
   EPG.OnClickCell := EPGClickCell;
-//  WIDBCDS.EnableControls;
+  WIDBCDS.EnableControls;
 end;
 
 procedure TCWRmainFrm.WIDBCDSIDBError(DataSet: TDataSet;
