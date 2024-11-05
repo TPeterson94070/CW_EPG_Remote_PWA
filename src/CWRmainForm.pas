@@ -128,9 +128,8 @@ private
   procedure CheckSettingsForUpdate;
   [async]
   procedure SetupWIDBCDS;
-//  procedure SetupGenreList;
   procedure SetupFilterList(cb: TWebComboBox; fn: string);
-  procedure SetupFilterLists;
+  [async] procedure SetupFilterLists;
   [async] procedure SetFilter(fltr: string);
 
 public
@@ -724,6 +723,9 @@ var
     if cb.ItemIndex < 0 then cb.ItemIndex := 0;
   end;
 begin
+  WebLabel1.Caption := 'Preparing filter lists.';
+  pnlWaitPls.BringToFront;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   WIDBCDS.DisableControls;
   slSetup(slc);
   slSetup(slg);
@@ -744,6 +746,8 @@ begin
   ComboBoxSetup(WebComboBox1, slg);
   ComboBoxSetup(WebComboBox2, slt);
   ComboBoxSetup(WebComboBox3, slc);
+  pnlWaitPls.SendToBack;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   WIDBCDS.EnableControls;
 end;
 
@@ -843,7 +847,7 @@ begin
     EPG.Refresh;
 //    await(WIDBCDS.Close);
 //    TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
-    {await(}pnlListings.BringToFront;
+    pnlListings.BringToFront;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
     SetupFilterLists;
     Log('RefreshListings finished');
@@ -1100,78 +1104,88 @@ var
   x: TArray<string>;
 
 begin
+  EPG.BeginUpdate;
   // Prevent duplicate clicks
-  EPG.OnClickCell := nil;
-  Log('WebDBGrid1SelectCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
+//  EPG.OnClickCell := nil;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  Log('EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   DetailsFrm := TDetailsFrm.Create(Self);
   // Speed up form opening
   WIDBCDS.DisableControls;
-  if WIDBCDS.Locate('id', EPG.Cells[3,ARow],[]) then
+  // Wrap in try-except-end because of Locate bug with filtered data
   try
-    DetailsFrm.Popup := True;
-    DetailsFrm.Border := fbSingle;
-    // load file HTML template + controls
-    TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load());
-    // init controls after loading
-    DetailsFrm.mmTitle.Text := WIDBCDS.Fields[3].AsString;
-    DetailsFrm.mmSubTitle.Text := WIDBCDS.Fields[4].AsString;
-    DetailsFrm.lb11Time.Caption := WIDBCDS.Fields[2].AsString;
-    DetailsFrm.lb10Channel.Caption := WIDBCDS.Fields[1].AsString;
-    x := WIDBCDS.Fields[9].AsString.Split(['-']);                 // Parse 1st-air date
-    DetailsFrm.lb09OrigDate.Caption := IfThen(Length(x) = 3,      // Have 1st-air date
-      '1st Aired ' + x[1] + '/' + x[2] + '/' + RightStr(x[0],2),  // Use 1st-air date
-      IfThen(WIDBCDS.Fields[13].AsString > '',                    // Check Movie year
-      'Movie Yr ' + WIDBCDS.Fields[13].AsString,''));             // Use Movie year or nil
-    SetLabelStyle(DetailsFrm.lb02New, WIDBCDS.Fields[10].AsString <> '');
-    SetLabelStyle(DetailsFrm.lb08CC, WIDBCDS.Fields[11].AsString.Contains('cc'));
-    SetLabelStyle(DetailsFrm.lb03Stereo, WIDBCDS.Fields[11].AsString.Contains('stereo'));
-    SetLabelStyle(DetailsFrm.lb07Dolby, WIDBCDS.Fields[11].AsString.Contains('DD'));
-    DetailsFrm.lb04HD.Caption := 'SD';
-    if WIDBCDS.Fields[12].AsString > '' then
-      DetailsFrm.lb04HD.Caption := WIDBCDS.Fields[12].AsString.Split(['["HD ','"'])[1];
-    SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
-    DetailsFrm.mmDescription.Text := WIDBCDS.Fields[5].AsString;
-  // execute form and wait for close
-    TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
-    if DetailsFrm.ModalResult = mrOk then
-    begin
-      SchedFrm := TSchedForm.Create(Self);
-      SchedFrm.Caption := 'Schedule Capture Event';
-      SchedFrm.Popup := True;
-      SchedFrm.Border := fbSingle;
-
-      try
-        // load file HTML template + controls
-        TAwait.ExecP<TSchedForm>(SchedFrm.Load());
-
+    if WIDBCDS.Locate('id', EPG.Cells[3,ARow],[]) then
+    try
+      DetailsFrm.Popup := True;
+      DetailsFrm.Border := fbSingle;
+      // load file HTML template + controls
+      TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load());
       // init controls after loading
-        SchedFrm.mmTitle.Text := DetailsFrm.mmTitle.Text;
-        SchedFrm.mmSubTitle.Text := DetailsFrm.mmSubTitle.Text;
-        SchedFrm.mmDescription.Text := DetailsFrm.mmDescription.Text;
-        SchedFrm.lblChannelValue.Caption := DetailsFrm.lb10Channel.Caption;
-        // N.B.:  WIDBCDS DateTimes are UTC, but we need to specify HTPC's TZ for capture!
-        // So we decode the times from the "Time" field (format: mm/yy HH:nn--HH:nn)
-        x := string(DetailsFrm.lb11Time.Caption).Split([' ','--']);
-//        console.log(x);
-        SchedFrm.lblStartDateValue.Caption := x[0];
-        SchedFrm.tpStartTime.DateTime := StrToDateTime(x[0] + ' ' + x[1]);
-        SchedFrm.tpEndTime.DateTime := StrToDateTime(x[0] + ' ' + x[2]);
-        if SchedFrm.tpEndTime.DateTime < SchedFrm.tpStartTime.DateTime then  // wrapped midnight
-          SchedFrm.tpEndTime.DateTime := SchedFrm.tpEndTime.DateTime + 1;
-        // execute form and wait for close
-        TAwait.ExecP<TModalResult>(SchedFrm.Execute);
-        if SchedFrm.ModalResult = mrOk then
-          await (UpdateNewCaptures(SchedFrm.tpStartTime.DateTime, SchedFrm.tpEndTime.DateTime));
-      finally
-        SchedFrm.Free;
+      DetailsFrm.mmTitle.Text := WIDBCDS.Fields[3].AsString;
+      DetailsFrm.mmSubTitle.Text := WIDBCDS.Fields[4].AsString;
+      DetailsFrm.lb11Time.Caption := WIDBCDS.Fields[2].AsString;
+      DetailsFrm.lb10Channel.Caption := WIDBCDS.Fields[1].AsString;
+      x := WIDBCDS.Fields[9].AsString.Split(['-']);                 // Parse 1st-air date
+      DetailsFrm.lb09OrigDate.Caption := IfThen(Length(x) = 3,      // Have 1st-air date
+        '1st Aired ' + x[1] + '/' + x[2] + '/' + RightStr(x[0],2),  // Use 1st-air date
+        IfThen(WIDBCDS.Fields[13].AsString > '',                    // Check Movie year
+        'Movie Yr ' + WIDBCDS.Fields[13].AsString,''));             // Use Movie year or nil
+      SetLabelStyle(DetailsFrm.lb02New, WIDBCDS.Fields[10].AsString <> '');
+      SetLabelStyle(DetailsFrm.lb08CC, WIDBCDS.Fields[11].AsString.Contains('cc'));
+      SetLabelStyle(DetailsFrm.lb03Stereo, WIDBCDS.Fields[11].AsString.Contains('stereo'));
+      SetLabelStyle(DetailsFrm.lb07Dolby, WIDBCDS.Fields[11].AsString.Contains('DD'));
+      DetailsFrm.lb04HD.Caption := 'SD';
+      if WIDBCDS.Fields[12].AsString > '' then
+        DetailsFrm.lb04HD.Caption := WIDBCDS.Fields[12].AsString.Split(['["HD ','"'])[1];
+      SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
+      DetailsFrm.mmDescription.Text := WIDBCDS.Fields[5].AsString;
+    // execute form and wait for close
+      TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
+      if DetailsFrm.ModalResult = mrOk then
+      begin
+        SchedFrm := TSchedForm.Create(Self);
+        SchedFrm.Caption := 'Schedule Capture Event';
+        SchedFrm.Popup := True;
+        SchedFrm.Border := fbSingle;
+
+        try
+          // load file HTML template + controls
+          TAwait.ExecP<TSchedForm>(SchedFrm.Load());
+
+        // init controls after loading
+          SchedFrm.mmTitle.Text := DetailsFrm.mmTitle.Text;
+          SchedFrm.mmSubTitle.Text := DetailsFrm.mmSubTitle.Text;
+          SchedFrm.mmDescription.Text := DetailsFrm.mmDescription.Text;
+          SchedFrm.lblChannelValue.Caption := DetailsFrm.lb10Channel.Caption;
+          // N.B.:  WIDBCDS DateTimes are UTC, but we need to specify HTPC's TZ for capture!
+          // So we decode the times from the "Time" field (format: mm/yy HH:nn--HH:nn)
+          x := string(DetailsFrm.lb11Time.Caption).Split([' ','--']);
+  //        console.log(x);
+          SchedFrm.lblStartDateValue.Caption := x[0];
+          SchedFrm.tpStartTime.DateTime := StrToDateTime(x[0] + ' ' + x[1]);
+          SchedFrm.tpEndTime.DateTime := StrToDateTime(x[0] + ' ' + x[2]);
+          if SchedFrm.tpEndTime.DateTime < SchedFrm.tpStartTime.DateTime then  // wrapped midnight
+            SchedFrm.tpEndTime.DateTime := SchedFrm.tpEndTime.DateTime + 1;
+          Log('Finished setting up new form');
+          // execute form and wait for close
+          TAwait.ExecP<TModalResult>(SchedFrm.Execute);
+          if SchedFrm.ModalResult = mrOk then
+            await (UpdateNewCaptures(SchedFrm.tpStartTime.DateTime, SchedFrm.tpEndTime.DateTime));
+        finally
+          Log('Finished with new forms');
+          SchedFrm.Free;
+        end;
       end;
+    finally
+      DetailsFrm.Free;
+      {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
     end;
-  finally
-    DetailsFrm.Free;
-    {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+  except
+    Log('Locate raised an improper Exception instead of "False"');
   end;
-  EPG.OnClickCell := EPGClickCell;
+//  EPG.OnClickCell := EPGClickCell;
   WIDBCDS.EnableControls;
+  EPG.EndUpdate;
 end;
 
 procedure TCWRmainFrm.WIDBCDSIDBError(DataSet: TDataSet;
