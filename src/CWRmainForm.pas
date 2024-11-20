@@ -60,6 +60,9 @@ type
   ByGenre: TMenuItem;
   ByTitle: TMenuItem;
   WebComboBox3: TWebComboBox;
+    WebHTMLDiv1: TWebHTMLDiv;
+    WebHTMLDiv2: TWebHTMLDiv;
+    WebHTMLDiv3: TWebHTMLDiv;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
   [async]
@@ -100,6 +103,8 @@ type
       Rebuild: Boolean);
   [async] procedure ByChannelClick(Sender: TObject);
   [async] procedure WebComboBox3Change(Sender: TObject);
+    procedure NewCapturesGetCellData(Sender: TObject; ACol, ARow: Integer;
+      AField: TField; var AValue: string);
 private
   { Private declarations }
 //  [async]
@@ -265,7 +270,6 @@ end;
 procedure TCWRmainFrm.WebMainMenu1Change(Sender: TObject; Source: TMenuItem;
   Rebuild: Boolean);
 begin
-//  Rebuild := True;
 end;
 
 //procedure TCWRmainFrm.ShowForm;
@@ -526,6 +530,7 @@ var
   Text: string;
 begin
   Log('Starting LoadWIDBCDS, DB is ' + IfThen(not WIDBCDS.Active, 'not ') + 'Active');
+  WebLabel1.Caption := 'Updating IndexedDB.';
   pnlWaitPls.BringToFront;
   AlertLabel.Caption := 'Refreshing IndexedDB data <i class="fa-solid fa-spinner fa-spin"></>';
   WIDBCDS.DisableControls;
@@ -599,6 +604,13 @@ begin
     {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
     Log('Finished LoadWIDBCDS');
   end;
+end;
+
+procedure TCWRmainFrm.NewCapturesGetCellData(Sender: TObject; ACol,
+  ARow: Integer; AField: TField; var AValue: string);
+begin
+//  if (ARow > 0) and (ACol in [1,2]) then
+//  AValue := FormatDateTime('mm/dd hh:nn',StrToDateTime(AValue));
 end;
 
 procedure TCWRmainFrm.CheckSettingsForUpdate;
@@ -753,7 +765,7 @@ end;
 
 procedure TCWRmainFrm.SetFilter(fltr: string);
 begin
-  WebLabel1.Caption := 'Preparing EPG Filter.';
+//  WebLabel1.Caption := 'Preparing EPG Filter.';
 //  pnlWaitPls.BringToFront;
 //  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   EPG.BeginUpdate;
@@ -777,6 +789,7 @@ begin
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   if not WIDBCDS.Active then
   begin
+    WebLabel1.Caption := 'Opening IndexedDB.';
     pnlWaitPls.BringToFront;
     TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   end;
@@ -790,7 +803,7 @@ begin
     if WIDBCDS.Active and not WIDBCDS.IsEmpty then
     begin
 //      WIDBCDS.DisableControls;
-      WebLabel1.Caption := 'Preparing ' + seNumDisplayDays.Value.ToString + '-day EPG Listings.';
+      WebLabel1.Caption := 'Preparing ' + seNumDisplayDays.Value.ToString + '-day Listing.';
       pnlWaitPls.BringToFront;
       {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
       Log('"Pls Wait" is showing');
@@ -859,25 +872,37 @@ begin
   SetPage(1);
 end;
 
-procedure TCWRmainFrm.tbCapturesShow;
-var
-  sl: TStrings;
-  i: Integer;
-  st, et: TDateTime;
-
+procedure ReloadSG(SG: TWebStringGrid; LSName: string);
+var i: Integer;
+  sl: TStringList;
 begin
-  if TWebLocalStorage.GetValue('sl1') > '' then  // have stored value(s)
+  if TWebLocalStorage.GetValue(LSName + '1') > '' then  // have stored value(s)
   begin
     sl := TStringList.Create;
     i := 0;
-    while ReplaceStr(ReplaceStr(TWebLocalStorage.GetValue('sl'+i.ToString),'"',''),',','') > '' do
+    while ReplaceStr(ReplaceStr(TWebLocalStorage.GetValue(LSName + i.ToString),'"',''),',','') > '' do
     begin
-      sl.Add(TWebLocalStorage.GetValue('sl'+i.ToString));
+      sl.Add(TWebLocalStorage.GetValue(LSName + i.ToString));
       Inc(i);
     end;
-    Captures.LoadFromStrings(sl, ',', True);
-    Log('Captures Row Count: ' + Captures.RowCount.ToString);
+    SG.LoadFromStrings(sl, ',', True);
+    Log(SG.Name + ' Row Count: ' + SG.RowCount.ToString);
     sl.Free;
+  end;
+end;
+
+procedure TCWRmainFrm.tbCapturesShow;
+var
+  i: Integer;
+  st, et: TDateTime;
+const
+  HEADINGS: array [0..6] of string = ('Ch Name','RecordStart','RecordEnd','Title','SubTitle','StartTime','ProgramID');
+  WIDTHS: array [0..6] of Integer =  (       75,           95,         95,    150,       400,          0,         0 );
+
+begin
+  ReloadSG(Captures, 'sl');
+  if Captures.RowCount > 1 then  // have stored value(s)
+  begin
     // Discard stale entries (End DateTime < now)
     for i := Captures.RowCount-1 downto 1 do
       if Captures.Cells[3,i] > '' then // not null row
@@ -892,6 +917,32 @@ begin
         end;
       end;
   end;
+  ReloadSG(NewCaptures, 'nc');
+  if NewCaptures.RowCount > 1 then  // have stored value(s)
+  begin
+    // Discard stale entries (End DateTime < now)
+    for i := NewCaptures.RowCount-1 downto 1 do
+      if NewCaptures.Cells[0,i] > '' then // not null row
+      begin
+        st := StrToDateTime(NewCaptures.Cells[1,i]);
+        et := StrToDateTime(NewCaptures.Cells[2,i]);
+        if et < now then
+        begin
+          console.log('Stale entry date: ' + DateTimeToStr(et));
+          NewCaptures.RemoveRow(i);
+        end
+        else // Reformat DT for local display
+        begin
+          NewCaptures.Cells[1,i] := FormatDateTime('mm/dd HH:nn',st);
+          NewCaptures.Cells[2,i] := FormatDateTime('mm/dd HH:nn',et);
+        end;
+      end;
+  end;
+  for i := 0 to NewCaptures.ColCount-1 do
+  begin
+    NewCaptures.Cells[i,0] := HEADINGS[i];
+    NewCaptures.ColWidths[i] := WIDTHS[i];
+  end;
   for i := 0 to Captures.ColCount-1 do Captures.ColWidths[i] := 0;
   Captures.ColWidths[1] := 80;  // Computer
   Captures.ColWidths[2] := 100; // Tuner
@@ -903,6 +954,7 @@ begin
   for i := 1 to 6 do Captures.ColAlignments[i] := taCenter;
   Log('AllCapsGrid.RowCount after stale check: ' + Captures.RowCount.ToString);
 //  Log('AllCapsGrid.Cells[25,1]: <' + AllCapsGrid.Cells[25,1] + '>');
+
   if (Captures.RowCount = 2) and (Captures.Cells[25,1] = '-1') then  // Valid list, no captures, reload??
   begin
     Log('No captures listed, prompting for EPG fetch');
@@ -1194,6 +1246,19 @@ begin
   ShowMessage(DataSet.Name + ' error: ' + errorName + ', msg: ' + errorMsg);
 end;
 
+procedure SaveLocalStrings(SG: TWebStringGrid; LSName: string);
+var
+  sl: TStringList;
+  i: Integer;
+begin
+  sl := TStringList.Create;
+  SG.SaveToStrings(sl, ',', True);
+  for i := 0 to sl.Count - 1 do
+    TWebLocalStorage.SetValue(LSName + i.ToString, sl[i]);
+  TWebLocalStorage.RemoveKey(LSName + sl.Count.ToString);  // dump old value
+  sl.Free;
+end;
+
 procedure TCWRmainFrm.FetchCapReservations;  // Fetch CW_EPG-saved file
 
 var
@@ -1206,12 +1271,7 @@ begin
   Captures.OnGetCellData := nil;
   await(RefreshCSV(Captures, 'cwr_captures.csv', 'Scheduled', id));
   // Save unmodified capture data to Local Storage
-  sl := TStringList.Create;
-  Captures.SaveToStrings(sl, ',', True);
-  for i := 0 to sl.Count - 1 do
-    TWebLocalStorage.SetValue('sl'+i.ToString, sl[i]);
-  TWebLocalStorage.RemoveKey('sl'+sl.Count.ToString);  // dump old value
-  sl.Free;
+  SaveLocalStrings(Captures, 'sl');
   // Turn GetCellData formatting back on
   Captures.OnGetCellData := AllCapsGridGetCellData;
   Log(' ====== FetchCapReservations finished =========');
@@ -1256,8 +1316,6 @@ end;
 
 procedure TCWRmainFrm.UpdateNewCaptures(RecordStart, RecordEnd: TDateTime);
 
-const
-  HEADINGS: array [0..6] of string = ('PSIP','RecordStart','RecordEnd','Title','SubTitle','StartTime','ProgramID');
 var
   i: Integer;
   id: string;
@@ -1271,8 +1329,6 @@ begin
   begin
     NewCaptures.RowCount := 1;
     NewCaptures.ColCount := 7;
-    for i := 0 to NewCaptures.ColCount-1 do
-      NewCaptures.Cells[i,0] := HEADINGS[i];
     await(CreateGoogleFile('cwr_newcaptures.csv', id));
   end
   else
@@ -1287,6 +1343,8 @@ begin
   NewCaptures.Cells[4,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('SubTitle').AsString;
   NewCaptures.Cells[5,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('Time').AsString.Split(['--'])[0]; // EPG StartTime (HTPC TZ)
   NewCaptures.Cells[6,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('ProgramID').AsString; // Episode No.
+  // Update the local strings
+  SaveLocalStrings(NewCaptures, 'nc');
   // Update the file
   data := TStringList.Create;
   data.LineBreak := #13#10;
