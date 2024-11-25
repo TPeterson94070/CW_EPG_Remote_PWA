@@ -540,12 +540,12 @@ object CWRmainFrm: TCWRmainFrm
     Top = 80
     Width = 400
     Height = 700
-    ElementClassName = 'card'
+    ElementClassName = 'greenBG'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
     Align = alClient
     ChildOrder = 9
-    Color = clTeal
+    Color = clGray
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
     ShowCaption = False
@@ -555,13 +555,14 @@ object CWRmainFrm: TCWRmainFrm
       Top = 231
       Width = 400
       Height = 35
+      ElementClassName = 'greenBG'
       Align = alTop
       ChildOrder = 1
       ElementFont = efCSS
       HTML.Strings = (
         
-          '<FONT color="#008080"><P align="center">Programs to be Scheduled' +
-          ' on Next CW_EPG Run </P> </FONT>')
+          '<FONT color="#FFFFFF" ><P align="center">Programs to be Schedule' +
+          'd on </FONT><FONT color="#F00000" >Next CW_EPG Run </P> </FONT>')
       Role = ''
     end
     object WebHTMLDiv2: TWebHTMLDiv
@@ -587,7 +588,7 @@ object CWRmainFrm: TCWRmainFrm
         Options = [goFixedHorzLine, goHorzLine, goRowSelect]
         TabOrder = 0
         StyleElements = []
-        ElementClassName = 'white'
+        ElementClassName = 'greenBG'
         ElementFont = efCSS
         FixedFont.Charset = ANSI_CHARSET
         FixedFont.Color = clBlack
@@ -598,6 +599,7 @@ object CWRmainFrm: TCWRmainFrm
         RangeEdit.Step = 1.000000000000000000
         HeightPercent = 100.000000000000000000
         WidthPercent = 100.000000000000000000
+        OnClickCell = NewCapturesClickCell
         OnGetCellData = NewCapturesGetCellData
       end
     end
@@ -623,7 +625,7 @@ object CWRmainFrm: TCWRmainFrm
         Options = [goHorzLine, goRowSelect]
         TabOrder = 0
         StyleElements = []
-        ElementClassName = 'white'
+        ElementClassName = 'greenBG'
         ElementFont = efCSS
         FixedFont.Charset = ANSI_CHARSET
         FixedFont.Color = clBlack
@@ -639,7 +641,6 @@ object CWRmainFrm: TCWRmainFrm
     end
   end
   object WebMainMenu1: TWebMainMenu
-    OnChange = WebMainMenu1Change
     Appearance.BackgroundColor = clSilver
     Appearance.HamburgerMenu.Caption = 'Menu'
     Appearance.HamburgerMenu.Visible = hmAlways

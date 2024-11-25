@@ -63,8 +63,10 @@ type
     WebHTMLDiv1: TWebHTMLDiv;
     WebHTMLDiv2: TWebHTMLDiv;
     WebHTMLDiv3: TWebHTMLDiv;
+  procedure SetNewCapturesFixedRow;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
+  [async] procedure SaveNewCapturesFile(id: string);
   [async]
   procedure LoadWIDBCDS;
   procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
@@ -99,17 +101,15 @@ type
   [async] procedure WebComboBox2Change(Sender: TObject);
   [async] procedure ByAllClick(Sender: TObject);
   procedure ClearExcept(FilterType: string);
-    procedure WebMainMenu1Change(Sender: TObject; Source: TMenuItem;
-      Rebuild: Boolean);
   [async] procedure ByChannelClick(Sender: TObject);
   [async] procedure WebComboBox3Change(Sender: TObject);
+  [async]
+    procedure NewCapturesClickCell(Sender: TObject; ACol, ARow: Integer);
     procedure NewCapturesGetCellData(Sender: TObject; ACol, ARow: Integer;
       AField: TField; var AValue: string);
 private
   { Private declarations }
-//  [async]
-//  procedure ShowForm;
-  [async]
+  procedure ReloadSG(SG: TWebStringGrid; LSName: string);  [async]
   procedure SetPage(PageNum: Integer);
   [async]
   procedure FetchCapReservations;
@@ -260,24 +260,12 @@ begin
   SetPage(0);
 
 
-  FillHistoryDisplay;
+//  FillHistoryDisplay;
   await(SetupWIDBCDS);
   Log('FormCreate, ' + WIDBCDS.Name + ' record count: ' + WIDBCDS.RecordCount.ToString);
   await(RefreshListings);
   Log('FormCreate is finished');
 end;
-
-procedure TCWRmainFrm.WebMainMenu1Change(Sender: TObject; Source: TMenuItem;
-  Rebuild: Boolean);
-begin
-end;
-
-//procedure TCWRmainFrm.ShowForm;
-//begin
-//  Log('ShowForm is called');
-//  await(ReFreshListings);
-//  Log('ShowForm is finished');
-//end;
 
 procedure TCWRmainFrm.UpdateEPG(Sender: TObject);
 var
@@ -606,11 +594,57 @@ begin
   end;
 end;
 
+procedure TCWRmainFrm.NewCapturesClickCell(Sender: TObject; ACol,
+  ARow: Integer);
+var
+  PSIP, RecordStart, RecordEnd, Title, ProgID, id: string;
+//  PSIP1, RecordStart1, RecordEnd1, Title1, ProgID1: string;
+  i: Integer;
+begin
+  if ARow = 0 then exit;
+  if TAwait.ExecP<TModalResult> (MessageDlgAsync('Remove selected program?'
+    ,mtConfirmation, [mbYes,mbNo])) = mrYes then
+  begin
+    // Find & delete matching row in Local Storage
+    PSIP := NewCaptures.Cells[0,ARow];
+    RecordStart := FormatDateTime('mm/dd/yyyy hh:nn:ss AM/PM', StrToDateTime(NewCaptures.Cells[1,ARow]));
+    RecordEnd := FormatDateTime('mm/dd/yyyy hh:nn:ss AM/PM', StrToDateTime(NewCaptures.Cells[2,ARow]));
+    Title := NewCaptures.Cells[3,ARow];
+    ProgID := NewCaptures.Cells[6,ARow];
+    NewCaptures.BeginUpdate;
+    // Suppress DT reformatting
+    NewCaptures.OnGetCellData := nil;
+    await(RefreshCSV(NewCaptures, 'cwr_newcaptures.csv','NewCaptures', id));
+    Log('NewCaptures Rows: '+NewCaptures.RowCount.ToString);
+    if NewCaptures.RowCount > 0 then // file exists, find matching row
+      for i := 1 to Pred(NewCaptures.RowCount) do
+      begin
+//        PSIP1 := NewCaptures.Cells[0,i];
+//        RecordStart1 := NewCaptures.Cells[1,i];
+//        RecordEnd1 := NewCaptures.Cells[2,i];
+//        Title1 := NewCaptures.Cells[3,i];
+//        ProgID1 := NewCaptures.Cells[6,i];
+        if PSIP <> NewCaptures.Cells[0,i] then continue;
+        if RecordStart <> NewCaptures.Cells[1,i] then continue;
+        if RecordEnd <> NewCaptures.Cells[2,i] then continue;
+        if Title <> NewCaptures.Cells[3,i] then continue;
+        if ProgID <> NewCaptures.Cells[6,i] then continue;
+        NewCaptures.RemoveRow(i);
+        // Update file
+        SaveNewCapturesFile(id);
+        Break;
+      end;
+    // Restore DT reformatting
+    NewCaptures.OnGetCellData := NewCapturesGetCellData;
+    NewCaptures.EndUpdate;
+  end;
+end;
+
 procedure TCWRmainFrm.NewCapturesGetCellData(Sender: TObject; ACol,
   ARow: Integer; AField: TField; var AValue: string);
 begin
-//  if (ARow > 0) and (ACol in [1,2]) then
-//  AValue := FormatDateTime('mm/dd hh:nn',StrToDateTime(AValue));
+  if ARow > 0 then
+    if ACol in [1,2] then AValue := FormatDateTime('mm/dd HH:nn', StrToDateTime(AValue));
 end;
 
 procedure TCWRmainFrm.CheckSettingsForUpdate;
@@ -872,7 +906,7 @@ begin
   SetPage(1);
 end;
 
-procedure ReloadSG(SG: TWebStringGrid; LSName: string);
+procedure TCWRmainFrm.ReloadSG(SG: TWebStringGrid; LSName: string);
 var i: Integer;
   sl: TStringList;
 begin
@@ -891,13 +925,23 @@ begin
   end;
 end;
 
+procedure TCWRmainFrm.SetNewCapturesFixedRow;
+const
+  HEADINGS: array [0..6] of string = ('Ch Name','RecordStart','RecordEnd','Title','SubTitle','StartTime','ProgramID');
+  WIDTHS: array [0..6] of Integer =  (       75,           95,         95,    150,       400,          0,         0 );
+var i: Integer;
+begin
+  for i := 0 to NewCaptures.ColCount-1 do
+  begin
+    NewCaptures.Cells[i,0] := HEADINGS[i];
+    NewCaptures.ColWidths[i] := WIDTHS[i];
+  end;
+end;
+
 procedure TCWRmainFrm.tbCapturesShow;
 var
   i: Integer;
   st, et: TDateTime;
-const
-  HEADINGS: array [0..6] of string = ('Ch Name','RecordStart','RecordEnd','Title','SubTitle','StartTime','ProgramID');
-  WIDTHS: array [0..6] of Integer =  (       75,           95,         95,    150,       400,          0,         0 );
 
 begin
   ReloadSG(Captures, 'sl');
@@ -918,6 +962,7 @@ begin
       end;
   end;
   ReloadSG(NewCaptures, 'nc');
+  SetNewCapturesFixedRow;
   if NewCaptures.RowCount > 1 then  // have stored value(s)
   begin
     // Discard stale entries (End DateTime < now)
@@ -930,18 +975,13 @@ begin
         begin
           console.log('Stale entry date: ' + DateTimeToStr(et));
           NewCaptures.RemoveRow(i);
-        end
-        else // Reformat DT for local display
-        begin
-          NewCaptures.Cells[1,i] := FormatDateTime('mm/dd HH:nn',st);
-          NewCaptures.Cells[2,i] := FormatDateTime('mm/dd HH:nn',et);
+//        end
+//        else // Reformat DT for local display
+//        begin
+//          NewCaptures.Cells[1,i] := FormatDateTime('mm/dd HH:nn',st);
+//          NewCaptures.Cells[2,i] := FormatDateTime('mm/dd HH:nn',et);
         end;
       end;
-  end;
-  for i := 0 to NewCaptures.ColCount-1 do
-  begin
-    NewCaptures.Cells[i,0] := HEADINGS[i];
-    NewCaptures.ColWidths[i] := WIDTHS[i];
   end;
   for i := 0 to Captures.ColCount-1 do Captures.ColWidths[i] := 0;
   Captures.ColWidths[1] := 80;  // Computer
@@ -968,8 +1008,8 @@ begin
   else if Captures.RowCount < 2 then // Invalid list
   begin
     Log('No fresh captures, prompting for EPG fetch');
-    if TAwait.ExecP<TModalResult> (MessageDlgAsync('The list appears to be stale.'
-      + #13#13'Do you want to refresh the list?',mtConfirmation, [mbYes,mbNo]))
+    if TAwait.ExecP<TModalResult> (MessageDlgAsync('Scheduled list appears to be stale.'
+      + #13#13'Do you want to refresh it?',mtConfirmation, [mbYes,mbNo]))
       = mrYes then
     begin
       await (UpdateEPG(Self));
@@ -984,37 +1024,36 @@ var
 
 begin
   Log('FillHistoryDisplay called');
+  HistoryTable.OnGetCellClass := nil;
   sl := TStringList.Create;
   for i := 0 to seNumHistEvents.Value do
     if TWebLocalStorage.GetValue('hl'+i.ToString) > '' then
       sl.Add(TWebLocalStorage.GetValue('hl'+i.ToString));
   Log('sl.Count: ' + sl.Count.ToString);
+  Log('historyTable.BeginUpdate');
+  historyTable.BeginUpdate;
+  historyTable.RowCount := sl.Count;
   if sl.Count > 1 then begin
-    Log('BufferGrid.BeginUpdate');
-    BufferGrid.BeginUpdate;
-    Log('BufferGrid.LoadFromStrings');
-    BufferGrid.LoadFromStrings(sl,',',True);
-    Log('BufferGrid.RowCount: ' + BufferGrid.RowCount.ToString);
+    Log('historyTable.LoadFromStrings');
+    historyTable.LoadFromStrings(sl,',',True);
+    Log('historyTable.RowCount: ' + historyTable.RowCount.ToString);
+    HistoryTable.EndUpdate;
   end;
-  BufferGrid.RowCount := Min(seNumHistEvents.Value + 1,sl.Count);
-  Log('BufferGrid.RowCount: ' + BufferGrid.RowCount.ToString);
-  for i := BufferGrid.ColCount-1 downto 0 do
+//  historyTable.RowCount := Min(seNumHistEvents.Value + 1,sl.Count);
+//  Log('historyTable.RowCount: ' + historyTable.RowCount.ToString);
+  Log('historyTable.ColCount: ' + historyTable.ColCount.ToString);
+  HistoryTable.BeginUpdate;
+  for i := historyTable.ColCount-1 downto 0 do
   begin
     if i in [8,10,12,13,14] then continue;
-    BufferGrid.RemoveColumn(i);
+    historyTable.RemoveColumn(i);
   end;
-  Log('BufferGrid.ColCount: ' + BufferGrid.ColCount.ToString);
-//  for i := 0 to BufferGrid.ColCount-1 do
-//    Log('BufferGrid.Cells['+i.ToString+',1]: '+BufferGrid.Cells[i,1]);
+  Log('historyTable.ColCount: ' + historyTable.ColCount.ToString);
   sl.Clear;
-  BufferGrid.SaveToStrings(sl,',',True);
-  BufferGrid.EndUpdate;
-  HistoryTable.BeginUpdate;
+  HistoryTable.SaveToStrings(sl,',',True);
+  HistoryTable.OnGetCellClass := HistoryTableGetCellClass;
   HistoryTable.LoadFromStrings(sl,',',True);
   sl.Free;
-//  for i := 0 to HistoryTable.ColCount-1 do
-//    Log('HistoryTable.Cells['+i.ToString+',1]: '+HistoryTable.Cells[i,1]);
-//  HistoryTable.ColCount := 5;
   SetTableDefaults(HistoryTable, 120, 150, 250, 300);
   for i := 1 to HistoryTable.RowCount - 1 do
   begin
@@ -1055,21 +1094,23 @@ end;
 
 procedure TCWRmainFrm.HistoryTableGetCellClass(Sender: TObject; ACol,
   ARow: Integer; AField: TField; AValue: string; var AClassName: string);
-var EP: Char;
 begin
   if (ARow > 0) and (HistoryTable.Cells[0,ARow] > '') then
   begin
-    EP := HistoryTable.Cells[1,ARow][1];
-    if EP = 'E' then AClassName := 'green'
-    else if EP = 'S' then AClassName := 'gray'
-    else if EP = 'M' then AClassName := 'goldenRod'
-    else AClassName := 'white';
+    case HistoryTable.Cells[1,ARow][1] of
+      'E': AClassName := 'green';         // Regular Episode
+      'S': AClassName := 'gray';          // Generic Show
+      'M': AClassName := 'goldenRod';     // Movie
+    else
+      AClassName := 'white';              // Huh?
+    end;
   end;
 end;
 
 procedure TCWRmainFrm.tbHistoryShow;
 begin
   HistoryTable.Visible := False;
+  await(FillHistoryDisplay);
   Log('HistoryTable.RowCount: ' + HistoryTable.RowCount.ToString);
   if HistoryTable.RowCount <> seNumHistEvents.Value + 1 then  // may need History data
   begin
@@ -1079,7 +1120,7 @@ begin
       + #13#13'Do you want to refresh it now?',mtConfirmation, [mbYes,mbNo]))
       = mrYes then await(UpdateHistory(Self));
   end;
-  await(FillHistoryDisplay);
+//  await(FillHistoryDisplay);
   HistoryTable.Visible := True;
 end;
 
@@ -1262,9 +1303,7 @@ end;
 procedure TCWRmainFrm.FetchCapReservations;  // Fetch CW_EPG-saved file
 
 var
-  i: Integer;
   id: string;
-  sl: TStrings;
 begin
   Log(' ====== FetchCapReservations called =========');
   // Turn off GetCellData (modifies Cols 1, 2 for display)
@@ -1319,8 +1358,6 @@ procedure TCWRmainFrm.UpdateNewCaptures(RecordStart, RecordEnd: TDateTime);
 var
   i: Integer;
   id: string;
-  res: TJSXMLHttpRequest;
-  data: Tstrings;
 begin
   Log(' ====== UpdateNewCaptures called =========');
   await(RefreshCSV(NewCaptures, 'cwr_newcaptures.csv','NewCaptures', id));
@@ -1334,6 +1371,7 @@ begin
   else
     for i := NewCaptures.RowCount-1 downto 1 do // Remove blank rows
       if NewCaptures.Cells[0,i] = '' then NewCaptures.RemoveRow(i);
+  SetNewCapturesFixedRow;
 // Add the new capture to the list
   NewCaptures.RowCount := NewCaptures.RowCount + 1;
   NewCaptures.Cells[0,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('PSIP').AsString;
@@ -1343,6 +1381,30 @@ begin
   NewCaptures.Cells[4,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('SubTitle').AsString;
   NewCaptures.Cells[5,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('Time').AsString.Split(['--'])[0]; // EPG StartTime (HTPC TZ)
   NewCaptures.Cells[6,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('ProgramID').AsString; // Episode No.
+  SaveNewCapturesFile(id);
+//  // Update the local strings
+//  SaveLocalStrings(NewCaptures, 'nc');
+//  // Update the file
+//  data := TStringList.Create;
+//  data.LineBreak := #13#10;
+//  NewCaptures.SaveToStrings(data, ',', True);
+//  console.log('id: '+id);
+//  console.log('data.text: ', data.Text);
+//  res := TAwait.ExecP<TJSXMLHttpRequest>(WEBRESTClient1.HttpRequest('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data.Text));
+//  console.log(res);
+//  if res.Status = 200 then
+//    ShowMessage('Request successfully updated.'#13#13'N.B.:  NOT scheduled until CW_EPG''s next run.')
+//  else ShowMessage('Request submission FAILED.'#13#13'If this is the first failure, please retry.');
+
+  // ==============================
+  Log('Final NewCaptures Table Rows: '+NewCaptures.RowCount.ToString);
+  Log(' ====== UpdateNewCaptures finished =========');
+end;
+
+procedure TCWRmainFrm.SaveNewCapturesFile(id: string);
+var data: TStrings;
+  res: TJSXMLHttpRequest;
+begin
   // Update the local strings
   SaveLocalStrings(NewCaptures, 'nc');
   // Update the file
@@ -1354,13 +1416,11 @@ begin
   res := TAwait.ExecP<TJSXMLHttpRequest>(WEBRESTClient1.HttpRequest('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data.Text));
   console.log(res);
   if res.Status = 200 then
-    ShowMessage('Request successfully posted.'#13#13'N.B.:  It will NOT be scheduled until CW_EPG''s next run.')
+    ShowMessage('Request successfully updated.'#13#13'N.B.:  NOT scheduled until CW_EPG''s next run.')
   else ShowMessage('Request submission FAILED.'#13#13'If this is the first failure, please retry.');
 
-  // ==============================
-  Log('Final NewCaptures Table Rows: '+NewCaptures.RowCount.ToString);
-  Log(' ====== UpdateNewCaptures finished =========');
 end;
+
 
 procedure TCWRmainFrm.ViewLog1Click(Sender: TObject);
 begin
