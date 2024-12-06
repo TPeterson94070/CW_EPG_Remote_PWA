@@ -107,6 +107,9 @@ type
     procedure NewCapturesClickCell(Sender: TObject; ACol, ARow: Integer);
     procedure NewCapturesGetCellData(Sender: TObject; ACol, ARow: Integer;
       AField: TField; var AValue: string);
+    procedure WebComboBox1FocusOut(Sender: TObject);
+    procedure WebComboBox2FocusOut(Sender: TObject);
+    procedure WebComboBox3FocusOut(Sender: TObject);
 private
   { Private declarations }
   procedure ReloadSG(SG: TWebStringGrid; LSName: string);  [async]
@@ -199,6 +202,11 @@ begin
   SetFilter(BaseFilter + GenreFilter);
 end;
 
+procedure TCWRmainFrm.WebComboBox1FocusOut(Sender: TObject);
+begin
+  WebComboBox1.Hide;
+end;
+
 procedure TCWRmainFrm.WebComboBox2Change(Sender: TObject);
 begin
   EPG.Columns[2].Title := 'Title'
@@ -215,6 +223,11 @@ begin
   SetFilter(BaseFilter + TitleFilter);
 end;
 
+procedure TCWRmainFrm.WebComboBox2FocusOut(Sender: TObject);
+begin
+  WebComboBox2.Hide;
+end;
+
 procedure TCWRmainFrm.WebComboBox3Change(Sender: TObject);
 begin
   EPG.Columns[2].Title := IfThen(WebComboBox1.Text = 'All', 'Title', 'Programs on channel "' + WebComboBox3.Text + '"');
@@ -228,6 +241,11 @@ begin
   ByChannel.Checked := WebComboBox3.Text <> 'All';
   ByAll.Checked := not ByChannel.Checked;
   SetFilter(BaseFilter + ChannelFilter);
+end;
+
+procedure TCWRmainFrm.WebComboBox3FocusOut(Sender: TObject);
+begin
+  WebComboBox3.Hide;
 end;
 
 procedure TCWRmainFrm.WebFormCreate(Sender: TObject);
@@ -463,7 +481,7 @@ begin
   if application.IsOnline then
   begin
     AlertLabel.Caption := 'Refreshing '+Title+' data <i class="fa-solid fa-spinner fa-spin"></>';
-    pnlStatus.Show;
+//    pnlStatus.Show;
     {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 
     WSG.BeginUpdate;
@@ -497,7 +515,7 @@ begin
     finally
       Log('Enter finally section');
       WSG.EndUpdate;
-      pnlStatus.Hide;
+//      pnlStatus.Hide;
       {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
       Log('Done hiding');
     end;
@@ -523,7 +541,7 @@ begin
   AlertLabel.Caption := 'Refreshing IndexedDB data <i class="fa-solid fa-spinner fa-spin"></>';
   WIDBCDS.DisableControls;
   EPG.BeginUpdate;
-  pnlStatus.Show;
+//  pnlStatus.Show;
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   WIDBCDS.Filtered := False;
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Filtered, 'UN') + 'filtered');
@@ -588,7 +606,7 @@ begin
     await(EPG.EndUpdate);
     Log('EPG update is ' + IfThen(EPG.IsUpdating,'NOT ') + 'ended');
     Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
-    pnlStatus.Hide;
+//    pnlStatus.Hide;
     {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
     Log('Finished LoadWIDBCDS');
   end;
@@ -771,7 +789,7 @@ var
 begin
   WebLabel1.Caption := 'Preparing filter lists.';
   pnlWaitPls.BringToFront;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   WIDBCDS.DisableControls;
   slSetup(slc);
   slSetup(slg);
@@ -836,25 +854,21 @@ begin
   try
     if WIDBCDS.Active and not WIDBCDS.IsEmpty then
     begin
-//      WIDBCDS.DisableControls;
       WebLabel1.Caption := 'Preparing ' + seNumDisplayDays.Value.ToString + '-day Listing.';
       pnlWaitPls.BringToFront;
       {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
       Log('"Pls Wait" is showing');
-//      WIDBCDS.Filtered := False;
-//      Log('WIDBCDS Filter is '+IfThen(WIDBCDS.Filtered,'enabled','disabled'));
       WIDBCDS.First;
       Log('StartTime of First (unfiltered) record ('+WIDBCDS.RecNo.ToString+'): '
         +DateTimeToStr(TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('StartTime').AsDateTime)));
       Log('Unfiltered IDBCDS records: ' + WIDBCDS.RecordCount.ToString);
       BaseFilter := '(StartTime > ' + FloatToStr(TTimeZone.Local.ToUniversalTime(Now))
         + ') and (StartTime < ' + FloatToStr(TTimeZone.Local.ToUniversalTime(Now) + seNumDisplayDays.Value)+')';
-      WIDBCDS.Filter := BaseFilter {+ GenreFilter + TitleFilter};
+      WIDBCDS.Filter := BaseFilter;
       Log('Filter: ' + WIDBCDS.Filter);
       try
         WIDBCDS.Filtered := True;
         Log('WIDBCDS Filter is '+IfThen(WIDBCDS.Filtered,'enabled','disabled'));
-//        if WebComboBox1.ItemIndex < 0 then SetupFilterLists; // i.e., 1st call/after NumDays changed
         WIDBCDS.First;
         Log('StartTime of First filtered record ('+WIDBCDS.RecNo.ToString+'): '
          + DateTimeToStr(TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('StartTime').AsDateTime)));
@@ -875,28 +889,29 @@ begin
             + #13#13'Please try restarting this page');
         end;
       end;
-      if NRows > 0 then
-      begin
+//      if NRows > 0 then
+//      begin
         EPG.Columns[0].Alignment := taCenter;
         EPG.Columns[2].Alignment := taLeftJustify;
-      end;
+//      end;
     end;
     lblEmptyEPG.Visible := NRows = 0;
-    lblEmptyEPG.Caption := 'There are no current listings to see.'#13'(Try '
-      + IfThen((GenreFilter>'') or (TitleFilter>''), 'removing the Filter)', ' "Options|Refresh EPG" to update)');
-    if lblEmptyEPG.Visible then lblEmptyEPG.BringToFront;
+    if lblEmptyEPG.Visible then
+    begin
+      lblEmptyEPG.Caption := 'There are no current listings to see.'#13'(Try '
+        + IfThen((GenreFilter>'') or (TitleFilter>'') or (ChannelFilter>''), 'removing the Filter)', ' "Options|Refresh EPG" to update)');
+      lblEmptyEPG.BringToFront;
+    end;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   finally
     await(WIDBCDS.EnableControls);
     Log('WIDBCDS Controls are '+IfThen(not WIDBCDS.ControlsDisabled,'enabled','disabled'));
     EPG.EndUpdate;
     Log('EPG Update is '+IfThen(EPG.IsUpdating, 'not ') + 'finished');
-    EPG.Refresh;
-//    await(WIDBCDS.Close);
-//    TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
+//    if (GenreFilter>'') or (TitleFilter>'') or (ChannelFilter>'') then EPG.Refresh;
+    SetupFilterLists;
     pnlListings.BringToFront;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-    SetupFilterLists;
     Log('RefreshListings finished');
   end;
 end;
@@ -1128,11 +1143,9 @@ procedure TCWRmainFrm.SetPage(PageNum: Integer);
 
 begin
   await(CheckSettingsForUpdate);
-//  WebMainMenu1.BeginUpdate;
-//  Filter.Visible := PageNum = 0;
-//  WebMainMenu1.EndUpdate;
   case PageNum of
     0: begin          {Listings page}
+      if WIDBCDS.Active then EPG.Refresh;
       pnlListings.BringToFront;
     end;
     1: begin          {Captures}
@@ -1198,8 +1211,6 @@ var
 
 begin
   EPG.BeginUpdate;
-  // Prevent duplicate clicks
-//  EPG.OnClickCell := nil;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   Log('EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   DetailsFrm := TDetailsFrm.Create(Self);
@@ -1276,7 +1287,6 @@ begin
   except
     Log('Locate raised an improper Exception instead of "False"');
   end;
-//  EPG.OnClickCell := EPGClickCell;
   WIDBCDS.EnableControls;
   EPG.EndUpdate;
 end;
@@ -1325,10 +1335,8 @@ var
 begin
   Log(' ====== FetchHistory called =========');
   BufferGrid.BeginUpdate;
-//  BufferGrid.Visible := False;
   BufferGrid.ColCount := 32;
   await(RefreshCSV(BufferGrid, 'cwr_history.csv','History', id));
-//  Log('History Rows: '+BufferGrid.RowCount.ToString);
   for i := BufferGrid.RowCount-1 downto 1 do // Remove blanks, add leading zeroes
   begin
     if BufferGrid.Cells[0,i] = '' then BufferGrid.RemoveRow(i)

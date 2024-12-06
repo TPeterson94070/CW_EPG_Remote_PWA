@@ -501,6 +501,7 @@ object CWRmainFrm: TCWRmainFrm
       WidthPercent = 100.000000000000000000
       OnChange = WebComboBox1Change
       OnDblClick = WebComboBox1Change
+      OnFocusOut = WebComboBox1FocusOut
       ItemIndex = -1
     end
     object WebComboBox2: TWebComboBox
@@ -517,6 +518,7 @@ object CWRmainFrm: TCWRmainFrm
       WidthPercent = 100.000000000000000000
       OnChange = WebComboBox2Change
       OnDblClick = WebComboBox2Change
+      OnFocusOut = WebComboBox2FocusOut
       ItemIndex = -1
     end
     object WebComboBox3: TWebComboBox
@@ -532,6 +534,8 @@ object CWRmainFrm: TCWRmainFrm
       Visible = False
       WidthPercent = 100.000000000000000000
       OnChange = WebComboBox3Change
+      OnDblClick = WebComboBox3Change
+      OnFocusOut = WebComboBox3FocusOut
       ItemIndex = -1
     end
   end
