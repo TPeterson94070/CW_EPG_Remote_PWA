@@ -89,8 +89,8 @@ type
   procedure ScheduledClick(Sender: TObject);
   procedure ViewLog1Click(Sender: TObject);
   procedure Settings1Click(Sender: TObject);
-  [async]
-  procedure FinalizeWIDBCDSUpdate;
+//  [async]
+//  procedure FinalizeWIDBCDSUpdate;
   [async]
   procedure EPGClickCell(Sender: TObject; ACol, ARow: Integer);
   procedure HistoryTableGetCellClass(Sender: TObject; ACol, ARow: Integer;
@@ -136,9 +136,9 @@ private
   procedure CheckSettingsForUpdate;
   [async]
   procedure SetupWIDBCDS;
-  procedure SetupFilterList(cb: TWebComboBox; fn: string);
-  [async] procedure SetupFilterLists;
-  [async] procedure SetFilter(fltr: string);
+//  procedure SetupFilterList(cb: TWebComboBox; fn: string);
+  {[async]} procedure SetupFilterLists;
+  {[async]} procedure SetFilter(fltr: string);
 
 public
   { Public declarations }
@@ -281,7 +281,7 @@ begin
 //  FillHistoryDisplay;
   await(SetupWIDBCDS);
   Log('FormCreate, ' + WIDBCDS.Name + ' record count: ' + WIDBCDS.RecordCount.ToString);
-  await(RefreshListings);
+  {await(}RefreshListings{)};
   Log('FormCreate is finished');
 end;
 
@@ -293,7 +293,7 @@ begin
   await(RefreshCSV(BufferGrid, 'cwr_epg.csv','EPG', id));
   await(LoadWIDBCDS);
   await(FetchCapReservations);
-  await(ReFreshListings);
+  {await(}ReFreshListings{)};
 end;
 
 procedure TCWRmainFrm.UpdateHistory(Sender: TObject);
@@ -594,16 +594,16 @@ begin
       end;
     end;
   finally
-    WIDBCDS.Close;  // This seems necessary to finish update
+//    WIDBCDS.Close;  // This seems necessary to finish update    241206 TMP -- no longer true???
     Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
-    Log('calling await WIDBCDS.EnableControls');
-    await(WIDBCDS.EnableControls);
+    Log('calling WIDBCDS.EnableControls');
+    {await(}WIDBCDS.EnableControls{)};
     Log('WIDBCDS Controls are ' + IfThen(WIDBCDS.ControlsDisabled,'NOT ') + 'Enabled');
-    Log('calling WIDBCDS.OpenAsync');
-    TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
+//    Log('calling WIDBCDS.OpenAsync');
+//    TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
     Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active,'NOT ') + 'Open');
-    Log('calling await EPG.EndUpdate');
-    await(EPG.EndUpdate);
+    Log('calling EPG.EndUpdate');
+    {await(}EPG.EndUpdate{)};
     Log('EPG update is ' + IfThen(EPG.IsUpdating,'NOT ') + 'ended');
     Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
 //    pnlStatus.Hide;
@@ -672,7 +672,7 @@ begin
     TWebLocalStorage.SetValue(NUMDAYS,seNumDisplayDays.Value.ToString);
     Log('New number EPG Display Days: ' + seNumDisplayDays.Value.ToString);
     WebComboBox1.ItemIndex := -1;
-    await(ReFreshListings);
+    {await(}ReFreshListings{)};
   end;
 
   if TWebLocalStorage.GetValue(NUMHIST) <> seNumHistEvents.Value.ToString then
@@ -711,56 +711,56 @@ begin
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
 end;
 
-procedure TCWRmainFrm.FinalizeWIDBCDSUpdate; // This method seems to fail (even though marked with [async]
-begin
-  WIDBCDS.Close;  // This seems necessary to finish update
-  Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
-  Log('calling await WIDBCDS.EnableControls');
-  Await(WIDBCDS.EnableControls);
-  Log('finished await WIDBCDS.EnableControls');
-  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
-  Log('finished await WIDBCDS.OpenAsync');
-  Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
-end;
+//procedure TCWRmainFrm.FinalizeWIDBCDSUpdate; // This method seems to fail (even though marked with [async]
+//begin
+//  WIDBCDS.Close;  // This seems necessary to finish update
+//  Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
+//  Log('calling await WIDBCDS.EnableControls');
+//  Await(WIDBCDS.EnableControls);
+//  Log('finished await WIDBCDS.EnableControls');
+//  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
+//  Log('finished await WIDBCDS.OpenAsync');
+//  Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
+//end;
 
-procedure TCWRmainFrm.SetupFilterList(cb: TWebComboBox; fn: string);
-var
-  x,y: string;
-  sl: TStringList;
-begin
-  WIDBCDS.DisableControls;
-  sl := TStringList.Create;
-  sl.Sorted := True;
-  sl.Duplicates := dupIgnore;
-  sl.BeginUpdate;
-  WIDBCDS.First;
-  Log('Looping over WIDBCDS "' + fn + '" field');
-  while not WIDBCDS.Eof do
-  begin
-    x := WIDBCDS.FieldByName(fn).AsString;
-    if fn='genres' then
-    begin
-      y := ReplaceStr(x, '\', ''); // Remove escape "\" char
-      // Split the genres string 'xxx;yyy;zzz' into array xxx, yyy, zzz
-      // ignoring JSON "punctuation" around items
-      for x in y.Split([';','[',']','"',','], TStringSplitOptions.ExcludeEmpty) do
-        sl.Add(x);
-    end
-    else sl.Add(x);
-    WIDBCDS.Next;
-  end;
-  sl.EndUpdate;
-  cb.BeginUpdate;
-  cb.Clear;
-  Log('Adding first '+cb.Name+' Item: "All"');
-  cb.Items.Add('All');
-  cb.Items.AddStrings(sl);
-  cb.EndUpdate;
-  Log('Added ' + cb.Items.Count.ToString + ' to ' + cb.Name);
-  sl.Free;
-  cb.ItemIndex := 0;
-  WIDBCDS.EnableControls;
-end;
+//procedure TCWRmainFrm.SetupFilterList(cb: TWebComboBox; fn: string);
+//var
+//  x,y: string;
+//  sl: TStringList;
+//begin
+//  WIDBCDS.DisableControls;
+//  sl := TStringList.Create;
+//  sl.Sorted := True;
+//  sl.Duplicates := dupIgnore;
+//  sl.BeginUpdate;
+//  WIDBCDS.First;
+//  Log('Looping over WIDBCDS "' + fn + '" field');
+//  while not WIDBCDS.Eof do
+//  begin
+//    x := WIDBCDS.FieldByName(fn).AsString;
+//    if fn='genres' then
+//    begin
+//      y := ReplaceStr(x, '\', ''); // Remove escape "\" char
+//      // Split the genres string 'xxx;yyy;zzz' into array xxx, yyy, zzz
+//      // ignoring JSON "punctuation" around items
+//      for x in y.Split([';','[',']','"',','], TStringSplitOptions.ExcludeEmpty) do
+//        sl.Add(x);
+//    end
+//    else sl.Add(x);
+//    WIDBCDS.Next;
+//  end;
+//  sl.EndUpdate;
+//  cb.BeginUpdate;
+//  cb.Clear;
+//  Log('Adding first '+cb.Name+' Item: "All"');
+//  cb.Items.Add('All');
+//  cb.Items.AddStrings(sl);
+//  cb.EndUpdate;
+//  Log('Added ' + cb.Items.Count.ToString + ' to ' + cb.Name);
+//  sl.Free;
+//  cb.ItemIndex := 0;
+//  WIDBCDS.EnableControls;
+//end;
 
 procedure TCWRmainFrm.SetupFilterLists;
 var
@@ -787,9 +787,9 @@ var
     if cb.ItemIndex < 0 then cb.ItemIndex := 0;
   end;
 begin
-  WebLabel1.Caption := 'Preparing filter lists.';
-  pnlWaitPls.BringToFront;
-  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+//  WebLabel1.Caption := 'Preparing filter lists.';
+//  pnlWaitPls.BringToFront;
+//  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   WIDBCDS.DisableControls;
   slSetup(slc);
   slSetup(slg);
@@ -810,8 +810,8 @@ begin
   ComboBoxSetup(WebComboBox1, slg);
   ComboBoxSetup(WebComboBox2, slt);
   ComboBoxSetup(WebComboBox3, slc);
-  pnlWaitPls.SendToBack;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//  pnlWaitPls.SendToBack;
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   WIDBCDS.EnableControls;
 end;
 
@@ -904,7 +904,7 @@ begin
     end;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   finally
-    await(WIDBCDS.EnableControls);
+    {await(}WIDBCDS.EnableControls{)};
     Log('WIDBCDS Controls are '+IfThen(not WIDBCDS.ControlsDisabled,'enabled','disabled'));
     EPG.EndUpdate;
     Log('EPG Update is '+IfThen(EPG.IsUpdating, 'not ') + 'finished');
@@ -1145,8 +1145,13 @@ begin
   await(CheckSettingsForUpdate);
   case PageNum of
     0: begin          {Listings page}
-      if WIDBCDS.Active then EPG.Refresh;
       pnlListings.BringToFront;
+      if WIDBCDS.Active then
+      begin
+        EPG.BeginUpdate;
+        EPG.Refresh;
+        EPG.EndUpdate;
+      end;
     end;
     1: begin          {Captures}
       pnlCaptures.BringToFront;
@@ -1163,7 +1168,7 @@ begin
       pnlOptions.BringToFront;
     end;
   end;
-  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+//  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
 end;
 
 procedure TCWRmainFrm.Settings1Click(Sender: TObject);
