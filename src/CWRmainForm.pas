@@ -37,7 +37,6 @@ type
   History: TMenuItem;
   Options: TMenuItem;
   RefreshEPG: TMenuItem;
-  RefreshHistory1: TMenuItem;
   ChangeHTPC1: TMenuItem;
   ViewLog1: TMenuItem;
   Settings1: TMenuItem;
@@ -276,9 +275,6 @@ begin
     seNumHistEvents.Value := StrToInt(TWebLocalStorage.GetValue(NUMHIST));
     WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
   SetPage(0);
-
-
-//  FillHistoryDisplay;
   await(SetupWIDBCDS);
   Log('FormCreate, ' + WIDBCDS.Name + ' record count: ' + WIDBCDS.RecordCount.ToString);
   {await(}RefreshListings{)};
@@ -293,7 +289,8 @@ begin
   await(RefreshCSV(BufferGrid, 'cwr_epg.csv','EPG', id));
   await(LoadWIDBCDS);
   await(FetchCapReservations);
-  {await(}ReFreshListings{)};
+  await(FetchHistory);
+  Application.Navigate(Application.ExeName,ntPage); // i.e., restart!
 end;
 
 procedure TCWRmainFrm.UpdateHistory(Sender: TObject);
@@ -836,6 +833,7 @@ end;
 procedure TCWRmainFrm.ReFreshListings;
 var
   NRows: Integer;
+  LastTime: TDateTime;
 begin
   Log('ReFreshListings, DB is ' + IfThen(not WIDBCDS.Active, 'not ')
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
@@ -847,6 +845,7 @@ begin
   end;
   Log('Days to Display: ' + seNumDisplayDays.Value.ToString);
   NRows := 0;
+  EPG.Visible := True;
   EPG.BeginUpdate;
   WIDBCDS.DisableControls;
   WIDBCDS.Filtered := False;
@@ -854,62 +853,71 @@ begin
   try
     if WIDBCDS.Active and not WIDBCDS.IsEmpty then
     begin
-      WebLabel1.Caption := 'Preparing ' + seNumDisplayDays.Value.ToString + '-day Listing.';
-      pnlWaitPls.BringToFront;
-      {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-      Log('"Pls Wait" is showing');
-      WIDBCDS.First;
-      Log('StartTime of First (unfiltered) record ('+WIDBCDS.RecNo.ToString+'): '
-        +DateTimeToStr(TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('StartTime').AsDateTime)));
-      Log('Unfiltered IDBCDS records: ' + WIDBCDS.RecordCount.ToString);
-      BaseFilter := '(StartTime > ' + FloatToStr(TTimeZone.Local.ToUniversalTime(Now))
-        + ') and (StartTime < ' + FloatToStr(TTimeZone.Local.ToUniversalTime(Now) + seNumDisplayDays.Value)+')';
-      WIDBCDS.Filter := BaseFilter;
-      Log('Filter: ' + WIDBCDS.Filter);
-      try
-        WIDBCDS.Filtered := True;
-        Log('WIDBCDS Filter is '+IfThen(WIDBCDS.Filtered,'enabled','disabled'));
+      WIDBCDS.Last;
+      LastTime := TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('EndTime').AsDateTime);
+      Log('EndTime of Last (unfiltered) record (' + WIDBCDS.RecNo.ToString+'): ' + DateTimeToStr(LastTime));
+      if LastTime >= Now + seNumDisplayDays.Value then
+      begin
+        WebLabel1.Caption := 'Preparing ' + seNumDisplayDays.Value.ToString + '-day Listing.';
+        pnlWaitPls.BringToFront;
+        {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+        Log('"Pls Wait" is showing');
         WIDBCDS.First;
-        Log('StartTime of First filtered record ('+WIDBCDS.RecNo.ToString+'): '
-         + DateTimeToStr(TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('StartTime').AsDateTime)));
-        while not WIDBCDS.Eof do
-        begin
-          Inc(NRows);
-          WIDBCDS.Next;
-        end;
-        WIDBCDS.Last;
-        Log('StartTime of Last filtered record ('+WIDBCDS.RecNo.ToString+'): '
-          + DateTimeToStr(TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('StartTime').AsDateTime)));
-        Log('ReFreshListings, No. recs to display: ' + NRows.ToString);
-      except
-        on E:Exception do
-        begin
-          NRows := 0;
-          ShowMessage('Encountered error: ' + E.Message
-            + #13#13'Please try restarting this page');
+        Log('StartTime of First (unfiltered) record ('+WIDBCDS.RecNo.ToString+'): '
+          +DateTimeToStr(TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('StartTime').AsDateTime)));
+        Log('Unfiltered IDBCDS records: ' + WIDBCDS.RecordCount.ToString);
+        BaseFilter := '(StartTime > ' + FloatToStr(TTimeZone.Local.ToUniversalTime(Now))
+          + ') and (StartTime < ' + FloatToStr(TTimeZone.Local.ToUniversalTime(Now) + seNumDisplayDays.Value)+')';
+        WIDBCDS.Filter := BaseFilter;
+        Log('Filter: ' + WIDBCDS.Filter);
+        try
+          WIDBCDS.Filtered := True;
+          Log('WIDBCDS Filter is '+IfThen(WIDBCDS.Filtered,'enabled','disabled'));
+          WIDBCDS.First;
+          Log('StartTime of First filtered record ('+WIDBCDS.RecNo.ToString+'): '
+           + DateTimeToStr(TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('StartTime').AsDateTime)));
+          while not WIDBCDS.Eof do
+          begin
+            Inc(NRows);
+            WIDBCDS.Next;
+          end;
+          WIDBCDS.Last;
+          Log('StartTime of Last filtered record ('+WIDBCDS.RecNo.ToString+'): '
+            + DateTimeToStr(TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('StartTime').AsDateTime)));
+          Log('ReFreshListings, No. recs to display: ' + NRows.ToString);
+        except
+          on E:Exception do
+          begin
+            NRows := 0;
+            ShowMessage('Encountered error: ' + E.Message
+              + #13#13'Please try restarting this page');
+          end;
         end;
       end;
-//      if NRows > 0 then
-//      begin
         EPG.Columns[0].Alignment := taCenter;
         EPG.Columns[2].Alignment := taLeftJustify;
-//      end;
     end;
     lblEmptyEPG.Visible := NRows = 0;
     if lblEmptyEPG.Visible then
     begin
-      lblEmptyEPG.Caption := 'There are no current listings to see.'#13'(Try '
-        + IfThen((GenreFilter>'') or (TitleFilter>'') or (ChannelFilter>''), 'removing the Filter)', ' "Options|Refresh EPG" to update)');
+      lblEmptyEPG.Caption := 'I currently have less than'#13'the requested '
+        + seNumDisplayDays.Value.ToString + ' days of listings.'
+        + IfThen(LastTime - Now > 1, #13'There are about ' + Round(LastTime - Now).ToString + ' days available.')
+        + #13'Please use Options to ' + IfThen(LastTime - Now > 1, 'reduce Days to Display or ')
+        + 'Refresh Data';
       lblEmptyEPG.BringToFront;
+      EPG.Visible := False;
     end;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   finally
-    {await(}WIDBCDS.EnableControls{)};
-    Log('WIDBCDS Controls are '+IfThen(not WIDBCDS.ControlsDisabled,'enabled','disabled'));
-    EPG.EndUpdate;
-    Log('EPG Update is '+IfThen(EPG.IsUpdating, 'not ') + 'finished');
-//    if (GenreFilter>'') or (TitleFilter>'') or (ChannelFilter>'') then EPG.Refresh;
-    SetupFilterLists;
+    if NRows > 0 then
+    begin
+      {await(}WIDBCDS.EnableControls{)};
+      Log('WIDBCDS Controls are '+IfThen(not WIDBCDS.ControlsDisabled,'enabled','disabled'));
+      EPG.EndUpdate;
+      Log('EPG Update is '+IfThen(EPG.IsUpdating, 'not ') + 'finished');
+      SetupFilterLists;
+    end;
     pnlListings.BringToFront;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
     Log('RefreshListings finished');

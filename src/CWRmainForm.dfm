@@ -1,6 +1,6 @@
 object CWRmainFrm: TCWRmainFrm
-  Width = 400
-  Height = 800
+  Width = 428
+  Height = 817
   CSSLibrary = cssBootstrap
   ElementClassName = 'container-fluid'
   ElementFont = efCSS
@@ -42,11 +42,316 @@ object CWRmainFrm: TCWRmainFrm
     HeightPercent = 100.000000000000000000
     WidthPercent = 100.000000000000000000
   end
+  object pnlMenu: TWebPanel
+    Left = 0
+    Top = 0
+    Width = 428
+    Height = 50
+    ElementClassName = 'container'
+    WidthStyle = ssPercent
+    Align = alTop
+    BorderStyle = bsNone
+    Caption = 'pnlMenu'
+    ChildOrder = 12
+    TabOrder = 7
+  end
+  object pnlLog: TWebPanel
+    Left = 0
+    Top = 80
+    Width = 428
+    Height = 703
+    ElementClassName = 'card'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
+    Align = alClient
+    ChildOrder = 9
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    ShowCaption = False
+    TabOrder = 2
+    object WebMemo2: TWebMemo
+      AlignWithMargins = True
+      Left = 3
+      Top = 3
+      Width = 422
+      Height = 697
+      Align = alClient
+      Color = clBlack
+      ElementClassName = 'white'
+      ElementID = 'content'
+      ElementFont = efCSS
+      HeightStyle = ssPercent
+      HeightPercent = 100.000000000000000000
+      ReadOnly = True
+      SelLength = 0
+      SelStart = 0
+      WidthStyle = ssPercent
+      WidthPercent = 100.000000000000000000
+    end
+  end
+  object pnlStatus: TWebPanel
+    Left = 0
+    Top = 50
+    Width = 428
+    Height = 30
+    ElementClassName = 'container'
+    WidthStyle = ssAuto
+    Align = alTop
+    BorderStyle = bsNone
+    Caption = 'pnlStatus'
+    ChildOrder = 12
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    TabOrder = 0
+    Visible = False
+    object AlertLabel: TWebButton
+      Left = 0
+      Top = 0
+      Width = 428
+      Height = 30
+      Margins.Left = 19
+      Margins.Top = 24
+      Margins.Right = 19
+      Margins.Bottom = 19
+      Align = alClient
+      Color = clYellow
+      ElementClassName = 'form-control'
+      ElementFont = efCSS
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = []
+      HeightPercent = 100.000000000000000000
+      ParentFont = False
+      Role = 'button'
+      WidthPercent = 100.000000000000000000
+    end
+  end
+  object pnlWaitPls: TWebPanel
+    Left = 0
+    Top = 80
+    Width = 428
+    Height = 703
+    ElementClassName = 'container-fluid'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
+    Align = alClient
+    ChildOrder = 10
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    TabOrder = 4
+    object WebGridPanel1: TWebGridPanel
+      Left = 0
+      Top = 0
+      Width = 428
+      Height = 703
+      WidthStyle = ssPercent
+      Align = alClient
+      ColumnCollection = <
+        item
+          Value = 100
+        end>
+      ControlCollection = <
+        item
+          Column = 0
+          Row = 0
+          Control = WebButton1
+        end
+        item
+          Column = 0
+          Row = 1
+          Control = WebLabel1
+        end
+        item
+          Column = 0
+          Row = 2
+          Control = WebLabel2
+        end>
+      Color = clYellow
+      GridLineColor = clBlack
+      RowCollection = <
+        item
+          Value = 25
+        end
+        item
+          Value = 25
+        end
+        item
+          Value = 25
+        end
+        item
+          Value = 25
+        end>
+      object WebLabel2: TWebLabel
+        Left = 2
+        Top = 354
+        Width = 424
+        Height = 172
+        Align = alClient
+        Alignment = taCenter
+        Caption = 'Please Wait...'
+        ChildOrder = -1
+        Color = clYellow
+        ElementLabelClassName = 'h1'
+        ElementFont = efCSS
+        ElementPosition = epRelative
+        HeightStyle = ssPercent
+        HeightPercent = 100.000000000000000000
+        Transparent = False
+        WidthStyle = ssPercent
+        WidthPercent = 100.000000000000000000
+      end
+      object WebLabel1: TWebLabel
+        Left = 2
+        Top = 178
+        Width = 424
+        Height = 172
+        Align = alClient
+        Alignment = taCenter
+        Caption = 'Preparing EPG Listings.'
+        ChildOrder = -1
+        Color = clYellow
+        ElementLabelClassName = 'h1'
+        ElementFont = efCSS
+        ElementPosition = epRelative
+        HeightStyle = ssPercent
+        HeightPercent = 100.000000000000000000
+        HTMLType = tH1
+        Transparent = False
+        WidthStyle = ssPercent
+        WidthPercent = 100.000000000000000000
+      end
+      object WebButton1: TWebButton
+        Left = 2
+        Top = 2
+        Width = 424
+        Height = 172
+        Align = alClient
+        Caption = '<i class="fa-solid fa-spinner fa-spin"></>'
+        Color = clYellow
+        ChildOrder = -1
+        ElementClassName = 'btn btn-lg'
+        ElementFont = efCSS
+        ElementPosition = epRelative
+        HeightStyle = ssPercent
+        HeightPercent = 100.000000000000000000
+        Role = 'button'
+        WidthStyle = ssPercent
+        WidthPercent = 100.000000000000000000
+      end
+    end
+  end
+  object pnlCaptures: TWebPanel
+    Left = 0
+    Top = 80
+    Width = 428
+    Height = 703
+    ElementClassName = 'greenBG'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
+    Align = alClient
+    ChildOrder = 9
+    Color = clGray
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    ShowCaption = False
+    TabOrder = 3
+    object WebHTMLDiv1: TWebHTMLDiv
+      Left = 0
+      Top = 231
+      Width = 428
+      Height = 35
+      ElementClassName = 'greenBG'
+      Align = alTop
+      ChildOrder = 1
+      ElementFont = efCSS
+      HTML.Strings = (
+        
+          '<FONT color="#FFFFFF" ><P align="center">Programs to be Schedule' +
+          'd on </FONT><FONT color="#F00000" >Next CW_EPG Run </P> </FONT>')
+      Role = ''
+    end
+    object WebHTMLDiv2: TWebHTMLDiv
+      Left = 0
+      Top = 266
+      Width = 428
+      Height = 231
+      Align = alTop
+      ChildOrder = 2
+      ElementFont = efCSS
+      Role = ''
+      object NewCaptures: TWebStringGrid
+        Left = 0
+        Top = 0
+        Width = 428
+        Height = 231
+        Align = alClient
+        Color = 212724686
+        ColCount = 7
+        DefaultRowHeight = 22
+        FixedColor = clTeal
+        FixedCols = 0
+        Options = [goFixedHorzLine, goHorzLine, goRowSelect]
+        TabOrder = 0
+        StyleElements = []
+        ElementClassName = 'greenBG'
+        ElementFont = efCSS
+        FixedFont.Charset = ANSI_CHARSET
+        FixedFont.Color = clBlack
+        FixedFont.Height = -11
+        FixedFont.Name = 'Arial'
+        FixedFont.Style = []
+        RangeEdit.Max = 100.000000000000000000
+        RangeEdit.Step = 1.000000000000000000
+        HeightPercent = 100.000000000000000000
+        WidthPercent = 100.000000000000000000
+        OnClickCell = NewCapturesClickCell
+        OnGetCellData = NewCapturesGetCellData
+      end
+    end
+    object WebHTMLDiv3: TWebHTMLDiv
+      Left = 0
+      Top = 0
+      Width = 428
+      Height = 231
+      Align = alTop
+      ChildOrder = 2
+      ElementFont = efCSS
+      Role = ''
+      object Captures: TWebStringGrid
+        Left = 0
+        Top = 0
+        Width = 428
+        Height = 231
+        Align = alClient
+        Color = 212724686
+        DefaultRowHeight = 22
+        FixedColor = clTeal
+        FixedCols = 0
+        Options = [goHorzLine, goRowSelect]
+        TabOrder = 0
+        StyleElements = []
+        ElementClassName = 'greenBG'
+        ElementFont = efCSS
+        FixedFont.Charset = ANSI_CHARSET
+        FixedFont.Color = clBlack
+        FixedFont.Height = -11
+        FixedFont.Name = 'Arial'
+        FixedFont.Style = []
+        RangeEdit.Max = 100.000000000000000000
+        RangeEdit.Step = 1.000000000000000000
+        HeightStyle = ssPercent
+        HeightPercent = 100.000000000000000000
+        WidthPercent = 100.000000000000000000
+      end
+    end
+  end
   object pnlHistory: TWebPanel
     Left = 0
     Top = 80
-    Width = 400
-    Height = 700
+    Width = 428
+    Height = 703
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -59,10 +364,10 @@ object CWRmainFrm: TCWRmainFrm
     object HistoryTable: TWebStringGrid
       Left = 0
       Top = 0
-      Width = 400
-      Height = 700
+      Width = 428
+      Height = 703
       Align = alClient
-      Color = clDarkslategray
+      Color = clDarkolivegreen
       ColCount = 32
       DefaultColWidth = 61
       DefaultRowHeight = 23
@@ -91,24 +396,11 @@ object CWRmainFrm: TCWRmainFrm
       OnGetCellClass = HistoryTableGetCellClass
     end
   end
-  object pnlMenu: TWebPanel
-    Left = 0
-    Top = 0
-    Width = 400
-    Height = 50
-    ElementClassName = 'container'
-    WidthStyle = ssPercent
-    Align = alTop
-    BorderStyle = bsNone
-    Caption = 'pnlMenu'
-    ChildOrder = 12
-    TabOrder = 7
-  end
   object pnlOptions: TWebPanel
     Left = 0
     Top = 80
-    Width = 400
-    Height = 700
+    Width = 428
+    Height = 703
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -193,190 +485,11 @@ object CWRmainFrm: TCWRmainFrm
       end
     end
   end
-  object pnlLog: TWebPanel
-    Left = 0
-    Top = 80
-    Width = 400
-    Height = 700
-    ElementClassName = 'card'
-    HeightStyle = ssPercent
-    WidthStyle = ssPercent
-    Align = alClient
-    ChildOrder = 9
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    ShowCaption = False
-    TabOrder = 2
-    object WebMemo2: TWebMemo
-      AlignWithMargins = True
-      Left = 3
-      Top = 3
-      Width = 394
-      Height = 694
-      Align = alClient
-      Color = clBlack
-      ElementClassName = 'white'
-      ElementID = 'content'
-      ElementFont = efCSS
-      HeightStyle = ssPercent
-      HeightPercent = 100.000000000000000000
-      ReadOnly = True
-      SelLength = 0
-      SelStart = 0
-      WidthStyle = ssPercent
-      WidthPercent = 100.000000000000000000
-    end
-  end
-  object pnlStatus: TWebPanel
-    Left = 0
-    Top = 50
-    Width = 400
-    Height = 30
-    ElementClassName = 'container'
-    WidthStyle = ssAuto
-    Align = alTop
-    BorderStyle = bsNone
-    Caption = 'pnlStatus'
-    ChildOrder = 12
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    TabOrder = 0
-    Visible = False
-    object AlertLabel: TWebButton
-      Left = 0
-      Top = 0
-      Width = 400
-      Height = 30
-      Margins.Left = 19
-      Margins.Top = 24
-      Margins.Right = 19
-      Margins.Bottom = 19
-      Align = alClient
-      Color = clYellow
-      ElementClassName = 'form-control'
-      ElementFont = efCSS
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'Arial'
-      Font.Style = []
-      HeightPercent = 100.000000000000000000
-      ParentFont = False
-      Role = 'button'
-      WidthPercent = 100.000000000000000000
-    end
-  end
-  object pnlWaitPls: TWebPanel
-    Left = 0
-    Top = 80
-    Width = 400
-    Height = 700
-    ElementClassName = 'container-fluid'
-    HeightStyle = ssPercent
-    WidthStyle = ssPercent
-    Align = alClient
-    ChildOrder = 10
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    TabOrder = 4
-    object WebGridPanel1: TWebGridPanel
-      Left = 0
-      Top = 0
-      Width = 400
-      Height = 700
-      WidthStyle = ssPercent
-      Align = alClient
-      ChildOrder = 2
-      ColumnCollection = <
-        item
-          Value = 100
-        end>
-      ControlCollection = <
-        item
-          Column = 0
-          Row = 0
-          Control = WebButton1
-        end
-        item
-          Column = 0
-          Row = 0
-          Control = WebLabel1
-        end
-        item
-          Column = 0
-          Row = 0
-          Control = WebLabel2
-        end>
-      Color = clYellow
-      GridLineColor = clBlack
-      RowCollection = <
-        item
-          Value = 25
-        end
-        item
-          Value = 25
-        end
-        item
-          Value = 25
-        end
-        item
-          Value = 25
-        end>
-      object WebLabel2: TWebLabel
-        Left = 2
-        Top = 352
-        Width = 396
-        Height = 171
-        Align = alClient
-        Alignment = taCenter
-        Caption = 'Please Wait...'
-        Color = clYellow
-        ElementLabelClassName = 'h1'
-        ElementFont = efCSS
-        HeightStyle = ssAuto
-        HeightPercent = 100.000000000000000000
-        Transparent = False
-        WidthPercent = 100.000000000000000000
-      end
-      object WebLabel1: TWebLabel
-        Left = 2
-        Top = 177
-        Width = 396
-        Height = 171
-        Align = alClient
-        Alignment = taCenter
-        Caption = 'Preparing EPG Listings.'
-        Color = clYellow
-        ElementLabelClassName = 'h1'
-        ElementFont = efCSS
-        HeightStyle = ssAuto
-        HeightPercent = 100.000000000000000000
-        HTMLType = tH1
-        Transparent = False
-        WidthPercent = 100.000000000000000000
-      end
-      object WebButton1: TWebButton
-        Left = 2
-        Top = 2
-        Width = 396
-        Height = 171
-        Align = alClient
-        Caption = '<i class="fa-solid fa-spinner fa-spin"></>'
-        Color = clYellow
-        ChildOrder = 1
-        ElementClassName = 'btn btn-lg'
-        ElementFont = efCSS
-        HeightPercent = 100.000000000000000000
-        Role = 'button'
-        WidthPercent = 100.000000000000000000
-      end
-    end
-  end
   object pnlListings: TWebPanel
     Left = 0
     Top = 80
-    Width = 400
-    Height = 700
+    Width = 428
+    Height = 703
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -388,18 +501,18 @@ object CWRmainFrm: TCWRmainFrm
     ShowCaption = False
     TabOrder = 6
     DesignSize = (
-      400
-      700)
+      428
+      703)
     object lblEmptyEPG: TWebLabel
       Left = 96
       Top = 58
-      Width = 100
-      Height = 70
+      Width = 223
+      Height = 28
       Alignment = taCenter
       Anchors = [akLeft, akTop, akRight]
       Caption = 
-        'There are no current listings to see.'#13'(Try "Options|Refresh EPG"' +
-        ' to update)'
+        'There are no current listings to see.(Try "Options|Refresh EPG" ' +
+        'to update)'
       Color = clBlack
       ElementClassName = 'white'
       ElementFont = efCSS
@@ -411,6 +524,7 @@ object CWRmainFrm: TCWRmainFrm
       HeightStyle = ssAuto
       HeightPercent = 100.000000000000000000
       ParentFont = False
+      Transparent = False
       Visible = False
       WordWrap = True
       WidthPercent = 100.000000000000000000
@@ -418,11 +532,11 @@ object CWRmainFrm: TCWRmainFrm
     object EPG: TWebDBGrid
       Left = 0
       Top = 0
-      Width = 400
-      Height = 700
+      Width = 428
+      Height = 703
       Align = alClient
       BorderStyle = bsNone
-      Color = clDarkblue
+      Color = clNavy
       Columns = <
         item
           Alignment = taCenter
@@ -487,23 +601,6 @@ object CWRmainFrm: TCWRmainFrm
         0
         0)
     end
-    object WebComboBox1: TWebComboBox
-      Left = 152
-      Top = 23
-      Width = 145
-      Height = 22
-      ElementClassName = 'form-select'
-      ElementFont = efCSS
-      HeightStyle = ssAuto
-      HeightPercent = 100.000000000000000000
-      Text = 'Choose Genre Filter'
-      Visible = False
-      WidthPercent = 100.000000000000000000
-      OnChange = WebComboBox1Change
-      OnDblClick = WebComboBox1Change
-      OnFocusOut = WebComboBox1FocusOut
-      ItemIndex = -1
-    end
     object WebComboBox2: TWebComboBox
       Left = 160
       Top = 23
@@ -513,7 +610,7 @@ object CWRmainFrm: TCWRmainFrm
       ElementFont = efCSS
       HeightStyle = ssAuto
       HeightPercent = 100.000000000000000000
-      Text = 'Choose Title Filter'
+      Role = 'combobox'
       Visible = False
       WidthPercent = 100.000000000000000000
       OnChange = WebComboBox2Change
@@ -530,7 +627,7 @@ object CWRmainFrm: TCWRmainFrm
       ElementFont = efCSS
       HeightStyle = ssAuto
       HeightPercent = 100.000000000000000000
-      Text = 'Choose Title Filter'
+      Role = 'combobox'
       Visible = False
       WidthPercent = 100.000000000000000000
       OnChange = WebComboBox3Change
@@ -538,110 +635,22 @@ object CWRmainFrm: TCWRmainFrm
       OnFocusOut = WebComboBox3FocusOut
       ItemIndex = -1
     end
-  end
-  object pnlCaptures: TWebPanel
-    Left = 0
-    Top = 80
-    Width = 400
-    Height = 700
-    ElementClassName = 'greenBG'
-    HeightStyle = ssPercent
-    WidthStyle = ssPercent
-    Align = alClient
-    ChildOrder = 9
-    Color = clGray
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    ShowCaption = False
-    TabOrder = 3
-    object WebHTMLDiv1: TWebHTMLDiv
-      Left = 0
-      Top = 231
-      Width = 400
-      Height = 35
-      ElementClassName = 'greenBG'
-      Align = alTop
-      ChildOrder = 1
+    object WebComboBox1: TWebComboBox
+      Left = 152
+      Top = 23
+      Width = 145
+      Height = 22
+      ElementClassName = 'form-select'
       ElementFont = efCSS
-      HTML.Strings = (
-        
-          '<FONT color="#FFFFFF" ><P align="center">Programs to be Schedule' +
-          'd on </FONT><FONT color="#F00000" >Next CW_EPG Run </P> </FONT>')
-      Role = ''
-    end
-    object WebHTMLDiv2: TWebHTMLDiv
-      Left = 0
-      Top = 266
-      Width = 400
-      Height = 231
-      Align = alTop
-      ChildOrder = 2
-      ElementFont = efCSS
-      Role = ''
-      object NewCaptures: TWebStringGrid
-        Left = 0
-        Top = 0
-        Width = 400
-        Height = 231
-        Align = alClient
-        Color = clCadetblue
-        ColCount = 7
-        DefaultRowHeight = 22
-        FixedColor = clTeal
-        FixedCols = 0
-        Options = [goFixedHorzLine, goHorzLine, goRowSelect]
-        TabOrder = 0
-        StyleElements = []
-        ElementClassName = 'greenBG'
-        ElementFont = efCSS
-        FixedFont.Charset = ANSI_CHARSET
-        FixedFont.Color = clBlack
-        FixedFont.Height = -11
-        FixedFont.Name = 'Arial'
-        FixedFont.Style = []
-        RangeEdit.Max = 100.000000000000000000
-        RangeEdit.Step = 1.000000000000000000
-        HeightPercent = 100.000000000000000000
-        WidthPercent = 100.000000000000000000
-        OnClickCell = NewCapturesClickCell
-        OnGetCellData = NewCapturesGetCellData
-      end
-    end
-    object WebHTMLDiv3: TWebHTMLDiv
-      Left = 0
-      Top = 0
-      Width = 400
-      Height = 231
-      Align = alTop
-      ChildOrder = 2
-      ElementFont = efCSS
-      Role = ''
-      object Captures: TWebStringGrid
-        Left = 0
-        Top = 0
-        Width = 400
-        Height = 231
-        Align = alClient
-        Color = clCadetblue
-        DefaultRowHeight = 22
-        FixedColor = clTeal
-        FixedCols = 0
-        Options = [goHorzLine, goRowSelect]
-        TabOrder = 0
-        StyleElements = []
-        ElementClassName = 'greenBG'
-        ElementFont = efCSS
-        FixedFont.Charset = ANSI_CHARSET
-        FixedFont.Color = clBlack
-        FixedFont.Height = -11
-        FixedFont.Name = 'Arial'
-        FixedFont.Style = []
-        RangeEdit.Max = 100.000000000000000000
-        RangeEdit.Step = 1.000000000000000000
-        HeightStyle = ssPercent
-        HeightPercent = 100.000000000000000000
-        WidthPercent = 100.000000000000000000
-      end
+      HeightStyle = ssAuto
+      HeightPercent = 100.000000000000000000
+      Role = 'combobox'
+      Visible = False
+      WidthPercent = 100.000000000000000000
+      OnChange = WebComboBox1Change
+      OnDblClick = WebComboBox1Change
+      OnFocusOut = WebComboBox1FocusOut
+      ItemIndex = -1
     end
   end
   object WebMainMenu1: TWebMainMenu
@@ -704,12 +713,8 @@ object CWRmainFrm: TCWRmainFrm
       Caption = 'Options'
       RadioItem = True
       object RefreshEPG: TMenuItem
-        Caption = 'Refresh Listing Data'
+        Caption = 'Refresh Data'
         OnClick = UpdateEPG
-      end
-      object RefreshHistory1: TMenuItem
-        Caption = 'Refresh History'
-        OnClick = UpdateHistory
       end
       object ChangeHTPC1: TMenuItem
         Caption = 'Change HTPC'
