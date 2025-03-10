@@ -547,8 +547,8 @@ begin
     begin
       Log('LoadWIDBCDS, CDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
       Log('LoadWIDBCDS, Buffer Row Count: ' + BufferGrid.RowCount.ToString);
-      WIDBCDS.Delete;
-//      WIDBCDS.First;
+      WIDBCDS.First;
+      while not WIDBCDS.IsEmpty do WIDBCDS.Delete;
       for j := 1 to BufferGrid.RowCount - 1 do
       begin
         // Lose superfluous <">
