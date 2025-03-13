@@ -290,7 +290,8 @@ begin
   await(LoadWIDBCDS);
   await(FetchCapReservations);
   await(FetchHistory);
-  Application.Navigate(Application.ExeName,ntPage); // i.e., restart!
+//  Application.Navigate(Application.ExeName,ntPage); // i.e., restart!
+  ReFreshListings;
 end;
 
 procedure TCWRmainFrm.UpdateHistory(Sender: TObject);
@@ -608,6 +609,7 @@ begin
 //    pnlStatus.Hide;
     {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
     Log('Finished LoadWIDBCDS');
+    WIDBCDS.Close;  // This seems necessary to finish update    241206 TMP -- no longer true???
   end;
 end;
 
