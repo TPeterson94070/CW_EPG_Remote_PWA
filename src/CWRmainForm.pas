@@ -609,7 +609,7 @@ begin
 //    pnlStatus.Hide;
     {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
     Log('Finished LoadWIDBCDS');
-    WIDBCDS.Close;  // This seems necessary to finish update    241206 TMP -- no longer true???
+    WIDBCDS.Close;  // This seems necessary to finish update    250313 TMP -- still true on Android
   end;
 end;
 
@@ -845,11 +845,12 @@ begin
   begin
     WebLabel1.Caption := 'Opening IndexedDB.';
     pnlWaitPls.BringToFront;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
     TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   end;
   Log('Days to Display: ' + seNumDisplayDays.Value.ToString);
   NRows := 0;
-  EPG.Visible := True;
+//  EPG.Visible := True;
   EPG.BeginUpdate;
   WIDBCDS.DisableControls;
   WIDBCDS.Filtered := False;
@@ -864,7 +865,7 @@ begin
       begin
         WebLabel1.Caption := 'Preparing ' + seNumDisplayDays.Value.ToString + '-day Listing.';
         pnlWaitPls.BringToFront;
-        {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+        {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
         Log('"Pls Wait" is showing');
         WIDBCDS.First;
         Log('StartTime of First (unfiltered) record ('+WIDBCDS.RecNo.ToString+'): '
@@ -921,6 +922,7 @@ begin
       EPG.EndUpdate;
       Log('EPG Update is '+IfThen(EPG.IsUpdating, 'not ') + 'finished');
       SetupFilterLists;
+      EPG.Visible := True;
     end;
     pnlListings.BringToFront;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
