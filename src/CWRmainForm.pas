@@ -553,10 +553,11 @@ begin
       begin
         // Lose superfluous <">
         BufferGrid.Cells[0,j] := ReplaceStr(BufferGrid.Cells[0,j],'"','');
-        if WIDBCDS.Eof then
-          TAwait.ExecP<Boolean>(WIDBCDS.AppendAsync)
-        else
-          WIDBCDS.Edit;
+//        if WIDBCDS.Eof then
+//          TAwait.ExecP<Boolean>(WIDBCDS.AppendAsync)
+//        else
+//          WIDBCDS.Edit;
+        WIDBCDS.Insert;
         WIDBCDS.Fields[0].Value := j;
         for i := 1 to BufferGrid.ColCount do
           if WIDBCDS.Fields[i].DataType = ftString then
@@ -581,16 +582,16 @@ begin
     end;
     Log('Finished editing WIDBCDS, RecordCount: ' + WIDBCDS.RecordCount.ToString);
     // Handle smaller new data set
-    if WIDBCDS.RecordCount > BufferGrid.RowCount - 1 then
-    begin
-      Log('Removing ' + (WIDBCDS.RecordCount - BufferGrid.RowCount).ToString
-        + ' excess old CDS records');
-      for j := WIDBCDS.RecordCount downto BufferGrid.RowCount do
-      begin
-        WIDBCDS.Last;
-        WIDBCDS.Delete;
-      end;
-    end;
+//    if WIDBCDS.RecordCount > BufferGrid.RowCount - 1 then
+//    begin
+//      Log('Removing ' + (WIDBCDS.RecordCount - BufferGrid.RowCount).ToString
+//        + ' excess old CDS records');
+//      for j := WIDBCDS.RecordCount downto BufferGrid.RowCount do
+//      begin
+//        WIDBCDS.Last;
+//        WIDBCDS.Delete;
+//      end;
+//    end;
   finally
 //    WIDBCDS.Close;  // This seems necessary to finish update    241206 TMP -- no longer true???
     Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
