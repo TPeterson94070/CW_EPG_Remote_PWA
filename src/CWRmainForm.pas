@@ -287,9 +287,12 @@ var
 begin
   Log('======== "Update EPG" clicked');
   await(RefreshCSV(BufferGrid, 'cwr_epg.csv','EPG', id));
-  await(LoadWIDBCDS);
-  await(FetchCapReservations);
-  await(FetchHistory);
+  if BufferGrid.RowCount > 0 then
+  begin
+    await(LoadWIDBCDS);
+    await(FetchCapReservations);
+    await(FetchHistory);
+  end;
 //  Application.Navigate(Application.ExeName,ntPage); // i.e., restart!
   ReFreshListings;
 end;
@@ -837,7 +840,7 @@ end;
 procedure TCWRmainFrm.ReFreshListings;
 var
   NRows: Integer;
-  LastTime: TDateTime;
+  LastTime, FirstTime: TDateTime;
 begin
   Log('ReFreshListings, DB is ' + IfThen(not WIDBCDS.Active, 'not ')
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
@@ -861,15 +864,15 @@ begin
       WIDBCDS.Last;
       LastTime := TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('EndTime').AsDateTime);
       Log('EndTime of Last (unfiltered) record (' + WIDBCDS.RecNo.ToString+'): ' + DateTimeToStr(LastTime));
-      if LastTime >= Now + seNumDisplayDays.Value then
+//      if LastTime >= Now + seNumDisplayDays.Value then
       begin
         WebLabel1.Caption := 'Preparing ' + seNumDisplayDays.Value.ToString + '-day Listing.';
         pnlWaitPls.BringToFront;
         {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
         Log('"Pls Wait" is showing');
         WIDBCDS.First;
-        Log('StartTime of First (unfiltered) record ('+WIDBCDS.RecNo.ToString+'): '
-          +DateTimeToStr(TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('StartTime').AsDateTime)));
+        FirstTime := TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('StartTime').AsDateTime);
+        Log('StartTime of First (unfiltered) record ('+WIDBCDS.RecNo.ToString+'): ' + DateTimeToStr(FirstTime));
         Log('Unfiltered IDBCDS records: ' + WIDBCDS.RecordCount.ToString);
         BaseFilter := '(StartTime > ' + FloatToStr(TTimeZone.Local.ToUniversalTime(Now))
           + ') and (StartTime < ' + FloatToStr(TTimeZone.Local.ToUniversalTime(Now) + seNumDisplayDays.Value)+')';
@@ -898,24 +901,25 @@ begin
               + #13#13'Please try restarting this page');
           end;
         end;
-      end;
         EPG.Columns[0].Alignment := taCenter;
         EPG.Columns[2].Alignment := taLeftJustify;
+      end;
     end;
     lblEmptyEPG.Visible := NRows = 0;
     if lblEmptyEPG.Visible then
     begin
       lblEmptyEPG.Caption := 'I currently have less than'#13'the requested '
         + seNumDisplayDays.Value.ToString + ' days of listings.'
-        + IfThen(LastTime - Now > 1, #13'There are about ' + Round(LastTime - Now).ToString + ' days available.')
+        + IfThen(FirstTime < Now, #13#13'There are no current data!'#13'Please make sure that the HTPC'#13' is connected to Google Drive',
+        IfThen(LastTime - Now > 1, #13'There are about ' + Round(LastTime - Now).ToString + ' days available.')
         + #13'Please use Options to ' + IfThen(LastTime - Now > 1, 'reduce Days to Display or ')
-        + 'Refresh Data';
+        + 'Refresh Data');
       lblEmptyEPG.BringToFront;
       EPG.Visible := False;
     end;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   finally
-    if NRows > 0 then
+//    if NRows > 0 then
     begin
       {await(}WIDBCDS.EnableControls{)};
       Log('WIDBCDS Controls are '+IfThen(not WIDBCDS.ControlsDisabled,'enabled','disabled'));
