@@ -136,7 +136,7 @@ private
   [async]
   procedure SetupWIDBCDS;
 //  procedure SetupFilterList(cb: TWebComboBox; fn: string);
-  {[async]} procedure SetupFilterLists;
+  [async] procedure SetupFilterLists;
   {[async]} procedure SetFilter(fltr: string);
 
 public
@@ -293,7 +293,6 @@ begin
     await(FetchCapReservations);
     await(FetchHistory);
   end;
-//  Application.Navigate(Application.ExeName,ntPage); // i.e., restart!
   ReFreshListings;
 end;
 
@@ -312,8 +311,8 @@ begin
     mtConfirmation, [mbYes,mbNo])) = mrYes then
   begin
     ResetPrompt := 'select_account';
-    await (UpdateHistory(Self));
-    await (UpdateEPG(Self));
+//    await (UpdateHistory(Self));
+    {await} (UpdateEPG({Self}Sender));
   end;
 end;
 
@@ -791,9 +790,9 @@ var
     if cb.ItemIndex < 0 then cb.ItemIndex := 0;
   end;
 begin
-//  WebLabel1.Caption := 'Preparing filter lists.';
-//  pnlWaitPls.BringToFront;
-//  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+  WebLabel1.Caption := 'Preparing filter lists.';
+  pnlWaitPls.BringToFront;
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   WIDBCDS.DisableControls;
   slSetup(slc);
   slSetup(slg);
@@ -853,7 +852,6 @@ begin
   end;
   Log('Days to Display: ' + seNumDisplayDays.Value.ToString);
   NRows := 0;
-//  EPG.Visible := True;
   EPG.BeginUpdate;
   WIDBCDS.DisableControls;
   WIDBCDS.Filtered := False;
@@ -865,7 +863,7 @@ begin
       LastTime := TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('EndTime').AsDateTime);
       Log('EndTime of Last (unfiltered) record (' + WIDBCDS.RecNo.ToString+'): ' + DateTimeToStr(LastTime));
 //      if LastTime >= Now + seNumDisplayDays.Value then
-      begin
+//      begin
         WebLabel1.Caption := 'Preparing ' + seNumDisplayDays.Value.ToString + '-day Listing.';
         pnlWaitPls.BringToFront;
         {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
@@ -889,7 +887,6 @@ begin
             Inc(NRows);
             WIDBCDS.Next;
           end;
-          WIDBCDS.Last;
           Log('StartTime of Last filtered record ('+WIDBCDS.RecNo.ToString+'): '
             + DateTimeToStr(TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('StartTime').AsDateTime)));
           Log('ReFreshListings, No. recs to display: ' + NRows.ToString);
@@ -903,7 +900,7 @@ begin
         end;
         EPG.Columns[0].Alignment := taCenter;
         EPG.Columns[2].Alignment := taLeftJustify;
-      end;
+//      end;
     end;
     lblEmptyEPG.Visible := NRows = 0;
     if lblEmptyEPG.Visible then
@@ -911,23 +908,23 @@ begin
       lblEmptyEPG.Caption := 'I currently have less than'#13'the requested '
         + seNumDisplayDays.Value.ToString + ' days of listings.'
         + IfThen(FirstTime < Now, #13#13'There are no current data!'#13'Please make sure that the HTPC'#13' is connected to Google Drive',
-        IfThen(LastTime - Now > 1, #13'There are about ' + Round(LastTime - Now).ToString + ' days available.')
-        + #13'Please use Options to ' + IfThen(LastTime - Now > 1, 'reduce Days to Display or ')
+        IfThen(LastTime - FirstTime > 1, #13'There are about ' + Round(LastTime - FirstTime).ToString + ' days available.')
+        + #13'Please use Options to ' + IfThen(LastTime - FirstTime > 1, 'reduce Days to Display or ')
         + 'Refresh Data');
       lblEmptyEPG.BringToFront;
-      EPG.Visible := False;
+//      EPG.Visible := False;
     end;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   finally
 //    if NRows > 0 then
-    begin
-      {await(}WIDBCDS.EnableControls{)};
+//    begin
+      WIDBCDS.EnableControls;
       Log('WIDBCDS Controls are '+IfThen(not WIDBCDS.ControlsDisabled,'enabled','disabled'));
       EPG.EndUpdate;
       Log('EPG Update is '+IfThen(EPG.IsUpdating, 'not ') + 'finished');
-      SetupFilterLists;
+      if NRows > 0 then SetupFilterLists;
       EPG.Visible := True;
-    end;
+//    end;
     pnlListings.BringToFront;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
     Log('RefreshListings finished');

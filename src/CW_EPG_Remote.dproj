@@ -1,15 +1,15 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{41531CF5-09F3-4E47-AC3A-CD411047F502}</ProjectGuid>
-        <ProjectVersion>20.3</ProjectVersion>
-        <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Release</Config>
-        <Platform Condition="'$(Platform)'==''">Win32</Platform>
-        <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Application</AppType>
+        <Config Condition="'$(Config)'==''">Release</Config>
+        <FrameworkType>VCL</FrameworkType>
         <MainSource>CW_EPG_Remote.dpr</MainSource>
+        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+        <ProjectGuid>{41531CF5-09F3-4E47-AC3A-CD411047F502}</ProjectGuid>
         <ProjectName Condition="'$(ProjectName)'==''">CW_EPG_Remote</ProjectName>
+        <ProjectVersion>20.3</ProjectVersion>
+        <TargetedPlatforms>1</TargetedPlatforms>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
         <Base>true</Base>
@@ -42,88 +42,83 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <SanitizedProjectName>CW_EPG_Remote</SanitizedProjectName>
+        <Custom_Styles>Calypso|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Calypso.vsf</Custom_Styles>
         <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
         <DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
-        <DCC_E>false</DCC_E>
-        <DCC_N>false</DCC_N>
-        <DCC_S>false</DCC_S>
-        <DCC_F>false</DCC_F>
-        <DCC_K>false</DCC_K>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
-        <TMSWebProject>2</TMSWebProject>
-        <TMSWebPWA>2</TMSWebPWA>
-        <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
-        <SanitizedProjectName>CW_EPG_Remote</SanitizedProjectName>
-        <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=CW_EPG Team;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <TMSVersionAuto>2</TMSVersionAuto>
-        <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <Custom_Styles>Calypso|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Calypso.vsf</Custom_Styles>
-        <TMSVersion>1.0.2676</TMSVersion>
-        <TMSWebPWAServiceWorkerFile>serviceworker.js</TMSWebPWAServiceWorkerFile>
+        <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <TMSPWAManifestFile>Manifest.json</TMSPWAManifestFile>
-        <TMSWebPWAResIconMidFile>IconResMid.png</TMSWebPWAResIconMidFile>
+        <TMSVersion>1.0.2695</TMSVersion>
+        <TMSVersionAuto>2</TMSVersionAuto>
         <TMSWebHTMLFile>index.html</TMSWebHTMLFile>
-        <TMSWebPWAResIconLowFile>IconResLow.png</TMSWebPWAResIconLowFile>
+        <TMSWebPWA>2</TMSWebPWA>
         <TMSWebPWAResIconHighFile>IconResHigh.png</TMSWebPWAResIconHighFile>
+        <TMSWebPWAResIconLowFile>IconResLow.png</TMSWebPWAResIconLowFile>
+        <TMSWebPWAResIconMidFile>IconResMid.png</TMSWebPWAResIconMidFile>
+        <TMSWebPWAServiceWorkerFile>serviceworker.js</TMSWebPWAServiceWorkerFile>
+        <TMSWebProject>2</TMSWebProject>
+        <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Keys>CompanyName=CW_EPG Team;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
-        <DCC_UsePackage>FireDACIBDriver;vclwinx;fmx;vclie;DbxCommonDriver;bindengine;IndyIPCommon;VCLRESTComponents;FireDACCommonODBC;FireDACCommonDriver;appanalytics;IndyProtocols;vclx;IndyIPClient;dbxcds;vcledge;bindcompvclwinx;bindcompfmx;JvBands;inetdb;JvAppFrm;FireDACSqliteDriver;DbxClientDriver;JclVcl;soapmidas;vclactnband;fmxFireDAC;dbexpress;Jcl;JvManagedThreads;DBXMySQLDriver;VclSmp;inet;JvPascalInterpreter;vcltouch;fmxase;TMSWEBCorePkgLibDXE14;JvPluginSystem;JvDB;JvTimeFramework;dbrtl;TMSWEBCorePkgDXE14;fmxdae;FireDACMSAccDriver;JvCustom;CustomIPTransport;JvSystem;JclDeveloperTools;JvControls;vcldsnap;JvCrypt;DBXInterBaseDriver;JvJans;JvMM;IndySystem;JvWizards;asgxlsdxe12;JvGlobus;vcldb;JclContainers;JvPageComps;vclFireDAC;JvCore;bindcomp;FireDACCommon;IndyCore;RESTBackendComponents;bindcompdbx;rtl;FireDACMySQLDriver;FireDACADSDriver;RESTComponents;DBXSqliteDriver;vcl;IndyIPServer;dsnapxml;dsnapcon;adortl;JvDotNetCtrls;JvHMI;asgdxe12;JvRuntimeDesign;JvXPCtrls;vclimg;FireDACPgDriver;FireDAC;inetdbxpress;JvDlgs;xmlrtl;tethering;JvStdCtrls;JvDocking;JvPrintPreview;Addins;bindcompvcl;dsnap;JvCmp;CloudService;fmxobj;bindcompvclsmp;soaprtl;soapserver;JvNet;$(DCC_UsePackage)</DCC_UsePackage>
-        <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
         <BT_BuildType>Debug</BT_BuildType>
+        <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
+        <DCC_UsePackage>FireDACIBDriver;vclwinx;fmx;vclie;DbxCommonDriver;bindengine;IndyIPCommon;VCLRESTComponents;FireDACCommonODBC;FireDACCommonDriver;appanalytics;IndyProtocols;vclx;IndyIPClient;dbxcds;vcledge;bindcompvclwinx;bindcompfmx;JvBands;inetdb;JvAppFrm;FireDACSqliteDriver;DbxClientDriver;JclVcl;soapmidas;vclactnband;fmxFireDAC;dbexpress;Jcl;JvManagedThreads;DBXMySQLDriver;VclSmp;inet;JvPascalInterpreter;vcltouch;fmxase;TMSWEBCorePkgLibDXE14;JvPluginSystem;JvDB;JvTimeFramework;dbrtl;TMSWEBCorePkgDXE14;fmxdae;FireDACMSAccDriver;JvCustom;CustomIPTransport;JvSystem;JclDeveloperTools;JvControls;vcldsnap;JvCrypt;DBXInterBaseDriver;JvJans;JvMM;IndySystem;JvWizards;asgxlsdxe12;JvGlobus;vcldb;JclContainers;JvPageComps;vclFireDAC;JvCore;bindcomp;FireDACCommon;IndyCore;RESTBackendComponents;bindcompdbx;rtl;FireDACMySQLDriver;FireDACADSDriver;RESTComponents;DBXSqliteDriver;vcl;IndyIPServer;dsnapxml;dsnapcon;adortl;JvDotNetCtrls;JvHMI;asgdxe12;JvRuntimeDesign;JvXPCtrls;vclimg;FireDACPgDriver;FireDAC;inetdbxpress;JvDlgs;xmlrtl;tethering;JvStdCtrls;JvDocking;JvPrintPreview;Addins;bindcompvcl;dsnap;JvCmp;CloudService;fmxobj;bindcompvclsmp;soaprtl;soapserver;JvNet;$(DCC_UsePackage)</DCC_UsePackage>
+        <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
-        <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
         <DCC_DebugDCUs>true</DCC_DebugDCUs>
-        <DCC_Optimize>false</DCC_Optimize>
-        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
         <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
-        <DCC_RemoteDebug>true</DCC_RemoteDebug>
+        <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
         <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
+        <DCC_Optimize>false</DCC_Optimize>
         <DCC_RangeChecking>true</DCC_RangeChecking>
-        <TMSWebDefines>$(TMSWebDefines);DEBUG</TMSWebDefines>
-        <TMSWebDebugInfo>2</TMSWebDebugInfo>
-        <TMSWebOptimization>2</TMSWebOptimization>
+        <DCC_RemoteDebug>true</DCC_RemoteDebug>
         <TMSApplicationDescription>Mobile companion for CW_EPG</TMSApplicationDescription>
         <TMSPWAApplicationName>CW_EPG_Remote app</TMSPWAApplicationName>
         <TMSPWAApplicationShortName>CWRemote</TMSPWAApplicationShortName>
         <TMSPWABackgroundColor>#FF8040</TMSPWABackgroundColor>
+        <TMSWebDebugInfo>2</TMSWebDebugInfo>
+        <TMSWebDefines>$(TMSWebDefines);DEBUG</TMSWebDefines>
+        <TMSWebOptimization>2</TMSWebOptimization>
         <TMSWebPWAThemeColor>#FF8000</TMSWebPWAThemeColor>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <DCC_RemoteDebug>false</DCC_RemoteDebug>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
-        <TMSPWAApplicationShortName>CW_Remote</TMSPWAApplicationShortName>
-        <TMSPWAApplicationName>CW_Remote app</TMSPWAApplicationName>
-        <TMSApplicationDescription>Installable CW_EPG_Remote PWA</TMSApplicationDescription>
-        <TMSPWABackgroundColor>Coral</TMSPWABackgroundColor>
-        <TMSWebPWAThemeColor>Coral</TMSWebPWAThemeColor>
-        <TMSWebBrowser>5</TMSWebBrowser>
+        <DCC_RemoteDebug>false</DCC_RemoteDebug>
         <Debugger_RunParams>?cwhelper=192.168.1.25:8181</Debugger_RunParams>
+        <TMSApplicationDescription>Installable CW_EPG_Remote PWA</TMSApplicationDescription>
+        <TMSPWAApplicationName>CW_Remote app</TMSPWAApplicationName>
+        <TMSPWAApplicationShortName>CW_Remote</TMSPWAApplicationShortName>
+        <TMSPWABackgroundColor>Coral</TMSPWABackgroundColor>
+        <TMSWebBrowser>5</TMSWebBrowser>
+        <TMSWebPWAThemeColor>Coral</TMSWebPWAThemeColor>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
-        <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
-        <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
-        <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
         <DCC_DebugInformation>0</DCC_DebugInformation>
+        <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
+        <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+        <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+        <TMSWebDefines>$(TMSWebDefines);RELEASE</TMSWebDefines>
         <TMSWebObfuscation>2</TMSWebObfuscation>
         <TMSWebOptimization>2</TMSWebOptimization>
-        <TMSWebDefines>$(TMSWebDefines);RELEASE</TMSWebDefines>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
-        <TMSWebSingleInstance>2</TMSWebSingleInstance>
-        <TMSWebSingleJS>2</TMSWebSingleJS>
-        <TMSPWABackgroundColor>teal</TMSPWABackgroundColor>
         <TMSApplicationDescription>Companion app for CW_EPG to view EPG, scheduled captures, and History remotely</TMSApplicationDescription>
-        <TMSWebSkipJavaScript>2</TMSWebSkipJavaScript>
+        <TMSPWABackgroundColor>teal</TMSPWABackgroundColor>
         <TMSUseJSDebugger>2</TMSUseJSDebugger>
         <TMSWebBrowser>8</TMSWebBrowser>
+        <TMSWebSingleInstance>2</TMSWebSingleInstance>
+        <TMSWebSingleJS>2</TMSWebSingleJS>
+        <TMSWebSkipJavaScript>2</TMSWebSkipJavaScript>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
