@@ -922,7 +922,7 @@ begin
       Log('WIDBCDS Controls are '+IfThen(not WIDBCDS.ControlsDisabled,'enabled','disabled'));
       EPG.EndUpdate;
       Log('EPG Update is '+IfThen(EPG.IsUpdating, 'not ') + 'finished');
-      if NRows > 0 then SetupFilterLists;
+      if NRows > 0 then await(SetupFilterLists);
       EPG.Visible := True;
 //    end;
     pnlListings.BringToFront;
