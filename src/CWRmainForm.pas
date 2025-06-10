@@ -116,6 +116,8 @@ private
   [async]
   procedure FetchCapReservations;
   [async]
+  procedure FetchNewCapRequests;
+  [async]
   procedure RefreshCSV(WSG: TWebStringGrid; TableFile, Title: string; var id: string);
   [async]
   procedure FetchHistory;
@@ -292,6 +294,7 @@ begin
   begin
     await(LoadWIDBCDS);
     await(FetchCapReservations);
+    await(FetchNewCapRequests);
     await(FetchHistory);
   end;
   ReFreshListings;
@@ -1339,6 +1342,22 @@ begin
   // Turn GetCellData formatting back on
   Captures.OnGetCellData := AllCapsGridGetCellData;
   Log(' ====== FetchCapReservations finished =========');
+end;
+
+procedure TCWRmainFrm.FetchNewCapRequests;  // Fetch CW_EPG-saved file
+
+var
+  id: string;
+begin
+  Log(' ====== FetchNewCapRequests called =========');
+  // Turn off GetCellData (modifies Cols 1, 2 for display)
+  NewCaptures.OnGetCellData := nil;
+  await(RefreshCSV(NewCaptures, 'cwr_newcaptures.csv', 'NewCAptures', id));
+  // Save unmodified request data to Local Storage
+  SaveLocalStrings(NewCaptures, 'nc');
+  // Turn GetCellData formatting back on
+  NewCaptures.OnGetCellData := NewCapturesGetCellData;
+  Log(' ====== FetchNewCapRequests finished =========');
 end;
 
 procedure TCWRmainFrm.FetchHistory;
