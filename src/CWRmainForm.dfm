@@ -74,7 +74,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 3
       Top = 3
       Width = 422
-      Height = 731
+      Height = 697
       Align = alClient
       Color = clBlack
       ElementClassName = 'white'
@@ -145,7 +145,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 737
+      Height = 703
       WidthStyle = ssPercent
       Align = alClient
       ColumnCollection = <
@@ -185,9 +185,9 @@ object CWRmainFrm: TCWRmainFrm
         end>
       object WebLabel2: TWebLabel
         Left = 2
-        Top = 370
+        Top = 354
         Width = 424
-        Height = 180
+        Height = 172
         Align = alClient
         Alignment = taCenter
         Caption = 'Please Wait...'
@@ -204,9 +204,9 @@ object CWRmainFrm: TCWRmainFrm
       end
       object WebLabel1: TWebLabel
         Left = 2
-        Top = 186
+        Top = 178
         Width = 424
-        Height = 180
+        Height = 172
         Align = alClient
         Alignment = taCenter
         Caption = 'Preparing EPG Listings.'
@@ -226,7 +226,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 2
         Top = 2
         Width = 424
-        Height = 180
+        Height = 172
         Align = alClient
         Caption = '<i class="fa-solid fa-spinner fa-spin"></>'
         Color = clYellow
@@ -238,111 +238,6 @@ object CWRmainFrm: TCWRmainFrm
         HeightPercent = 100.000000000000000000
         Role = 'button'
         WidthStyle = ssPercent
-        WidthPercent = 100.000000000000000000
-      end
-    end
-  end
-  object pnlCaptures: TWebPanel
-    Left = 0
-    Top = 80
-    Width = 428
-    Height = 703
-    ElementClassName = 'greenBG'
-    HeightStyle = ssPercent
-    WidthStyle = ssPercent
-    Align = alClient
-    ChildOrder = 9
-    Color = clGray
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    ShowCaption = False
-    TabOrder = 3
-    object WebHTMLDiv1: TWebHTMLDiv
-      Left = 0
-      Top = 231
-      Width = 428
-      Height = 35
-      ElementClassName = 'greenBG'
-      Align = alTop
-      ChildOrder = 1
-      ElementFont = efCSS
-      HTML.Strings = (
-        
-          '<FONT color="#FFFFFF" ><P align="center">Programs to be Schedule' +
-          'd on </FONT><FONT color="#F00000" >Next CW_EPG Run </P> </FONT>')
-      Role = ''
-    end
-    object WebHTMLDiv2: TWebHTMLDiv
-      Left = 0
-      Top = 266
-      Width = 428
-      Height = 231
-      Align = alTop
-      ChildOrder = 2
-      ElementFont = efCSS
-      Role = ''
-      object NewCaptures: TWebStringGrid
-        Left = 0
-        Top = 0
-        Width = 428
-        Height = 231
-        Align = alClient
-        Color = 212724686
-        ColCount = 7
-        DefaultRowHeight = 22
-        FixedColor = clTeal
-        FixedCols = 0
-        Options = [goFixedHorzLine, goHorzLine, goRowSelect]
-        TabOrder = 0
-        StyleElements = []
-        ElementClassName = 'greenBG'
-        ElementFont = efCSS
-        FixedFont.Charset = ANSI_CHARSET
-        FixedFont.Color = clBlack
-        FixedFont.Height = -11
-        FixedFont.Name = 'Arial'
-        FixedFont.Style = []
-        RangeEdit.Max = 100.000000000000000000
-        RangeEdit.Step = 1.000000000000000000
-        HeightPercent = 100.000000000000000000
-        WidthPercent = 100.000000000000000000
-        OnClickCell = NewCapturesClickCell
-        OnGetCellData = NewCapturesGetCellData
-      end
-    end
-    object WebHTMLDiv3: TWebHTMLDiv
-      Left = 0
-      Top = 0
-      Width = 428
-      Height = 231
-      Align = alTop
-      ChildOrder = 2
-      ElementFont = efCSS
-      Role = ''
-      object Captures: TWebStringGrid
-        Left = 0
-        Top = 0
-        Width = 428
-        Height = 231
-        Align = alClient
-        Color = 212724686
-        DefaultRowHeight = 22
-        FixedColor = clTeal
-        FixedCols = 0
-        Options = [goHorzLine, goRowSelect]
-        TabOrder = 0
-        StyleElements = []
-        ElementClassName = 'greenBG'
-        ElementFont = efCSS
-        FixedFont.Charset = ANSI_CHARSET
-        FixedFont.Color = clBlack
-        FixedFont.Height = -11
-        FixedFont.Name = 'Arial'
-        FixedFont.Style = []
-        RangeEdit.Max = 100.000000000000000000
-        RangeEdit.Step = 1.000000000000000000
-        HeightStyle = ssPercent
-        HeightPercent = 100.000000000000000000
         WidthPercent = 100.000000000000000000
       end
     end
@@ -543,7 +438,7 @@ object CWRmainFrm: TCWRmainFrm
           AutoFormatDateTime = False
           DataField = 'PSIP'
           Title = 'Channel'
-          Width = 70
+          Width = 75
         end
         item
           Alignment = taCenter
@@ -595,7 +490,7 @@ object CWRmainFrm: TCWRmainFrm
       OnClickCell = EPGClickCell
       OnGetCellClass = EPGGetCellClass
       ColWidths = (
-        70
+        75
         155
         300
         0
@@ -651,6 +546,111 @@ object CWRmainFrm: TCWRmainFrm
       OnDblClick = WebComboBox1Change
       OnFocusOut = WebComboBox1FocusOut
       ItemIndex = -1
+    end
+  end
+  object pnlCaptures: TWebPanel
+    Left = 0
+    Top = 80
+    Width = 428
+    Height = 703
+    ElementClassName = 'greenBG'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
+    Align = alClient
+    ChildOrder = 9
+    Color = clGray
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    ShowCaption = False
+    TabOrder = 3
+    object WebHTMLDiv1: TWebHTMLDiv
+      Left = 0
+      Top = 231
+      Width = 428
+      Height = 35
+      ElementClassName = 'greenBG'
+      Align = alTop
+      ChildOrder = 1
+      ElementFont = efCSS
+      HTML.Strings = (
+        
+          '<FONT color="#FFFFFF" ><P align="center">Programs to be Schedule' +
+          'd on </FONT><FONT color="#F00000" >Next CW_EPG Run </P> </FONT>')
+      Role = ''
+    end
+    object WebHTMLDiv2: TWebHTMLDiv
+      Left = 0
+      Top = 266
+      Width = 428
+      Height = 231
+      Align = alTop
+      ChildOrder = 2
+      ElementFont = efCSS
+      Role = ''
+      object NewCaptures: TWebStringGrid
+        Left = 0
+        Top = 0
+        Width = 428
+        Height = 231
+        Align = alClient
+        Color = 212724686
+        ColCount = 7
+        DefaultRowHeight = 22
+        FixedColor = clTeal
+        FixedCols = 0
+        Options = [goFixedHorzLine, goHorzLine, goRowSelect]
+        TabOrder = 0
+        StyleElements = []
+        ElementClassName = 'greenBG'
+        ElementFont = efCSS
+        FixedFont.Charset = ANSI_CHARSET
+        FixedFont.Color = clBlack
+        FixedFont.Height = -11
+        FixedFont.Name = 'Arial'
+        FixedFont.Style = []
+        RangeEdit.Max = 100.000000000000000000
+        RangeEdit.Step = 1.000000000000000000
+        HeightPercent = 100.000000000000000000
+        WidthPercent = 100.000000000000000000
+        OnClickCell = NewCapturesClickCell
+        OnGetCellData = NewCapturesGetCellData
+      end
+    end
+    object WebHTMLDiv3: TWebHTMLDiv
+      Left = 0
+      Top = 0
+      Width = 428
+      Height = 231
+      Align = alTop
+      ChildOrder = 2
+      ElementFont = efCSS
+      Role = ''
+      object Captures: TWebStringGrid
+        Left = 0
+        Top = 0
+        Width = 428
+        Height = 231
+        Align = alClient
+        Color = 212724686
+        DefaultRowHeight = 22
+        FixedColor = clTeal
+        FixedCols = 0
+        Options = [goHorzLine, goRowSelect]
+        TabOrder = 0
+        StyleElements = []
+        ElementClassName = 'greenBG'
+        ElementFont = efCSS
+        FixedFont.Charset = ANSI_CHARSET
+        FixedFont.Color = clBlack
+        FixedFont.Height = -11
+        FixedFont.Name = 'Arial'
+        FixedFont.Style = []
+        RangeEdit.Max = 100.000000000000000000
+        RangeEdit.Step = 1.000000000000000000
+        HeightStyle = ssPercent
+        HeightPercent = 100.000000000000000000
+        WidthPercent = 100.000000000000000000
+      end
     end
   end
   object WebMainMenu1: TWebMainMenu
