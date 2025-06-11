@@ -62,6 +62,8 @@ type
     WebHTMLDiv1: TWebHTMLDiv;
     WebHTMLDiv2: TWebHTMLDiv;
     WebHTMLDiv3: TWebHTMLDiv;
+    pnlFilterComboBox: TWebPanel;
+    lblFilterSelect: TWebLabel;
   procedure SetNewCapturesFixedRow;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
@@ -191,11 +193,12 @@ procedure TCWRmainFrm.WebComboBox1Change(Sender: TObject);
 begin
   EPG.Columns[2].Title := IfThen(WebComboBox1.Text = 'All', 'Title', 'Programs in genre "' + WebComboBox1.Text + '"');
   Log('WebComboBox1.Text: ' + WebComboBox1.Text);
-  WebComboBox1.Hide;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  // Restore any esc "\" chars
+//  pnlFilterComboBox.Hide;
+//  WebComboBox1.Hide;
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  // Replace esc "\" with wildcard "_"
   GenreFilter := IfThen(WebComboBox1.Text <> 'All', ' and genres like '
-    + QuotedStr('%"'+ReplaceStr(WebComboBox1.Text, '/', '\/')+'"%'));
+    + QuotedStr('%"'+ReplaceStr(WebComboBox1.Text, '/', '_')+'"%'));
   ChannelFilter := '';
   TitleFilter := '';
   ByGenre.Checked := WebComboBox1.Text <> 'All';
@@ -205,6 +208,7 @@ end;
 
 procedure TCWRmainFrm.WebComboBox1FocusOut(Sender: TObject);
 begin
+  pnlFilterComboBox.Hide;
   WebComboBox1.Hide;
 end;
 
@@ -213,10 +217,11 @@ begin
   EPG.Columns[2].Title := 'Title'
     + IfThen(WebComboBox2.Text <> 'All', ': "' + WebComboBox2.Text + '"');
   Log('WebComboBox2.Text: ' + WebComboBox2.Text);
-  WebComboBox2.Hide;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  TitleFilter := IfThen(WebComboBox2.Text <> 'All', ' and Title like '
-    + QuotedStr('%'+WebComboBox2.Text+'%'));
+//  pnlFilterComboBox.Hide;
+//  WebComboBox2.Hide;
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  TitleFilter := IfThen(WebComboBox2.Text <> 'All', ' and Title = '
+    + QuotedStr(WebComboBox2.Text));
   ChannelFilter := '';
   GenreFilter := '';
   ByTitle.Checked := WebComboBox2.Text <> 'All';
@@ -226,6 +231,7 @@ end;
 
 procedure TCWRmainFrm.WebComboBox2FocusOut(Sender: TObject);
 begin
+  pnlFilterComboBox.Hide;
   WebComboBox2.Hide;
 end;
 
@@ -233,10 +239,11 @@ procedure TCWRmainFrm.WebComboBox3Change(Sender: TObject);
 begin
   EPG.Columns[2].Title := IfThen(WebComboBox1.Text = 'All', 'Title', 'Programs on channel "' + WebComboBox3.Text + '"');
   Log('WebComboBox3.Text: ' + WebComboBox3.Text);
-  WebComboBox3.Hide;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  ChannelFilter := IfThen(WebComboBox3.Text <> 'All', ' and PSIP like '
-    + QuotedStr('%'+WebComboBox3.Text+'%'));
+//  pnlFilterComboBox.Hide;
+//  WebComboBox3.Hide;
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  ChannelFilter := IfThen(WebComboBox3.Text <> 'All', ' and PSIP = '
+    + QuotedStr(WebComboBox3.Text));
   GenreFilter := '';
   TitleFilter := '';
   ByChannel.Checked := WebComboBox3.Text <> 'All';
@@ -246,6 +253,7 @@ end;
 
 procedure TCWRmainFrm.WebComboBox3FocusOut(Sender: TObject);
 begin
+  pnlFilterComboBox.Hide;
   WebComboBox3.Hide;
 end;
 
@@ -355,6 +363,7 @@ procedure TCWRmainFrm.ByChannelClick(Sender: TObject);
 begin
   Log('ByChannelClick called');
   if WebComboBox3.Items.Count = 0 then await(SetupFilterList(WebComboBox3, 'PSIP'));
+  pnlFilterComboBox.Show;
   WebComboBox3.Show;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 //  if WebComboBox1.ItemIndex < 0 then SetupFilterLists;
@@ -367,6 +376,7 @@ procedure TCWRmainFrm.ByGenreClick(Sender: TObject);
 begin
   Log('ByGenreClick called');
   if WebComboBox1.Items.Count = 0 then await(SetupFilterList(WebComboBox1, 'genres'));
+  pnlFilterComboBox.Show;
   WebComboBox1.Show;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 //  if WebComboBox1.ItemIndex < 0 then SetupFilterLists;
@@ -379,6 +389,7 @@ procedure TCWRmainFrm.ByTitleClick(Sender: TObject);
 begin
   Log('byTitleClick called');
   if WebComboBox2.Items.Count = 0 then await(SetupFilterList(WebComboBox2, 'Title'));
+  pnlFilterComboBox.Show;
   WebComboBox2.Show;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 //  if WebComboBox1.ItemIndex < 0 then SetupFilterLists;
@@ -730,6 +741,7 @@ var
   FltrState: Boolean;
 begin
   WebLabel1.Caption := 'Preparing filter list.';
+  pnlWaitPls.Show;
   pnlWaitPls.BringToFront;
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   FltrState := WIDBCDS.Filtered;

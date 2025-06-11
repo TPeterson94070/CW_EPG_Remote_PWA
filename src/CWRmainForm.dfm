@@ -380,6 +380,111 @@ object CWRmainFrm: TCWRmainFrm
       end
     end
   end
+  object pnlCaptures: TWebPanel
+    Left = 0
+    Top = 80
+    Width = 428
+    Height = 703
+    ElementClassName = 'greenBG'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
+    Align = alClient
+    ChildOrder = 9
+    Color = clGray
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    ShowCaption = False
+    TabOrder = 3
+    object WebHTMLDiv1: TWebHTMLDiv
+      Left = 0
+      Top = 231
+      Width = 428
+      Height = 35
+      ElementClassName = 'greenBG'
+      Align = alTop
+      ChildOrder = 1
+      ElementFont = efCSS
+      HTML.Strings = (
+        
+          '<FONT color="#FFFFFF" ><P align="center">Programs to be Schedule' +
+          'd </FONT><FONT color="#F00000" >on Next CW_EPG Run </P> </FONT>')
+      Role = ''
+    end
+    object WebHTMLDiv2: TWebHTMLDiv
+      Left = 0
+      Top = 266
+      Width = 428
+      Height = 231
+      Align = alTop
+      ChildOrder = 2
+      ElementFont = efCSS
+      Role = ''
+      object NewCaptures: TWebStringGrid
+        Left = 0
+        Top = 0
+        Width = 428
+        Height = 231
+        Align = alClient
+        Color = 212724686
+        ColCount = 7
+        DefaultRowHeight = 22
+        FixedColor = clTeal
+        FixedCols = 0
+        Options = [goFixedHorzLine, goHorzLine, goRowSelect]
+        TabOrder = 0
+        StyleElements = []
+        ElementClassName = 'greenBG'
+        ElementFont = efCSS
+        FixedFont.Charset = ANSI_CHARSET
+        FixedFont.Color = clBlack
+        FixedFont.Height = -11
+        FixedFont.Name = 'Arial'
+        FixedFont.Style = []
+        RangeEdit.Max = 100.000000000000000000
+        RangeEdit.Step = 1.000000000000000000
+        HeightPercent = 100.000000000000000000
+        WidthPercent = 100.000000000000000000
+        OnClickCell = NewCapturesClickCell
+        OnGetCellData = NewCapturesGetCellData
+      end
+    end
+    object WebHTMLDiv3: TWebHTMLDiv
+      Left = 0
+      Top = 0
+      Width = 428
+      Height = 231
+      Align = alTop
+      ChildOrder = 2
+      ElementFont = efCSS
+      Role = ''
+      object Captures: TWebStringGrid
+        Left = 0
+        Top = 0
+        Width = 428
+        Height = 231
+        Align = alClient
+        Color = 212724686
+        DefaultRowHeight = 22
+        FixedColor = clTeal
+        FixedCols = 0
+        Options = [goHorzLine, goRowSelect]
+        TabOrder = 0
+        StyleElements = []
+        ElementClassName = 'greenBG'
+        ElementFont = efCSS
+        FixedFont.Charset = ANSI_CHARSET
+        FixedFont.Color = clBlack
+        FixedFont.Height = -11
+        FixedFont.Name = 'Arial'
+        FixedFont.Style = []
+        RangeEdit.Max = 100.000000000000000000
+        RangeEdit.Step = 1.000000000000000000
+        HeightStyle = ssPercent
+        HeightPercent = 100.000000000000000000
+        WidthPercent = 100.000000000000000000
+      end
+    end
+  end
   object pnlListings: TWebPanel
     Left = 0
     Top = 80
@@ -496,160 +601,83 @@ object CWRmainFrm: TCWRmainFrm
         0
         0)
     end
-    object WebComboBox2: TWebComboBox
-      Left = 160
-      Top = 23
-      Width = 145
-      Height = 22
-      ElementClassName = 'form-select'
+    object pnlFilterComboBox: TWebPanel
+      Left = 88
+      Top = 49
+      Width = 150
+      Height = 60
+      ElementClassName = 'card'
+      Caption = 'Choose Filter'
+      ChildOrder = 5
+      ElementBodyClassName = 'card-body'
       ElementFont = efCSS
-      HeightStyle = ssAuto
-      HeightPercent = 100.000000000000000000
-      Role = 'combobox'
+      TabOrder = 1
       Visible = False
-      WidthPercent = 100.000000000000000000
-      OnChange = WebComboBox2Change
-      OnDblClick = WebComboBox2Change
-      OnFocusOut = WebComboBox2FocusOut
-      ItemIndex = -1
-    end
-    object WebComboBox3: TWebComboBox
-      Left = 164
-      Top = 23
-      Width = 145
-      Height = 22
-      ElementClassName = 'form-select'
-      ElementFont = efCSS
-      HeightStyle = ssAuto
-      HeightPercent = 100.000000000000000000
-      Role = 'combobox'
-      Visible = False
-      WidthPercent = 100.000000000000000000
-      OnChange = WebComboBox3Change
-      OnDblClick = WebComboBox3Change
-      OnFocusOut = WebComboBox3FocusOut
-      ItemIndex = -1
-    end
-    object WebComboBox1: TWebComboBox
-      Left = 152
-      Top = 23
-      Width = 145
-      Height = 22
-      ElementClassName = 'form-select'
-      ElementFont = efCSS
-      HeightStyle = ssAuto
-      HeightPercent = 100.000000000000000000
-      Role = 'combobox'
-      Visible = False
-      WidthPercent = 100.000000000000000000
-      OnChange = WebComboBox1Change
-      OnDblClick = WebComboBox1Change
-      OnFocusOut = WebComboBox1FocusOut
-      ItemIndex = -1
-    end
-  end
-  object pnlCaptures: TWebPanel
-    Left = 0
-    Top = 80
-    Width = 428
-    Height = 703
-    ElementClassName = 'greenBG'
-    HeightStyle = ssPercent
-    WidthStyle = ssPercent
-    Align = alClient
-    ChildOrder = 9
-    Color = clGray
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    ShowCaption = False
-    TabOrder = 3
-    object WebHTMLDiv1: TWebHTMLDiv
-      Left = 0
-      Top = 231
-      Width = 428
-      Height = 35
-      ElementClassName = 'greenBG'
-      Align = alTop
-      ChildOrder = 1
-      ElementFont = efCSS
-      HTML.Strings = (
-        
-          '<FONT color="#FFFFFF" ><P align="center">Programs to be Schedule' +
-          'd on </FONT><FONT color="#F00000" >Next CW_EPG Run </P> </FONT>')
-      Role = ''
-    end
-    object WebHTMLDiv2: TWebHTMLDiv
-      Left = 0
-      Top = 266
-      Width = 428
-      Height = 231
-      Align = alTop
-      ChildOrder = 2
-      ElementFont = efCSS
-      Role = ''
-      object NewCaptures: TWebStringGrid
+      object lblFilterSelect: TWebLabel
         Left = 0
         Top = 0
-        Width = 428
-        Height = 231
-        Align = alClient
-        Color = 212724686
-        ColCount = 7
-        DefaultRowHeight = 22
-        FixedColor = clTeal
-        FixedCols = 0
-        Options = [goFixedHorzLine, goHorzLine, goRowSelect]
-        TabOrder = 0
-        StyleElements = []
-        ElementClassName = 'greenBG'
+        Width = 150
+        Height = 14
+        Align = alTop
+        Caption = 'Choose Item'
         ElementFont = efCSS
-        FixedFont.Charset = ANSI_CHARSET
-        FixedFont.Color = clBlack
-        FixedFont.Height = -11
-        FixedFont.Name = 'Arial'
-        FixedFont.Style = []
-        RangeEdit.Max = 100.000000000000000000
-        RangeEdit.Step = 1.000000000000000000
+        HeightStyle = ssAuto
         HeightPercent = 100.000000000000000000
         WidthPercent = 100.000000000000000000
-        OnClickCell = NewCapturesClickCell
-        OnGetCellData = NewCapturesGetCellData
       end
-    end
-    object WebHTMLDiv3: TWebHTMLDiv
-      Left = 0
-      Top = 0
-      Width = 428
-      Height = 231
-      Align = alTop
-      ChildOrder = 2
-      ElementFont = efCSS
-      Role = ''
-      object Captures: TWebStringGrid
+      object WebComboBox1: TWebComboBox
         Left = 0
-        Top = 0
-        Width = 428
-        Height = 231
-        Align = alClient
-        Color = 212724686
-        DefaultRowHeight = 22
-        FixedColor = clTeal
-        FixedCols = 0
-        Options = [goHorzLine, goRowSelect]
-        TabOrder = 0
-        StyleElements = []
-        ElementClassName = 'greenBG'
+        Top = 38
+        Width = 150
+        Height = 22
+        Align = alBottom
+        ElementClassName = 'form-select'
         ElementFont = efCSS
-        FixedFont.Charset = ANSI_CHARSET
-        FixedFont.Color = clBlack
-        FixedFont.Height = -11
-        FixedFont.Name = 'Arial'
-        FixedFont.Style = []
-        RangeEdit.Max = 100.000000000000000000
-        RangeEdit.Step = 1.000000000000000000
-        HeightStyle = ssPercent
+        HeightStyle = ssAuto
         HeightPercent = 100.000000000000000000
+        Role = 'combobox'
+        Visible = False
         WidthPercent = 100.000000000000000000
+        OnChange = WebComboBox1Change
+        OnDblClick = WebComboBox1Change
+        OnFocusOut = WebComboBox1FocusOut
+        ItemIndex = -1
+      end
+      object WebComboBox2: TWebComboBox
+        Left = 0
+        Top = -6
+        Width = 150
+        Height = 22
+        Align = alBottom
+        ElementClassName = 'form-select'
+        ElementFont = efCSS
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        Role = 'combobox'
+        Visible = False
+        WidthPercent = 100.000000000000000000
+        OnChange = WebComboBox2Change
+        OnDblClick = WebComboBox2Change
+        OnFocusOut = WebComboBox2FocusOut
+        ItemIndex = -1
+      end
+      object WebComboBox3: TWebComboBox
+        Left = 0
+        Top = 16
+        Width = 150
+        Height = 22
+        Align = alBottom
+        ElementClassName = 'form-select'
+        ElementFont = efCSS
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        Role = 'combobox'
+        Visible = False
+        WidthPercent = 100.000000000000000000
+        OnChange = WebComboBox3Change
+        OnDblClick = WebComboBox3Change
+        OnFocusOut = WebComboBox3FocusOut
+        ItemIndex = -1
       end
     end
   end
