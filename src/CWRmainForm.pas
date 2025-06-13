@@ -64,6 +64,8 @@ type
     WebHTMLDiv3: TWebHTMLDiv;
     pnlFilterComboBox: TWebPanel;
     lblFilterSelect: TWebLabel;
+    btnOptOK: TWebButton;
+    WebHTMLDiv4: TWebHTMLDiv;
   procedure SetNewCapturesFixedRow;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
@@ -111,6 +113,7 @@ type
     procedure WebComboBox1FocusOut(Sender: TObject);
     procedure WebComboBox2FocusOut(Sender: TObject);
     procedure WebComboBox3FocusOut(Sender: TObject);
+    procedure btnOptOKClick(Sender: TObject);
 private
   { Private declarations }
   procedure ReloadSG(SG: TWebStringGrid; LSName: string);  [async]
@@ -136,13 +139,16 @@ private
   [async]
   procedure CreateGoogleFile(FName: string; var id: string);
   [async]
-  procedure CheckSettingsForUpdate;
+  procedure CheckNumDispDaysForUpdate;
+  [async]
+  procedure CheckNumHistForUpdate;
   [async]
   procedure SetupWIDBCDS;
   [async]  procedure SetupFilterList(cb: TWebComboBox; fn: string);
 //  [async] procedure SetupFilterLists;
-  {[async]} procedure SetFilter(fltr: string);
-
+  {[async]}
+  procedure SetFilter(fltr: string);
+  [async]  procedure ShowPlsWait(PlsWaitCap: string);
 public
   { Public declarations }
 end;
@@ -163,6 +169,7 @@ var
   ChannelFilter: string = ''; // Filter PSIP
   GenreFilter: string = ''; // Filter genres
   TitleFilter: string = ''; // Filter title
+  VisiblePanelNum: Integer = 0;
 
 const
   NUMDAYS = 'NumDisplayDays';
@@ -193,9 +200,6 @@ procedure TCWRmainFrm.WebComboBox1Change(Sender: TObject);
 begin
   EPG.Columns[2].Title := IfThen(WebComboBox1.Text = 'All', 'Title', 'Programs in genre "' + WebComboBox1.Text + '"');
   Log('WebComboBox1.Text: ' + WebComboBox1.Text);
-//  pnlFilterComboBox.Hide;
-//  WebComboBox1.Hide;
-//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   // Replace esc "\" with wildcard "_"
   GenreFilter := IfThen(WebComboBox1.Text <> 'All', ' and genres like '
     + QuotedStr('%"'+ReplaceStr(WebComboBox1.Text, '/', '_')+'"%'));
@@ -217,9 +221,6 @@ begin
   EPG.Columns[2].Title := 'Title'
     + IfThen(WebComboBox2.Text <> 'All', ': "' + WebComboBox2.Text + '"');
   Log('WebComboBox2.Text: ' + WebComboBox2.Text);
-//  pnlFilterComboBox.Hide;
-//  WebComboBox2.Hide;
-//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   TitleFilter := IfThen(WebComboBox2.Text <> 'All', ' and Title = '
     + QuotedStr(WebComboBox2.Text));
   ChannelFilter := '';
@@ -239,9 +240,6 @@ procedure TCWRmainFrm.WebComboBox3Change(Sender: TObject);
 begin
   EPG.Columns[2].Title := IfThen(WebComboBox1.Text = 'All', 'Title', 'Programs on channel "' + WebComboBox3.Text + '"');
   Log('WebComboBox3.Text: ' + WebComboBox3.Text);
-//  pnlFilterComboBox.Hide;
-//  WebComboBox3.Hide;
-//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   ChannelFilter := IfThen(WebComboBox3.Text <> 'All', ' and PSIP = '
     + QuotedStr(WebComboBox3.Text));
   GenreFilter := '';
@@ -295,7 +293,7 @@ procedure TCWRmainFrm.UpdateEPG(Sender: TObject);
 var
   id: string; {param used only by UpdateNewcaptures}
 begin
-  Log('======== "Update EPG" clicked');
+  Log('======== "Update EPG" (Refresh Data) clicked');
   TWebLocalStorage.Clear;
   await(RefreshCSV(BufferGrid, 'cwr_epg.csv','EPG', id));
   if BufferGrid.RowCount > 0 then
@@ -305,7 +303,7 @@ begin
     await(FetchNewCapRequests);
     await(FetchHistory);
   end;
-  ReFreshListings;
+  if VisiblePanelNum <> 3 then ByAllClick(Sender);
 end;
 
 procedure TCWRmainFrm.UpdateHistory(Sender: TObject);
@@ -347,11 +345,14 @@ begin
   end;
 end;
 
+procedure TCWRmainFrm.btnOptOKClick(Sender: TObject);
+begin
+  SetPage(0);
+end;
+
 procedure TCWRmainFrm.ByAllClick(Sender: TObject);
 begin
   Log('ByAllClick called');
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-//  WebMainMenu1.Items.Find('ByAll');
   ClearExcept('');
   EPG.Columns[2].Title := 'Title';
   ByAll.Checked := True;
@@ -366,10 +367,8 @@ begin
   pnlFilterComboBox.Show;
   WebComboBox3.Show;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-//  if WebComboBox1.ItemIndex < 0 then SetupFilterLists;
   ClearExcept('PSIP');
   SetPage(0);
-//  WebComboBox3.SetFocus;
 end;
 
 procedure TCWRmainFrm.ByGenreClick(Sender: TObject);
@@ -379,10 +378,8 @@ begin
   pnlFilterComboBox.Show;
   WebComboBox1.Show;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-//  if WebComboBox1.ItemIndex < 0 then SetupFilterLists;
   ClearExcept('genres');
   SetPage(0);
-//  WebComboBox1.SetFocus;
 end;
 
 procedure TCWRmainFrm.ByTitleClick(Sender: TObject);
@@ -392,11 +389,9 @@ begin
   pnlFilterComboBox.Show;
   WebComboBox2.Show;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-//  if WebComboBox1.ItemIndex < 0 then SetupFilterLists;
   WebComboBox2.ItemIndex := WebComboBox2.Items.IndexOf(WIDBCDS.FieldByName('Title').AsString);
   ClearExcept('Title');
   SetPage(0);
-//  WebComboBox2.SetFocus;
 end;
 
 function TCWRmainFrm.GetGoogleDriveFile(TableFile: string; var id: string): string;
@@ -499,12 +494,9 @@ var
   ReplyArray: TArray<string>;
 begin
   Log('ReFreshCSV called for ' + TableFile);
+  await (ShowPlsWait('Refreshing ' + Title));
   if application.IsOnline then
   begin
-    AlertLabel.Caption := 'Refreshing '+Title+' data <i class="fa-solid fa-spinner fa-spin"></>';
-//    pnlStatus.Show;
-    {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-
     WSG.BeginUpdate;
     try
       Log('Requesting: ' + TableFile);
@@ -537,8 +529,8 @@ begin
       Log('Enter finally section');
       WSG.EndUpdate;
 //      pnlStatus.Hide;
-      {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-      Log('Done hiding');
+//      {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//      Log('Done hiding');
     end;
   end
   else
@@ -552,18 +544,14 @@ end;
 procedure TCWRmainFrm.LoadWIDBCDS;
 var
   i,j: Integer;
-  t: TDateTime;
+  t, LastDT: TDateTime;
   AColor: string;
   Text: string;
 begin
   Log('Starting LoadWIDBCDS, DB is ' + IfThen(not WIDBCDS.Active, 'not ') + 'Active');
-  WebLabel1.Caption := 'Updating IndexedDB.';
-  pnlWaitPls.BringToFront;
-  AlertLabel.Caption := 'Refreshing IndexedDB data <i class="fa-solid fa-spinner fa-spin"></>';
+  await (ShowPlsWait('Updating IndexedDB'));
   WIDBCDS.DisableControls;
   EPG.BeginUpdate;
-//  pnlStatus.Show;
-  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   WIDBCDS.Filtered := False;
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Filtered, 'UN') + 'filtered');
   try
@@ -573,6 +561,7 @@ begin
       Log('LoadWIDBCDS, Buffer Row Count: ' + BufferGrid.RowCount.ToString);
       WIDBCDS.First;
       while not WIDBCDS.IsEmpty do WIDBCDS.Delete;
+      LastDT := Now + seNumDisplayDays.Value;
       for j := 1 to BufferGrid.RowCount - 1 do
       begin
         // Lose superfluous <">
@@ -598,36 +587,24 @@ begin
             'rose');  // Otherwise "rerun"
         WIDBCDS.Fields[15].Value := AColor;
         TAwait.ExecP<Boolean>(WIDBCDS.PostAsync);
+        if WIDBCDS.Fields[6].AsDateTime > LastDT then Break;
       end;
     end;
     Log('Finished editing WIDBCDS, RecordCount: ' + WIDBCDS.RecordCount.ToString);
-    // Handle smaller new data set
-//    if WIDBCDS.RecordCount > BufferGrid.RowCount - 1 then
-//    begin
-//      Log('Removing ' + (WIDBCDS.RecordCount - BufferGrid.RowCount).ToString
-//        + ' excess old CDS records');
-//      for j := WIDBCDS.RecordCount downto BufferGrid.RowCount do
-//      begin
-//        WIDBCDS.Last;
-//        WIDBCDS.Delete;
-//      end;
-//    end;
   finally
-//    WIDBCDS.Close;  // This seems necessary to finish update    241206 TMP -- no longer true???
     Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
     Log('calling WIDBCDS.EnableControls');
-    {await(}WIDBCDS.EnableControls{)};
+    WIDBCDS.EnableControls;
     Log('WIDBCDS Controls are ' + IfThen(WIDBCDS.ControlsDisabled,'NOT ') + 'Enabled');
-//    Log('calling WIDBCDS.OpenAsync');
-//    TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
     Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active,'NOT ') + 'Open');
     Log('calling EPG.EndUpdate');
-    {await(}EPG.EndUpdate{)};
+    EPG.EndUpdate;
     Log('EPG update is ' + IfThen(EPG.IsUpdating,'NOT ') + 'ended');
     Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
-//    pnlStatus.Hide;
-    {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
     Log('Finished LoadWIDBCDS');
+    pnlWaitPls.Hide;
+    {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+
     WIDBCDS.Close;  // This seems necessary to finish update    250313 TMP -- still true on Android
   end;
 end;
@@ -666,6 +643,7 @@ begin
         Break;
       end;
     NewCaptures.EndUpdate;
+    pnlWaitPls.Hide;
   end;
 end;
 
@@ -676,23 +654,35 @@ begin
     if ACol in [1,2] then AValue := FormatDateTime('mm/dd HH:nn', StrToDateTime(AValue));
 end;
 
-procedure TCWRmainFrm.CheckSettingsForUpdate;
+procedure TCWRmainFrm.CheckNumDispDaysForUpdate;
+
+  procedure ResetComboBox(cb: TWebComboBox);
+  begin
+    cb.ItemIndex := -1;
+    cb.Items.Clear;
+  end;
+
 begin
   if TWebLocalStorage.GetValue(NUMDAYS) <> seNumDisplayDays.Value.ToString then
   begin
     TWebLocalStorage.SetValue(NUMDAYS,seNumDisplayDays.Value.ToString);
     Log('New number EPG Display Days: ' + seNumDisplayDays.Value.ToString);
-    WebComboBox1.ItemIndex := -1;
-    {await(}ReFreshListings{)};
+    ResetComboBox(WebComboBox1);
+    ResetComboBox(WebComboBox2);
+    ResetComboBox(WebComboBox3);
+    await(ReFreshListings);
   end;
+end;
 
+procedure TCWRmainFrm.CheckNumHistForUpdate;
+
+begin
   if TWebLocalStorage.GetValue(NUMHIST) <> seNumHistEvents.Value.ToString then
   begin
     TWebLocalStorage.SetValue(NUMHIST,seNumHistEvents.Value.ToString);
     Log('New number History Items: ' + seNumHistEvents.Value.ToString);
-    await(FillHistoryDisplay);
+//    await(FillHistoryDisplay);
   end;
-
 end;
 
 procedure TCWRmainFrm.SetupWIDBCDS;
@@ -716,41 +706,25 @@ begin
       WIDBCDS.FieldDefs.Add(DBFIELDS[i], ftString);
   end;
   TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
-//  while not WIDBCDS.Active do
-//    {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active, 'not ')
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
 end;
 
-//procedure TCWRmainFrm.FinalizeWIDBCDSUpdate; // This method seems to fail (even though marked with [async]
-//begin
-//  WIDBCDS.Close;  // This seems necessary to finish update
-//  Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
-//  Log('calling await WIDBCDS.EnableControls');
-//  Await(WIDBCDS.EnableControls);
-//  Log('finished await WIDBCDS.EnableControls');
-//  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
-//  Log('finished await WIDBCDS.OpenAsync');
-//  Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
-//end;
-
 procedure TCWRmainFrm.SetupFilterList(cb: TWebComboBox; fn: string);
 var
-  x,y: string;
+  x, y, FltrStr: string;
   sl: TStringList;
   FltrState: Boolean;
 begin
-  WebLabel1.Caption := 'Preparing filter list.';
-  pnlWaitPls.Show;
-  pnlWaitPls.BringToFront;
-  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+  await (ShowPlsWait('Preparing ' + fn + ' list.'));
   FltrState := WIDBCDS.Filtered;
+  FltrStr := WIDBCDS.Filter;
+  SetFilter(BaseFilter);  // Check only displayed records for terms
   WIDBCDS.DisableControls;
   sl := TStringList.Create;
   sl.Sorted := True;
   sl.Duplicates := dupIgnore;
   sl.BeginUpdate;
-  WIDBCDS.Filtered := False;
   WIDBCDS.First;
   Log('Looping over WIDBCDS "' + fn + '" field');
   while not WIDBCDS.Eof do
@@ -767,6 +741,7 @@ begin
     else sl.Add(x);
     WIDBCDS.Next;
   end;
+  SetFilter(FltrStr);
   WIDBCDS.Filtered := FltrState;
   sl.EndUpdate;
   cb.BeginUpdate;
@@ -781,59 +756,6 @@ begin
   WIDBCDS.EnableControls;
 end;
 
-//procedure TCWRmainFrm.SetupFilterLists;
-//var
-//  x,y: string;
-//  slc, slg, slt: TStringList;
-//  procedure slSetup(var sl: TStringList);
-//  begin
-//    sl := TStringList.Create;
-//    sl.Sorted := True;
-//    sl.Duplicates := dupIgnore;
-//    sl.BeginUpdate;
-//  end;
-//  procedure ComboBoxSetup(var cb: TWebComboBox; sl: TStringList);
-//  begin
-//    sl.EndUpdate;
-//    cb.BeginUpdate;
-//    cb.Clear;
-//    Log('Adding first '+cb.Name+' Item: "All"');
-//    cb.Items.Add('All');
-//    cb.Items.AddStrings(sl);
-//    cb.EndUpdate;
-//    Log('Added ' + cb.Items.Count.ToString + ' to ' + cb.Name);
-//    sl.Free;
-//    if cb.ItemIndex < 0 then cb.ItemIndex := 0;
-//  end;
-//begin
-//  WebLabel1.Caption := 'Preparing filter lists.';
-//  pnlWaitPls.BringToFront;
-//  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
-//  WIDBCDS.DisableControls;
-//  slSetup(slc);
-//  slSetup(slg);
-//  slSetup(slt);
-//  WIDBCDS.First;
-//  Log('Looping over WIDBCDS "Title", "genres", "PSIP" fields');
-//  while not WIDBCDS.Eof do
-//  begin
-//    slc.Add(WIDBCDS.FieldByName('PSIP').AsString);
-//    slt.Add(WIDBCDS.FieldByName('Title').AsString);
-//    y := ReplaceStr(WIDBCDS.FieldByName('genres').AsString, '\', ''); // Remove escape "\" char
-//    // Split the string 'xxx;yyy;zzz' into array xxx, yyy, zzz
-//    // ignoring JSON "punctuation" around items
-//    for x in y.Split([';','[',']','"',','], TStringSplitOptions.ExcludeEmpty) do
-//      slg.Add(x);
-//    WIDBCDS.Next;
-//  end;
-//  ComboBoxSetup(WebComboBox1, slg);
-//  ComboBoxSetup(WebComboBox2, slt);
-//  ComboBoxSetup(WebComboBox3, slc);
-////  pnlWaitPls.SendToBack;
-////  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-//  WIDBCDS.EnableControls;
-//end;
-
 procedure TCWRmainFrm.SetFilter(fltr: string);
 begin
   EPG.BeginUpdate;
@@ -846,6 +768,17 @@ begin
   EPG.EndUpdate;
 end;
 
+procedure TCWRmainFrm.ShowPlsWait(PlsWaitCap: string);
+begin
+  if VisiblePanelNum <> 3 then
+  begin
+    WebLabel1.Caption := PlsWaitCap;
+    pnlWaitPls.BringToFront;
+    pnlWaitPls.Show;
+    {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  end;
+end;
+
 procedure TCWRmainFrm.ReFreshListings;
 var
   NRows: Integer;
@@ -855,9 +788,7 @@ begin
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   if not WIDBCDS.Active then
   begin
-    WebLabel1.Caption := 'Opening IndexedDB.';
-    pnlWaitPls.BringToFront;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+    await (ShowPlsWait('Opening IndexedDB.'));
     TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   end;
   Log('Days to Display: ' + seNumDisplayDays.Value.ToString);
@@ -872,10 +803,7 @@ begin
       WIDBCDS.Last;
       LastTime := TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('EndTime').AsDateTime);
       Log('EndTime of Last (unfiltered) record (' + WIDBCDS.RecNo.ToString+'): ' + DateTimeToStr(LastTime));
-      WebLabel1.Caption := 'Preparing ' + seNumDisplayDays.Value.ToString + '-day Listing.';
-      pnlWaitPls.BringToFront;
-      {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
-      Log('"Pls Wait" is showing');
+      await (ShowPlsWait('Preparing ' + seNumDisplayDays.Value.ToString + '-day Listing.'));
       WIDBCDS.First;
       FirstTime := TTimeZone.Local.ToLocalTime(WIDBCDS.FieldByName('StartTime').AsDateTime);
       Log('StartTime of First (unfiltered) record ('+WIDBCDS.RecNo.ToString+'): ' + DateTimeToStr(FirstTime));
@@ -1156,22 +1084,24 @@ end;
 procedure TCWRmainFrm.SetPage(PageNum: Integer);
 
 begin
-  await(CheckSettingsForUpdate);
   case PageNum of
     0: begin          {Listings page}
+      CheckNumDispDaysForUpdate;
       pnlListings.BringToFront;
       if WIDBCDS.Active then
       begin
         EPG.BeginUpdate;
         EPG.Refresh;
         EPG.EndUpdate;
-      end;
+      end
+      else ReFreshListings;
     end;
     1: begin          {Captures}
       pnlCaptures.BringToFront;
       tbCapturesShow;
     end;
     2: begin {History}
+      CheckNumHistForUpdate;
       pnlHistory.BringToFront;
       tbHistoryShow;
     end;
@@ -1182,7 +1112,7 @@ begin
       pnlOptions.BringToFront;
     end;
   end;
-//  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+  VisiblePanelNum := PageNum;
 end;
 
 procedure TCWRmainFrm.Settings1Click(Sender: TObject);
@@ -1294,9 +1224,10 @@ begin
           TAwait.ExecP<TModalResult>(SchedFrm.Execute);
           if SchedFrm.ModalResult = mrOk then
           begin
-            WebLabel1.Caption := 'Saving Capture Request.';
-            pnlWaitPls.BringToFront;
-            {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//            WebLabel1.Caption := 'Saving Capture Request.';
+//            pnlWaitPls.BringToFront;
+//            {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+            await (ShowPlsWait('Saving Capture Request.'));
             await (UpdateNewCaptures(SchedFrm.tpStartTime.DateTime, SchedFrm.tpEndTime.DateTime));
           end;
         finally
