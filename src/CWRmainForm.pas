@@ -208,6 +208,11 @@ begin
   ByGenre.Checked := WebComboBox1.Text <> 'All';
   ByAll.Checked := not ByGenre.Checked;
   SetFilter(BaseFilter + GenreFilter);
+  if WebComboBox1.ItemIndex = 0 then
+  begin
+    WebComboBox1FocusOut(Sender);
+    ByAllClick(Sender);
+  end;
 end;
 
 procedure TCWRmainFrm.WebComboBox1FocusOut(Sender: TObject);
@@ -228,6 +233,11 @@ begin
   ByTitle.Checked := WebComboBox2.Text <> 'All';
   ByAll.Checked := not ByTitle.Checked;
   SetFilter(BaseFilter + TitleFilter);
+  if WebComboBox2.ItemIndex = 0 then
+  begin
+    WebComboBox2FocusOut(Sender);
+    ByAllClick(Sender);
+  end;
 end;
 
 procedure TCWRmainFrm.WebComboBox2FocusOut(Sender: TObject);
@@ -247,6 +257,11 @@ begin
   ByChannel.Checked := WebComboBox3.Text <> 'All';
   ByAll.Checked := not ByChannel.Checked;
   SetFilter(BaseFilter + ChannelFilter);
+  if WebComboBox3.ItemIndex = 0 then
+  begin
+    WebComboBox3FocusOut(Sender);
+    ByAllClick(Sender);
+  end;
 end;
 
 procedure TCWRmainFrm.WebComboBox3FocusOut(Sender: TObject);
@@ -282,10 +297,9 @@ begin
   if TWebLocalStorage.GetValue(NUMHIST) <> '' then
     seNumHistEvents.Value := StrToInt(TWebLocalStorage.GetValue(NUMHIST));
     WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
-  SetPage(0);
   await(SetupWIDBCDS);
   Log('FormCreate, ' + WIDBCDS.Name + ' record count: ' + WIDBCDS.RecordCount.ToString);
-  {await(}RefreshListings{)};
+  RefreshListings;
   Log('FormCreate is finished');
 end;
 
@@ -528,9 +542,6 @@ begin
     finally
       Log('Enter finally section');
       WSG.EndUpdate;
-//      pnlStatus.Hide;
-//      {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-//      Log('Done hiding');
     end;
   end
   else
@@ -752,7 +763,7 @@ begin
   cb.EndUpdate;
   Log('Added ' + cb.Items.Count.ToString + ' to ' + cb.Name);
   sl.Free;
-  cb.ItemIndex := 0;
+  cb.ItemIndex := -1;
   WIDBCDS.EnableControls;
 end;
 

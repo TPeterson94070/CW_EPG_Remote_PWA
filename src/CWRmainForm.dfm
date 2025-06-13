@@ -291,202 +291,6 @@ object CWRmainFrm: TCWRmainFrm
       OnGetCellClass = HistoryTableGetCellClass
     end
   end
-  object pnlListings: TWebPanel
-    Left = 0
-    Top = 80
-    Width = 428
-    Height = 703
-    ElementClassName = 'card'
-    HeightStyle = ssPercent
-    WidthStyle = ssPercent
-    Align = alClient
-    Caption = 'pnlListings'
-    ChildOrder = 11
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    ShowCaption = False
-    TabOrder = 6
-    DesignSize = (
-      428
-      703)
-    object lblEmptyEPG: TWebLabel
-      Left = 96
-      Top = 58
-      Width = 195
-      Height = 28
-      Alignment = taCenter
-      Anchors = [akLeft, akTop, akRight]
-      Caption = 
-        'There are no current listings to see.(Try "Options|Refresh EPG" ' +
-        'to update)'
-      Color = clBlack
-      ElementClassName = 'white'
-      ElementFont = efCSS
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clWhite
-      Font.Height = -11
-      Font.Name = 'Arial'
-      Font.Style = []
-      HeightStyle = ssAuto
-      HeightPercent = 100.000000000000000000
-      ParentFont = False
-      Transparent = False
-      Visible = False
-      WordWrap = True
-      WidthPercent = 100.000000000000000000
-    end
-    object EPG: TWebDBGrid
-      Left = 0
-      Top = 0
-      Width = 428
-      Height = 703
-      Align = alClient
-      BorderStyle = bsNone
-      Color = clNavy
-      Columns = <
-        item
-          Alignment = taCenter
-          AutoFormatDateTime = False
-          DataField = 'PSIP'
-          Title = 'Channel'
-          Width = 75
-        end
-        item
-          Alignment = taCenter
-          AutoFormatDateTime = False
-          DataField = 'Time'
-          Title = 'HTPC Local Time'
-          TitleElementClassName = 'h6'
-          Width = 155
-        end
-        item
-          AutoFormatDateTime = False
-          DataField = 'Title'
-          Title = 'Title'
-          Width = 300
-        end
-        item
-          AutoFormatDateTime = False
-          DataField = 'id'
-          Editor = geNone
-          Title = 'ID'
-          Width = 0
-        end
-        item
-          AutoFormatDateTime = False
-          ElementClassName = 'white'
-          DataField = 'Class'
-          Title = 'Class'
-          Width = 0
-        end>
-      DataSource = WebDataSource1
-      ElementFont = efCSS
-      FixedFont.Charset = ANSI_CHARSET
-      FixedFont.Color = clBlack
-      FixedFont.Height = -11
-      FixedFont.Name = 'Arial'
-      FixedFont.Style = []
-      FixedCols = 0
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -12
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      Options = [goRowSelect]
-      ParentFont = False
-      TabOrder = 0
-      HeightPercent = 100.000000000000000000
-      StyleElements = []
-      WidthPercent = 100.000000000000000000
-      OnClickCell = EPGClickCell
-      OnGetCellClass = EPGGetCellClass
-      ColWidths = (
-        75
-        155
-        300
-        0
-        0)
-    end
-    object pnlFilterComboBox: TWebPanel
-      Left = 88
-      Top = 49
-      Width = 150
-      Height = 60
-      ElementClassName = 'card'
-      Caption = 'Choose Filter'
-      ChildOrder = 5
-      ElementBodyClassName = 'card-body'
-      ElementFont = efCSS
-      TabOrder = 1
-      Visible = False
-      object lblFilterSelect: TWebLabel
-        Left = 0
-        Top = 0
-        Width = 150
-        Height = 14
-        Align = alTop
-        Caption = 'Choose Item'
-        ElementFont = efCSS
-        HeightStyle = ssAuto
-        HeightPercent = 100.000000000000000000
-        WidthPercent = 100.000000000000000000
-      end
-      object WebComboBox1: TWebComboBox
-        Left = 0
-        Top = 38
-        Width = 150
-        Height = 22
-        Align = alBottom
-        ElementClassName = 'form-select'
-        ElementFont = efCSS
-        HeightStyle = ssAuto
-        HeightPercent = 100.000000000000000000
-        Role = 'combobox'
-        Visible = False
-        WidthPercent = 100.000000000000000000
-        OnChange = WebComboBox1Change
-        OnDblClick = WebComboBox1Change
-        OnFocusOut = WebComboBox1FocusOut
-        ItemIndex = -1
-      end
-      object WebComboBox2: TWebComboBox
-        Left = 0
-        Top = -6
-        Width = 150
-        Height = 22
-        Align = alBottom
-        ElementClassName = 'form-select'
-        ElementFont = efCSS
-        HeightStyle = ssAuto
-        HeightPercent = 100.000000000000000000
-        Role = 'combobox'
-        Visible = False
-        WidthPercent = 100.000000000000000000
-        OnChange = WebComboBox2Change
-        OnDblClick = WebComboBox2Change
-        OnFocusOut = WebComboBox2FocusOut
-        ItemIndex = -1
-      end
-      object WebComboBox3: TWebComboBox
-        Left = 0
-        Top = 16
-        Width = 150
-        Height = 22
-        Align = alBottom
-        ElementClassName = 'form-select'
-        ElementFont = efCSS
-        HeightStyle = ssAuto
-        HeightPercent = 100.000000000000000000
-        Role = 'combobox'
-        Visible = False
-        WidthPercent = 100.000000000000000000
-        OnChange = WebComboBox3Change
-        OnDblClick = WebComboBox3Change
-        OnFocusOut = WebComboBox3FocusOut
-        ItemIndex = -1
-      end
-    end
-  end
   object pnlOptions: TWebPanel
     Left = 0
     Top = 80
@@ -709,6 +513,202 @@ object CWRmainFrm: TCWRmainFrm
           '<FONT color="#FFFFFF" ><P align="center">Programs currently Sche' +
           'duled</P></FONT>')
       Role = ''
+    end
+  end
+  object pnlListings: TWebPanel
+    Left = 0
+    Top = 80
+    Width = 428
+    Height = 703
+    ElementClassName = 'card'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
+    Align = alClient
+    Caption = 'pnlListings'
+    ChildOrder = 11
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    ShowCaption = False
+    TabOrder = 6
+    DesignSize = (
+      428
+      703)
+    object lblEmptyEPG: TWebLabel
+      Left = 96
+      Top = 58
+      Width = 195
+      Height = 28
+      Alignment = taCenter
+      Anchors = [akLeft, akTop, akRight]
+      Caption = 
+        'There are no current listings to see.(Try "Options|Refresh EPG" ' +
+        'to update)'
+      Color = clBlack
+      ElementClassName = 'white'
+      ElementFont = efCSS
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = []
+      HeightStyle = ssAuto
+      HeightPercent = 100.000000000000000000
+      ParentFont = False
+      Transparent = False
+      Visible = False
+      WordWrap = True
+      WidthPercent = 100.000000000000000000
+    end
+    object EPG: TWebDBGrid
+      Left = 0
+      Top = 0
+      Width = 428
+      Height = 703
+      Align = alClient
+      BorderStyle = bsNone
+      Color = clNavy
+      Columns = <
+        item
+          Alignment = taCenter
+          AutoFormatDateTime = False
+          DataField = 'PSIP'
+          Title = 'Channel'
+          Width = 75
+        end
+        item
+          Alignment = taCenter
+          AutoFormatDateTime = False
+          DataField = 'Time'
+          Title = 'HTPC Local Time'
+          TitleElementClassName = 'h6'
+          Width = 155
+        end
+        item
+          AutoFormatDateTime = False
+          DataField = 'Title'
+          Title = 'Title'
+          Width = 300
+        end
+        item
+          AutoFormatDateTime = False
+          DataField = 'id'
+          Editor = geNone
+          Title = 'ID'
+          Width = 0
+        end
+        item
+          AutoFormatDateTime = False
+          ElementClassName = 'white'
+          DataField = 'Class'
+          Title = 'Class'
+          Width = 0
+        end>
+      DataSource = WebDataSource1
+      ElementFont = efCSS
+      FixedFont.Charset = ANSI_CHARSET
+      FixedFont.Color = clBlack
+      FixedFont.Height = -11
+      FixedFont.Name = 'Arial'
+      FixedFont.Style = []
+      FixedCols = 0
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      Options = [goRowSelect]
+      ParentFont = False
+      TabOrder = 0
+      HeightPercent = 100.000000000000000000
+      StyleElements = []
+      WidthPercent = 100.000000000000000000
+      OnClickCell = EPGClickCell
+      OnGetCellClass = EPGGetCellClass
+      ColWidths = (
+        75
+        155
+        300
+        0
+        0)
+    end
+    object pnlFilterComboBox: TWebPanel
+      Left = 88
+      Top = 49
+      Width = 150
+      Height = 60
+      ElementClassName = 'card'
+      Caption = 'Choose Filter'
+      ChildOrder = 5
+      ElementBodyClassName = 'card-body'
+      ElementFont = efCSS
+      TabOrder = 1
+      Visible = False
+      object lblFilterSelect: TWebLabel
+        Left = 0
+        Top = 0
+        Width = 150
+        Height = 14
+        Align = alTop
+        Caption = 'Choose Item'
+        ElementFont = efCSS
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        WidthPercent = 100.000000000000000000
+      end
+      object WebComboBox1: TWebComboBox
+        Left = 0
+        Top = 38
+        Width = 150
+        Height = 22
+        Align = alBottom
+        ElementClassName = 'form-select'
+        ElementFont = efCSS
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        Role = 'combobox'
+        Visible = False
+        WidthPercent = 100.000000000000000000
+        OnChange = WebComboBox1Change
+        OnDblClick = WebComboBox1Change
+        OnFocusOut = WebComboBox1FocusOut
+        ItemIndex = -1
+      end
+      object WebComboBox2: TWebComboBox
+        Left = 0
+        Top = -6
+        Width = 150
+        Height = 22
+        Align = alBottom
+        ElementClassName = 'form-select'
+        ElementFont = efCSS
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        Role = 'combobox'
+        Visible = False
+        WidthPercent = 100.000000000000000000
+        OnChange = WebComboBox2Change
+        OnDblClick = WebComboBox2Change
+        OnFocusOut = WebComboBox2FocusOut
+        ItemIndex = -1
+      end
+      object WebComboBox3: TWebComboBox
+        Left = 0
+        Top = 16
+        Width = 150
+        Height = 22
+        Align = alBottom
+        ElementClassName = 'form-select'
+        ElementFont = efCSS
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        Role = 'combobox'
+        Visible = False
+        WidthPercent = 100.000000000000000000
+        OnChange = WebComboBox3Change
+        OnDblClick = WebComboBox3Change
+        OnFocusOut = WebComboBox3FocusOut
+        ItemIndex = -1
+      end
     end
   end
   object WebMainMenu1: TWebMainMenu
