@@ -336,10 +336,11 @@ object CWRmainFrm: TCWRmainFrm
         Color = clBtnFace
         ElementFont = efCSS
         Increment = 100
-        MaxValue = 8000
+        MaxValue = 1000
         MinValue = 100
         Role = ''
         Value = 100
+        OnChange = seNumHistEventsChange
       end
     end
     object WebGroupBox1: TWebGroupBox
@@ -377,6 +378,7 @@ object CWRmainFrm: TCWRmainFrm
         MinValue = 1
         Role = ''
         Value = 1
+        OnChange = seNumDisplayDaysChange
       end
     end
     object btnOptOK: TWebButton
@@ -711,6 +713,26 @@ object CWRmainFrm: TCWRmainFrm
       end
     end
   end
+  object HistoryGrid: TWebStringGrid
+    Left = 56
+    Top = 352
+    Width = 320
+    Height = 120
+    ColCount = 32
+    FixedCols = 0
+    TabOrder = 9
+    Visible = False
+    ElementFont = efCSS
+    FixedFont.Charset = DEFAULT_CHARSET
+    FixedFont.Color = clWindowText
+    FixedFont.Height = -21
+    FixedFont.Name = 'Segoe UI'
+    FixedFont.Style = []
+    RangeEdit.Max = 100.000000000000000000
+    RangeEdit.Step = 1.000000000000000000
+    HeightPercent = 100.000000000000000000
+    WidthPercent = 100.000000000000000000
+  end
   object WebMainMenu1: TWebMainMenu
     Appearance.BackgroundColor = clSilver
     Appearance.HamburgerMenu.Caption = 'Menu'
@@ -807,8 +829,13 @@ object CWRmainFrm: TCWRmainFrm
     Top = 104
   end
   object WebDataSource1: TWebDataSource
-    DataSet = WIDBCDS
+    DataSet = EpgDb
     Left = 296
     Top = 216
+  end
+  object EpgDb: TWebClientDataSet
+    Params = <>
+    Left = 200
+    Top = 392
   end
 end
