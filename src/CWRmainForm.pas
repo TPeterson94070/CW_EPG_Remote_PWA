@@ -325,7 +325,9 @@ begin
     await(FetchCapReservations);
     await(FetchNewCapRequests);
     await(FetchHistory);
-    await(SetupEpgDb);
+//    await(SetupEpgDb);
+    // Stopgap:  restart app, since can't reset EpgDb
+    Application.Navigate(Application.ExeName,ntPage);
   end;
   if VisiblePanelNum <> 3 then ByAllClick(Sender);
 end;
