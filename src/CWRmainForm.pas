@@ -295,7 +295,6 @@ begin
   await(RefreshCSV(BufferGrid, 'cwr_epg.csv','EPG', id));
   if BufferGrid.RowCount > 0 then
   begin
-    await(SetupWIDBCDS);
     await(LoadWIDBCDS);
     await(FetchCapReservations);
     await(FetchNewCapRequests);
@@ -351,6 +350,7 @@ end;
 procedure TCWRmainFrm.ByGenreClick(Sender: TObject);
 begin
   Log('ByGenreClick called');
+//  await(showmessage('cb1 itms count: ' + WebComboBox1.Items.Count.ToString));
   if WebComboBox1.Items.Count = 0 then await(SetupFilterList(WebComboBox1, 'genres'));
   pnlFilterComboBox.Show;
   WebComboBox1.Show;
@@ -526,15 +526,15 @@ begin
   EPG.BeginUpdate;
   WIDBCDS.Filtered := False;
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Filtered, 'UN') + 'filtered');
+  WIDBCDS.Close;
+  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   try
     if WIDBCDS.Active and (BufferGrid.RowCount > 1) then
     begin
       Log('LoadWIDBCDS, CDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
       Log('LoadWIDBCDS, Buffer Row Count: ' + BufferGrid.RowCount.ToString);
       WIDBCDS.Edit;
-//      WIDBCDS.EmptyDataSet;
-      WIDBCDS.First;
-      while not WIDBCDS.Eof do WIDBCDS.Delete;
+      await(WIDBCDS.EmptyDataSet);
       Log('LoadWIDBCDS, After EmptyDataSet CDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
       for j := 1 to BufferGrid.RowCount - 1 do
       begin
@@ -635,11 +635,12 @@ const
   'Description', 'StartTime', 'EndTime', 'programID', 'originalAirDate', 'new',
   'audioProperties', 'videoProperties', 'movieYear', 'genres', 'Class');
 begin
-  Log('Setting up to (re)open WIDBCDS');
+  Log('========== SetupWIDBCDS called');
   if WIDBCDS.Active then WIDBCDS.Close;
   WIDBCDS.FieldDefs.Clear;
-  // add key field
-  WIDBCDS.FieldDefs.Add('id', ftInteger, 0, False);
+  // don't re-add key field
+  if WIDBCDS.FieldDefs.IndexOf('id') = -1 then
+    WIDBCDS.FieldDefs.Add('id', ftInteger, 0, False);
   // add normal fields
   for i := 0 to Length(DBFIELDS) - 1 do
   begin
@@ -652,11 +653,26 @@ begin
   TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active, 'not ')
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
+  Log('========== SetupWIDBCDS finished');
+end;
+
+procedure TCWRmainFrm.SetupEpgDb;
+  procedure ResetComboBox(cb: TWebComboBox);
+  begin
+    cb.ItemIndex := -1;
+    cb.Items.Clear;
+  end;
+var
+  FirstEndTime, LastStartTime:  TDateTime;
+
+begin
+  WIDBCDS.Close;
+  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   WIDBCDS.First;
-  repeat // Ignore multiday items
-    FirstEndDate := WIDBCDS.FieldByName('EndTime').AsDateTime;
+  // Ignore multiday items
+  while not WIDBCDS.Eof and not SameDate(WIDBCDS.FieldByName('StartTime').AsDateTime, WIDBCDS.FieldByName('EndTime').AsDateTime) do
     WIDBCDS.Next;
-  until SameDate(WIDBCDS.FieldByName('StartTime').AsDateTime, WIDBCDS.FieldByName('EndTime').AsDateTime);
+  FirstEndDate := WIDBCDS.FieldByName('EndTime').AsDateTime;
   Log('FirstEndDate: ' + DateToStr(FirstEndDate));
   WIDBCDS.Last;
   LastStartDate := WIDBCDS.FieldByName('StartTime').AsDateTime;
@@ -668,14 +684,6 @@ begin
     ShowMessage('The current dataset was fetched over 3 days ago'
       + #13'and there are only about ' + Round(LastStartDate - Now).ToString + ' days now available.'
       + #13#13'To update, please use Options | Refresh Data');
-end;
-
-procedure TCWRmainFrm.SetupEpgDb;
-var
-  FirstEndTime, LastStartTime:  TDateTime;
-//  AField: string;
-
-begin
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
   LastStartTime := TTimeZone.Local.ToUniversalTime(Now) + seNumDisplayDays.Value;
   EpgDb.Close;
@@ -696,6 +704,9 @@ begin
   Log('SetupEpgDb: EpgDb record count post filter: ' + EpgDb.RecordCount.ToString);
   WebDataSource1.DataSet := EpgDb;
   EPG.DataSource := WebDataSource1;
+  ResetComboBox(WebComboBox1);
+  ResetComboBox(WebComboBox2);
+  ResetComboBox(WebComboBox3);
 end;
 
 procedure TCWRmainFrm.SetupFilterList(cb: TWebComboBox; fn: string);
@@ -704,7 +715,9 @@ var
   sl: TStringList;
   FltrState: Boolean;
 begin
-  await (ShowPlsWait('Preparing ' + fn + ' list.'));
+  x := IfThen(fn='genres', 'Genre', IfThen(fn='PSIP', 'Channel', 'Title'));
+  await (ShowPlsWait('Preparing ' + x + ' list.'));
+  lblFilterSelect.Caption := 'Choose ' + x;
   FltrState := EpgDb.Filtered;
   FltrStr := EpgDb.Filter;
   EpgDb.DisableControls;
@@ -729,7 +742,8 @@ begin
     else sl.Add(x);
     EpgDb.Next;
   end;
-  SetFilter(FltrStr);
+//  SetFilter(FltrStr);
+  EpgDb.Filter := FltrStr;
   EpgDb.Filtered := FltrState;
   sl.EndUpdate;
   cb.BeginUpdate;
@@ -742,11 +756,12 @@ begin
   sl.Free;
   cb.ItemIndex := -1;
   EpgDb.EnableControls;
+  pnlWaitPls.Hide;
 end;
 
 procedure TCWRmainFrm.SetFilter(fltr: string);
 begin
-  await(ShowPlsWait('Preparing Filtered List'));
+  await(ShowPlsWait('Preparing ' + IfThen(fltr='','Un') + 'Filtered List'));
   EPG.BeginUpdate;
   EpgDb.DisableControls;
   EpgDb.Filtered := False;
@@ -807,20 +822,12 @@ begin
 end;
 
 procedure TCWRmainFrm.seNumDisplayDaysChange(Sender: TObject);
-  procedure ResetComboBox(cb: TWebComboBox);
-  begin
-    cb.ItemIndex := -1;
-    cb.Items.Clear;
-  end;
 begin
   // Make sure that current dataset supports the number
   if Round(LastStartDate - FirstEndDate) >= seNumDisplayDays.Value then
   begin
     TWebLocalStorage.SetValue(NUMDAYS, seNumDisplayDays.Value.ToString);
     Log('New number EPG Display Days: ' + seNumDisplayDays.Value.ToString);
-    ResetComboBox(WebComboBox1);
-    ResetComboBox(WebComboBox2);
-    ResetComboBox(WebComboBox3);
     SetupEpgDb;
   end
   else
