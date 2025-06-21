@@ -252,7 +252,7 @@ procedure TCWRmainFrm.WebFormCreate(Sender: TObject);
 var
   AppVersion: string;
 begin
-  Log('FormCreate is called');
+  Log('========== FormCreate is called');
 //  WebMainMenu1.Height := 20;   // Works someday, I hope
 {$IFDEF PAS2JS}
   asm
@@ -280,18 +280,19 @@ begin
   await(SetupEpgDb);
 //  log('EPG.VisibleRowCount: ' + EPG.VisibleRowCount.ToString);
   EpgDb.First;
-  await(RefreshListings);
-  Log('FormCreate is finished');
+  if EpgDb.RecordCount > 1 then
+    await(RefreshListings);
+  Log('========== FormCreate is finished');
 end;
 
 procedure TCWRmainFrm.UpdateEPG(Sender: TObject);
 var
   id: string; {param used only by UpdateNewcaptures}
 begin
-  Log('======== "Update EPG" (Refresh Data) clicked');
-  TWebLocalStorage.Clear;
-  TWebLocalStorage.SetValue(NUMHIST, seNumHistEvents.Value.ToString);
-  TWebLocalStorage.SetValue(NUMDAYS, seNumDisplayDays.Value.ToString);
+  Log('======== "Refresh Data" clicked');
+//  TWebLocalStorage.Clear;
+//  TWebLocalStorage.SetValue(NUMHIST, seNumHistEvents.Value.ToString);
+//  TWebLocalStorage.SetValue(NUMDAYS, seNumDisplayDays.Value.ToString);
   await(RefreshCSV(BufferGrid, 'cwr_epg.csv','EPG', id));
   if BufferGrid.RowCount > 0 then
   begin
@@ -666,9 +667,11 @@ var
   FirstEndTime, LastStartTime:  TDateTime;
 
 begin
+  Log('====== SetupEpgDb called');
   WIDBCDS.Close;
+  await (ShowPlsWait('Reopening IndexedDB.'));
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
-  WIDBCDS.First;
   // Ignore multiday items
   while not WIDBCDS.Eof and not SameDate(WIDBCDS.FieldByName('StartTime').AsDateTime, WIDBCDS.FieldByName('EndTime').AsDateTime) do
     WIDBCDS.Next;
@@ -693,7 +696,7 @@ begin
   Log('SetupEpgDb: Reopened WIDBCDS record count: ' + WIDBCDS.RecordCount.ToString);
   EpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
   EpgDb.Open;
-  Log('SetupEpgDb: EpgDb record count: ' + EpgDb.RecordCount.ToString);
+  Log('SetupEpgDb: EpgDb initial record count: ' + EpgDb.RecordCount.ToString);
   Log('SetupEpgDb: EpgDb recno: '+EpgDb.RecNo.ToString);
   while not EpgDb.Eof do
   begin
@@ -701,12 +704,17 @@ begin
        (EpgDb.Fields[6].AsDateTime > LastStartTime) then EpgDb.Delete
     else EpgDb.Next;
   end;
-  Log('SetupEpgDb: EpgDb record count post filter: ' + EpgDb.RecordCount.ToString);
+  Log('SetupEpgDb: EpgDb post-filter record count: ' + EpgDb.RecordCount.ToString);
   WebDataSource1.DataSet := EpgDb;
   EPG.DataSource := WebDataSource1;
+  EPG.Columns[0].Alignment := taCenter;
+  EPG.Columns[2].Alignment := taLeftJustify;
   ResetComboBox(WebComboBox1);
   ResetComboBox(WebComboBox2);
   ResetComboBox(WebComboBox3);
+  pnlWaitPls.Hide;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  Log('====== SetupEpgDb finished');
 end;
 
 procedure TCWRmainFrm.SetupFilterList(cb: TWebComboBox; fn: string);
@@ -742,7 +750,6 @@ begin
     else sl.Add(x);
     EpgDb.Next;
   end;
-//  SetFilter(FltrStr);
   EpgDb.Filter := FltrStr;
   EpgDb.Filtered := FltrState;
   sl.EndUpdate;
@@ -798,17 +805,19 @@ begin
   if not EpgDb.Active then
   begin
     await (ShowPlsWait('Opening EpgDb.'));
+    {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
     Await(EpgDb.Open);
   end;
   Log('EpgDb.RecordCount: ' +EpgDb.RecordCount.ToString);
   Log('Days to Display: ' + seNumDisplayDays.Value.ToString);
   EPG.BeginUpdate;
   await (ShowPlsWait('Preparing ' + seNumDisplayDays.Value.ToString + '-day Listing.'));
-  EPG.Columns[0].Alignment := taCenter;
-  EPG.Columns[2].Alignment := taLeftJustify;
-  Log('EpgDb Controls are '+IfThen(not EpgDb.ControlsDisabled,'enabled','disabled'));
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//  EPG.Columns[0].Alignment := taCenter;
+//  EPG.Columns[2].Alignment := taLeftJustify;
+//  Log('EpgDb Controls are '+IfThen(not EpgDb.ControlsDisabled,'enabled','disabled'));
   EPG.EndUpdate;
-  Log('EPG Update is '+IfThen(EPG.IsUpdating, 'not ') + 'finished');
+//  Log('EPG Update is '+IfThen(EPG.IsUpdating, 'not ') + 'finished');
   EPG.Refresh;
   EPG.Visible := True;
   pnlListings.BringToFront;
