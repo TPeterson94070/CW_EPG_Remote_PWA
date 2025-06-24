@@ -59,7 +59,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 80
     Width = 428
-    Height = 737
+    Height = 669
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -74,7 +74,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 3
       Top = 3
       Width = 422
-      Height = 731
+      Height = 663
       Align = alClient
       Color = clBlack
       ElementClassName = 'white'
@@ -132,7 +132,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 80
     Width = 428
-    Height = 737
+    Height = 669
     ElementClassName = 'container-fluid'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -145,7 +145,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 737
+      Height = 669
       WidthStyle = ssPercent
       Align = alClient
       ColumnCollection = <
@@ -185,9 +185,9 @@ object CWRmainFrm: TCWRmainFrm
         end>
       object WebLabel2: TWebLabel
         Left = 2
-        Top = 370
+        Top = 336
         Width = 424
-        Height = 180
+        Height = 163
         Align = alClient
         Alignment = taCenter
         Caption = 'Please Wait...'
@@ -204,9 +204,9 @@ object CWRmainFrm: TCWRmainFrm
       end
       object WebLabel1: TWebLabel
         Left = 2
-        Top = 186
+        Top = 169
         Width = 424
-        Height = 180
+        Height = 163
         Align = alClient
         Alignment = taCenter
         Caption = 'Preparing EPG Listings.'
@@ -226,7 +226,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 2
         Top = 2
         Width = 424
-        Height = 180
+        Height = 163
         Align = alClient
         Caption = '<i class="fa-solid fa-spinner fa-spin"></>'
         Color = clYellow
@@ -246,7 +246,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 80
     Width = 428
-    Height = 737
+    Height = 669
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -260,7 +260,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 703
+      Height = 669
       Align = alClient
       Color = clDarkolivegreen
       ColCount = 32
@@ -295,7 +295,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 80
     Width = 428
-    Height = 737
+    Height = 669
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -401,7 +401,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 80
     Width = 428
-    Height = 737
+    Height = 669
     ElementClassName = 'greenBG'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -521,7 +521,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 80
     Width = 428
-    Height = 737
+    Height = 669
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -534,7 +534,7 @@ object CWRmainFrm: TCWRmainFrm
     TabOrder = 6
     DesignSize = (
       428
-      737)
+      669)
     object lblEmptyEPG: TWebLabel
       Left = 96
       Top = 58
@@ -565,7 +565,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 737
+      Height = 669
       Align = alClient
       BorderStyle = bsNone
       Color = clNavy
@@ -648,7 +648,7 @@ object CWRmainFrm: TCWRmainFrm
       object lblFilterSelect: TWebLabel
         Left = 0
         Top = 0
-        Width = 59
+        Width = 150
         Height = 14
         Align = alTop
         Caption = 'Choose Item'
@@ -751,50 +751,41 @@ object CWRmainFrm: TCWRmainFrm
     Visible = False
     Width = 376
     Height = 50
-    object Listing: TMenuItem
-      Caption = 'Listings'
+    object ByAll: TMenuItem
+      Caption = 'Complete Listing'
+      Checked = True
       Default = True
       RadioItem = True
-      OnClick = ListingClick
-      object ByAll: TMenuItem
-        Caption = 'Unfiltered'
-        Checked = True
-        Default = True
-        RadioItem = True
-        OnClick = ByAllClick
-      end
-      object ByGenre: TMenuItem
-        Caption = 'Filter by Genre'
-        RadioItem = True
-        OnClick = ByGenreClick
-      end
-      object ByTitle: TMenuItem
-        Caption = 'Filter by Title'
-        RadioItem = True
-        OnClick = ByTitleClick
-      end
-      object ByChannel: TMenuItem
-        Caption = 'Filter by Channel'
-        RadioItem = True
-        OnClick = ByChannelClick
-      end
+      OnClick = ByAllClick
+    end
+    object ByGenre: TMenuItem
+      Caption = 'Filter by Genre'
+      RadioItem = True
+      OnClick = ByGenreClick
+    end
+    object ByTitle: TMenuItem
+      Caption = 'Filter by Title'
+      RadioItem = True
+      OnClick = ByTitleClick
+    end
+    object ByChannel: TMenuItem
+      Caption = 'Filter by Channel'
+      RadioItem = True
+      OnClick = ByChannelClick
     end
     object Scheduled: TMenuItem
       Caption = 'Scheduled'
-      RadioItem = True
       OnClick = ScheduledClick
     end
     object History: TMenuItem
       Caption = 'History'
-      RadioItem = True
       OnClick = HistoryClick
     end
     object Options: TMenuItem
       Caption = 'Options'
-      RadioItem = True
       object RefreshEPG: TMenuItem
         Caption = 'Refresh Data'
-        OnClick = UpdateEPG
+        OnClick = RefreshData
       end
       object ChangeHTPC1: TMenuItem
         Caption = 'Change HTPC'
