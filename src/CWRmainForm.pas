@@ -5,6 +5,7 @@ unit CWRmainForm;
 interface
 
 uses
+  JSONDataSet,
   System.SysUtils, System.Classes, WEBLib.Graphics, WEBLib.Forms, Vcl.StdCtrls,
   WEBLib.StdCtrls, Vcl.Controls, WEBLib.Dialogs, Vcl.Imaging.pngimage,
   WEBLib.ExtCtrls, WEBLib.Controls, Web, JS, WebLib.DB, WEBLib.IndexedDb,
@@ -14,6 +15,7 @@ uses
   WEBLib.WebTools, WEBLib.Google;
 
 type
+  TOpen = class(TIndexedDBClientDataSet);
   TGridDrawState = set of (gdSelected, gdFocused, gdFixed, gdRowSelected, gdHotTrack, gdPressed);
   TCWRmainFrm = class(TWebForm)
   WIDBCDS: TWebIndexedDbClientDataset;
@@ -341,31 +343,34 @@ procedure TCWRmainFrm.ByChannelClick(Sender: TObject);
 begin
   Log('ByChannelClick called');
   await(SetupFilterList(WebComboBox3, 'PSIP'));
-  pnlFilterComboBox.Show;
-  WebComboBox3.Show;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  SetPage(0);
+  ByChannel.Checked := True;
+//  pnlFilterComboBox.Show;
+//  WebComboBox3.Show;
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//  SetPage(0);
 end;
 
 procedure TCWRmainFrm.ByGenreClick(Sender: TObject);
 begin
   Log('ByGenreClick called');
   await(SetupFilterList(WebComboBox1, 'genres'));
-  pnlFilterComboBox.Show;
-  WebComboBox1.Show;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  SetPage(0);
+  ByGenre.Checked := True;
+//  pnlFilterComboBox.Show;
+//  WebComboBox1.Show;
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//  SetPage(0);
 end;
 
 procedure TCWRmainFrm.ByTitleClick(Sender: TObject);
 begin
   Log('byTitleClick called');
   await(SetupFilterList(WebComboBox2, 'Title'));
-  pnlFilterComboBox.Show;
-  WebComboBox2.Show;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   WebComboBox2.ItemIndex := WebComboBox2.Items.IndexOf(EpgDb.FieldByName('Title').AsString);
-  SetPage(0);
+  ByTitle.Checked := True;
+//  pnlFilterComboBox.Show;
+//  WebComboBox2.Show;
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//  SetPage(0);
 end;
 
 function TCWRmainFrm.GetGoogleDriveFile(TableFile: string; var id: string): string;
@@ -572,11 +577,8 @@ begin
     Log('WIDBCDS Controls are ' + IfThen(WIDBCDS.ControlsDisabled,'NOT ') + 'Enabled');
     Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active,'NOT ') + 'Open');
     Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
-//    Log('TemDB RecordCount: ' + TempDB.RecordCount.ToString);
     WIDBCDS.Close;  // This seems necessary to finish update    250313 TMP -- still true on Android
     TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
-//    TempDB := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
-//    Log('TemDB RecordCount: ' + TempDB.RecordCount.ToString);
     Log('========= Finished LoadWIDBCDS');
     pnlWaitPls.Hide;
     {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
@@ -653,12 +655,11 @@ begin
         WIDBCDS.FieldDefs.Add(DBFIELDS[i], ftString);
       end;
     end;
-    TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   end;
+  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active, 'not ')
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
-//  TempDB := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
-//  Log('SetupWIDBCDS: TemDB.RecordCount: ' + TempDB.RecordCount.ToString);
+  Log('SetupWIDBCDS: WIDBCDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
   Log('========== SetupWIDBCDS finished');
 end;
 
@@ -673,13 +674,11 @@ var
 
 begin
   Log('====== SetupEpgDb called');
-//  Log('SetupEpgDb: Initial TempDB record count: ' + TempDB.RecordCount.ToString);
   ShowPlsWait('Resetting EpgDB.');
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   WIDBCDS.Close;
   TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
-
-//  Log('SetupEpgDb: WIDBCDS record count: ' + WIDBCDS.RecordCount.ToString);
+  Log('SetupEpgDb: WIDBCDS record count: ' + WIDBCDS.RecordCount.ToString);
   // Ignore multiday items
   WIDBCDS.First;
   while not WIDBCDS.Eof and not SameDate(WIDBCDS.FieldByName('StartTime').AsDateTime, WIDBCDS.FieldByName('EndTime').AsDateTime) do
@@ -699,11 +698,9 @@ begin
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
   LastStartTime := TTimeZone.Local.ToUniversalTime(Now) + seNumDisplayDays.Value;
   EpgDb.Close;
-//  Log('SetupEpgDb: Initial TempDB record count: ' + TempDB.RecordCount.ToString);
-//  WIDBCDS.Close;
-//  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
-//  Log('SetupEpgDb: Reopened WIDBCDS record count: ' + WIDBCDS.RecordCount.ToString);
+  TOpen(WIDBCDS).NestedDataSetClass := TBaseJSONDataSet;
   EpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
+//  EpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
   EpgDb.Open;
   Log('SetupEpgDb: EpgDb initial record count: ' + EpgDb.RecordCount.ToString);
   Log('SetupEpgDb: EpgDb recno: '+EpgDb.RecNo.ToString);
@@ -728,56 +725,63 @@ end;
 
 procedure TCWRmainFrm.SetupFilterList(cb: TWebComboBox; fn: string);
 var
-  x, y, FltrStr: string;
+  x, y, SavedFilterString: string;
   sl: TStringList;
-  FltrState: Boolean;
+  SavedFilterState: Boolean;
 begin
   x := IfThen(fn='genres', 'Genre', IfThen(fn='PSIP', 'Channel', 'Title'));
   lblFilterSelect.Caption := 'Choose ' + x;
   if cb <> WebComboBox1 then WebComboBox1.Hide;
   if cb <> WebComboBox2 then WebComboBox2.Hide;
   if cb <> WebComboBox3 then WebComboBox3.Hide;
-  if cb.Items.Count > 0 then Exit;
-  ShowPlsWait('Preparing ' + x + ' list.');
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  FltrState := EpgDb.Filtered;
-  FltrStr := EpgDb.Filter;
-  EpgDb.DisableControls;
-  EpgDb.Filtered := False;
-  sl := TStringList.Create;
-  sl.Sorted := True;
-  sl.Duplicates := dupIgnore;
-  sl.BeginUpdate;
-  EpgDb.First;
-  Log('Looping over EpgDb "' + fn + '" field');
-  while not EpgDb.Eof do
+  ClearMenuChecks;
+  if cb.Items.Count = 0 then
   begin
-    x := EpgDb.FieldByName(fn).AsString;
-    if fn='genres' then
+    ShowPlsWait('Preparing ' + x + ' list.');
+    {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+    SavedFilterState := EpgDb.Filtered;
+    SavedFilterString := EpgDb.Filter;
+    EpgDb.DisableControls;
+    EpgDb.Filtered := False;
+    sl := TStringList.Create;
+    sl.Sorted := True;
+    sl.Duplicates := dupIgnore;
+    sl.BeginUpdate;
+    EpgDb.First;
+    Log('Looping over EpgDb "' + fn + '" field');
+    while not EpgDb.Eof do
     begin
-      y := ReplaceStr(x, '\', ''); // Remove escape "\" char
-      // Split the genres string 'xxx;yyy;zzz' into array xxx, yyy, zzz
-      // ignoring JSON "punctuation" around items
-      for x in y.Split([';','[',']','"',','], TStringSplitOptions.ExcludeEmpty) do
-        sl.Add(x);
-    end
-    else sl.Add(x);
-    EpgDb.Next;
+      x := EpgDb.FieldByName(fn).AsString;
+      if fn='genres' then
+      begin
+        y := ReplaceStr(x, '\', ''); // Remove escape "\" char
+        // Split the genres string 'xxx;yyy;zzz' into array xxx, yyy, zzz
+        // ignoring JSON "punctuation" around items
+        for x in y.Split([';','[',']','"',','], TStringSplitOptions.ExcludeEmpty) do
+          sl.Add(x);
+      end
+      else sl.Add(x);
+      EpgDb.Next;
+    end;
+    EpgDb.Filter := SavedFilterString;
+    EpgDb.Filtered := SavedFilterState;
+    sl.EndUpdate;
+    cb.BeginUpdate;
+    cb.Clear;
+    Log('Adding first '+cb.Name+' Item: "All"');
+    cb.Items.Add('All');
+    cb.Items.AddStrings(sl);
+    cb.EndUpdate;
+    Log('Added ' + cb.Items.Count.ToString + ' to ' + cb.Name);
+    sl.Free;
+    cb.ItemIndex := -1;
+    EpgDb.EnableControls;
+    pnlWaitPls.Hide;
   end;
-  EpgDb.Filter := FltrStr;
-  EpgDb.Filtered := FltrState;
-  sl.EndUpdate;
-  cb.BeginUpdate;
-  cb.Clear;
-  Log('Adding first '+cb.Name+' Item: "All"');
-  cb.Items.Add('All');
-  cb.Items.AddStrings(sl);
-  cb.EndUpdate;
-  Log('Added ' + cb.Items.Count.ToString + ' to ' + cb.Name);
-  sl.Free;
-  cb.ItemIndex := -1;
-  EpgDb.EnableControls;
-  pnlWaitPls.Hide;
+  pnlFilterComboBox.Show;
+  cb.Show;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  SetPage(0);
 end;
 
 procedure TCWRmainFrm.SetFilter(fltr: string);
