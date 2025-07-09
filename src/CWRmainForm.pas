@@ -506,7 +506,7 @@ begin
         end;
       end;
     finally
-      Log('Enter finally section');
+      Log('ReFreshCSV in finally section');
       WSG.EndUpdate;
     end;
   end
@@ -521,7 +521,7 @@ end;
 procedure TCWRmainFrm.LoadWIDBCDS;
 var
   i,j: Integer;
-  t{, LastDT}: TDateTime;
+  t: TDateTime;
   AColor: string;
   Text: string;
 begin
@@ -529,7 +529,6 @@ begin
   ShowPlsWait('Updating IndexedDB');
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   WIDBCDS.DisableControls;
-//  EPG.BeginUpdate;
   WIDBCDS.Filtered := False;
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Filtered, 'UN') + 'filtered');
   WIDBCDS.Close;
@@ -568,8 +567,13 @@ begin
         WIDBCDS.Fields[15].Value := AColor;
         TAwait.ExecP<Boolean>(WIDBCDS.PostAsync);
       end;
+      Log('Finished editing WIDBCDS, RecordCount: ' + WIDBCDS.RecordCount.ToString);
+    end
+    else
+    begin
+      Log('LoadWIDBCDS, skipped WIDBCDS update because' + IfThen(not WIDBCDS.Active, ' CDS not active')
+        + IfThen(BufferGrid.RowCount < 2, ' BufferGrid empty'));
     end;
-    Log('Finished editing WIDBCDS, RecordCount: ' + WIDBCDS.RecordCount.ToString);
   finally
     Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
     Log('calling WIDBCDS.EnableControls');
@@ -1344,14 +1348,14 @@ begin
     await(CreateGoogleFile('cwr_newcaptures.csv', id));
   end
   else
-    for i := NewCaptures.RowCount-1 downto 1 do // Remove blank rows
+    for i := Pred(NewCaptures.RowCount) downto 1 do // Remove blank rows
       if NewCaptures.Cells[0,i] = '' then NewCaptures.RemoveRow(i);
   SetNewCapturesFixedRow;
 // Add the new capture to the list
   NewCaptures.RowCount := NewCaptures.RowCount + 1;
   NewCaptures.Cells[0,NewCaptures.RowCount-1] := EpgDb.FieldByName('PSIP').AsString;
-  NewCaptures.Cells[1,NewCaptures.RowCount-1] := DateTimeToStr(RecordStart);
-  NewCaptures.Cells[2,NewCaptures.RowCount-1] := DateTimeToStr(RecordEnd);
+  NewCaptures.Cells[1,NewCaptures.RowCount-1] := FormatDateTime('mm/dd hh:nn',RecordStart);
+  NewCaptures.Cells[2,NewCaptures.RowCount-1] := FormatDateTime('mm/dd hh:nn',RecordEnd);
   NewCaptures.Cells[3,NewCaptures.RowCount-1] := ReplaceStr(EpgDb.FieldByName('Title').AsString, '&', '&&');
   NewCaptures.Cells[4,NewCaptures.RowCount-1] := EpgDb.FieldByName('SubTitle').AsString;
   NewCaptures.Cells[5,NewCaptures.RowCount-1] := EpgDb.FieldByName('Time').AsString.Split(['--'])[0]; // EPG StartTime (HTPC TZ)
