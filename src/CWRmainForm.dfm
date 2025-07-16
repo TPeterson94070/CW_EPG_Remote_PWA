@@ -829,4 +829,9 @@ object CWRmainFrm: TCWRmainFrm
     Left = 200
     Top = 392
   end
+  object CurrEpgDb: TWebClientDataSet
+    Params = <>
+    Left = 208
+    Top = 400
+  end
 end

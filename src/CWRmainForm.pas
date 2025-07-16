@@ -69,6 +69,7 @@ type
     WebHTMLDiv4: TWebHTMLDiv;
     HistoryGrid: TWebStringGrid;
     EpgDb: TWebClientDataSet;
+    CurrEpgDb: TWebClientDataSet;
   procedure SetNewCapturesFixedRow;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
@@ -660,10 +661,40 @@ begin
       end;
     end;
   end;
+//  CurrEpgDb.FieldDefs := WIDBCDS.FieldDefs;
   TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active, 'not ')
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   Log('SetupWIDBCDS: WIDBCDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
+  // Ignore multiday events
+  WIDBCDS.First;
+  FirstEndDate := WIDBCDS.FieldByName('EndTime').AsDateTime;
+  Log('FirstEndDate (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(FirstEndDate));
+  while not WIDBCDS.Eof and not SameDate(WIDBCDS.FieldByName('StartTime').AsDateTime, WIDBCDS.FieldByName('EndTime').AsDateTime) do
+    WIDBCDS.Next;
+//  CurrEpgDb.Open;
+//  CurrEpgDb.First;
+//  while not WIDBCDS.Eof do
+//  begin
+//    CurrEpgDb.Append;
+//    for i := 0 to Pred(WIDBCDS.FieldCount) do
+//      CurrEpgDb.Fields[i] := WIDBCDS.Fields[i];
+//    CurrEpgDb.Post;
+//    WIDBCDS.Next;
+//  end;
+  WIDBCDS.Last;
+  LastStartDate := WIDBCDS.FieldByName('StartTime').AsDateTime;
+  Log('LastStartDate (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(LastStartDate));
+  Log('LastStartDate - Now: ' + Double(LastStartDate - Now).ToString);
+  if Now > LastStartDate then
+    ShowMessage('There are no current data!'#13'Please make sure that the HTPC'#13' is connected to Google Drive')
+  else if Now - FirstEndDate > 3 then
+    ShowMessage('The current dataset was fetched over 3 days ago'
+      + #13'and there are only about ' + Round(LastStartDate - Now).ToString + ' days now available.'
+      + #13#13'To update, please use Options | Refresh Data');
+//  TOpen(WIDBCDS).NestedDataSetClass := TBaseJSONDataSet;
+//  CurrEpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
+
   Log('========== SetupWIDBCDS finished');
 end;
 
@@ -675,45 +706,53 @@ procedure TCWRmainFrm.SetupEpgDb;
   end;
 var
   FirstEndTime, LastStartTime:  TDateTime;
+  i: Integer;
 
 begin
   Log('====== SetupEpgDb called');
   ShowPlsWait('Resetting EpgDB.');
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  WIDBCDS.Close;
-  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
-  Log('SetupEpgDb: WIDBCDS record count: ' + WIDBCDS.RecordCount.ToString);
-  // Ignore multiday items
-  WIDBCDS.First;
-  while not WIDBCDS.Eof and not SameDate(WIDBCDS.FieldByName('StartTime').AsDateTime, WIDBCDS.FieldByName('EndTime').AsDateTime) do
-    WIDBCDS.Next;
-  FirstEndDate := WIDBCDS.FieldByName('EndTime').AsDateTime;
-  Log('FirstEndDate (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(FirstEndDate));
-  WIDBCDS.Last;
-  LastStartDate := WIDBCDS.FieldByName('StartTime').AsDateTime;
-  Log('LastStartDate (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(LastStartDate));
-  Log('LastStartDate - Now: ' + Double(LastStartDate - Now).ToString);
-  if Now > LastStartDate then
-    ShowMessage('There are no current data!'#13'Please make sure that the HTPC'#13' is connected to Google Drive')
-  else if Now - FirstEndDate > 3 then
-    ShowMessage('The current dataset was fetched over 3 days ago'
-      + #13'and there are only about ' + Round(LastStartDate - Now).ToString + ' days now available.'
-      + #13#13'To update, please use Options | Refresh Data');
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
   LastStartTime := TTimeZone.Local.ToUniversalTime(Now) + seNumDisplayDays.Value;
-  EpgDb.Close;
-  TOpen(WIDBCDS).NestedDataSetClass := TBaseJSONDataSet;
-  EpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
-//  EpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
-  EpgDb.Open;
-  Log('SetupEpgDb: EpgDb initial record count: ' + EpgDb.RecordCount.ToString);
-  Log('SetupEpgDb: EpgDb recno: '+EpgDb.RecNo.ToString);
-  while not EpgDb.Eof do
+//  CurrEpgDb.DisableControls;
+  WIDBCDS.DisableControls;
+  EpgDb.DisableControls;
+  if EpgDb.RecordCount > 0 then
+    EpgDb.EmptyDataSet;
+//  EpgDb.FieldDefs := CurrEpgDb.FieldDefs;
+//  EpgDb.Active := True;
+//  CurrEpgDb.First;
+//  while not CurrEpgDb.Eof do
+//  begin
+//    if (CurrEpgDb.Fields[7].AsDateTime >= FirstEndTime) or
+//       (CurrEpgDb.Fields[6].AsDateTime <= LastStartTime) then
+//    begin
+//      EpgDb.Append;
+//      for i := 0 to Pred(CurrEpgDb.FieldCount) do
+//        EpgDb.Fields[i] := CurrEpgDb.Fields[i];
+//      EpgDb.Post;
+//    end;
+//    CurrEpgDb.Next;
+//  end;
+//  EpgDb.EnableControls;
+//  CurrEpgDb.EnableControls;
+  EpgDb.FieldDefs := WIDBCDS.FieldDefs;
+  EpgDb.Active := True;
+  WIDBCDS.First;
+  while not WIDBCDS.Eof do
   begin
-    if (EpgDb.Fields[7].AsDateTime < FirstEndTime) or
-       (EpgDb.Fields[6].AsDateTime > LastStartTime) then EpgDb.Delete
-    else EpgDb.Next;
+    if (WIDBCDS.Fields[7].AsDateTime >= FirstEndTime) or
+       (WIDBCDS.Fields[6].AsDateTime <= LastStartTime) then
+    begin
+      EpgDb.Append;
+      for i := 0 to Pred(WIDBCDS.FieldCount) do
+        EpgDb.Fields[i] := WIDBCDS.Fields[i];
+      EpgDb.Post;
+    end;
+    WIDBCDS.Next;
   end;
+  EpgDb.EnableControls;
+  WIDBCDS.EnableControls;
   Log('SetupEpgDb: EpgDb post-filter record count: ' + EpgDb.RecordCount.ToString);
   WebDataSource1.DataSet := EpgDb;
   EPG.DataSource := WebDataSource1;
