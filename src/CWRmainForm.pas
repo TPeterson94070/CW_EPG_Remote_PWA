@@ -302,6 +302,10 @@ begin
     await(FetchNewCapRequests);
     await(FetchHistory);
     await(SetupEpgDb);
+  end
+  else
+  begin
+    ShowMessage('The data update failed!'#13'Please make sure that the HTPC'#13' is connected to Google Drive')
   end;
   if VisiblePanelNum <> 3 then ByAllClick(Sender);
 end;
@@ -741,7 +745,7 @@ begin
   WIDBCDS.First;
   while not WIDBCDS.Eof do
   begin
-    if (WIDBCDS.Fields[7].AsDateTime >= FirstEndTime) or
+    if (WIDBCDS.Fields[7].AsDateTime >= FirstEndTime) and
        (WIDBCDS.Fields[6].AsDateTime <= LastStartTime) then
     begin
       EpgDb.Append;
@@ -1034,6 +1038,7 @@ begin
       sl.Add(TWebLocalStorage.GetValue('hl'+i.ToString));
   Log('sl.Count: ' + sl.Count.ToString);
   Log('historyTable.BeginUpdate');
+
   historyTable.BeginUpdate;
   historyTable.RowCount := sl.Count;
   if sl.Count > 1 then begin
