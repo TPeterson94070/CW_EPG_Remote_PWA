@@ -588,6 +588,8 @@ begin
     Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
     WIDBCDS.Close;  // This seems necessary to finish update    250313 TMP -- still true on Android
     TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
+    TOpen(WIDBCDS).NestedDataSetClass := TBaseJSONDataSet;
+    CurrEpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
     Log('========= Finished LoadWIDBCDS');
     pnlWaitPls.Hide;
     {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
@@ -696,8 +698,8 @@ begin
     ShowMessage('The current dataset was fetched over 3 days ago'
       + #13'and there are only about ' + Round(LastStartDate - Now).ToString + ' days now available.'
       + #13#13'To update, please use Options | Refresh Data');
-//  TOpen(WIDBCDS).NestedDataSetClass := TBaseJSONDataSet;
-//  CurrEpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
+  TOpen(WIDBCDS).NestedDataSetClass := TBaseJSONDataSet;
+  CurrEpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
 
   Log('========== SetupWIDBCDS finished');
 end;
@@ -718,45 +720,45 @@ begin
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
   LastStartTime := TTimeZone.Local.ToUniversalTime(Now) + seNumDisplayDays.Value;
-//  CurrEpgDb.DisableControls;
-  WIDBCDS.DisableControls;
+  CurrEpgDb.DisableControls;
+//  WIDBCDS.DisableControls;
   EpgDb.DisableControls;
   if EpgDb.RecordCount > 0 then
     EpgDb.EmptyDataSet;
-//  EpgDb.FieldDefs := CurrEpgDb.FieldDefs;
-//  EpgDb.Active := True;
-//  CurrEpgDb.First;
-//  while not CurrEpgDb.Eof do
-//  begin
-//    if (CurrEpgDb.Fields[7].AsDateTime >= FirstEndTime) or
-//       (CurrEpgDb.Fields[6].AsDateTime <= LastStartTime) then
-//    begin
-//      EpgDb.Append;
-//      for i := 0 to Pred(CurrEpgDb.FieldCount) do
-//        EpgDb.Fields[i] := CurrEpgDb.Fields[i];
-//      EpgDb.Post;
-//    end;
-//    CurrEpgDb.Next;
-//  end;
-//  EpgDb.EnableControls;
-//  CurrEpgDb.EnableControls;
-  EpgDb.FieldDefs := WIDBCDS.FieldDefs;
+  EpgDb.FieldDefs := CurrEpgDb.FieldDefs;
   EpgDb.Active := True;
-  WIDBCDS.First;
-  while not WIDBCDS.Eof do
+  CurrEpgDb.First;
+  while not CurrEpgDb.Eof do
   begin
-    if (WIDBCDS.Fields[7].AsDateTime >= FirstEndTime) and
-       (WIDBCDS.Fields[6].AsDateTime <= LastStartTime) then
+    if (CurrEpgDb.Fields[7].AsDateTime >= FirstEndTime) and
+       (CurrEpgDb.Fields[6].AsDateTime <= LastStartTime) then
     begin
       EpgDb.Append;
-      for i := 0 to Pred(WIDBCDS.FieldCount) do
-        EpgDb.Fields[i] := WIDBCDS.Fields[i];
+      for i := 0 to Pred(CurrEpgDb.FieldCount) do
+        EpgDb.Fields[i] := CurrEpgDb.Fields[i];
       EpgDb.Post;
     end;
-    WIDBCDS.Next;
+    CurrEpgDb.Next;
   end;
   EpgDb.EnableControls;
-  WIDBCDS.EnableControls;
+  CurrEpgDb.EnableControls;
+//  EpgDb.FieldDefs := WIDBCDS.FieldDefs;
+//  EpgDb.Active := True;
+//  WIDBCDS.First;
+//  while not WIDBCDS.Eof do
+//  begin
+//    if (WIDBCDS.Fields[7].AsDateTime >= FirstEndTime) and
+//       (WIDBCDS.Fields[6].AsDateTime <= LastStartTime) then
+//    begin
+//      EpgDb.Append;
+//      for i := 0 to Pred(WIDBCDS.FieldCount) do
+//        EpgDb.Fields[i] := WIDBCDS.Fields[i];
+//      EpgDb.Post;
+//    end;
+//    WIDBCDS.Next;
+//  end;
+//  EpgDb.EnableControls;
+//  WIDBCDS.EnableControls;
   Log('SetupEpgDb: EpgDb post-filter record count: ' + EpgDb.RecordCount.ToString);
   WebDataSource1.DataSet := EpgDb;
   EPG.DataSource := WebDataSource1;
@@ -1332,7 +1334,7 @@ begin
   Log(' ====== FetchNewCapRequests called =========');
   // Turn off GetCellData (modifies Cols 1, 2 for display)
   NewCaptures.OnGetCellData := nil;
-  await(RefreshCSV(NewCaptures, 'cwr_newcaptures.csv', 'NewCAptures', id));
+  await(RefreshCSV(NewCaptures, 'cwr_newcaptures.csv', 'New Captures', id));
   // Save unmodified request data to Local Storage
   SaveLocalStrings(NewCaptures, 'nc');
   // Turn GetCellData formatting back on
