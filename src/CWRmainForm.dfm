@@ -291,112 +291,6 @@ object CWRmainFrm: TCWRmainFrm
       OnGetCellClass = HistoryTableGetCellClass
     end
   end
-  object pnlOptions: TWebPanel
-    Left = 0
-    Top = 80
-    Width = 428
-    Height = 669
-    ElementClassName = 'card'
-    HeightStyle = ssPercent
-    WidthStyle = ssPercent
-    Align = alClient
-    ChildOrder = 9
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    ShowCaption = False
-    TabOrder = 5
-    object WebGroupBox3: TWebGroupBox
-      Left = 15
-      Top = 115
-      Width = 264
-      Height = 104
-      ElementClassName = 'btn-group'
-      WidthPercent = 25.000000000000000000
-      Align = alCustom
-      BorderColor = clSilver
-      Caption = 'History Events Displayed'
-      Color = clAqua
-      ElementFont = efCSS
-      ElementLegendClassName = 'h6'
-      object seNumHistEvents: TWebSpinEdit
-        AlignWithMargins = True
-        Left = 57
-        Top = 35
-        Width = 150
-        Height = 45
-        Margins.Left = 57
-        Margins.Top = 35
-        Margins.Right = 57
-        Margins.Bottom = 24
-        ElementClassName = 'form-control'
-        HeightStyle = ssAuto
-        Align = alClient
-        AutoSize = True
-        BorderStyle = bsNone
-        Color = clBtnFace
-        ElementFont = efCSS
-        Increment = 100
-        MaxValue = 1000
-        MinValue = 100
-        Role = ''
-        Value = 100
-        OnChange = seNumHistEventsChange
-      end
-    end
-    object WebGroupBox1: TWebGroupBox
-      Left = 15
-      Top = 0
-      Width = 264
-      Height = 100
-      ElementClassName = 'btn-group'
-      WidthPercent = 25.000000000000000000
-      Align = alCustom
-      BorderColor = clSilver
-      Caption = 'EPG Days Displayed'
-      Color = clAqua
-      ElementFont = efCSS
-      ElementLegendClassName = 'h6'
-      object seNumDisplayDays: TWebSpinEdit
-        AlignWithMargins = True
-        Left = 57
-        Top = 35
-        Width = 150
-        Height = 41
-        Margins.Left = 57
-        Margins.Top = 35
-        Margins.Right = 57
-        Margins.Bottom = 24
-        ElementClassName = 'form-control'
-        HeightStyle = ssAuto
-        Align = alClient
-        AutoSize = False
-        BorderStyle = bsNone
-        Color = clBtnFace
-        ElementFont = efCSS
-        Increment = 1
-        MaxValue = 10
-        MinValue = 1
-        Role = ''
-        Value = 1
-        OnChange = seNumDisplayDaysChange
-      end
-    end
-    object btnOptOK: TWebButton
-      Left = 119
-      Top = 241
-      Width = 56
-      Height = 25
-      Caption = 'OK'
-      ChildOrder = 2
-      ElementClassName = 'btn btn-light'
-      ElementFont = efCSS
-      HeightStyle = ssAuto
-      HeightPercent = 100.000000000000000000
-      ModalResult = 1
-      WidthPercent = 100.000000000000000000
-      OnClick = btnOptOKClick
-    end
-  end
   object pnlCaptures: TWebPanel
     Left = 0
     Top = 80
@@ -732,6 +626,112 @@ object CWRmainFrm: TCWRmainFrm
     RangeEdit.Step = 1.000000000000000000
     HeightPercent = 100.000000000000000000
     WidthPercent = 100.000000000000000000
+  end
+  object pnlOptions: TWebPanel
+    Left = 0
+    Top = 80
+    Width = 428
+    Height = 669
+    ElementClassName = 'card'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
+    Align = alClient
+    ChildOrder = 9
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    ShowCaption = False
+    TabOrder = 5
+    object WebGroupBox3: TWebGroupBox
+      Left = 15
+      Top = 115
+      Width = 264
+      Height = 104
+      ElementClassName = 'btn-group'
+      WidthPercent = 25.000000000000000000
+      Align = alCustom
+      BorderColor = clSilver
+      Caption = 'History Events Displayed'
+      Color = clAqua
+      ElementFont = efCSS
+      ElementLegendClassName = 'h6'
+      object seNumHistEvents: TWebSpinEdit
+        AlignWithMargins = True
+        Left = 57
+        Top = 35
+        Width = 150
+        Height = 45
+        Margins.Left = 57
+        Margins.Top = 35
+        Margins.Right = 57
+        Margins.Bottom = 24
+        ElementClassName = 'form-control'
+        HeightStyle = ssAuto
+        Align = alClient
+        AutoSize = True
+        BorderStyle = bsNone
+        Color = clBtnFace
+        ElementFont = efCSS
+        Increment = 100
+        MaxValue = 1000
+        MinValue = 100
+        Role = ''
+        Value = 100
+        OnChange = seNumHistEventsChange
+      end
+    end
+    object WebGroupBox1: TWebGroupBox
+      Left = 15
+      Top = 0
+      Width = 264
+      Height = 100
+      ElementClassName = 'btn-group'
+      WidthPercent = 25.000000000000000000
+      Align = alCustom
+      BorderColor = clSilver
+      Caption = 'EPG Days Displayed'
+      Color = clAqua
+      ElementFont = efCSS
+      ElementLegendClassName = 'h6'
+      object seNumDisplayDays: TWebSpinEdit
+        AlignWithMargins = True
+        Left = 57
+        Top = 35
+        Width = 150
+        Height = 41
+        Margins.Left = 57
+        Margins.Top = 35
+        Margins.Right = 57
+        Margins.Bottom = 24
+        ElementClassName = 'form-control'
+        HeightStyle = ssAuto
+        Align = alClient
+        AutoSize = False
+        BorderStyle = bsNone
+        Color = clBtnFace
+        ElementFont = efCSS
+        Increment = 1
+        MaxValue = 10
+        MinValue = 1
+        Role = ''
+        Value = 1
+        OnChange = seNumDisplayDaysChange
+      end
+    end
+    object btnOptOK: TWebButton
+      Left = 90
+      Top = 241
+      Width = 115
+      Height = 25
+      Caption = 'Save Settings'
+      ChildOrder = 2
+      ElementClassName = 'btn btn-light'
+      ElementFont = efCSS
+      HeightStyle = ssAuto
+      HeightPercent = 100.000000000000000000
+      ModalResult = 1
+      WidthPercent = 100.000000000000000000
+      OnClick = btnOptOKClick
+    end
   end
   object WebMainMenu1: TWebMainMenu
     Appearance.BackgroundColor = clSilver

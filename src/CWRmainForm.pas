@@ -118,6 +118,7 @@ type
     procedure seNumDisplayDaysChange(Sender: TObject);
 private
   { Private declarations }
+  procedure LogDataRange;
   procedure ClearMenuChecks;
   procedure ReloadSG(SG: TWebStringGrid; LSName: string);  [async]
   procedure SetPage(PageNum: Integer);
@@ -282,9 +283,9 @@ begin
     WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
   await(SetupWIDBCDS);
   Log('FormCreate, ' + WIDBCDS.Name + ' record count: ' + WIDBCDS.RecordCount.ToString);
-  await(SetupEpgDb);
-  EpgDb.First;
-  if EpgDb.RecordCount > 1 then
+//  await(SetupEpgDb);
+//  EpgDb.First;
+//  if EpgDb.RecordCount > 1 then
     await(RefreshListings);
   Log('========== FormCreate is finished');
 end;
@@ -301,7 +302,7 @@ begin
     await(FetchCapReservations);
     await(FetchNewCapRequests);
     await(FetchHistory);
-    await(SetupEpgDb);
+//    await(SetupEpgDb);
   end
   else
   begin
@@ -331,7 +332,13 @@ end;
 
 procedure TCWRmainFrm.btnOptOKClick(Sender: TObject);
 begin
-  ByAllClick(Sender);
+  TWebLocalStorage.SetValue(NUMDAYS, seNumDisplayDays.Value.ToString);
+  Log('New number EPG Display Days: ' + seNumDisplayDays.Value.ToString);
+  TWebLocalStorage.SetValue(NUMHIST, seNumHistEvents.Value.ToString);
+  Log('New number History Display Days: ' + seNumHistEvents.Value.ToString);
+//  SetupEpgDb;
+//  ByAllClick(Sender);
+  ReFreshListings;
 end;
 
 procedure TCWRmainFrm.ByAllClick(Sender: TObject);
@@ -588,6 +595,7 @@ begin
     Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
     WIDBCDS.Close;  // This seems necessary to finish update    250313 TMP -- still true on Android
     TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
+    LogDataRange;
     TOpen(WIDBCDS).NestedDataSetClass := TBaseJSONDataSet;
     CurrEpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
     Log('========= Finished LoadWIDBCDS');
@@ -642,6 +650,17 @@ begin
     if ACol in [1,2] then AValue := FormatDateTime('mm/dd HH:nn', StrToDateTime(AValue));
 end;
 
+procedure TCWRmainFrm.LogDataRange;
+begin
+  WIDBCDS.First;
+  FirstEndDate := WIDBCDS.FieldByName('EndTime').AsDateTime;
+  Log('FirstEndDate (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(FirstEndDate));
+  WIDBCDS.Last;
+  LastStartDate := WIDBCDS.FieldByName('StartTime').AsDateTime;
+  Log('LastStartDate (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(LastStartDate));
+  Log('LastStartDate - Now: ' + Double(LastStartDate - Now).ToString);
+end;
+
 procedure TCWRmainFrm.SetupWIDBCDS;
 var
   i: Integer;
@@ -667,31 +686,11 @@ begin
       end;
     end;
   end;
-//  CurrEpgDb.FieldDefs := WIDBCDS.FieldDefs;
   TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active, 'not ')
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   Log('SetupWIDBCDS: WIDBCDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
-  // Ignore multiday events
-  WIDBCDS.First;
-  FirstEndDate := WIDBCDS.FieldByName('EndTime').AsDateTime;
-  Log('FirstEndDate (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(FirstEndDate));
-  while not WIDBCDS.Eof and not SameDate(WIDBCDS.FieldByName('StartTime').AsDateTime, WIDBCDS.FieldByName('EndTime').AsDateTime) do
-    WIDBCDS.Next;
-//  CurrEpgDb.Open;
-//  CurrEpgDb.First;
-//  while not WIDBCDS.Eof do
-//  begin
-//    CurrEpgDb.Append;
-//    for i := 0 to Pred(WIDBCDS.FieldCount) do
-//      CurrEpgDb.Fields[i] := WIDBCDS.Fields[i];
-//    CurrEpgDb.Post;
-//    WIDBCDS.Next;
-//  end;
-  WIDBCDS.Last;
-  LastStartDate := WIDBCDS.FieldByName('StartTime').AsDateTime;
-  Log('LastStartDate (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(LastStartDate));
-  Log('LastStartDate - Now: ' + Double(LastStartDate - Now).ToString);
+  LogDataRange;
   if Now > LastStartDate then
     ShowMessage('There are no current data!'#13'Please make sure that the HTPC'#13' is connected to Google Drive')
   else if Now - FirstEndDate > 3 then
@@ -723,6 +722,7 @@ begin
   CurrEpgDb.DisableControls;
 //  WIDBCDS.DisableControls;
   EpgDb.DisableControls;
+  EpgDb.Filtered := False;
   if EpgDb.RecordCount > 0 then
     EpgDb.EmptyDataSet;
   EpgDb.FieldDefs := CurrEpgDb.FieldDefs;
@@ -870,18 +870,18 @@ begin
   Log(' ======== RefreshListings is called.');
   EPG.Visible := False;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  if not EpgDb.Active then
-  begin
-    ShowPlsWait('Opening EpgDb.');
-    {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-    Await(EpgDb.Open);
-  end;
+//  if not EpgDb.Active then
+//  begin
+//    ShowPlsWait('Opening EpgDb.');
+//    {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+    Await(SetupEpgDb);
+//  end;
   Log('EpgDb.RecordCount: ' +EpgDb.RecordCount.ToString);
   Log('Days to Display: ' + seNumDisplayDays.Value.ToString);
-  EPG.BeginUpdate;
+//  EPG.BeginUpdate;
   ShowPlsWait('Preparing ' + seNumDisplayDays.Value.ToString + '-day Listing.');
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  EPG.EndUpdate;
+//  EPG.EndUpdate;
   EPG.Refresh;
   EPG.Visible := True;
   pnlListings.BringToFront;
@@ -897,25 +897,25 @@ end;
 procedure TCWRmainFrm.seNumDisplayDaysChange(Sender: TObject);
 begin
   // Make sure that current dataset supports the number
-  if Round(LastStartDate - FirstEndDate) >= seNumDisplayDays.Value then
-  begin
-    TWebLocalStorage.SetValue(NUMDAYS, seNumDisplayDays.Value.ToString);
-    Log('New number EPG Display Days: ' + seNumDisplayDays.Value.ToString);
-    SetupEpgDb;
-  end
-  else
+  if Trunc(LastStartDate - Now) < seNumDisplayDays.Value then
+//  begin
+//    TWebLocalStorage.SetValue(NUMDAYS, seNumDisplayDays.Value.ToString);
+//    Log('New number EPG Display Days: ' + seNumDisplayDays.Value.ToString);
+//    SetupEpgDb;
+//  end
+//  else
   begin
     ShowMessage('I currently have less than the requested '
       + seNumDisplayDays.Value.ToString + ' days of listings stored.'
       + #13'To display more, please use Options | Refresh Data');
-    seNumDisplayDays.Value := TWebLocalStorage.GetValue(NUMDAYS).ToInteger;
-  end
+    seNumDisplayDays.Value := Trunc(LastStartDate - Now);
+  end;
 end;
 
 procedure TCWRmainFrm.seNumHistEventsChange(Sender: TObject);
 begin
-  TWebLocalStorage.SetValue(NUMHIST, seNumHistEvents.Value.ToString);
-  Log('New number History Items: ' + seNumHistEvents.Value.ToString);
+//  TWebLocalStorage.SetValue(NUMHIST, seNumHistEvents.Value.ToString);
+//  Log('New number History Items: ' + seNumHistEvents.Value.ToString);
 
 end;
 
@@ -1137,6 +1137,7 @@ begin
   case PageNum of
     0: begin          {Listings page}
       pnlListings.BringToFront;
+      EPG.Show;
     end;
     1: begin          {Captures}
       pnlCaptures.BringToFront;
