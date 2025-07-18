@@ -655,9 +655,9 @@ object CWRmainFrm: TCWRmainFrm
       ElementFont = efCSS
       ElementLegendClassName = 'h6'
       object cbNumHistList: TWebComboBox
-        Left = 64
+        Left = 88
         Top = 40
-        Width = 145
+        Width = 80
         Height = 22
         ElementClassName = 'form-select'
         ElementFont = efCSS
@@ -720,13 +720,13 @@ object CWRmainFrm: TCWRmainFrm
       end
     end
     object btnOptOK: TWebButton
-      Left = 90
-      Top = 241
+      Left = 88
+      Top = 239
       Width = 115
       Height = 25
       Caption = 'Save Settings'
       ChildOrder = 2
-      ElementClassName = 'btn btn-light'
+      ElementClassName = 'btn btn-outline-primary'
       ElementFont = efCSS
       HeightStyle = ssAuto
       HeightPercent = 100.000000000000000000

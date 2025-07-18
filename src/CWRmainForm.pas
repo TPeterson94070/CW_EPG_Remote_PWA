@@ -63,13 +63,13 @@ type
     WebHTMLDiv3: TWebHTMLDiv;
     pnlFilterComboBox: TWebPanel;
     lblFilterSelect: TWebLabel;
-    btnOptOK: TWebButton;
     WebHTMLDiv4: TWebHTMLDiv;
     HistoryGrid: TWebStringGrid;
     EpgDb: TWebClientDataSet;
     CurrEpgDb: TWebClientDataSet;
     cbNumDisplayDays: TWebComboBox;
     cbNumHistList: TWebComboBox;
+    btnOptOK: TWebButton;
   procedure SetNewCapturesFixedRow;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
@@ -1119,6 +1119,11 @@ begin
       pnlLog.BringToFront;
     end;
     4: begin {Options}
+      // Reset Comboboxes in case Save Settings skipped
+      if TWebLocalStorage.GetValue(NUMDAYS) <> '' then
+        cbNumDisplayDays.ItemIndex := cbNumDisplayDays.Items.IndexOf(TWebLocalStorage.GetValue(NUMDAYS));
+      if TWebLocalStorage.GetValue(NUMHIST) <> '' then
+        cbNumHistList.ItemIndex := cbNumHistList.Items.IndexOf(TWebLocalStorage.GetValue(NUMHIST));
       pnlOptions.BringToFront;
     end;
   end;
