@@ -304,12 +304,10 @@ object DetailsFrm: TDetailsFrm
       Color = clDarkseagreen
       ElementClassName = 'form-control-sm'
       ElementFont = efCSS
-      HeightStyle = ssPercent
       HeightPercent = 100.000000000000000000
       Lines.Strings = (
         'Description')
       ReadOnly = True
-      ScrollBars = ssVertical
       SelLength = 0
       SelStart = 11
       WidthPercent = 100.000000000000000000

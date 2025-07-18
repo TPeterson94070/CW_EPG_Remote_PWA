@@ -411,6 +411,134 @@ object CWRmainFrm: TCWRmainFrm
       Role = ''
     end
   end
+  object HistoryGrid: TWebStringGrid
+    Left = 56
+    Top = 352
+    Width = 320
+    Height = 120
+    ColCount = 32
+    FixedCols = 0
+    TabOrder = 9
+    Visible = False
+    ElementFont = efCSS
+    FixedFont.Charset = DEFAULT_CHARSET
+    FixedFont.Color = clWindowText
+    FixedFont.Height = -21
+    FixedFont.Name = 'Segoe UI'
+    FixedFont.Style = []
+    RangeEdit.Max = 100.000000000000000000
+    RangeEdit.Step = 1.000000000000000000
+    HeightPercent = 100.000000000000000000
+    WidthPercent = 100.000000000000000000
+  end
+  object pnlOptions: TWebPanel
+    Left = 0
+    Top = 80
+    Width = 428
+    Height = 669
+    ElementClassName = 'card'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
+    Align = alClient
+    ChildOrder = 9
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    ShowCaption = False
+    TabOrder = 5
+    object WebGroupBox3: TWebGroupBox
+      Left = 15
+      Top = 115
+      Width = 264
+      Height = 104
+      ElementClassName = 'btn-group'
+      WidthPercent = 25.000000000000000000
+      Align = alCustom
+      BorderColor = clSilver
+      Caption = 'History Events Displayed'
+      Color = clAqua
+      ElementFont = efCSS
+      ElementLegendClassName = 'h6'
+      object cbNumHistList: TWebComboBox
+        Left = 81
+        Top = 40
+        Width = 100
+        Height = 22
+        ElementClassName = 'form-select'
+        ElementFont = efCSS
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        Text = '200'
+        WidthPercent = 100.000000000000000000
+        ItemIndex = 1
+        Items.Strings = (
+          '100'
+          '200'
+          '300'
+          '400'
+          '500'
+          '600'
+          '700'
+          '800'
+          '900'
+          '1000')
+      end
+    end
+    object WebGroupBox1: TWebGroupBox
+      Left = 15
+      Top = 0
+      Width = 264
+      Height = 100
+      ElementClassName = 'btn-group'
+      WidthPercent = 25.000000000000000000
+      Align = alCustom
+      BorderColor = clSilver
+      Caption = 'EPG Days Displayed'
+      Color = clAqua
+      ElementFont = efCSS
+      ElementLegendClassName = 'h6'
+      object cbNumDisplayDays: TWebComboBox
+        Left = 88
+        Top = 41
+        Width = 80
+        Height = 22
+        Align = alCustom
+        ElementClassName = 'form-select'
+        ElementFont = efCSS
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        Text = '3'
+        WidthPercent = 100.000000000000000000
+        OnChange = cbNumDisplayDaysChange
+        ItemIndex = 2
+        Items.Strings = (
+          '1'
+          '2'
+          '3'
+          '4'
+          '5'
+          '6'
+          '7'
+          '8'
+          '9'
+          '10')
+      end
+    end
+    object btnOptOK: TWebButton
+      Left = 72
+      Top = 235
+      Width = 135
+      Height = 25
+      Caption = 'Save Settings'
+      ChildOrder = 2
+      ElementClassName = 'btn btn-outline-primary'
+      ElementFont = efCSS
+      HeightStyle = ssAuto
+      HeightPercent = 100.000000000000000000
+      ModalResult = 1
+      WidthPercent = 100.000000000000000000
+      OnClick = btnOptOKClick
+    end
+  end
   object pnlListings: TWebPanel
     Left = 0
     Top = 80
@@ -605,134 +733,6 @@ object CWRmainFrm: TCWRmainFrm
         OnFocusOut = WebComboBox3FocusOut
         ItemIndex = -1
       end
-    end
-  end
-  object HistoryGrid: TWebStringGrid
-    Left = 56
-    Top = 352
-    Width = 320
-    Height = 120
-    ColCount = 32
-    FixedCols = 0
-    TabOrder = 9
-    Visible = False
-    ElementFont = efCSS
-    FixedFont.Charset = DEFAULT_CHARSET
-    FixedFont.Color = clWindowText
-    FixedFont.Height = -21
-    FixedFont.Name = 'Segoe UI'
-    FixedFont.Style = []
-    RangeEdit.Max = 100.000000000000000000
-    RangeEdit.Step = 1.000000000000000000
-    HeightPercent = 100.000000000000000000
-    WidthPercent = 100.000000000000000000
-  end
-  object pnlOptions: TWebPanel
-    Left = 0
-    Top = 80
-    Width = 428
-    Height = 669
-    ElementClassName = 'card'
-    HeightStyle = ssPercent
-    WidthStyle = ssPercent
-    Align = alClient
-    ChildOrder = 9
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    ShowCaption = False
-    TabOrder = 5
-    object WebGroupBox3: TWebGroupBox
-      Left = 15
-      Top = 115
-      Width = 264
-      Height = 104
-      ElementClassName = 'btn-group'
-      WidthPercent = 25.000000000000000000
-      Align = alCustom
-      BorderColor = clSilver
-      Caption = 'History Events Displayed'
-      Color = clAqua
-      ElementFont = efCSS
-      ElementLegendClassName = 'h6'
-      object cbNumHistList: TWebComboBox
-        Left = 88
-        Top = 40
-        Width = 80
-        Height = 22
-        ElementClassName = 'form-select'
-        ElementFont = efCSS
-        HeightStyle = ssAuto
-        HeightPercent = 100.000000000000000000
-        Text = '200'
-        WidthPercent = 100.000000000000000000
-        ItemIndex = 1
-        Items.Strings = (
-          '100'
-          '200'
-          '300'
-          '400'
-          '500'
-          '600'
-          '700'
-          '800'
-          '900'
-          '1000')
-      end
-    end
-    object WebGroupBox1: TWebGroupBox
-      Left = 15
-      Top = 0
-      Width = 264
-      Height = 100
-      ElementClassName = 'btn-group'
-      WidthPercent = 25.000000000000000000
-      Align = alCustom
-      BorderColor = clSilver
-      Caption = 'EPG Days Displayed'
-      Color = clAqua
-      ElementFont = efCSS
-      ElementLegendClassName = 'h6'
-      object cbNumDisplayDays: TWebComboBox
-        Left = 88
-        Top = 41
-        Width = 80
-        Height = 22
-        Align = alCustom
-        ElementClassName = 'form-select'
-        ElementFont = efCSS
-        HeightStyle = ssAuto
-        HeightPercent = 100.000000000000000000
-        Text = '3'
-        WidthPercent = 100.000000000000000000
-        OnChange = cbNumDisplayDaysChange
-        ItemIndex = 2
-        Items.Strings = (
-          '1'
-          '2'
-          '3'
-          '4'
-          '5'
-          '6'
-          '7'
-          '8'
-          '9'
-          '10')
-      end
-    end
-    object btnOptOK: TWebButton
-      Left = 88
-      Top = 239
-      Width = 115
-      Height = 25
-      Caption = 'Save Settings'
-      ChildOrder = 2
-      ElementClassName = 'btn btn-outline-primary'
-      ElementFont = efCSS
-      HeightStyle = ssAuto
-      HeightPercent = 100.000000000000000000
-      ModalResult = 1
-      WidthPercent = 100.000000000000000000
-      OnClick = btnOptOKClick
     end
   end
   object WebMainMenu1: TWebMainMenu
