@@ -43,9 +43,7 @@ type
   Settings1: TMenuItem;
   pnlStatus: TWebPanel;
   WebGroupBox3: TWebGroupBox;
-  seNumHistEvents: TWebSpinEdit;
   WebGroupBox1: TWebGroupBox;
-  seNumDisplayDays: TWebSpinEdit;
   EPG: TWebDBGrid;
   WebDataSource1: TWebDataSource;
   WebButton1: TWebButton;
@@ -70,6 +68,8 @@ type
     HistoryGrid: TWebStringGrid;
     EpgDb: TWebClientDataSet;
     CurrEpgDb: TWebClientDataSet;
+    cbNumDisplayDays: TWebComboBox;
+    cbNumHistList: TWebComboBox;
   procedure SetNewCapturesFixedRow;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
@@ -114,8 +114,7 @@ type
     procedure WebComboBox2FocusOut(Sender: TObject);
     procedure WebComboBox3FocusOut(Sender: TObject);
     procedure btnOptOKClick(Sender: TObject);
-   [async] procedure seNumHistEventsChange(Sender: TObject);
-    procedure seNumDisplayDaysChange(Sender: TObject);
+    procedure cbNumDisplayDaysChange(Sender: TObject);
 private
   { Private declarations }
   procedure LogDataRange;
@@ -277,9 +276,9 @@ begin
   Log('App is ' + IfThen(not Application.IsOnline, 'NOT ') + 'online');
   WebRESTClient1.ReadTokens; // retrieve previous access token
   if TWebLocalStorage.GetValue(NUMDAYS) <> '' then
-    seNumDisplayDays.Value := StrToInt(TWebLocalStorage.GetValue(NUMDAYS));
+    cbNumDisplayDays.ItemIndex := cbNumDisplayDays.Items.IndexOf(TWebLocalStorage.GetValue(NUMDAYS));
   if TWebLocalStorage.GetValue(NUMHIST) <> '' then
-    seNumHistEvents.Value := StrToInt(TWebLocalStorage.GetValue(NUMHIST));
+    cbNumHistList.ItemIndex := cbNumHistList.Items.IndexOf(TWebLocalStorage.GetValue(NUMHIST));
     WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
   await(SetupWIDBCDS);
   Log('FormCreate, ' + WIDBCDS.Name + ' record count: ' + WIDBCDS.RecordCount.ToString);
@@ -332,12 +331,10 @@ end;
 
 procedure TCWRmainFrm.btnOptOKClick(Sender: TObject);
 begin
-  TWebLocalStorage.SetValue(NUMDAYS, seNumDisplayDays.Value.ToString);
-  Log('New number EPG Display Days: ' + seNumDisplayDays.Value.ToString);
-  TWebLocalStorage.SetValue(NUMHIST, seNumHistEvents.Value.ToString);
-  Log('New number History Display Days: ' + seNumHistEvents.Value.ToString);
-//  SetupEpgDb;
-//  ByAllClick(Sender);
+  TWebLocalStorage.SetValue(NUMDAYS, cbNumDisplayDays.Text);
+  Log('New number EPG Display Days: ' + cbNumDisplayDays.Text);
+  TWebLocalStorage.SetValue(NUMHIST, cbNumHistList.Text);
+  Log('New number History Display Days: ' + cbNumHistList.Text);
   ReFreshListings;
 end;
 
@@ -356,10 +353,6 @@ begin
   Log('ByChannelClick called');
   await(SetupFilterList(WebComboBox3, 'PSIP'));
   ByChannel.Checked := True;
-//  pnlFilterComboBox.Show;
-//  WebComboBox3.Show;
-//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-//  SetPage(0);
 end;
 
 procedure TCWRmainFrm.ByGenreClick(Sender: TObject);
@@ -367,10 +360,6 @@ begin
   Log('ByGenreClick called');
   await(SetupFilterList(WebComboBox1, 'genres'));
   ByGenre.Checked := True;
-//  pnlFilterComboBox.Show;
-//  WebComboBox1.Show;
-//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-//  SetPage(0);
 end;
 
 procedure TCWRmainFrm.ByTitleClick(Sender: TObject);
@@ -379,10 +368,18 @@ begin
   await(SetupFilterList(WebComboBox2, 'Title'));
   WebComboBox2.ItemIndex := WebComboBox2.Items.IndexOf(EpgDb.FieldByName('Title').AsString);
   ByTitle.Checked := True;
-//  pnlFilterComboBox.Show;
-//  WebComboBox2.Show;
-//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-//  SetPage(0);
+end;
+
+procedure TCWRmainFrm.cbNumDisplayDaysChange(Sender: TObject);
+begin
+  // Make sure that current dataset supports the requested number
+  if Trunc(LastStartDate - Now) < StrToInt(cbNumDisplayDays.Text) then
+  begin
+    ShowMessage('I currently have less than the requested '
+      + cbNumDisplayDays.Text + ' days of listings stored.'
+      + #13'To display more, please use Options | Refresh Data');
+    cbNumDisplayDays.ItemIndex := cbNumDisplayDays.Items.IndexOf(Trunc(LastStartDate - Now).ToString);
+  end;
 end;
 
 function TCWRmainFrm.GetGoogleDriveFile(TableFile: string; var id: string): string;
@@ -718,7 +715,7 @@ begin
   ShowPlsWait('Resetting EpgDB.');
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
-  LastStartTime := TTimeZone.Local.ToUniversalTime(Now) + seNumDisplayDays.Value;
+  LastStartTime := TTimeZone.Local.ToUniversalTime(Now) + StrToInt(cbNumDisplayDays.Text);
   CurrEpgDb.DisableControls;
 //  WIDBCDS.DisableControls;
   EpgDb.DisableControls;
@@ -870,16 +867,11 @@ begin
   Log(' ======== RefreshListings is called.');
   EPG.Visible := False;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-//  if not EpgDb.Active then
-//  begin
-//    ShowPlsWait('Opening EpgDb.');
-//    {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-    Await(SetupEpgDb);
-//  end;
-  Log('EpgDb.RecordCount: ' +EpgDb.RecordCount.ToString);
-  Log('Days to Display: ' + seNumDisplayDays.Value.ToString);
+  Await(SetupEpgDb);
+//  Log('EpgDb.RecordCount: ' + EpgDb.RecordCount.ToString);
+  Log('Days to Display: ' + cbNumDisplayDays.Text);
 //  EPG.BeginUpdate;
-  ShowPlsWait('Preparing ' + seNumDisplayDays.Value.ToString + '-day Listing.');
+  ShowPlsWait('Preparing ' + cbNumDisplayDays.Text + '-day Listing.');
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 //  EPG.EndUpdate;
   EPG.Refresh;
@@ -894,30 +886,6 @@ begin
   SetPage(1);
 end;
 
-procedure TCWRmainFrm.seNumDisplayDaysChange(Sender: TObject);
-begin
-  // Make sure that current dataset supports the number
-  if Trunc(LastStartDate - Now) < seNumDisplayDays.Value then
-//  begin
-//    TWebLocalStorage.SetValue(NUMDAYS, seNumDisplayDays.Value.ToString);
-//    Log('New number EPG Display Days: ' + seNumDisplayDays.Value.ToString);
-//    SetupEpgDb;
-//  end
-//  else
-  begin
-    ShowMessage('I currently have less than the requested '
-      + seNumDisplayDays.Value.ToString + ' days of listings stored.'
-      + #13'To display more, please use Options | Refresh Data');
-    seNumDisplayDays.Value := Trunc(LastStartDate - Now);
-  end;
-end;
-
-procedure TCWRmainFrm.seNumHistEventsChange(Sender: TObject);
-begin
-//  TWebLocalStorage.SetValue(NUMHIST, seNumHistEvents.Value.ToString);
-//  Log('New number History Items: ' + seNumHistEvents.Value.ToString);
-
-end;
 
 procedure TCWRmainFrm.ReloadSG(SG: TWebStringGrid; LSName: string);
 var i: Integer;
@@ -1035,7 +1003,7 @@ begin
   Log('FillHistoryDisplay called');
   HistoryTable.OnGetCellClass := nil;
   sl := TStringList.Create;
-  for i := 0 to seNumHistEvents.Value do
+  for i := 0 to Pred(StrToInt(cbNumHistList.Text)) do
     if TWebLocalStorage.GetValue('hl'+i.ToString) > '' then
       sl.Add(TWebLocalStorage.GetValue('hl'+i.ToString));
   Log('sl.Count: ' + sl.Count.ToString);
@@ -1120,7 +1088,7 @@ begin
   HistoryTable.Visible := False;
   await(FillHistoryDisplay);
   Log('HistoryTable.RowCount: ' + HistoryTable.RowCount.ToString);
-  if HistoryTable.RowCount <> seNumHistEvents.Value + 1 then  // may need History data
+  if HistoryTable.RowCount <> StrToInt(cbNumHistList.Text) {+ 1} then  // may need History data
   begin
     Log('The History list is empty/incomplete. Prompt for refresh');
     if TAwait.ExecP<TModalResult> (MessageDlgAsync('The History list '

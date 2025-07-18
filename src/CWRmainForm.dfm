@@ -654,29 +654,29 @@ object CWRmainFrm: TCWRmainFrm
       Color = clAqua
       ElementFont = efCSS
       ElementLegendClassName = 'h6'
-      object seNumHistEvents: TWebSpinEdit
-        AlignWithMargins = True
-        Left = 57
-        Top = 35
-        Width = 150
-        Height = 45
-        Margins.Left = 57
-        Margins.Top = 35
-        Margins.Right = 57
-        Margins.Bottom = 24
-        ElementClassName = 'form-control'
-        HeightStyle = ssAuto
-        Align = alClient
-        AutoSize = True
-        BorderStyle = bsNone
-        Color = clBtnFace
+      object cbNumHistList: TWebComboBox
+        Left = 64
+        Top = 40
+        Width = 145
+        Height = 22
+        ElementClassName = 'form-select'
         ElementFont = efCSS
-        Increment = 100
-        MaxValue = 1000
-        MinValue = 100
-        Role = ''
-        Value = 100
-        OnChange = seNumHistEventsChange
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        Text = '200'
+        WidthPercent = 100.000000000000000000
+        ItemIndex = 1
+        Items.Strings = (
+          '100'
+          '200'
+          '300'
+          '400'
+          '500'
+          '600'
+          '700'
+          '800'
+          '900'
+          '1000')
       end
     end
     object WebGroupBox1: TWebGroupBox
@@ -692,29 +692,31 @@ object CWRmainFrm: TCWRmainFrm
       Color = clAqua
       ElementFont = efCSS
       ElementLegendClassName = 'h6'
-      object seNumDisplayDays: TWebSpinEdit
-        AlignWithMargins = True
-        Left = 57
-        Top = 35
-        Width = 150
-        Height = 41
-        Margins.Left = 57
-        Margins.Top = 35
-        Margins.Right = 57
-        Margins.Bottom = 24
-        ElementClassName = 'form-control'
-        HeightStyle = ssAuto
-        Align = alClient
-        AutoSize = False
-        BorderStyle = bsNone
-        Color = clBtnFace
+      object cbNumDisplayDays: TWebComboBox
+        Left = 88
+        Top = 41
+        Width = 80
+        Height = 22
+        Align = alCustom
+        ElementClassName = 'form-select'
         ElementFont = efCSS
-        Increment = 1
-        MaxValue = 10
-        MinValue = 1
-        Role = ''
-        Value = 1
-        OnChange = seNumDisplayDaysChange
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        Text = '3'
+        WidthPercent = 100.000000000000000000
+        OnChange = cbNumDisplayDaysChange
+        ItemIndex = 2
+        Items.Strings = (
+          '1'
+          '2'
+          '3'
+          '4'
+          '5'
+          '6'
+          '7'
+          '8'
+          '9'
+          '10')
       end
     end
     object btnOptOK: TWebButton
