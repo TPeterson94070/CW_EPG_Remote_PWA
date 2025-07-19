@@ -292,11 +292,14 @@ end;
 procedure TCWRmainFrm.RefreshData(Sender: TObject);
 var
   id: string; {param used only by UpdateNewcaptures}
+  StartT: TDateTime;
 begin
   Log('======== "Refresh Data" clicked');
   await(RefreshCSV(BufferGrid, 'cwr_epg.csv','EPG', id));
   if BufferGrid.RowCount > 0 then
   begin
+    Log('********* Starting timer');
+    StartT := Now;
     await(LoadWIDBCDS);
     await(FetchCapReservations);
     await(FetchNewCapRequests);
@@ -307,7 +310,10 @@ begin
   begin
     ShowMessage('The data update failed!'#13'Please make sure that the HTPC'#13' is connected to Google Drive')
   end;
-  if VisiblePanelNum <> 3 then ByAllClick(Sender);
+  if VisiblePanelNum <> 3 then ReFreshListings // ByAllClick(Sender);
+  else SetupEpgDb;
+  Log('*********** Delta t (sec): ' + SecondsBetween(Now, StartT).ToString);
+  Log('*********** Rate (ms/rec): ' + (MilliSecondsBetween(Now, StartT)/WIDBCDS.RecordCount).ToString);
 end;
 
 procedure TCWRmainFrm.UpdateHistory(Sender: TObject);
