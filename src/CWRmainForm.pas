@@ -304,13 +304,12 @@ begin
     await(FetchCapReservations);
     await(FetchNewCapRequests);
     await(FetchHistory);
-//    await(SetupEpgDb);
   end
   else
   begin
     ShowMessage('The data update failed!'#13'Please make sure that the HTPC'#13' is connected to Google Drive')
   end;
-  if VisiblePanelNum <> 3 then ReFreshListings // ByAllClick(Sender);
+  if VisiblePanelNum <> 3 then ReFreshListings
   else SetupEpgDb;
   Log('*********** Delta t (sec): ' + SecondsBetween(Now, StartT).ToString);
   Log('*********** Rate (ms/rec): ' + (MilliSecondsBetween(Now, StartT)/WIDBCDS.RecordCount).ToString);

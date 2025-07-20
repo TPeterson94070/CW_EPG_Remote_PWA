@@ -568,7 +568,7 @@ object CWRmainFrm: TCWRmainFrm
         'There are no current listings to see.(Try "Options|Refresh EPG" ' +
         'to update)'
       Color = clBlack
-      ElementClassName = 'white'
+      ElementClassName = 'form-label'
       ElementFont = efCSS
       Font.Charset = ANSI_CHARSET
       Font.Color = clWhite
@@ -674,6 +674,7 @@ object CWRmainFrm: TCWRmainFrm
         Height = 14
         Align = alTop
         Caption = 'Choose Item'
+        ElementClassName = 'form-label'
         ElementFont = efCSS
         HeightStyle = ssAuto
         HeightPercent = 100.000000000000000000
