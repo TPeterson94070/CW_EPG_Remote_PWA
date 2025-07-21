@@ -8,7 +8,7 @@ var CACHED_URLS = [
   "https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js",
   "https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css",
   "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/webfonts/fa-solid-900.woff2",
-  "CW_EPG_Remote_1_0_3131.js",
+  "CW_EPG_Remote_1_0_3141.js",
   "CWRmainForm.html",
   "Details.html",
   "IconResHigh.png",
@@ -18,7 +18,7 @@ var CACHED_URLS = [
   ];
 
 self.addEventListener('install', function(event) {
-                console.log(`serviceworker installed`);
+                console.log("serviceworker installed");
                 event.waitUntil(
                                 caches.open(CACHE_NAME).then(function(cache) {
                                 return cache.addAll(CACHED_URLS);
@@ -28,7 +28,7 @@ self.addEventListener('install', function(event) {
 
 // The activate handler takes care of cleaning up old caches.
 self.addEventListener('activate', event => {
-  console.log(`serviceworker activated`);
+  console.log("serviceworker activated");
   const currentCaches = [CACHE_NAME, RUNTIME];
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -42,6 +42,7 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch',function(event) {
+   console.log(`serviceworker fetching ${event.request.url}`);
    event.respondWith(
      fetch(event.request).catch(function() {
                    return caches.match(event.request).then(function(response) {
