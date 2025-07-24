@@ -6,7 +6,7 @@ object CWRmainFrm: TCWRmainFrm
   ElementFont = efCSS
   Font.Charset = ANSI_CHARSET
   Font.Color = clBlack
-  Font.Height = -11
+  Font.Height = -19
   Font.Name = 'Arial'
   Font.Style = []
   Menu = WebMainMenu1
@@ -24,7 +24,7 @@ object CWRmainFrm: TCWRmainFrm
     RowCount = 20
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -12
+    Font.Height = -21
     Font.Name = 'Segoe UI'
     Font.Style = []
     Options = []
@@ -34,7 +34,7 @@ object CWRmainFrm: TCWRmainFrm
     StyleElements = []
     FixedFont.Charset = DEFAULT_CHARSET
     FixedFont.Color = clWindowText
-    FixedFont.Height = -12
+    FixedFont.Height = -21
     FixedFont.Name = 'Segoe UI'
     FixedFont.Style = []
     RangeEdit.Max = 100.000000000000000000
@@ -53,13 +53,19 @@ object CWRmainFrm: TCWRmainFrm
     BorderStyle = bsNone
     Caption = 'pnlMenu'
     ChildOrder = 12
-    TabOrder = 7
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -19
+    Font.Name = 'Arial'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 6
   end
   object pnlLog: TWebPanel
     Left = 0
-    Top = 80
+    Top = 50
     Width = 428
-    Height = 669
+    Height = 699
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -67,21 +73,33 @@ object CWRmainFrm: TCWRmainFrm
     ChildOrder = 9
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -19
+    Font.Name = 'Arial'
+    Font.Style = []
+    ParentFont = False
     ShowCaption = False
-    TabOrder = 2
+    TabOrder = 1
     object WebMemo2: TWebMemo
       AlignWithMargins = True
       Left = 3
       Top = 3
       Width = 422
-      Height = 663
+      Height = 693
       Align = alClient
       Color = clBlack
       ElementClassName = 'white'
       ElementID = 'content'
       ElementFont = efCSS
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -19
+      Font.Name = 'Arial'
+      Font.Style = []
       HeightStyle = ssPercent
       HeightPercent = 100.000000000000000000
+      ParentFont = False
       ReadOnly = True
       SelLength = 0
       SelStart = 0
@@ -89,50 +107,11 @@ object CWRmainFrm: TCWRmainFrm
       WidthPercent = 100.000000000000000000
     end
   end
-  object pnlStatus: TWebPanel
+  object pnlWaitPls: TWebPanel
     Left = 0
     Top = 50
     Width = 428
-    Height = 30
-    ElementClassName = 'container'
-    WidthStyle = ssAuto
-    Align = alTop
-    BorderStyle = bsNone
-    Caption = 'pnlStatus'
-    ChildOrder = 12
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    TabOrder = 0
-    Visible = False
-    object AlertLabel: TWebButton
-      Left = 0
-      Top = 0
-      Width = 428
-      Height = 30
-      Margins.Left = 19
-      Margins.Top = 24
-      Margins.Right = 19
-      Margins.Bottom = 19
-      Align = alClient
-      Color = clYellow
-      ElementClassName = 'form-control'
-      ElementFont = efCSS
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'Arial'
-      Font.Style = []
-      HeightPercent = 100.000000000000000000
-      ParentFont = False
-      Role = 'button'
-      WidthPercent = 100.000000000000000000
-    end
-  end
-  object pnlWaitPls: TWebPanel
-    Left = 0
-    Top = 80
-    Width = 428
-    Height = 669
+    Height = 699
     ElementClassName = 'container-fluid'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -140,12 +119,18 @@ object CWRmainFrm: TCWRmainFrm
     ChildOrder = 10
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
-    TabOrder = 4
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -19
+    Font.Name = 'Arial'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 3
     object WebGridPanel1: TWebGridPanel
       Left = 0
       Top = 0
       Width = 428
-      Height = 669
+      Height = 699
       WidthStyle = ssPercent
       Align = alClient
       ColumnCollection = <
@@ -185,9 +170,9 @@ object CWRmainFrm: TCWRmainFrm
         end>
       object WebLabel2: TWebLabel
         Left = 2
-        Top = 336
+        Top = 352
         Width = 424
-        Height = 163
+        Height = 171
         Align = alClient
         Alignment = taCenter
         Caption = 'Please Wait...'
@@ -196,17 +181,23 @@ object CWRmainFrm: TCWRmainFrm
         ElementLabelClassName = 'h1'
         ElementFont = efCSS
         ElementPosition = epRelative
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clBlack
+        Font.Height = -19
+        Font.Name = 'Arial'
+        Font.Style = []
         HeightStyle = ssPercent
         HeightPercent = 100.000000000000000000
+        ParentFont = False
         Transparent = False
         WidthStyle = ssPercent
         WidthPercent = 100.000000000000000000
       end
       object WebLabel1: TWebLabel
         Left = 2
-        Top = 169
+        Top = 177
         Width = 424
-        Height = 163
+        Height = 171
         Align = alClient
         Alignment = taCenter
         Caption = 'Preparing EPG Listings.'
@@ -215,9 +206,15 @@ object CWRmainFrm: TCWRmainFrm
         ElementLabelClassName = 'h1'
         ElementFont = efCSS
         ElementPosition = epRelative
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clBlack
+        Font.Height = -19
+        Font.Name = 'Arial'
+        Font.Style = []
         HeightStyle = ssPercent
         HeightPercent = 100.000000000000000000
         HTMLType = tH1
+        ParentFont = False
         Transparent = False
         WidthStyle = ssPercent
         WidthPercent = 100.000000000000000000
@@ -226,7 +223,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 2
         Top = 2
         Width = 424
-        Height = 163
+        Height = 171
         Align = alClient
         Caption = '<i class="fa-solid fa-spinner fa-spin"></>'
         Color = clYellow
@@ -234,8 +231,14 @@ object CWRmainFrm: TCWRmainFrm
         ElementClassName = 'btn btn-lg'
         ElementFont = efCSS
         ElementPosition = epRelative
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clBlack
+        Font.Height = -19
+        Font.Name = 'Arial'
+        Font.Style = []
         HeightStyle = ssPercent
         HeightPercent = 100.000000000000000000
+        ParentFont = False
         Role = 'button'
         WidthStyle = ssPercent
         WidthPercent = 100.000000000000000000
@@ -244,9 +247,9 @@ object CWRmainFrm: TCWRmainFrm
   end
   object pnlHistory: TWebPanel
     Left = 0
-    Top = 80
+    Top = 50
     Width = 428
-    Height = 669
+    Height = 699
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -254,22 +257,28 @@ object CWRmainFrm: TCWRmainFrm
     ChildOrder = 11
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -19
+    Font.Name = 'Arial'
+    Font.Style = []
+    ParentFont = False
     ShowCaption = False
-    TabOrder = 1
+    TabOrder = 0
     object HistoryTable: TWebStringGrid
       Left = 0
       Top = 0
       Width = 428
-      Height = 669
+      Height = 699
       Align = alClient
-      Color = clDarkolivegreen
+      Color = 13479662
       ColCount = 32
       DefaultColWidth = 61
       DefaultRowHeight = 23
       FixedCols = 0
       Font.Charset = ANSI_CHARSET
       Font.Color = clGray
-      Font.Height = -11
+      Font.Height = -19
       Font.Name = 'Arial'
       Font.Style = []
       Options = [goRowSelect, goFixedRowClick]
@@ -280,7 +289,7 @@ object CWRmainFrm: TCWRmainFrm
       ElementFont = efCSS
       FixedFont.Charset = DEFAULT_CHARSET
       FixedFont.Color = clWindowText
-      FixedFont.Height = -12
+      FixedFont.Height = -21
       FixedFont.Name = 'Segoe UI'
       FixedFont.Style = []
       RangeEdit.Max = 100.000000000000000000
@@ -293,9 +302,9 @@ object CWRmainFrm: TCWRmainFrm
   end
   object pnlCaptures: TWebPanel
     Left = 0
-    Top = 80
+    Top = 50
     Width = 428
-    Height = 669
+    Height = 699
     ElementClassName = 'greenBG'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -304,8 +313,14 @@ object CWRmainFrm: TCWRmainFrm
     Color = clGray
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -19
+    Font.Name = 'Arial'
+    Font.Style = []
+    ParentFont = False
     ShowCaption = False
-    TabOrder = 3
+    TabOrder = 2
     object WebHTMLDiv1: TWebHTMLDiv
       Left = 0
       Top = 266
@@ -341,14 +356,20 @@ object CWRmainFrm: TCWRmainFrm
         DefaultRowHeight = 22
         FixedColor = clTeal
         FixedCols = 0
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clBlack
+        Font.Height = -19
+        Font.Name = 'Arial'
+        Font.Style = []
         Options = [goFixedHorzLine, goHorzLine, goRowSelect]
+        ParentFont = False
         TabOrder = 0
         StyleElements = []
         ElementClassName = 'greenBG'
         ElementFont = efCSS
         FixedFont.Charset = ANSI_CHARSET
         FixedFont.Color = clBlack
-        FixedFont.Height = -11
+        FixedFont.Height = -19
         FixedFont.Name = 'Arial'
         FixedFont.Style = []
         RangeEdit.Max = 100.000000000000000000
@@ -378,14 +399,20 @@ object CWRmainFrm: TCWRmainFrm
         DefaultRowHeight = 22
         FixedColor = clTeal
         FixedCols = 0
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clBlack
+        Font.Height = -19
+        Font.Name = 'Arial'
+        Font.Style = []
         Options = [goHorzLine, goRowSelect]
+        ParentFont = False
         TabOrder = 0
         StyleElements = []
         ElementClassName = 'greenBG'
         ElementFont = efCSS
         FixedFont.Charset = ANSI_CHARSET
         FixedFont.Color = clBlack
-        FixedFont.Height = -11
+        FixedFont.Height = -19
         FixedFont.Name = 'Arial'
         FixedFont.Style = []
         RangeEdit.Max = 100.000000000000000000
@@ -417,13 +444,22 @@ object CWRmainFrm: TCWRmainFrm
     Width = 320
     Height = 120
     ColCount = 32
+    DefaultRowHeight = 22
     FixedCols = 0
-    TabOrder = 9
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -19
+    Font.Name = 'Arial'
+    Font.Style = []
+    Options = [goVertLine, goHorzLine, goRangeSelect]
+    ParentFont = False
+    TabOrder = 7
     Visible = False
+    StyleElements = []
     ElementFont = efCSS
     FixedFont.Charset = DEFAULT_CHARSET
     FixedFont.Color = clWindowText
-    FixedFont.Height = -21
+    FixedFont.Height = -37
     FixedFont.Name = 'Segoe UI'
     FixedFont.Style = []
     RangeEdit.Max = 100.000000000000000000
@@ -433,9 +469,9 @@ object CWRmainFrm: TCWRmainFrm
   end
   object pnlOptions: TWebPanel
     Left = 0
-    Top = 80
+    Top = 50
     Width = 428
-    Height = 669
+    Height = 699
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -443,8 +479,14 @@ object CWRmainFrm: TCWRmainFrm
     ChildOrder = 9
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -19
+    Font.Name = 'Arial'
+    Font.Style = []
+    ParentFont = False
     ShowCaption = False
-    TabOrder = 5
+    TabOrder = 4
     object WebGroupBox3: TWebGroupBox
       Left = 15
       Top = 115
@@ -458,15 +500,28 @@ object CWRmainFrm: TCWRmainFrm
       Color = clAqua
       ElementFont = efCSS
       ElementLegendClassName = 'h6'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -19
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
       object cbNumHistList: TWebComboBox
         Left = 81
         Top = 40
         Width = 100
-        Height = 22
+        Height = 30
         ElementClassName = 'form-select'
         ElementFont = efCSS
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clBlack
+        Font.Height = -19
+        Font.Name = 'Arial'
+        Font.Style = []
         HeightStyle = ssAuto
         HeightPercent = 100.000000000000000000
+        ParentFont = False
+        Role = 'combobox'
         Text = '200'
         WidthPercent = 100.000000000000000000
         ItemIndex = 1
@@ -496,16 +551,29 @@ object CWRmainFrm: TCWRmainFrm
       Color = clAqua
       ElementFont = efCSS
       ElementLegendClassName = 'h6'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -19
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
       object cbNumDisplayDays: TWebComboBox
         Left = 88
         Top = 41
         Width = 80
-        Height = 22
+        Height = 30
         Align = alCustom
         ElementClassName = 'form-select'
         ElementFont = efCSS
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clBlack
+        Font.Height = -19
+        Font.Name = 'Arial'
+        Font.Style = []
         HeightStyle = ssAuto
         HeightPercent = 100.000000000000000000
+        ParentFont = False
+        Role = 'combobox'
         Text = '3'
         WidthPercent = 100.000000000000000000
         OnChange = cbNumDisplayDaysChange
@@ -527,23 +595,30 @@ object CWRmainFrm: TCWRmainFrm
       Left = 72
       Top = 235
       Width = 135
-      Height = 25
+      Height = 37
       Caption = 'Save Settings'
       ChildOrder = 2
       ElementClassName = 'btn btn-outline-primary'
       ElementFont = efCSS
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -19
+      Font.Name = 'Arial'
+      Font.Style = []
       HeightStyle = ssAuto
       HeightPercent = 100.000000000000000000
       ModalResult = 1
+      ParentFont = False
+      Role = 'button'
       WidthPercent = 100.000000000000000000
       OnClick = btnOptOKClick
     end
   end
   object pnlListings: TWebPanel
     Left = 0
-    Top = 80
+    Top = 50
     Width = 428
-    Height = 669
+    Height = 699
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -552,16 +627,22 @@ object CWRmainFrm: TCWRmainFrm
     ChildOrder = 11
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -19
+    Font.Name = 'Arial'
+    Font.Style = []
+    ParentFont = False
     ShowCaption = False
-    TabOrder = 6
+    TabOrder = 5
     DesignSize = (
       428
-      669)
+      699)
     object lblEmptyEPG: TWebLabel
       Left = 96
       Top = 58
-      Width = 195
-      Height = 28
+      Width = 329
+      Height = 44
       Alignment = taCenter
       Anchors = [akLeft, akTop, akRight]
       Caption = 
@@ -572,7 +653,7 @@ object CWRmainFrm: TCWRmainFrm
       ElementFont = efCSS
       Font.Charset = ANSI_CHARSET
       Font.Color = clWhite
-      Font.Height = -11
+      Font.Height = -19
       Font.Name = 'Arial'
       Font.Style = []
       HeightStyle = ssAuto
@@ -587,7 +668,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 669
+      Height = 699
       Align = alClient
       BorderStyle = bsNone
       Color = clNavy
@@ -631,13 +712,13 @@ object CWRmainFrm: TCWRmainFrm
       ElementFont = efCSS
       FixedFont.Charset = ANSI_CHARSET
       FixedFont.Color = clBlack
-      FixedFont.Height = -11
+      FixedFont.Height = -19
       FixedFont.Name = 'Arial'
       FixedFont.Style = []
       FixedCols = 0
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -12
+      Font.Height = -21
       Font.Name = 'Segoe UI'
       Font.Style = []
       Options = [goRowSelect]
@@ -665,31 +746,49 @@ object CWRmainFrm: TCWRmainFrm
       ChildOrder = 5
       ElementBodyClassName = 'card-body'
       ElementFont = efCSS
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -19
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
       TabOrder = 1
       Visible = False
       object lblFilterSelect: TWebLabel
         Left = 0
         Top = 0
         Width = 150
-        Height = 14
+        Height = 22
         Align = alTop
         Caption = 'Choose Item'
         ElementClassName = 'form-label'
         ElementFont = efCSS
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clBlack
+        Font.Height = -19
+        Font.Name = 'Arial'
+        Font.Style = []
         HeightStyle = ssAuto
         HeightPercent = 100.000000000000000000
+        ParentFont = False
         WidthPercent = 100.000000000000000000
       end
       object WebComboBox1: TWebComboBox
         Left = 0
-        Top = 38
+        Top = 30
         Width = 150
-        Height = 22
+        Height = 30
         Align = alBottom
         ElementClassName = 'form-select'
         ElementFont = efCSS
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clBlack
+        Font.Height = -19
+        Font.Name = 'Arial'
+        Font.Style = []
         HeightStyle = ssAuto
         HeightPercent = 100.000000000000000000
+        ParentFont = False
         Role = 'combobox'
         Visible = False
         WidthPercent = 100.000000000000000000
@@ -700,14 +799,20 @@ object CWRmainFrm: TCWRmainFrm
       end
       object WebComboBox2: TWebComboBox
         Left = 0
-        Top = -6
+        Top = -30
         Width = 150
-        Height = 22
+        Height = 30
         Align = alBottom
         ElementClassName = 'form-select'
         ElementFont = efCSS
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clBlack
+        Font.Height = -19
+        Font.Name = 'Arial'
+        Font.Style = []
         HeightStyle = ssAuto
         HeightPercent = 100.000000000000000000
+        ParentFont = False
         Role = 'combobox'
         Visible = False
         WidthPercent = 100.000000000000000000
@@ -718,14 +823,20 @@ object CWRmainFrm: TCWRmainFrm
       end
       object WebComboBox3: TWebComboBox
         Left = 0
-        Top = 16
+        Top = 0
         Width = 150
-        Height = 22
+        Height = 30
         Align = alBottom
         ElementClassName = 'form-select'
         ElementFont = efCSS
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clBlack
+        Font.Height = -19
+        Font.Name = 'Arial'
+        Font.Style = []
         HeightStyle = ssAuto
         HeightPercent = 100.000000000000000000
+        ParentFont = False
         Role = 'combobox'
         Visible = False
         WidthPercent = 100.000000000000000000
@@ -748,11 +859,11 @@ object CWRmainFrm: TCWRmainFrm
     ElementFont = efCSS
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
-    Font.Height = -11
+    Font.Height = -19
     Font.Name = 'Arial'
     Font.Style = []
     Visible = False
-    Width = 376
+    Width = 404
     Height = 50
     object ByAll: TMenuItem
       Caption = 'Complete Listing'

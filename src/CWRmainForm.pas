@@ -20,7 +20,6 @@ type
   TCWRmainFrm = class(TWebForm)
   WIDBCDS: TWebIndexedDbClientDataset;
   WebMemo2: TWebMemo;
-  AlertLabel: TWebButton;
   Captures: TWebStringGrid;
   HistoryTable: TWebStringGrid;
   BufferGrid: TWebStringGrid;
@@ -41,7 +40,6 @@ type
   ChangeHTPC1: TMenuItem;
   ViewLog1: TMenuItem;
   Settings1: TMenuItem;
-  pnlStatus: TWebPanel;
   WebGroupBox3: TWebGroupBox;
   WebGroupBox1: TWebGroupBox;
   EPG: TWebDBGrid;
@@ -75,7 +73,7 @@ type
     AField: TField; AValue: string; var AClassName: string);
   [async] procedure SaveNewCapturesFile(id: string);
   [async] procedure LoadWIDBCDS;
-  procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
+  [async] procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
     errorName, errorMsg: string);
   [async] procedure RefreshData(Sender: TObject);
   [async] procedure WebFormCreate(Sender: TObject);
@@ -106,6 +104,7 @@ type
 //  procedure ClearExcept(FilterType: string);
   [async] procedure ByChannelClick(Sender: TObject);
   [async] procedure WebComboBox3Change(Sender: TObject);
+  [async] procedure cbNumDisplayDaysChange(Sender: TObject);
   [async]
     procedure NewCapturesClickCell(Sender: TObject; ACol, ARow: Integer);
     procedure NewCapturesGetCellData(Sender: TObject; ACol, ARow: Integer;
@@ -114,7 +113,6 @@ type
     procedure WebComboBox2FocusOut(Sender: TObject);
     procedure WebComboBox3FocusOut(Sender: TObject);
     procedure btnOptOKClick(Sender: TObject);
-    procedure cbNumDisplayDaysChange(Sender: TObject);
 private
   { Private declarations }
   procedure LogDataRange;
@@ -307,7 +305,8 @@ begin
   end
   else
   begin
-    ShowMessage('The data update failed!'#13'Please make sure that the HTPC'#13' is connected to Google Drive')
+    TAwait.ExecP<TModalResult> (MessageDlgAsync('The data update failed!'#13'Please make sure that the HTPC'
+      + #13' is connected to Google Drive',mtInformation, [mbOK]))
   end;
   if VisiblePanelNum <> 3 then ReFreshListings
   else SetupEpgDb;
@@ -380,9 +379,9 @@ begin
   // Make sure that current dataset supports the requested number
   if Trunc(LastStartDate - Now) < StrToInt(cbNumDisplayDays.Text) then
   begin
-    ShowMessage('I currently have less than the requested '
+    TAwait.ExecP<TModalResult> (MessageDlgAsync('I currently have less than the requested '
       + cbNumDisplayDays.Text + ' days of listings stored.'
-      + #13'To display more, please use Options | Refresh Data');
+      + #13'To display more, please use Options | Refresh Data',mtInformation, [mbOK]));
     cbNumDisplayDays.ItemIndex := cbNumDisplayDays.Items.IndexOf(Trunc(LastStartDate - Now).ToString);
   end;
 end;
@@ -516,7 +515,7 @@ begin
         on E:Exception do
         begin
           Log('HttpRequest Exception: ' + E.Message);
-          ShowMessage('Cannot refresh EPG data while CW_EPG_Remote is offline');
+          TAwait.ExecP<TModalResult> (MessageDlgAsync('Cannot refresh EPG data while CW_EPG_Remote is offline', mtInformation, [mbOK]));
         end;
       end;
     finally
@@ -526,7 +525,7 @@ begin
   end
   else
   begin
-    ShowMessage('Cannot refresh EPG data while offline.');
+    TAwait.ExecP<TModalResult> (MessageDlgAsync('Cannot refresh EPG data while CW_EPG_Remote is offline', mtInformation, [mbOK]));
     Log('No LAN connection');
   end;
   Log('ReFreshCSV, '+WSG.Name+' RowCount: ' + WSG.RowCount.ToString);
@@ -694,11 +693,12 @@ begin
   Log('SetupWIDBCDS: WIDBCDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
   LogDataRange;
   if Now > LastStartDate then
-    ShowMessage('There are no current data!'#13'Please make sure that the HTPC'#13' is connected to Google Drive')
+    TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'#13'Please make sure that the HTPC'
+      + #13' is connected to Google Drive',mtInformation, [mbOK]))
   else if Now - FirstEndDate > 3 then
-    ShowMessage('The current dataset was fetched over 3 days ago'
+    TAwait.ExecP<TModalResult> (MessageDlgAsync('The current dataset was fetched over 3 days ago'
       + #13'and there are only about ' + Round(LastStartDate - Now).ToString + ' days now available.'
-      + #13#13'To update, please use Options | Refresh Data');
+      + #13#13'To update, please use Options | Refresh Data',mtInformation, [mbOK]));
   TOpen(WIDBCDS).NestedDataSetClass := TBaseJSONDataSet;
   CurrEpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
 
@@ -1268,7 +1268,7 @@ end;
 procedure TCWRmainFrm.WIDBCDSIDBError(DataSet: TDataSet;
   opCode: TIndexedDbOpCode; errorName, errorMsg: string);
 begin
-  ShowMessage(DataSet.Name + ' error: ' + errorName + ', msg: ' + errorMsg);
+  TAwait.ExecP<TModalResult> (MessageDlgAsync(DataSet.Name + ' error: ' + errorName + ', msg: ' + errorMsg, mtInformation, [mbOK]));
 end;
 
 procedure SaveLocalStrings(SG: TWebStringGrid; LSName: string);
@@ -1407,8 +1407,11 @@ begin
   res := TAwait.ExecP<TJSXMLHttpRequest>(WEBRESTClient1.HttpRequest('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data.Text));
   console.log(res);
   if res.Status = 200 then
-    ShowMessage('Request successfully updated.'#13#13'N.B.:  NOT scheduled until CW_EPG''s next run.')
-  else ShowMessage('Request submission FAILED.'#13#13'If this is the first failure, please retry.');
+    TAwait.ExecP<TModalResult> (MessageDlgAsync('Request successfully updated.'
+      + #13#13'N.B.:  NOT scheduled until CW_EPG''s next run.', mtInformation, [mbOK]))
+  else
+    TAwait.ExecP<TModalResult> (MessageDlgAsync('Request submission FAILED.'
+      + #13#13'If this is the first failure, please retry.', mtInformation, [mbOK]));
 
 end;
 
