@@ -22,19 +22,8 @@
     </style>
   </head>
   <body>
+<meta $(BodyParameters)/>
   </body>
-  <script type="text/javascript">
-  if ("serviceWorker" in navigator)
-  {
-    navigator.serviceWorker.register("serviceworker.js").then(
-      function(ARegistration)
-      {}).catch(
-        function(AErr)
-        {
-          console.log("TMS WEB Core service worker registration failed", AErr);
-        });
-  }
-</script>
   <script type="text/javascript">ProjectName="$(ProjectName)";
     rtl.run();</script>
 </html>
