@@ -271,7 +271,7 @@ object CWRmainFrm: TCWRmainFrm
       Width = 428
       Height = 699
       Align = alClient
-      Color = 13479662
+      Color = clDarkslategray
       ColCount = 32
       DefaultColWidth = 61
       DefaultRowHeight = 23

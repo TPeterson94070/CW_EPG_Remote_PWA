@@ -277,10 +277,7 @@ begin
     WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
   await(SetupWIDBCDS);
   Log('FormCreate, ' + WIDBCDS.Name + ' record count: ' + WIDBCDS.RecordCount.ToString);
-//  await(SetupEpgDb);
-//  EpgDb.First;
-//  if EpgDb.RecordCount > 1 then
-    await(RefreshListings);
+  await(RefreshListings);
   Log('========== FormCreate is finished');
 end;
 
@@ -326,7 +323,7 @@ begin
     mtConfirmation, [mbYes,mbNo])) = mrYes then
   begin
     ResetPrompt := 'select_account';
-    RefreshData(Sender);
+    await(RefreshData(Sender));
   end;
 end;
 
