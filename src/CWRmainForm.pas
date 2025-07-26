@@ -345,7 +345,7 @@ begin
   EPG.Columns[2].Title := 'Title';
   ClearMenuChecks;
   ByAll.Checked := True;
-  SetFilter('');
+  await(SetFilter(''));
   SetPage(0);
 end;
 
