@@ -90,8 +90,6 @@ type
   procedure ScheduledClick(Sender: TObject);
   procedure ViewLog1Click(Sender: TObject);
   procedure Settings1Click(Sender: TObject);
-//  [async]
-//  procedure FinalizeWIDBCDSUpdate;
   [async]
   procedure EPGClickCell(Sender: TObject; ACol, ARow: Integer);
   procedure HistoryTableGetCellClass(Sender: TObject; ACol, ARow: Integer;
@@ -101,7 +99,6 @@ type
   [async] procedure ByTitleClick(Sender: TObject);
   [async] procedure WebComboBox2Change(Sender: TObject);
   [async] procedure ByAllClick(Sender: TObject);
-//  procedure ClearExcept(FilterType: string);
   [async] procedure ByChannelClick(Sender: TObject);
   [async] procedure WebComboBox3Change(Sender: TObject);
   [async] procedure cbNumDisplayDaysChange(Sender: TObject);
@@ -729,7 +726,8 @@ begin
     EpgDb.EmptyDataSet;
   EpgDb.FieldDefs := CurrEpgDb.FieldDefs;
   EpgDb.Active := True;
-  CurrEpgDb.First;
+  CurrEpgDb.Open; // Active := True;
+//  CurrEpgDb.First;
   while not CurrEpgDb.Eof do
   begin
     if (CurrEpgDb.Fields[7].AsDateTime >= FirstEndTime) and
