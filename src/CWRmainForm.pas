@@ -1175,8 +1175,8 @@ var
 
 begin
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
-  await(EPG.Refresh);
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//  await(EPG.Refresh);
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   EPG.BeginUpdate;
 //  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   DetailsFrm := TDetailsFrm.Create(nil);
