@@ -343,6 +343,7 @@ begin
   ClearMenuChecks;
   ByAll.Checked := True;
   await(SetFilter(''));
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   await(SetPage(0));
 end;
 
@@ -1175,10 +1176,9 @@ var
 
 begin
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
-//  await(EPG.Refresh);
-//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}  // Wait for cursor move?
   EPG.BeginUpdate;
-//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   DetailsFrm := TDetailsFrm.Create(nil);
   Log('========== finished TDetailsFrm.Create(nil) ');
   // Speed up form opening
