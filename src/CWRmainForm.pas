@@ -1184,10 +1184,13 @@ begin
   Log('========== finished EpgDb.DisableControls ');
   // Wrap in try-except-end because of Locate bug with filtered data
   try
+    Log('========== starting Locate ' + EPG.Cells[3,ARow]);
     if EpgDb.Locate('id', EPG.Cells[3,ARow],[]) then
     try
+      Log('========== Located ' + EPG.Cells[3,ARow]);
       DetailsFrm.Popup := True;
       DetailsFrm.Border := fbSingle;
+      Log('========== starting DetailsFrm.Load() ');
       // load file HTML template + controls
       TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load());
       Log('========== finished DetailsFrm.Load() ');
