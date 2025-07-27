@@ -1177,9 +1177,11 @@ begin
   EPG.BeginUpdate;
 //  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
-  DetailsFrm := TDetailsFrm.Create(Self);
+  DetailsFrm := TDetailsFrm.Create(nil);
+  Log('========== finished TDetailsFrm.Create(nil) ');
   // Speed up form opening
   await(EpgDb.DisableControls);
+  Log('========== finished EpgDb.DisableControls ');
   // Wrap in try-except-end because of Locate bug with filtered data
   try
     if EpgDb.Locate('id', EPG.Cells[3,ARow],[]) then
@@ -1188,6 +1190,7 @@ begin
       DetailsFrm.Border := fbSingle;
       // load file HTML template + controls
       TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load());
+      Log('========== finished DetailsFrm.Load() ');
       // init controls after loading
       DetailsFrm.mmTitle.Text := EpgDb.Fields[3].AsString;
       DetailsFrm.mmSubTitle.Text := EpgDb.Fields[4].AsString;
@@ -1209,9 +1212,11 @@ begin
       DetailsFrm.mmDescription.Text := EpgDb.Fields[5].AsString;
     // execute form and wait for close
       TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
+      Log('========== finished DetailsFrm.Execute ');
       if DetailsFrm.ModalResult = mrOk then
       begin
-        SchedFrm := TSchedForm.Create(Self);
+        SchedFrm := TSchedForm.Create(nil);
+        Log('========== finished TSchedForm.Create(nil)');
         SchedFrm.Caption := 'Schedule Capture Event';
         SchedFrm.Popup := True;
         SchedFrm.Border := fbSingle;
@@ -1219,6 +1224,7 @@ begin
         try
           // load file HTML template + controls
           TAwait.ExecP<TSchedForm>(SchedFrm.Load());
+          Log('========== finished SchedFrm.Load() ');
 
         // init controls after loading
           SchedFrm.mmTitle.Text := DetailsFrm.mmTitle.Text;
@@ -1237,6 +1243,7 @@ begin
           Log('Finished setting up new form');
           // execute form and wait for close
           TAwait.ExecP<TModalResult>(SchedFrm.Execute);
+          Log('========== finished SchedFrm.Execute ');
           if SchedFrm.ModalResult = mrOk then
           begin
             ShowPlsWait('Saving Capture Request.');
@@ -1250,6 +1257,7 @@ begin
       end;
     finally
       pnlWaitPls.Hide;
+      Log('Finished with Details form');
       DetailsFrm.Free;
       {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
     end;
