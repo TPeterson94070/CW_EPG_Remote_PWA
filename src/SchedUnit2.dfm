@@ -303,6 +303,7 @@ object SchedForm: TSchedForm
     Top = 364
     Width = 79
     Height = 24
+    ElementClassName = 'TIME_SIMPLE'
     BorderStyle = bsSingle
     ChildOrder = 10
     Color = clWhite
@@ -310,7 +311,7 @@ object SchedForm: TSchedForm
     Kind = dtkTime
     Role = ''
     ShowSeconds = False
-    Text = '16:00'
+    Text = '4:00 PM'
     Time = 0.666666666666666600
   end
   object tpEndTime: TWebDateTimePicker
@@ -318,6 +319,7 @@ object SchedForm: TSchedForm
     Top = 364
     Width = 79
     Height = 24
+    ElementClassName = 'TIME_SIMPLE'
     BorderStyle = bsSingle
     ChildOrder = 10
     Color = clWhite
