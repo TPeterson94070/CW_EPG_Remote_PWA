@@ -1174,9 +1174,11 @@ var
   x: TArray<string>;
 
 begin
+  Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
+  await(EPG.Refresh);
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   EPG.BeginUpdate;
 //  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   DetailsFrm := TDetailsFrm.Create(nil);
   Log('========== finished TDetailsFrm.Create(nil) ');
   // Speed up form opening
@@ -1214,6 +1216,7 @@ begin
       SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
       DetailsFrm.mmDescription.Text := EpgDb.Fields[5].AsString;
     // execute form and wait for close
+      Log('========== starting DetailsFrm.Execute ');
       TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
       Log('========== finished DetailsFrm.Execute ');
       if DetailsFrm.ModalResult = mrOk then
