@@ -50,7 +50,7 @@
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <TMSPWAManifestFile>Manifest.json</TMSPWAManifestFile>
-        <TMSVersion>1.0.3169</TMSVersion>
+        <TMSVersion>1.0.3180</TMSVersion>
         <TMSVersionAuto>2</TMSVersionAuto>
         <TMSWebHTMLFile>index.html</TMSWebHTMLFile>
         <TMSWebPWA>2</TMSWebPWA>
@@ -98,7 +98,7 @@
         <TMSPWAApplicationName>CW_Remote app</TMSPWAApplicationName>
         <TMSPWAApplicationShortName>CW_Remote</TMSPWAApplicationShortName>
         <TMSPWABackgroundColor>Coral</TMSPWABackgroundColor>
-        <TMSWebBrowser>8</TMSWebBrowser>
+        <TMSWebBrowser>5</TMSWebBrowser>
         <TMSWebPWAThemeColor>Coral</TMSWebPWAThemeColor>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">

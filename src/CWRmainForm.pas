@@ -85,11 +85,11 @@ type
   procedure UpdateHistory(Sender: TObject);
   [async]
   procedure ChangeTargetHTPC(Sender: TObject);
-  procedure ListingClick(Sender: TObject);
-  procedure HistoryClick(Sender: TObject);
-  procedure ScheduledClick(Sender: TObject);
-  procedure ViewLog1Click(Sender: TObject);
-  procedure Settings1Click(Sender: TObject);
+//  procedure ListingClick(Sender: TObject);
+  [async] procedure HistoryClick(Sender: TObject);
+  [async] procedure ScheduledClick(Sender: TObject);
+  [async] procedure ViewLog1Click(Sender: TObject);
+  [async] procedure Settings1Click(Sender: TObject);
   [async]
   procedure EPGClickCell(Sender: TObject; ACol, ARow: Integer);
   procedure HistoryTableGetCellClass(Sender: TObject; ACol, ARow: Integer;
@@ -115,7 +115,7 @@ private
   procedure LogDataRange;
   procedure ClearMenuChecks;
   procedure ReloadSG(SG: TWebStringGrid; LSName: string);  [async]
-  procedure SetPage(PageNum: Integer);
+  [async] procedure SetPage(PageNum: Integer);
   [async]
   procedure FetchCapReservations;
   [async]
@@ -311,7 +311,7 @@ end;
 procedure TCWRmainFrm.UpdateHistory(Sender: TObject);
 begin
   await(FetchHistory);
-  SetPage(2);
+  await(SetPage(2));
 end;
 
 procedure TCWRmainFrm.ChangeTargetHTPC(Sender: TObject);
@@ -343,7 +343,7 @@ begin
   ClearMenuChecks;
   ByAll.Checked := True;
   await(SetFilter(''));
-  SetPage(0);
+  await(SetPage(0));
 end;
 
 procedure TCWRmainFrm.ByChannelClick(Sender: TObject);
@@ -827,7 +827,7 @@ begin
   pnlFilterComboBox.Show;
   cb.Show;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  SetPage(0);
+  await(SetPage(0));
 end;
 
 procedure TCWRmainFrm.SetFilter(fltr: string);
@@ -883,7 +883,7 @@ end;
 
 procedure TCWRmainFrm.ScheduledClick(Sender: TObject);
 begin
-  SetPage(1);
+  await(SetPage(1));
 end;
 
 
@@ -1043,7 +1043,7 @@ end;
 
 procedure TCWRmainFrm.HistoryClick(Sender: TObject);
 begin
-  SetPage(2);
+  await(SetPage(2));
 end;
 
 procedure TCWRmainFrm.HistoryTableFixedCellClick(Sender: TObject; ACol,
@@ -1132,7 +1132,7 @@ end;
 
 procedure TCWRmainFrm.Settings1Click(Sender: TObject);
 begin
-  SetPage(4);
+  await(SetPage(4));
 end;
 
 procedure SetLabelStyle(lbl: TWebLabel; State: Boolean);
@@ -1152,10 +1152,10 @@ begin
   end;
 end;
 
-procedure TCWRmainFrm.ListingClick(Sender: TObject);
-begin
-  SetPage(0);
-end;
+//procedure TCWRmainFrm.ListingClick(Sender: TObject);
+//begin
+//  SetPage(0);
+//end;
 
 procedure TCWRmainFrm.EPGGetCellClass(Sender: TObject; ACol,
   ARow: Integer; AField: TField; AValue: string; var AClassName: string);
@@ -1175,11 +1175,11 @@ var
 
 begin
   EPG.BeginUpdate;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   DetailsFrm := TDetailsFrm.Create(Self);
   // Speed up form opening
-  EpgDb.DisableControls;
+  await(EpgDb.DisableControls);
   // Wrap in try-except-end because of Locate bug with filtered data
   try
     if EpgDb.Locate('id', EPG.Cells[3,ARow],[]) then
@@ -1413,7 +1413,7 @@ end;
 
 procedure TCWRmainFrm.ViewLog1Click(Sender: TObject);
 begin
-  SetPage(3);
+  await(SetPage(3));
 end;
 
 procedure TCWRmainFrm.CreateGoogleFile(FName: string; var id: string);
