@@ -303,7 +303,6 @@ object SchedForm: TSchedForm
     Top = 364
     Width = 79
     Height = 24
-    ElementClassName = 'TIME_SIMPLE'
     BorderStyle = bsSingle
     ChildOrder = 10
     Color = clWhite
@@ -319,7 +318,6 @@ object SchedForm: TSchedForm
     Top = 364
     Width = 79
     Height = 24
-    ElementClassName = 'TIME_SIMPLE'
     BorderStyle = bsSingle
     ChildOrder = 10
     Color = clWhite
