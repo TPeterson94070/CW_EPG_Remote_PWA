@@ -112,7 +112,7 @@ type
     procedure btnOptOKClick(Sender: TObject);
 private
   { Private declarations }
-  procedure LogDataRangeAndCopyData;
+  [async] procedure LogDataRangeAndCopyData;
   procedure ClearMenuChecks;
   procedure ReloadSG(SG: TWebStringGrid; LSName: string);  [async]
   [async] procedure SetPage(PageNum: Integer);
@@ -591,7 +591,7 @@ begin
     Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
     WIDBCDS.Close;  // This seems necessary to finish update    250313 TMP -- still true on Android
     TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
-    LogDataRangeAndCopyData;
+    await(LogDataRangeAndCopyData);
 //    TOpen(WIDBCDS).NestedDataSetClass := TBaseJSONDataSet;
 //    CurrEpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
     Log('========= Finished LoadWIDBCDS');
@@ -704,7 +704,7 @@ begin
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active, 'not ')
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   Log('SetupWIDBCDS: WIDBCDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
-  LogDataRangeAndCopyData;
+  await(LogDataRangeAndCopyData);
   if Now > LastStartDate then
     TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'#13'Please make sure that the HTPC'
       + #13' is connected to Google Drive',mtInformation, [mbOK]))
@@ -1194,7 +1194,7 @@ var
 
 begin
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
-  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}  // Wait for cursor move?
+//  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}  // Wait for cursor move?
   EPG.BeginUpdate;
 //  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   DetailsFrm := TDetailsFrm.Create(nil);
