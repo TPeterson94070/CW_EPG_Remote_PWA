@@ -112,7 +112,7 @@ type
     procedure btnOptOKClick(Sender: TObject);
 private
   { Private declarations }
-  procedure LogDataRange;
+  procedure LogDataRangeAndCopyData;
   procedure ClearMenuChecks;
   procedure ReloadSG(SG: TWebStringGrid; LSName: string);  [async]
   [async] procedure SetPage(PageNum: Integer);
@@ -591,9 +591,9 @@ begin
     Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
     WIDBCDS.Close;  // This seems necessary to finish update    250313 TMP -- still true on Android
     TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
-    LogDataRange;
-    TOpen(WIDBCDS).NestedDataSetClass := TBaseJSONDataSet;
-    CurrEpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
+    LogDataRangeAndCopyData;
+//    TOpen(WIDBCDS).NestedDataSetClass := TBaseJSONDataSet;
+//    CurrEpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
     Log('========= Finished LoadWIDBCDS');
     pnlWaitPls.Hide;
     {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
@@ -646,15 +646,33 @@ begin
     if ACol in [1,2] then AValue := FormatDateTime('mm/dd HH:nn', StrToDateTime(AValue));
 end;
 
-procedure TCWRmainFrm.LogDataRange;
+procedure TCWRmainFrm.LogDataRangeAndCopyData;
+var
+  i: Integer;
 begin
+  WIDBCDS.DisableControls;
+  CurrEpgDb.Close;
+  CurrEpgDb.DisableControls;
+  CurrEpgDb.FieldDefs := WIDBCDS.FieldDefs;
+  CurrEpgDb.Open;
   WIDBCDS.First;
   FirstEndDate := WIDBCDS.FieldByName('EndTime').AsDateTime;
   Log('FirstEndDate (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(FirstEndDate));
-  WIDBCDS.Last;
+  while not WIDBCDS.Eof do
+  begin
+    CurrEpgDb.Append;
+    for i := 0 to Pred(WIDBCDS.FieldCount) do
+      CurrEpgDb.Fields[i] := WIDBCDS.Fields[i];
+    CurrEpgDb.Post;
+    WIDBCDS.Next;
+  end;
+  CurrEpgDb.EnableControls;
+//  WIDBCDS.Last;
   LastStartDate := WIDBCDS.FieldByName('StartTime').AsDateTime;
   Log('LastStartDate (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(LastStartDate));
   Log('LastStartDate - Now: ' + Double(LastStartDate - Now).ToString);
+  Log('CurrEpgDb.RecordCount:  ' + CurrEpgDb.RecordCount.ToString);
+  WIDBCDS.EnableControls;
 end;
 
 procedure TCWRmainFrm.SetupWIDBCDS;
@@ -686,7 +704,7 @@ begin
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active, 'not ')
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   Log('SetupWIDBCDS: WIDBCDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
-  LogDataRange;
+  LogDataRangeAndCopyData;
   if Now > LastStartDate then
     TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'#13'Please make sure that the HTPC'
       + #13' is connected to Google Drive',mtInformation, [mbOK]))
@@ -694,8 +712,8 @@ begin
     TAwait.ExecP<TModalResult> (MessageDlgAsync('The current dataset was fetched over 3 days ago'
       + #13'and there are only about ' + Round(LastStartDate - Now).ToString + ' days now available.'
       + #13#13'To update, please use Options | Refresh Data',mtInformation, [mbOK]));
-  TOpen(WIDBCDS).NestedDataSetClass := TBaseJSONDataSet;
-  CurrEpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
+//  TOpen(WIDBCDS).NestedDataSetClass := TBaseJSONDataSet;
+//  CurrEpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
 
   Log('========== SetupWIDBCDS finished');
 end;
@@ -724,8 +742,8 @@ begin
     EpgDb.EmptyDataSet;
   EpgDb.FieldDefs := CurrEpgDb.FieldDefs;
   EpgDb.Active := True;
-  CurrEpgDb.Open; // Active := True;
-//  CurrEpgDb.First;
+//  CurrEpgDb.Open; // Active := True;
+  CurrEpgDb.First;
   while not CurrEpgDb.Eof do
   begin
     if (CurrEpgDb.Fields[7].AsDateTime >= FirstEndTime) and
@@ -840,7 +858,7 @@ begin
   EpgDb.Filtered := False;
   Log('EpgDb.Filter: ' + fltr);
   EpgDb.Filter := fltr;
-  {if fltr > '' then} EpgDb.Filtered := True;
+  if fltr > '' then EpgDb.Filtered := True;
   EpgDb.EnableControls;
   EPG.EndUpdate;
   await(EPG.Refresh);
@@ -1178,7 +1196,7 @@ begin
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}  // Wait for cursor move?
   EPG.BeginUpdate;
-  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+//  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   DetailsFrm := TDetailsFrm.Create(nil);
   Log('========== finished TDetailsFrm.Create(nil) ');
   // Speed up form opening
