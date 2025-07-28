@@ -140,7 +140,7 @@ private
   [async] procedure SetupEpgDb;
   [async] procedure SetupFilterList(cb: TWebComboBox; fn: string);
   [async] procedure SetFilter(fltr: string);
-  procedure ShowPlsWait(PlsWaitCap: string);
+  [async] procedure ShowPlsWait(PlsWaitCap: string);
 public
   { Public declarations }
 end;
@@ -876,7 +876,7 @@ begin
     WebLabel1.Caption := PlsWaitCap;
     pnlWaitPls.BringToFront;
     pnlWaitPls.Show;
-//    {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+    {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   end
   else Log('####### ' + PlsWaitCap);   // Just make log entry
 end;
@@ -1195,8 +1195,9 @@ var
 begin
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
 //  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}  // Wait for cursor move?
+  await(EPG.Refresh);
   EPG.BeginUpdate;
-//  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   DetailsFrm := TDetailsFrm.Create(nil);
   Log('========== finished TDetailsFrm.Create(nil) ');
   // Speed up form opening
