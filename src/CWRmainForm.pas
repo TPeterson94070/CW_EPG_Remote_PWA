@@ -343,7 +343,7 @@ begin
   ClearMenuChecks;
   ByAll.Checked := True;
   await(SetFilter(''));
-  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+//  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   await(SetPage(0));
 end;
 
@@ -834,19 +834,19 @@ end;
 procedure TCWRmainFrm.SetFilter(fltr: string);
 begin
   ShowPlsWait('Preparing ' + IfThen(fltr='','Un') + 'Filtered List');
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   EPG.BeginUpdate;
   EpgDb.DisableControls;
   EpgDb.Filtered := False;
   Log('EpgDb.Filter: ' + fltr);
   EpgDb.Filter := fltr;
-  if fltr > '' then EpgDb.Filtered := True;
+  {if fltr > '' then} EpgDb.Filtered := True;
   EpgDb.EnableControls;
   EPG.EndUpdate;
-  EPG.Refresh;
+  await(EPG.Refresh);
   EpgDb.First;
   pnlWaitPls.Hide;
-//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   // cannot position selection visibly?
 //  EpgDb.selectedrows
 end;
