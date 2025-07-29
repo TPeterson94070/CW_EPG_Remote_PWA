@@ -1124,18 +1124,22 @@ begin
   case PageNum of
     0: begin          {Listings page}
       pnlListings.BringToFront;
-      EPG.Show;
+      pnlListings.Show;
+//      EPG.Show;
     end;
     1: begin          {Captures}
       pnlCaptures.BringToFront;
+      pnlCaptures.Show;
       tbCapturesShow;
     end;
     2: begin {History}
       pnlHistory.BringToFront;
+      pnlHistory.Show;
       tbHistoryShow;
     end;
     3: begin  {Log}
       pnlLog.BringToFront;
+      pnlLog.Show;
     end;
     4: begin {Options}
       // Reset Comboboxes in case Save Settings skipped
@@ -1144,6 +1148,7 @@ begin
       if TWebLocalStorage.GetValue(NUMHIST) <> '' then
         cbNumHistList.ItemIndex := cbNumHistList.Items.IndexOf(TWebLocalStorage.GetValue(NUMHIST));
       pnlOptions.BringToFront;
+      pnlOptions.Show;
     end;
   end;
   VisiblePanelNum := PageNum;
