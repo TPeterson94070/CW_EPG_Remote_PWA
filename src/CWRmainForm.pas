@@ -516,16 +516,6 @@ begin
             TLocalStorage.RemoveKey(TableFile);
             TLocalStorage.SetValue(TableFile,Reply);
           end;
-//          sl := TStringList.Create;
-//          Reply := ReplaceStr(Reply, #10, ''); // dump linefeeds
-//          Reply := ReplaceStr(Reply, #160, ''); // dump &nbsp too
-//          ReplyArray := Reply.Split([#13],TStringSplitOptions.ExcludeEmpty);
-//          Log('Begin extract ' + IntToStr(Length(ReplyArray)) + ' strings');
-//          for Line in ReplyArray do sl.Add(Line);
-//          WSG.LoadFromStrings(sl, ',', True);
-//          Log(WSG.Name+'.RowCount: ' + WSG.RowCount.ToString);
-//          Log('Done loading '+WSG.Name);
-//          sl.Free; // := nil;
           FillTable(WSG, Reply);
         end
         else WSG.RowCount := 0;
@@ -710,6 +700,7 @@ begin
       end;
     end;
   end;
+//  EpgDb.FieldDefs := CurrEpgDb.FieldDefs;
   TAwait.ExecP<Boolean>(CurrEpgDb.OpenAsync);
   Log('CurrEpgDb is ' + IfThen(not CurrEpgDb.Active, 'not ')
     + 'Active and ' + IfThen(not CurrEpgDb.IsEmpty, 'not ') + 'Empty');
@@ -746,9 +737,9 @@ begin
   CurrEpgDb.DisableControls;
   EpgDb.DisableControls;
   EpgDb.Filtered := False;
-  EpgDb.Close;
   EpgDb.FieldDefs := CurrEpgDb.FieldDefs;
   EpgDb.Active := True;
+  EpgDb.EmptyDataSet;
   CurrEpgDb.First;
   while not CurrEpgDb.Eof do
   begin

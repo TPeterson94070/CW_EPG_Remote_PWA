@@ -18789,7 +18789,7 @@ rtl.module("DateUtils",["System","SysUtils","Math","dateutils.helper"],function 
 rtl.module("DBConst",["System"],function () {
   "use strict";
   var $mod = this;
-  $mod.$resourcestrings = {SActiveDataset: {org: "Operation cannot be performed on an active dataset"}, SDatasetReadOnly: {org: "Dataset is read-only."}, SDuplicateFieldName: {org: 'Duplicate fieldname : "%s"'}, SFieldNotFound: {org: 'Field not found : "%s"'}, SInactiveDataset: {org: "Operation cannot be performed on an inactive dataset"}, SInvalidDisplayValues: {org: '"%s" are not valid boolean displayvalues'}, SInvalidFieldSize: {org: "Invalid field size : %d"}, SInvalidTypeConversion: {org: "Invalid type conversion to %s in field %s"}, SNeedField: {org: "Field %s is required, but not supplied."}, SNeedFieldName: {org: "Field needs a name"}, SNoDataset: {org: 'No dataset asssigned for field : "%s"'}, SNoSuchRecord: {org: "Could not find the requested record."}, SNotABoolean: {org: '"%s" is not a valid boolean'}, SNotAFloat: {org: '"%s" is not a valid float'}, SNotAninteger: {org: '"%s" is not a valid integer'}, SNotEditing: {org: 'Operation not allowed, dataset "%s" is not in an edit or insert state.'}, SRangeError: {org: "%f is not between %f and %f for %s"}, SUniDirectional: {org: "Operation cannot be performed on an unidirectional dataset"}, SUnknownFieldType: {org: "Unknown field type : %s"}, SUnknownParamFieldType: {org: 'Unknown fieldtype for parameter "%s".'}, SIndexNotFound: {org: "Index '%s' not found"}, SFieldValueError: {org: "Invalid value for field '%s'"}, SDuplicateName: {org: "Duplicate name '%s' in %s"}, SLookupInfoError: {org: "Lookup information for field '%s' is incomplete"}, SErrInvalidDateTime: {org: 'Invalid date/time value : "%s"'}, SatEOFInternalOnly: {org: "loAtEOF is for internal use only."}, SErrInsertingSameRecordtwice: {org: "Attempt to insert the same record twice."}, SNestedDataSetClass: {org: "Nested dataset must inherit from %s"}, SCircularDataLink: {org: "Circular datalinks are not allowed"}};
+  $mod.$resourcestrings = {SActiveDataset: {org: "Operation cannot be performed on an active dataset"}, SDatasetReadOnly: {org: "Dataset is read-only."}, SDuplicateFieldName: {org: 'Duplicate fieldname : "%s"'}, SFieldNotFound: {org: 'Field not found : "%s"'}, SInactiveDataset: {org: "Operation cannot be performed on an inactive dataset"}, SInvalidDisplayValues: {org: '"%s" are not valid boolean displayvalues'}, SInvalidFieldSize: {org: "Invalid field size : %d"}, SInvalidTypeConversion: {org: "Invalid type conversion to %s in field %s"}, SNeedField: {org: "Field %s is required, but not supplied."}, SNeedFieldName: {org: "Field needs a name"}, SNoDataset: {org: 'No dataset asssigned for field : "%s"'}, SNoSuchRecord: {org: "Could not find the requested record."}, SNotABoolean: {org: '"%s" is not a valid boolean'}, SNotAFloat: {org: '"%s" is not a valid float'}, SNotAninteger: {org: '"%s" is not a valid integer'}, SNotEditing: {org: 'Operation not allowed, dataset "%s" is not in an edit or insert state.'}, SRangeError: {org: "%f is not between %f and %f for %s"}, SUniDirectional: {org: "Operation cannot be performed on an unidirectional dataset"}, SUnknownFieldType: {org: "Unknown field type : %s"}, SUnknownParamFieldType: {org: 'Unknown fieldtype for parameter "%s".'}, SIndexNotFound: {org: "Index '%s' not found"}, SFieldValueError: {org: "Invalid value for field '%s'"}, SDuplicateName: {org: "Duplicate name '%s' in %s"}, SLookupInfoError: {org: "Lookup information for field '%s' is incomplete"}, SDatasetEmpty: {org: "The dataset is empty"}, SErrInvalidDateTime: {org: 'Invalid date/time value : "%s"'}, SatEOFInternalOnly: {org: "loAtEOF is for internal use only."}, SErrInsertingSameRecordtwice: {org: "Attempt to insert the same record twice."}, SNestedDataSetClass: {org: "Nested dataset must inherit from %s"}, SCircularDataLink: {org: "Circular datalinks are not allowed"}};
 });
 rtl.module("DB",["System","Classes","SysUtils","JS","Types","DateUtils"],function () {
   "use strict";
@@ -21469,6 +21469,9 @@ rtl.module("DB",["System","Classes","SysUtils","JS","Types","DateUtils"],functio
       };
       return Result;
     };
+    this.RemoveFromChangeList = function (R) {
+      if (!((R != null) && (this.FChangeList != null))) return;
+    };
     this.RecalcBufListSize = function () {
       var i = 0;
       var j = 0;
@@ -21647,6 +21650,9 @@ rtl.module("DB",["System","Classes","SysUtils","JS","Types","DateUtils"],functio
     this.DoAfterClose = function () {
       if ((this.FAfterClose != null) && !(3 in this.FComponentState)) this.FAfterClose(this);
     };
+    this.DoAfterDelete = function () {
+      if (this.FAfterDelete != null) this.FAfterDelete(this);
+    };
     this.DoAfterEdit = function () {
       if (this.FAfterEdit != null) this.FAfterEdit(this);
     };
@@ -21667,6 +21673,9 @@ rtl.module("DB",["System","Classes","SysUtils","JS","Types","DateUtils"],functio
     };
     this.DoBeforeClose = function () {
       if ((this.FBeforeClose != null) && !(3 in this.FComponentState)) this.FBeforeClose(this);
+    };
+    this.DoBeforeDelete = function () {
+      if (this.FBeforeDelete != null) this.FBeforeDelete(this);
     };
     this.DoBeforeEdit = function () {
       if (this.FBeforeEdit != null) this.FBeforeEdit(this);
@@ -21969,6 +21978,8 @@ rtl.module("DB",["System","Classes","SysUtils","JS","Types","DateUtils"],functio
       Result = null;
       return Result;
     };
+    this.InternalDelete = function () {
+    };
     this.InternalFirst = function () {
     };
     this.InternalGotoBookmark = function (ABookmark) {
@@ -22229,6 +22240,28 @@ rtl.module("DB",["System","Classes","SysUtils","JS","Types","DateUtils"],functio
     };
     this.CursorPosChanged = function () {
       this.FCurrentRecord = -1;
+    };
+    this.Delete = function () {
+      var R = null;
+      if (!this.GetCanModify()) $mod.DatabaseError$1(rtl.getResStr(pas.DBConst,"SDatasetReadOnly"),this);
+      if (this.IsEmpty()) $mod.DatabaseError$1(rtl.getResStr(pas.DBConst,"SDatasetEmpty"),this);
+      if (this.FState in rtl.createSet(3)) {
+        this.Cancel();
+      } else {
+        this.DataEvent(7,0);
+        this.DoBeforeDelete();
+        this.DoBeforeScroll();
+        R = this.AddToChangeList(2);
+        if (!this.TryDoing(rtl.createCallback(this,"InternalDelete"),this.FOnDeleteError)) {
+          if (R != null) this.RemoveFromChangeList(R);
+          return;
+        };
+        this.SetState(1);
+        this.SetCurrentRecord(this.FActiveRecord);
+        this.Resync({});
+        this.DoAfterDelete();
+        this.DoAfterScroll();
+      };
     };
     this.DisableControls = function () {
       if (this.FDisableControlsCount === 0) {
@@ -26134,9 +26167,29 @@ rtl.module("JSONDataset",["System","Types","JS","DB","Classes","SysUtils","TypIn
       this.CreateIndex();
       return this;
     };
+    this.Delete = function (aListIndex) {
+      var Result = 0;
+      var a = null;
+      a = this.FList.splice(aListIndex,1);
+      if (a.length > 0) {
+        Result = rtl.trunc(a[0])}
+       else Result = -1;
+      return Result;
+    };
+    this.DeleteByRowIndex = function (aRowIndex) {
+      var Result = 0;
+      Result = this.IndexOfRow(aRowIndex);
+      if (Result !== -1) this.FList.splice(Result,1);
+      return Result;
+    };
     this.Insert = function (aCurrentIndex, aRecordIndex) {
       var Result = 0;
       Result = this.Append(aRecordIndex);
+      return Result;
+    };
+    this.IndexOfRow = function (aRowIndex) {
+      var Result = 0;
+      Result = this.FList.indexOf(aRowIndex);
       return Result;
     };
   });
@@ -26605,6 +26658,23 @@ rtl.module("JSONDataset",["System","Types","JS","DB","Classes","SysUtils","TypIn
       this.BindFields(false);
       if (this.FDefaultFields) this.DestroyFields();
       this.FreeData();
+    };
+    this.InternalDelete = function () {
+      var I = 0;
+      var RowIdx = 0;
+      var aIndex = null;
+      RowIdx = this.FCurrentIndex.Delete(this.FCurrent);
+      if (RowIdx !== -1) {
+        for (var $l = 0, $end = this.FIndexes.GetCount() - 1; $l <= $end; $l++) {
+          I = $l;
+          aIndex = this.FIndexes.GetD(I).FIndex;
+          if (aIndex !== this.FCurrentIndex) aIndex.DeleteByRowIndex(RowIdx);
+        };
+        if (!(this.FDeletedRows != null)) {
+          this.FDeletedRows = new Array(this.FRows[RowIdx])}
+         else this.FDeletedRows.push(this.FRows[RowIdx]);
+        this.FRows[RowIdx] = undefined;
+      };
     };
     this.InternalFirst = function () {
       this.FCurrent = -1;
@@ -37239,6 +37309,7 @@ rtl.module("WEBLib.CDS",["System","Classes","DB","JSONDataset","Web","JS","WEBLi
       this.FOpenResolver = null;
       this.FPostResolver = null;
       this.FInsertResolver = null;
+      this.FDeleteResolver = null;
     };
     this.$final = function () {
       this.FConnection = undefined;
@@ -37247,6 +37318,7 @@ rtl.module("WEBLib.CDS",["System","Classes","DB","JSONDataset","Web","JS","WEBLi
       this.FOpenResolver = undefined;
       this.FPostResolver = undefined;
       this.FInsertResolver = undefined;
+      this.FDeleteResolver = undefined;
       pas.JSONDataset.TBaseJSONDataSet.$final.call(this);
     };
     this.SetParams = function (Value) {
@@ -37414,6 +37486,9 @@ rtl.module("WEBLib.CDS",["System","Classes","DB","JSONDataset","Web","JS","WEBLi
     this.DoInsertResolve = function (AResult) {
       if (this.FInsertResolver != null) this.FInsertResolver(AResult);
     };
+    this.DoDeleteResolve = function (AResult) {
+      if (this.FDeleteResolver != null) this.FDeleteResolver(AResult);
+    };
     this.MetaDataToFieldDefs = function () {
       var A = null;
       var F = null;
@@ -37524,6 +37599,10 @@ rtl.module("WEBLib.CDS",["System","Classes","DB","JSONDataset","Web","JS","WEBLi
       pas.DB.TDataSet.DoAfterInsert.call(this);
       this.DoInsertResolve(true);
     };
+    this.DoAfterDelete = function () {
+      pas.DB.TDataSet.DoAfterDelete.call(this);
+      this.DoDeleteResolve(true);
+    };
     this.DoGetDataProxy = function () {
       var Result = null;
       if (this.FConnection != null) {
@@ -37615,6 +37694,10 @@ rtl.module("WEBLib.CDS",["System","Classes","DB","JSONDataset","Web","JS","WEBLi
           Proc(this.FFieldList.GetField(i));
         };
       };
+    };
+    this.EmptyDataSet = function () {
+      this.First();
+      while (!this.GetEOF()) this.Delete();
     };
     rtl.addIntf(this,pas.System.IUnknown);
     var $r = this.$rtti;
@@ -39876,9 +39959,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.CurrEpgDb.DisableControls();
       this.EpgDb.DisableControls();
       this.EpgDb.SetFiltered(false);
-      this.EpgDb.Close();
       this.EpgDb.SetFieldDefs(this.CurrEpgDb.FFieldDefs);
       this.EpgDb.SetActive(true);
+      this.EpgDb.EmptyDataSet();
       this.CurrEpgDb.First();
       while (!this.CurrEpgDb.GetEOF()) {
         if ((this.CurrEpgDb.FFieldList.GetField(7).GetAsDateTime() >= FirstEndTime) && (this.CurrEpgDb.FFieldList.GetField(6).GetAsDateTime() <= LastStartTime)) {
