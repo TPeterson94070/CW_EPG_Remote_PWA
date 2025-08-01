@@ -340,7 +340,7 @@ begin
   ClearMenuChecks;
   ByAll.Checked := True;
   VisiblePanelNum := 0;
-  if EpgDb.Filtered then
+  if EpgDb.Filter > '' then
     await(SetFilter(''));
   await(SetPage(0));
 end;
@@ -617,8 +617,6 @@ begin
     Log('CurrEpgDb Controls are ' + IfThen(CurrEpgDb.ControlsDisabled,'NOT ') + 'Enabled');
     Log('CurrEpgDb is ' + IfThen(not CurrEpgDb.Active,'NOT ') + 'Open');
     Log('CurrEpgDb RecordCount: ' + CurrEpgDb.RecordCount.ToString);
-//    CurrEpgDb.Close;  // This seems necessary to finish update    250313 TMP -- still true on Android
-//    TAwait.ExecP<Boolean>(CurrEpgDb.OpenAsync);
     await(LogDataRange);
     Log('========= Finished LoadCurrEpgDb');
     pnlWaitPls.Hide;
@@ -717,8 +715,8 @@ begin
     + 'Active and ' + IfThen(not CurrEpgDb.IsEmpty, 'not ') + 'Empty');
   Log('SetupCurrEpgDb: CurrEpgDb.RecordCount: ' + CurrEpgDb.RecordCount.ToString);
   await(LoadCurrEpgDb);
-  await(LogDataRange);
-  if Now > LastStartDate then
+//  await(LogDataRange);     // Done in Load
+  if TTimeZone.Local.ToUniversalTime(Now) > LastStartDate then
     TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'#13'Please make sure that the HTPC'
       + #13' is connected to Google Drive',mtInformation, [mbOK]))
   else if Now - FirstEndDate > 3 then
@@ -744,12 +742,11 @@ begin
   ShowPlsWait('Resetting EpgDB.');
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
-  LastStartTime := TTimeZone.Local.ToUniversalTime(Now) + StrToInt(cbNumDisplayDays.Text);
+  LastStartTime := FirstEndTime + StrToInt(cbNumDisplayDays.Text);
   CurrEpgDb.DisableControls;
   EpgDb.DisableControls;
   EpgDb.Filtered := False;
-  if EpgDb.RecordCount > 0 then
-    EpgDb.EmptyDataSet;
+  EpgDb.Close;
   EpgDb.FieldDefs := CurrEpgDb.FieldDefs;
   EpgDb.Active := True;
   CurrEpgDb.First;
@@ -765,6 +762,8 @@ begin
     end;
     CurrEpgDb.Next;
   end;
+  EpgDb.Filter := '';
+  EpgDb.Filtered := True;
   EpgDb.EnableControls;
   CurrEpgDb.EnableControls;
   Log('SetupEpgDb: EpgDb post-filter record count: ' + EpgDb.RecordCount.ToString);
@@ -850,7 +849,7 @@ begin
   EpgDb.Filtered := False;
   Log('EpgDb.Filter: ' + fltr);
   EpgDb.Filter := fltr;
-  if fltr > '' then EpgDb.Filtered := True;
+  {if fltr > '' then} EpgDb.Filtered := True;
   EpgDb.EnableControls;
   EPG.EndUpdate;
   await(EPG.Refresh);
