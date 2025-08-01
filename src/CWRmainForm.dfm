@@ -60,6 +60,7 @@ object CWRmainFrm: TCWRmainFrm
     Font.Name = 'Arial'
     Font.Style = []
     ParentFont = False
+    ShowCaption = False
     TabOrder = 6
   end
   object pnlLog: TWebPanel
@@ -71,6 +72,7 @@ object CWRmainFrm: TCWRmainFrm
     HeightStyle = ssPercent
     WidthStyle = ssPercent
     Align = alClient
+    Caption = 'pnlLog'
     ChildOrder = 9
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
@@ -117,6 +119,7 @@ object CWRmainFrm: TCWRmainFrm
     HeightStyle = ssPercent
     WidthStyle = ssPercent
     Align = alClient
+    Caption = 'pnlWaitPls'
     ChildOrder = 10
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
@@ -126,6 +129,7 @@ object CWRmainFrm: TCWRmainFrm
     Font.Name = 'Arial'
     Font.Style = []
     ParentFont = False
+    ShowCaption = False
     TabOrder = 3
     object WebGridPanel1: TWebGridPanel
       Left = 0
@@ -255,6 +259,7 @@ object CWRmainFrm: TCWRmainFrm
     HeightStyle = ssPercent
     WidthStyle = ssPercent
     Align = alClient
+    Caption = 'pnlHistory'
     ChildOrder = 11
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
@@ -310,6 +315,7 @@ object CWRmainFrm: TCWRmainFrm
     HeightStyle = ssPercent
     WidthStyle = ssPercent
     Align = alClient
+    Caption = 'pnlCaptures'
     ChildOrder = 9
     Color = clGray
     ElementBodyClassName = 'card-body'
@@ -477,6 +483,7 @@ object CWRmainFrm: TCWRmainFrm
     HeightStyle = ssPercent
     WidthStyle = ssPercent
     Align = alClient
+    Caption = 'pnlOptions'
     ChildOrder = 9
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
@@ -915,15 +922,6 @@ object CWRmainFrm: TCWRmainFrm
         OnClick = Settings1Click
       end
     end
-  end
-  object WIDBCDS: TWebIndexedDbClientDataset
-    IDBDatabaseName = 'CWRDB-Manual-id'
-    IDBObjectStoreName = 'epg'
-    IDBKeyFieldName = 'id'
-    IDBAutoIncrement = False
-    Params = <>
-    Left = 296
-    Top = 152
   end
   object WebRESTClient1: TWebRESTClient
     LoginHeight = 480

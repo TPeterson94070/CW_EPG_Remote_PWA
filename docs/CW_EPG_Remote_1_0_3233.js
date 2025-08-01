@@ -2024,13 +2024,6 @@ rtl.module("JS",["System","Types"],function () {
   this.toNumber = function (v) {
     return v-0;
   };
-  this.toArray = function (Value) {
-    var Result = null;
-    if (rtl.isArray(Value)) {
-      Result = Value}
-     else Result = null;
-    return Result;
-  };
   this.toBoolean = function (Value) {
     var Result = false;
     if ($mod.isBoolean(Value)) {
@@ -26485,12 +26478,6 @@ rtl.module("JSONDataset",["System","Types","JS","DB","Classes","SysUtils","TypIn
       this.CheckInactive();
       this.FMetaData = AValue;
     };
-    this.SetRows = function (AValue) {
-      if (AValue === this.FRows) return;
-      this.CheckInactive();
-      this.FRows = null;
-      this.AddToRows(AValue);
-    };
     this.RemoveCalcFields = function (Buf) {
       var i = 0;
       for (var $l = 0, $end = this.FFieldList.GetCount() - 1; $l <= $end; $l++) {
@@ -31744,1794 +31731,6 @@ rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Cont
     $r.addProperty("OnTouchCancel",0,pas["WEBLib.Controls"].$rtti["TTouchEvent"],"FOnTouchCancel","FOnTouchCancel");
   });
 },["WEBLib.Utils","Math"]);
-rtl.module("WEBLib.CDS",["System","Classes","DB","JSONDataset","Web","JS","WEBLib.Controls","WEBLib.REST"],function () {
-  "use strict";
-  var $mod = this;
-  var $impl = $mod.$impl;
-  this.$rtti.$MethodVar("TConnectErrorEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["ErrorCode",rtl.longint]]), methodkind: 0});
-  this.TURLType = {"0": "utGet", utGet: 0, "1": "utPost", utPost: 1, "2": "utPut", utPut: 2, "3": "utDelete", utDelete: 3};
-  this.$rtti.$Enum("TURLType",{minvalue: 0, maxvalue: 3, ordtype: 1, enumtype: this.TURLType});
-  this.$rtti.$MethodVar("TClientConnectionGetURLEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["Dataset",pas.DB.$rtti["TDataSet"]],["urlType",this.$rtti["TURLType"]],["URL",rtl.string,1]]), methodkind: 0});
-  this.$rtti.$MethodVar("TGetUpdatePayloadEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["Dataset",pas.DB.$rtti["TDataSet"]],["urlType",this.$rtti["TURLType"]],["Data",rtl.jsvalue],["aPayLoad",rtl.string,4]]), methodkind: 0});
-  this.$rtti.$MethodVar("TGetDataPayloadEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["Dataset",pas.DB.$rtti["TDataSet"]],["urlType",this.$rtti["TURLType"]],["aPayLoad",rtl.jsvalue,1]]), methodkind: 0});
-  this.$rtti.$MethodVar("TProcessMetaDataEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["Dataset",pas.DB.$rtti["TDataSet"]],["FieldDefs",pas.DB.$rtti["TFieldDefs"]],["aMetaData",pas.JS.$rtti["TJSObject"]]]), methodkind: 0});
-  this.$rtti.$MethodVar("TDataReceivedEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["ARequest",pas["WEBLib.Controls"].$rtti["TJSXMLHttpRequestRecord"]],["AResponse",rtl.string,1]]), methodkind: 0});
-  rtl.createClass(this,"TClientConnection",pas.Classes.TComponent,function () {
-    this.$init = function () {
-      pas.Classes.TComponent.$init.call(this);
-      this.FDataProxy = null;
-      this.FActive = false;
-      this.FURI = "";
-      this.FDS = null;
-      this.FDataNode = "";
-      this.FAutoOpen = false;
-      this.FUpdateCount = 0;
-      this.FOnConnectError = null;
-      this.FBeforeConnect = null;
-      this.FAfterConnect = null;
-      this.FHeaders = null;
-      this.FPassword = "";
-      this.FUser = "";
-      this.FOnGetURL = null;
-      this.FPageParam = "";
-      this.FOnGetUpdatePayLoad = null;
-      this.FAppendKeyToURL = false;
-      this.FOnGetDataPayLoad = null;
-      this.FMetaDataNode = "";
-      this.FOnProcessMetaData = null;
-      this.FOnDataReceived = null;
-      this.FXHR = null;
-      this.FCommand = 0;
-      this.FCustomCommand = "";
-      this.FPostData = "";
-      this.FDelimiter = "\x00";
-      this.FSkipFirstCSVLine = false;
-      this.FOpenResolver = null;
-    };
-    this.$final = function () {
-      this.FDataProxy = undefined;
-      this.FDS = undefined;
-      this.FOnConnectError = undefined;
-      this.FBeforeConnect = undefined;
-      this.FAfterConnect = undefined;
-      this.FHeaders = undefined;
-      this.FOnGetURL = undefined;
-      this.FOnGetUpdatePayLoad = undefined;
-      this.FOnGetDataPayLoad = undefined;
-      this.FOnProcessMetaData = undefined;
-      this.FOnDataReceived = undefined;
-      this.FXHR = undefined;
-      this.FOpenResolver = undefined;
-      pas.Classes.TComponent.$final.call(this);
-    };
-    this.SetHeaders = function (Value) {
-      this.FHeaders.Assign(Value);
-    };
-    this.GetPageURL = function (aRequest) {
-      var Result = "";
-      var URL = "";
-      URL = this.GetReadBaseURL(aRequest);
-      if (this.FPageParam !== "") {
-        if (pas.System.Pos("?",URL) !== 0) {
-          URL = URL + "&"}
-         else URL = URL + "?";
-        URL = URL + this.FPageParam + "=" + pas.SysUtils.IntToStr(aRequest.FRequestID - 1);
-      };
-      Result = URL;
-      return Result;
-    };
-    this.GetDataProxy = function () {
-      var Result = null;
-      if (this.FDataProxy === null) this.FDataProxy = this.DoGetDataProxy();
-      Result = this.FDataProxy;
-      return Result;
-    };
-    this.SetDataNode = function (Value) {
-      if ((this.FDataNode !== Value) && (this.FUpdateCount === 0)) this.SetActive(false);
-      this.FDataNode = Value;
-    };
-    this.SetURI = function (Value) {
-      if ((this.FURI !== Value) && (this.FUpdateCount === 0)) this.SetActive(false);
-      this.FURI = Value;
-    };
-    this.onError = function (Event) {
-      var Result = false;
-      if (this.FOnConnectError != null) {
-        this.FOnConnectError(this,this.FXHR.status);
-      };
-      Result = true;
-      return Result;
-    };
-    this.onAbort = function (Event) {
-      var Result = false;
-      if (this.FOnConnectError != null) {
-        this.FOnConnectError(this,this.FXHR.status);
-      };
-      Result = true;
-      return Result;
-    };
-    this.onLoad = function (Event) {
-      var Result = false;
-      var rec = pas["WEBLib.Controls"].TJSXMLHttpRequestRecord.$new();
-      var s = "";
-      if (this.FOnDataReceived != null) {
-        rec.req = this.FXHR;
-        s = this.FXHR.responseText;
-        this.FOnDataReceived(this,pas["WEBLib.Controls"].TJSXMLHttpRequestRecord.$clone(rec),{get: function () {
-            return s;
-          }, set: function (v) {
-            s = v;
-          }});
-      };
-      Result = true;
-      return Result;
-    };
-    this.SetActive = function (Value) {
-      if (this.FActive !== Value) {
-        this.FActive = Value;
-        if (this.FUpdateCount > 0) return;
-        if (0 in this.FComponentState) return;
-        if (Value) {
-          if (this.FURI !== "") this.DoConnect();
-        } else this.DoDisconnect();
-      };
-    };
-    this.ProcessMetadata = function (Dataset, FieldDefs, aMetaData) {
-      if (this.FOnProcessMetaData != null) this.FOnProcessMetaData(this,Dataset,FieldDefs,aMetaData);
-    };
-    this.GetReadBaseURL = function (aRequest) {
-      var Result = "";
-      Result = this.FURI;
-      if (this.FOnGetURL != null) this.FOnGetURL(this,aRequest.FDataset,0,{get: function () {
-          return Result;
-        }, set: function (v) {
-          Result = v;
-        }});
-      return Result;
-    };
-    this.RegisterDataSet = function (value) {
-      this.FDS = value;
-    };
-    this.DoOpenResolve = function (AResult) {
-      if (this.FOpenResolver != null) this.FOpenResolver(AResult);
-    };
-    this.DoAfterLoad = function (DataSet) {
-      this.DoOpenResolve(true);
-    };
-    this.DoRequest = function () {
-      var cmd = "";
-      this.FXHR = new XMLHttpRequest();
-      this.FXHR.addEventListener("load",rtl.createSafeCallback(this,"onLoad"));
-      this.FXHR.addEventListener("abort",rtl.createSafeCallback(this,"onAbort"));
-      this.FXHR.addEventListener("error",rtl.createSafeCallback(this,"onError"));
-      cmd = pas["WEBLib.REST"].HTTPCommand(this.FCommand,this.FCustomCommand);
-      this.FXHR.open(cmd,this.FURI);
-      this.SetupRequest(this.FXHR);
-      this.FXHR.setRequestHeader("content-type","application/json");
-      if (this.FPostData !== "") {
-        this.FXHR.send(this.FPostData)}
-       else this.FXHR.send();
-    };
-    this.DoConnect = function () {
-      if (this.FDS != null) {
-        this.DoBeforeConnect();
-        if (this.FAutoOpen) {
-          this.FDS.SetActive(false);
-          this.FDS.FAfterLoad = rtl.createCallback(this,"DoAfterLoad");
-          this.FDS.Load({},null);
-        } else {
-          this.DoRequest();
-        };
-      } else this.DoRequest();
-    };
-    this.DoDisconnect = function () {
-      if (this.FDS != null) {
-        if (this.FAutoOpen) this.FDS.SetActive(false);
-      };
-    };
-    this.DoBeforeConnect = function () {
-      if (this.FBeforeConnect != null) this.FBeforeConnect(this);
-    };
-    this.DoAfterConnect = function () {
-      if (this.FAfterConnect != null) this.FAfterConnect(this);
-    };
-    this.DoError = function (ErrorCode) {
-      if (this.FOnConnectError != null) this.FOnConnectError(this,ErrorCode);
-      this.DoOpenResolve(false);
-      throw pas.SysUtils.Exception.$create("Create$1",["Error connecting to URI " + this.FURI]);
-    };
-    this.DoDataReceived = function (ARequest, AResponse) {
-      var LRequestRec = pas["WEBLib.Controls"].TJSXMLHttpRequestRecord.$new();
-      if (this.FOnDataReceived != null) {
-        LRequestRec.req = ARequest;
-        this.FOnDataReceived(this,pas["WEBLib.Controls"].TJSXMLHttpRequestRecord.$clone(LRequestRec),AResponse);
-      };
-    };
-    this.SetupRequest = function (aXHR) {
-      var I = 0;
-      var headname = "";
-      var headvalue = "";
-      if (this.FUser !== "") aXHR.setRequestHeader("X-Requested-With","XMLHttpRequest");
-      for (var $l = 0, $end = this.FHeaders.GetCount() - 1; $l <= $end; $l++) {
-        I = $l;
-        this.FHeaders.GetNameValue(I,{get: function () {
-            return headname;
-          }, set: function (v) {
-            headname = v;
-          }},{get: function () {
-            return headvalue;
-          }, set: function (v) {
-            headvalue = v;
-          }});
-        aXHR.setRequestHeader(headname,headvalue);
-      };
-      if (this.FUser !== "") aXHR.setRequestHeader("Authorization","Basic " + window.btoa(this.FUser + ":" + this.FPassword));
-    };
-    this.GetDataNode = function () {
-      var Result = "";
-      Result = this.FDataNode;
-      if (Result === "") Result = "data";
-      return Result;
-    };
-    this.GetMetaDataNode = function () {
-      var Result = "";
-      Result = this.FMetaDataNode;
-      if (Result === "") Result = "metaData";
-      return Result;
-    };
-    this.DoGetDataProxy = function () {
-      var Result = null;
-      Result = $mod.TWebClientDataProxy.$create("Create$1",[this]);
-      return Result;
-    };
-    this.Create$1 = function (AOwner) {
-      pas.Classes.TComponent.Create$1.apply(this,arguments);
-      this.FActive = false;
-      this.FDS = null;
-      this.FAutoOpen = true;
-      this.FCommand = 0;
-      this.FHeaders = pas.Classes.TStringList.$create("Create$1");
-      this.FDelimiter = ";";
-      this.FSkipFirstCSVLine = false;
-      this.FAppendKeyToURL = true;
-      return this;
-    };
-    this.Destroy = function () {
-      rtl.free(this,"FHeaders");
-      pas.Classes.TComponent.Destroy.call(this);
-    };
-    this.BeginUpdate = function () {
-      pas.Classes.TComponent.BeginUpdate.call(this);
-      this.FUpdateCount += 1;
-    };
-    this.EndUpdate = function () {
-      pas.Classes.TComponent.EndUpdate.call(this);
-      if (this.FUpdateCount > 0) this.FUpdateCount -= 1;
-    };
-    this.AfterLoadDFMValues = function () {
-      pas.Classes.TComponent.AfterLoadDFMValues.call(this);
-      if (this.FActive && (this.FURI !== "")) this.DoConnect();
-    };
-    rtl.addIntf(this,pas.System.IUnknown);
-    var $r = this.$rtti;
-    $r.addMethod("Create$1",2,[["AOwner",pas.Classes.$rtti["TComponent"]]]);
-    $r.addProperty("Active",2,rtl.boolean,"FActive","SetActive");
-    $r.addProperty("AppendKeyToURL",0,rtl.boolean,"FAppendKeyToURL","FAppendKeyToURL",{Default: true});
-    $r.addProperty("AutoOpenDataSet",0,rtl.boolean,"FAutoOpen","FAutoOpen",{Default: true});
-    $r.addProperty("Command",0,pas["WEBLib.REST"].$rtti["THTTPCommand"],"FCommand","FCommand",{Default: pas["WEBLib.REST"].THTTPCommand.httpGET});
-    $r.addProperty("CustomCommand",0,rtl.string,"FCustomCommand","FCustomCommand");
-    $r.addProperty("DataNode",2,rtl.string,"FDataNode","SetDataNode");
-    $r.addProperty("Delimiter",0,rtl.char,"FDelimiter","FDelimiter");
-    $r.addProperty("MetaDataNode",0,rtl.string,"FMetaDataNode","FMetaDataNode");
-    $r.addProperty("PageParam",0,rtl.string,"FPageParam","FPageParam");
-    $r.addProperty("PostData",0,rtl.string,"FPostData","FPostData");
-    $r.addProperty("Headers",2,pas.Classes.$rtti["TStringList"],"FHeaders","SetHeaders");
-    $r.addProperty("Password",0,rtl.string,"FPassword","FPassword");
-    $r.addProperty("SkipFirstCSVLine",0,rtl.boolean,"FSkipFirstCSVLine","FSkipFirstCSVLine",{Default: false});
-    $r.addProperty("User",0,rtl.string,"FUser","FUser");
-    $r.addProperty("URI",2,rtl.string,"FURI","SetURI");
-    $r.addProperty("AfterConnect",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FAfterConnect","FAfterConnect");
-    $r.addProperty("BeforeConnect",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FBeforeConnect","FBeforeConnect");
-    $r.addProperty("OnConnectError",0,$mod.$rtti["TConnectErrorEvent"],"FOnConnectError","FOnConnectError");
-    $r.addProperty("OnDataReceived",0,$mod.$rtti["TDataReceivedEvent"],"FOnDataReceived","FOnDataReceived");
-    $r.addProperty("OnGetURL",0,$mod.$rtti["TClientConnectionGetURLEvent"],"FOnGetURL","FOnGetURL");
-    $r.addProperty("OnGetUpdatePayLoad",0,$mod.$rtti["TGetUpdatePayloadEvent"],"FOnGetUpdatePayLoad","FOnGetUpdatePayLoad");
-    $r.addProperty("OnGetDataPayload",0,$mod.$rtti["TGetDataPayloadEvent"],"FOnGetDataPayLoad","FOnGetDataPayLoad");
-    $r.addProperty("OnProcessMetaData",0,$mod.$rtti["TProcessMetaDataEvent"],"FOnProcessMetaData","FOnProcessMetaData");
-  });
-  rtl.createClass(this,"TWebClientDataProxy",pas.DB.TDataProxy,function () {
-    this.$init = function () {
-      pas.DB.TDataProxy.$init.call(this);
-      this.FConnection = null;
-    };
-    this.$final = function () {
-      this.FConnection = undefined;
-      pas.DB.TDataProxy.$final.call(this);
-    };
-    this.GetUpdateDescriptorClass = function () {
-      var Result = null;
-      Result = $impl.TWebClientUpdateRequest;
-      return Result;
-    };
-    this.DoGetData = function (aRequest) {
-      var Result = false;
-      var R = null;
-      var URL = "";
-      var cmd = "";
-      Result = false;
-      R = rtl.as(aRequest,$impl.TWebClientDataRequest);
-      R.FXHR = new XMLHttpRequest();
-      URL = this.FConnection.GetPageURL(aRequest);
-      if (URL === "") {
-        if (2 in R.FLoadOptions) {
-          R.FSuccess = 1}
-         else {
-          R.FSuccess = 0;
-          R.FErrorMsg = "No URL to get data";
-          R.DoAfterRequest();
-        };
-      } else {
-        if ((2 in R.FLoadOptions) && (this.FConnection.FPageParam === "")) {
-          R.FSuccess = 1}
-         else {
-          cmd = pas["WEBLib.REST"].HTTPCommand(this.FConnection.FCommand,this.FConnection.FCustomCommand);
-          R.FXHR.open(cmd,URL,true);
-          this.FConnection.SetupRequest(R.FXHR);
-          R.FXHR.addEventListener("load",rtl.createSafeCallback(R,"onLoad"));
-          R.FXHR.addEventListener("abort",rtl.createSafeCallback(R,"onAbort"));
-          R.FXHR.addEventListener("error",rtl.createSafeCallback(R,"onError"));
-          if (this.FConnection.FPostData !== "") {
-            R.FXHR.send(this.FConnection.FPostData)}
-           else R.FXHR.send();
-        };
-        Result = true;
-      };
-      return Result;
-    };
-    this.GetDataRequest = function (aOptions, aAfterRequest, aAfterLoad) {
-      var Result = null;
-      Result = $impl.TWebClientDataRequest.$create("Create$1",[this,rtl.refSet(aOptions),aAfterRequest,aAfterLoad]);
-      Result.FConnection = this.FConnection;
-      return Result;
-    };
-    this.Create$1 = function (AOwner) {
-      pas.Classes.TComponent.Create$1.apply(this,arguments);
-      if ($mod.TClientConnection.isPrototypeOf(AOwner)) this.FConnection = AOwner;
-      return this;
-    };
-    rtl.addIntf(this,pas.System.IUnknown);
-    var $r = this.$rtti;
-    $r.addMethod("Create$1",2,[["AOwner",pas.Classes.$rtti["TComponent"]]]);
-  });
-  this.$rtti.$MethodVar("TUpdateRecordEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["ADescriptor",pas.DB.$rtti["TRecordUpdateDescriptor"]]]), methodkind: 0});
-  rtl.createClass(this,"TCustomClientDataSet",pas.JSONDataset.TBaseJSONDataSet,function () {
-    this.$init = function () {
-      pas.JSONDataset.TBaseJSONDataSet.$init.call(this);
-      this.FConnection = null;
-      this.FOnUpdateRecord = null;
-      this.FUpdateCount = 0;
-      this.FFilterCount = 0;
-      this.FIDField = "";
-      this.FuseServerMetadata = false;
-      this.FParams = null;
-      this.FOpenResolver = null;
-      this.FPostResolver = null;
-      this.FInsertResolver = null;
-      this.FDeleteResolver = null;
-    };
-    this.$final = function () {
-      this.FConnection = undefined;
-      this.FOnUpdateRecord = undefined;
-      this.FParams = undefined;
-      this.FOpenResolver = undefined;
-      this.FPostResolver = undefined;
-      this.FInsertResolver = undefined;
-      this.FDeleteResolver = undefined;
-      pas.JSONDataset.TBaseJSONDataSet.$final.call(this);
-    };
-    this.SetParams = function (Value) {
-      this.FParams.Assign(Value);
-    };
-    this.GetStringFieldLength = function (F, AName, AIndex) {
-      var Result = 0;
-      var I = 0;
-      var L = 0;
-      var D = undefined;
-      Result = 0;
-      D = F["maxLen"];
-      if (!isNaN(pas.JS.toNumber(D))) {
-        Result = pas.System.Trunc(pas.JS.toNumber(D));
-        if (Result <= 0) pas.DB.DatabaseErrorFmt$1("Invalid maximum length specifier for field %s",pas.System.VarRecs(18,AName),this);
-      } else {
-        for (var $l = 0, $end = this.FRows.length - 1; $l <= $end; $l++) {
-          I = $l;
-          D = this.FFieldMapper.GetJSONDataForField(AName,AIndex,this.FRows[I]);
-          if (rtl.isString(D)) {
-            L = ("" + D).length;
-            if (L > Result) Result = L;
-          };
-        };
-      };
-      if (Result === 0) Result = 20;
-      return Result;
-    };
-    this.StringToFieldType = function (S) {
-      var Result = 0;
-      if (S === "int") {
-        Result = 3}
-       else if (S === "bigint") {
-        Result = 25}
-       else if (S === "float") {
-        Result = 6}
-       else if (S === "bool") {
-        Result = 5}
-       else if (S === "date") {
-        Result = 9}
-       else if (S === "datetime") {
-        Result = 11}
-       else if (S === "time") {
-        Result = 10}
-       else if (S === "blob") {
-        Result = 15}
-       else if (S === "string") {
-        Result = 1}
-       else Result = 1;
-      return Result;
-    };
-    this.DataPacketReceived = function (aRequest) {
-      var Result = false;
-      var O = null;
-      var MD = null;
-      var V = undefined;
-      var A = null;
-      var lmetadata = "";
-      var Root = "";
-      var subn = "";
-      var s = "";
-      var isjson = false;
-      var sl = null;
-      var lines = null;
-      var fl = 0;
-      var l = 0;
-      var c = 0;
-      var flds = 0;
-      Result = false;
-      if (pas.JS.isNull(aRequest.FData)) return Result;
-      O = null;
-      A = null;
-      if (rtl.isString(aRequest.FData)) {
-        isjson = true;
-        s = pas.SysUtils.Trim("" + aRequest.FData);
-        if (s.length > 1) {
-          if ((s.charAt(0) !== "[") && (s.charAt(0) !== "{")) isjson = false;
-        };
-        if (!isjson) {
-          sl = pas.Classes.TStringList.$create("Create$1");
-          lines = pas.Classes.TStringList.$create("Create$1");
-          lines.SetDelimiter(this.FConnection.FDelimiter);
-          lines.FStrictDelimiter = true;
-          sl.SetTextStr("" + aRequest.FData);
-          A = new Array();
-          A.length = sl.GetCount();
-          fl = 0;
-          if (this.FConnection.FSkipFirstCSVLine) fl = 1;
-          for (var $l = fl, $end = sl.GetCount() - 1; $l <= $end; $l++) {
-            l = $l;
-            A[l - fl] = new Array();
-            lines.SetDelimitedText(sl.Get(l));
-            flds = lines.GetCount();
-            O = new Object();
-            for (var $l1 = 0, $end1 = lines.GetCount() - 1; $l1 <= $end1; $l1++) {
-              c = $l1;
-              O["column" + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
-                  return c;
-                }, set: function (v) {
-                  c = v;
-                }})] = lines.Get(c);
-            };
-            A[l - fl] = O;
-          };
-          Result = (A !== null) && (A.length > 0);
-          if ((A != null) && (A.length > 0) && (this.FFieldDefs != null) && (this.FFieldDefs.GetCount() === 0)) {
-            for (var $l2 = 0, $end2 = flds - 1; $l2 <= $end2; $l2++) {
-              l = $l2;
-              this.FFieldDefs.Add$4("column" + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
-                  return l;
-                }, set: function (v) {
-                  l = v;
-                }}),1,255);
-            };
-            this.AddToRows(A);
-          };
-          lines = rtl.freeLoc(lines);
-          sl = rtl.freeLoc(sl);
-          return Result;
-        };
-      };
-      if (rtl.isString(aRequest.FData)) {
-        V = JSON.parse("" + aRequest.FData);
-        if (rtl.isArray(V)) {
-          A = V;
-        } else if (rtl.isObject(V)) O = V;
-      } else if (rtl.isArray(aRequest.FData)) {
-        A = aRequest.FData;
-      } else if (rtl.isObject(aRequest.FData)) {
-        O = aRequest.FData;
-      } else pas.DB.DatabaseError("Cannot handle data packet");
-      if (O != null) {
-        Root = this.FConnection.GetDataNode();
-        lmetadata = this.FConnection.GetMetaDataNode();
-        while (pas.System.Pos("\\",Root) > 0) {
-          subn = pas.System.Copy(Root,1,pas.System.Pos("\\",Root) - 1);
-          Root = pas.System.Copy(Root,pas.System.Pos("\\",Root) + 1,Root.length);
-          O = O[subn];
-        };
-        if (this.FIDField === "") this.FIDField = "id";
-        if (this.FuseServerMetadata && O.hasOwnProperty(lmetadata) && rtl.isObject(O[lmetadata])) {
-          MD = O[lmetadata];
-          if (!this.GetActive()) this.SetMetaData(MD);
-          if (MD.hasOwnProperty("root") && rtl.isString(MD["root"])) Root = "" + this.FMetaData["root"];
-          if (MD.hasOwnProperty("idField") && rtl.isString(MD["idField"])) this.FIDField = "" + MD["idField"];
-        };
-        if ((Root !== "") && O.hasOwnProperty(Root) && rtl.isArray(O[Root])) A = O[Root];
-      };
-      if ((A != null) && (A.length > 0) && (this.FFieldDefs != null) && (this.FFieldDefs.GetCount() === 0)) {
-        this.FieldDefsFromRows(A);
-      };
-      Result = (A !== null) && (A.length > 0);
-      if (Result) this.AddToRows(A);
-      return Result;
-    };
-    this.DoOpenResolve = function (AResult) {
-      if (this.FOpenResolver != null) {
-        this.FOpenResolver(AResult);
-        this.FOpenResolver = null;
-      };
-    };
-    this.DoPostResolve = function (AResult) {
-      if (this.FPostResolver != null) this.FPostResolver(AResult);
-    };
-    this.DoInsertResolve = function (AResult) {
-      if (this.FInsertResolver != null) this.FInsertResolver(AResult);
-    };
-    this.DoDeleteResolve = function (AResult) {
-      if (this.FDeleteResolver != null) this.FDeleteResolver(AResult);
-    };
-    this.MetaDataToFieldDefs = function () {
-      var A = null;
-      var F = null;
-      var I = 0;
-      var FS = 0;
-      var N = "";
-      var ft = 0;
-      var D = undefined;
-      this.FFieldDefs.Clear();
-      this.FConnection.ProcessMetadata(this,this.FFieldDefs,this.FMetaData);
-      if (this.FFieldDefs.GetCount() > 0) return;
-      D = this.FMetaData["fields"];
-      if (!rtl.isArray(D)) throw pas.JSONDataset.EJSONDataset.$create("Create$1",["Invalid metadata object"]);
-      A = D;
-      for (var $l = 0, $end = A.length - 1; $l <= $end; $l++) {
-        I = $l;
-        if (!rtl.isObject(A[I])) throw pas.JSONDataset.EJSONDataset.$create("CreateFmt",["Field definition %d in metadata is not an object",pas.System.VarRecs(0,I)]);
-        F = A[I];
-        D = F["name"];
-        if (!rtl.isString(D)) throw pas.JSONDataset.EJSONDataset.$create("CreateFmt",["Field definition %d in has no or invalid name property",pas.System.VarRecs(0,I)]);
-        N = "" + D;
-        D = F["type"];
-        if (pas.JS.isNull(D) || pas.JS.isUndefined(D)) {
-          ft = 1}
-         else if (!rtl.isString(D)) {
-          throw pas.JSONDataset.EJSONDataset.$create("CreateFmt",["Field definition %d in has invalid type property",pas.System.VarRecs(0,I)]);
-        } else {
-          ft = this.StringToFieldType("" + D);
-        };
-        if (ft === 1) {
-          FS = this.GetStringFieldLength(F,N,I)}
-         else FS = 0;
-        this.FFieldDefs.Add$4(N,ft,FS);
-      };
-    };
-    this.SetConnection = function (Value) {
-      this.FConnection = Value;
-      if (Value != null) Value.RegisterDataSet(this);
-    };
-    this.CreateFieldMapper = function () {
-      var Result = null;
-      Result = pas.JSONDataset.TJSONObjectFieldMapper.$create("Create");
-      return Result;
-    };
-    this.InitFieldDefs = function () {
-      var $Self = this;
-      function HandleChildField(Child) {
-        if (pas.DB.TStringField.isPrototypeOf(Child)) $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TStringField).FFieldName,1,rtl.as(Child,pas.DB.TStringField).FSize);
-        if (pas.DB.TBooleanField.isPrototypeOf(Child)) $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TBooleanField).FFieldName,5,0);
-        if (pas.DB.TAutoIncField.isPrototypeOf(Child)) {
-          $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TAutoIncField).FFieldName,14,0)}
-         else if (pas.DB.TIntegerField.isPrototypeOf(Child)) {
-          $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TIntegerField).FFieldName,3,0)}
-         else if (pas.DB.TLargeintField.isPrototypeOf(Child)) {
-          $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TLargeintField).FFieldName,25,0)}
-         else if (pas.DB.TFloatField.isPrototypeOf(Child)) {
-          $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TFloatField).FFieldName,6,0)}
-         else if (pas.DB.TNumericField.isPrototypeOf(Child)) $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TNumericField).FFieldName,3,0);
-        if (pas.DB.TDateField.isPrototypeOf(Child)) {
-          $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TDateField).FFieldName,9,0)}
-         else if (pas.DB.TTimeField.isPrototypeOf(Child)) {
-          $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TTimeField).FFieldName,9,0)}
-         else if (pas.DB.TDateTimeField.isPrototypeOf(Child)) $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TDateTimeField).FFieldName,11,0);
-        if (pas.DB.TMemoField.isPrototypeOf(Child)) {
-          $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TMemoField).FFieldName,16,0)}
-         else if (pas.DB.TBlobField.isPrototypeOf(Child)) $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TBlobField).FFieldName,15,0);
-      };
-      this.FFieldDefs.Clear();
-      this.GetChildren(HandleChildField,$Self);
-    };
-    this.InternalInitFieldDefs = function () {
-      if ((this.FFieldDefs.GetCount() === 0) && (this.FRows != null) && (this.FRows.length > 0)) {
-        this.FieldDefsFromRows(this.FRows);
-      };
-      pas.JSONDataset.TBaseJSONDataSet.InternalInitFieldDefs.call(this);
-    };
-    this.FieldDefsFromRows = function (aRows) {
-      var J = null;
-      var JV = undefined;
-      var strArr = [];
-      var i = 0;
-      if ((this.FFieldDefs.GetCount() === 0) && (aRows != null) && (aRows.length > 0)) {
-        J = aRows[0];
-        strArr = Object.getOwnPropertyNames(J);
-        for (var $l = 0, $end = rtl.length(strArr) - 1; $l <= $end; $l++) {
-          i = $l;
-          JV = J[strArr[i]];
-          if (rtl.isString(JV)) this.FFieldDefs.Add$4(strArr[i],1,255);
-          if (rtl.isNumber(JV)) this.FFieldDefs.Add$5(strArr[i],6);
-          if (pas.JS.isBoolean(JV)) this.FFieldDefs.Add$5(strArr[i],5);
-          if (pas.JS.isDate(JV)) this.FFieldDefs.Add$5(strArr[i],9);
-          if (pas.JS.isNull(JV)) this.FFieldDefs.Add$4(strArr[i],1,255);
-        };
-      };
-    };
-    this.DoAfterOpen = function () {
-      pas.DB.TDataSet.DoAfterOpen.call(this);
-      this.DoOpenResolve(true);
-      if ((this.FConnection != null) && this.FConnection.FAutoOpen) {
-        this.FConnection.DoAfterConnect();
-      };
-    };
-    this.DoAfterPost = function () {
-      pas.DB.TDataSet.DoAfterPost.call(this);
-      this.DoPostResolve(true);
-    };
-    this.DoAfterInsert = function () {
-      pas.DB.TDataSet.DoAfterInsert.call(this);
-      this.DoInsertResolve(true);
-    };
-    this.DoAfterDelete = function () {
-      pas.DB.TDataSet.DoAfterDelete.call(this);
-      this.DoDeleteResolve(true);
-    };
-    this.DoGetDataProxy = function () {
-      var Result = null;
-      if (this.FConnection != null) {
-        Result = this.FConnection.GetDataProxy()}
-       else Result = null;
-      return Result;
-    };
-    this.SetActive = function (Value) {
-      if (0 in this.FComponentState) return;
-      pas.DB.TDataSet.SetActive.apply(this,arguments);
-    };
-    this.GetRecordCount = function () {
-      var Result = 0;
-      var bk = pas.DB.TBookmark.$new();
-      var c = 0;
-      if (this.FFiltered) {
-        if (this.FFilterCount !== -1) {
-          Result = this.FFilterCount}
-         else {
-          bk.$assign(this.GetBookmark());
-          this.DisableControls();
-          this.First();
-          c = 0;
-          while (!this.GetEOF()) {
-            c += 1;
-            this.Next();
-          };
-          this.EnableControls();
-          this.GotoBookmark(bk);
-          this.FFilterCount = c;
-          Result = c;
-        };
-      } else Result = pas.JSONDataset.TBaseJSONDataSet.GetRecordCount.call(this);
-      return Result;
-    };
-    this.SetFiltered = function (Value) {
-      this.FFilterCount = -1;
-      pas.JSONDataset.TBaseJSONDataSet.SetFiltered.apply(this,arguments);
-    };
-    this.Create$1 = function (AOwner) {
-      pas.JSONDataset.TBaseJSONDataSet.Create$1.apply(this,arguments);
-      this.FParams = pas.DB.TParams.$create("Create$1",[pas.DB.TParam]);
-      return this;
-    };
-    this.Destroy = function () {
-      pas.SysUtils.FreeAndNil({p: this, get: function () {
-          return this.p.FParams;
-        }, set: function (v) {
-          this.p.FParams = v;
-        }});
-      pas.JSONDataset.TBaseJSONDataSet.Destroy.call(this);
-    };
-    this.OpenAsync = function () {
-      var $Self = this;
-      var Result = null;
-      Result = new Promise(function (ASuccess, AFailed) {
-        $Self.FOpenResolver = ASuccess;
-        $Self.Open();
-      });
-      return Result;
-    };
-    this.PostAsync = function () {
-      var $Self = this;
-      var Result = null;
-      Result = new Promise(function (ASuccess, AFailed) {
-        $Self.FPostResolver = ASuccess;
-        $Self.Post();
-      });
-      return Result;
-    };
-    this.BeginUpdate = function () {
-      pas.Classes.TComponent.BeginUpdate.call(this);
-      this.FUpdateCount += 1;
-    };
-    this.EndUpdate = function () {
-      pas.Classes.TComponent.EndUpdate.call(this);
-      if (this.FUpdateCount > 0) this.FUpdateCount -= 1;
-    };
-    this.AfterLoadDFMValues = function () {
-      pas.Classes.TComponent.AfterLoadDFMValues.call(this);
-      this.InitFieldDefs();
-    };
-    this.GetChildren = function (Proc, Root) {
-      var i = 0;
-      for (var $l = 0, $end = this.FFieldList.GetCount() - 1; $l <= $end; $l++) {
-        i = $l;
-        if ((this.FFieldList.GetField(i).FOwner === Root) || (this.FFieldList.GetField(i).FDataSet === Root) || (Root === null)) {
-          if (this.FFieldList.GetField(i).FName === "") this.FFieldList.GetField(i).SetName(this.FName + this.FFieldList.GetField(i).FFieldName);
-          Proc(this.FFieldList.GetField(i));
-        };
-      };
-    };
-    this.EmptyDataSet = function () {
-      this.First();
-      while (!this.GetEOF()) this.Delete();
-    };
-    rtl.addIntf(this,pas.System.IUnknown);
-    var $r = this.$rtti;
-    $r.addMethod("Create$1",2,[["AOwner",pas.Classes.$rtti["TComponent"]]]);
-  });
-  rtl.createClass(this,"TClientDataSet",this.TCustomClientDataSet,function () {
-    rtl.addIntf(this,pas.System.IUnknown);
-    var $r = this.$rtti;
-    $r.addProperty("Active",3,rtl.boolean,"GetActive","SetActive",{Default: false});
-    $r.addProperty("Connection",2,$mod.$rtti["TClientConnection"],"FConnection","SetConnection");
-    $r.addProperty("Params",2,pas.DB.$rtti["TParams"],"FParams","SetParams");
-    $r.addProperty("BeforeOpen",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FBeforeOpen","FBeforeOpen");
-    $r.addProperty("AfterOpen",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FAfterOpen","FAfterOpen");
-    $r.addProperty("BeforeClose",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FBeforeClose","FBeforeClose");
-    $r.addProperty("AfterClose",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FAfterClose","FAfterClose");
-    $r.addProperty("BeforeInsert",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FBeforeInsert","FBeforeInsert");
-    $r.addProperty("AfterInsert",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FAfterInsert","FAfterInsert");
-    $r.addProperty("BeforeEdit",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FBeforeEdit","FBeforeEdit");
-    $r.addProperty("AfterEdit",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FAfterEdit","FAfterEdit");
-    $r.addProperty("BeforePost",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FBeforePost","FBeforePost");
-    $r.addProperty("AfterPost",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FAfterPost","FAfterPost");
-    $r.addProperty("BeforeCancel",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FBeforeCancel","FBeforeCancel");
-    $r.addProperty("AfterCancel",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FAfterCancel","FAfterCancel");
-    $r.addProperty("BeforeDelete",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FBeforeDelete","FBeforeDelete");
-    $r.addProperty("AfterDelete",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FAfterDelete","FAfterDelete");
-    $r.addProperty("BeforeScroll",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FBeforeScroll","FBeforeScroll");
-    $r.addProperty("AfterScroll",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FAfterScroll","FAfterScroll");
-    $r.addProperty("OnCalcFields",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FOnCalcFields","FOnCalcFields");
-    $r.addProperty("OnDeleteError",0,pas.DB.$rtti["TDataSetErrorEvent"],"FOnDeleteError","FOnDeleteError");
-    $r.addProperty("OnEditError",0,pas.DB.$rtti["TDataSetErrorEvent"],"FOnEditError","FOnEditError");
-    $r.addProperty("OnFilterRecord",2,pas.DB.$rtti["TFilterRecordEvent"],"FOnFilterRecord","SetOnFilterRecord");
-    $r.addProperty("OnNewRecord",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FOnNewRecord","FOnNewRecord");
-    $r.addProperty("OnPostError",0,pas.DB.$rtti["TDataSetErrorEvent"],"FOnPostError","FOnPostError");
-    $r.addProperty("OnUpdateRecord",0,$mod.$rtti["TUpdateRecordEvent"],"FOnUpdateRecord","FOnUpdateRecord");
-  });
-  $mod.$implcode = function () {
-    rtl.createClass($impl,"TWebClientDataRequest",pas.DB.TDataRequest,function () {
-      this.$init = function () {
-        pas.DB.TDataRequest.$init.call(this);
-        this.FXHR = null;
-        this.FConnection = null;
-      };
-      this.$final = function () {
-        this.FXHR = undefined;
-        this.FConnection = undefined;
-        pas.DB.TDataRequest.$final.call(this);
-      };
-      this.onError = function (Event) {
-        var Result = false;
-        this.FSuccess = 0;
-        if (this.FConnection != null) this.FConnection.DoError(this.FXHR.status);
-        this.DoAfterRequest();
-        Result = true;
-        return Result;
-      };
-      this.onAbort = function (Event) {
-        var Result = false;
-        this.FSuccess = 0;
-        if (this.FConnection != null) this.FConnection.DoError(this.FXHR.status);
-        this.DoAfterRequest();
-        Result = true;
-        return Result;
-      };
-      this.onLoad = function (Event) {
-        var Result = false;
-        if (this.FXHR.status === 200) {
-          this.FData = this.TransformResult();
-          this.FSuccess = 2;
-        } else {
-          this.FData = null;
-          if ((2 in this.FLoadOptions) && (this.FXHR.status === 404)) {
-            this.FSuccess = 1}
-           else {
-            this.FSuccess = 0;
-            this.FErrorMsg = this.FXHR.statusText;
-          };
-          if (this.FConnection != null) this.FConnection.DoError(this.FXHR.status);
-        };
-        this.DoAfterRequest();
-        Result = true;
-        return Result;
-      };
-      this.TransformResult = function () {
-        var Result = undefined;
-        var s = "";
-        Result = this.FXHR.response;
-        if ((this.FConnection != null) && (this.FConnection.FOnDataReceived != null)) {
-          s = this.FXHR.responseText;
-          this.FConnection.DoDataReceived(this.FXHR,{get: function () {
-              return s;
-            }, set: function (v) {
-              s = v;
-            }});
-        };
-        if ((this.FConnection != null) && (this.FConnection.FOnGetDataPayLoad != null)) {
-          this.FConnection.FOnGetDataPayLoad(this.FConnection,this.FDataset,0,{get: function () {
-              return Result;
-            }, set: function (v) {
-              Result = v;
-            }});
-        };
-        return Result;
-      };
-    });
-    rtl.createClass($impl,"TWebClientUpdateRequest",pas.DB.TRecordUpdateDescriptor,function () {
-    });
-  };
-},["SysUtils","Types","WEBLib.Dialogs"]);
-rtl.module("libindexeddb",["System","Types","Classes","JS","Web"],function () {
-  "use strict";
-  var $mod = this;
-  rtl.createClass(this,"TMIDBTransactionMode",pas.System.TObject,function () {
-    this.readwrite = "readwrite";
-  });
-  rtl.recNewT(this,"TMIDBIndexParameters",function () {
-    this.unique = false;
-    this.$eq = function (b) {
-      return this.unique === b.unique;
-    };
-    this.$assign = function (s) {
-      this.unique = s.unique;
-      return this;
-    };
-  });
-  rtl.recNewT(this,"TJSCreateObjectStoreOptions",function () {
-    this.keyPath = undefined;
-    this.autoIncrement = false;
-    this.$eq = function (b) {
-      return (this.keyPath === b.keyPath) && (this.autoIncrement === b.autoIncrement);
-    };
-    this.$assign = function (s) {
-      this.keyPath = s.keyPath;
-      this.autoIncrement = s.autoIncrement;
-      return this;
-    };
-  });
-});
-rtl.module("WEBLib.IndexedDb",["System","Classes","JS","Web","SysUtils","WEBLib.CDS","JSONDataset","DB","libindexeddb"],function () {
-  "use strict";
-  var $mod = this;
-  var $impl = $mod.$impl;
-  this.TIndexedDbOpCode = {"0": "opOpen", opOpen: 0, "1": "opAdd", opAdd: 1, "2": "opPut", opPut: 2, "3": "opDelete", opDelete: 3, "4": "opGet", opGet: 4, "5": "opGetAllKeys", opGetAllKeys: 5, "6": "opGetAllObjs", opGetAllObjs: 6, "7": "opGetAllIndexKeys", opGetAllIndexKeys: 7, "8": "opGetAllObjsByIndex", opGetAllObjsByIndex: 8};
-  this.$rtti.$Enum("TIndexedDbOpCode",{minvalue: 0, maxvalue: 8, ordtype: 1, enumtype: this.TIndexedDbOpCode});
-  rtl.createClass(this,"TIndexedDb",pas.Classes.TComponent,function () {
-    this.$init = function () {
-      pas.Classes.TComponent.$init.call(this);
-      this.FDb = null;
-      this.FDatabaseName = "";
-      this.FObjectStoreName = "";
-      this.FKeyFieldName = "";
-      this.FAutoIncrement = false;
-      this.FIndexFields = null;
-      this.FActiveIndex = "";
-      this.FIndexDescending = false;
-      this.FIsOpen = false;
-      this.FCreatedIndexes = false;
-      this.FAllResult = null;
-      this.FOnResult = null;
-    };
-    this.$final = function () {
-      this.FDb = undefined;
-      this.FIndexFields = undefined;
-      this.FAllResult = undefined;
-      this.FOnResult = undefined;
-      pas.Classes.TComponent.$final.call(this);
-    };
-    this.ObjectStoreExists = function () {
-      var Result = false;
-      var i = 0;
-      Result = false;
-      for (var $l = 0, $end = rtl.length(this.FDb.objectStoreNames); $l <= $end; $l++) {
-        i = $l;
-        if (this.FDb.objectStoreNames[i] === this.FObjectStoreName) {
-          Result = true;
-          break;
-        };
-      };
-      return Result;
-    };
-    this.GetObjectStore = function (theReq) {
-      var Result = null;
-      var i = 0;
-      Result = null;
-      if (theReq.transaction === null) return Result;
-      for (var $l = 0, $end = rtl.length(this.FDb.objectStoreNames); $l <= $end; $l++) {
-        i = $l;
-        if (this.FDb.objectStoreNames[i] === this.FObjectStoreName) {
-          Result = theReq.transaction.objectStore(this.FObjectStoreName);
-          break;
-        };
-      };
-      return Result;
-    };
-    this.DoUpgradeNeeded = function (Event) {
-      var Result = false;
-      var i = 0;
-      var exists = false;
-      var options = pas.libindexeddb.TJSCreateObjectStoreOptions.$new();
-      var theReq = null;
-      var objectStore = null;
-      var indexOptions = pas.libindexeddb.TMIDBIndexParameters.$new();
-      var aDefObject = null;
-      var idxKeyPath = "";
-      var idxKeyPathArray = null;
-      theReq = rtl.asExt(Event.target,IDBOpenDBRequest);
-      this.FDb = theReq.result;
-      objectStore = this.GetObjectStore(theReq);
-      exists = objectStore !== null;
-      if (!exists) {
-        if (this.FKeyFieldName !== "") {
-          options.keyPath = this.FKeyFieldName;
-          options.autoIncrement = this.FAutoIncrement;
-          objectStore = this.FDb.createObjectStore(this.FObjectStoreName,pas.libindexeddb.TJSCreateObjectStoreOptions.$clone(options));
-        } else {
-          objectStore = this.FDb.createObjectStore(this.FObjectStoreName);
-        };
-        if (this.FIndexFields !== null) {
-          for (var $l = 0, $end = this.FIndexFields.length - 1; $l <= $end; $l++) {
-            i = $l;
-            aDefObject = this.FIndexFields[i];
-            indexOptions.unique = !(aDefObject["isUnique"] == false);
-            idxKeyPath = "" + aDefObject["keypath"];
-            idxKeyPathArray = idxKeyPath.split(";");
-            if (idxKeyPathArray.length === 1) {
-              objectStore.createIndex("" + aDefObject["name"],idxKeyPath,pas.libindexeddb.TMIDBIndexParameters.$clone(indexOptions))}
-             else objectStore.createIndex("" + aDefObject["name"],idxKeyPathArray,pas.libindexeddb.TMIDBIndexParameters.$clone(indexOptions));
-            this.FCreatedIndexes = true;
-          };
-        };
-      };
-      Result = true;
-      return Result;
-    };
-    this.VersionChangeNeeded = function () {
-      var Result = false;
-      Result = false;
-      if (!this.ObjectStoreExists()) {
-        Result = true;
-        return Result;
-      };
-      return Result;
-    };
-    this.DoSuccess = function (Event) {
-      var Result = false;
-      var theReq = null;
-      var aCursor = null;
-      var newVersionNeeded = 0;
-      var newOpenRequest = null;
-      var theOpCode = 0;
-      var exe = null;
-      var excName = "";
-      var excMsg = "";
-      theReq = rtl.asExt(Event.target,IDBRequest);
-      theOpCode = $impl.GetOpCode({get: function () {
-          return theReq;
-        }, set: function (v) {
-          theReq = v;
-        }});
-      try {
-        var $tmp = theOpCode;
-        if ($tmp === 0) {
-          this.FIsOpen = true;
-          this.FDb = rtl.asExt(theReq,IDBOpenDBRequest).result;
-          this.FDb.onversionchange = rtl.createSafeCallback(this,"DoVersionChange");
-          if (this.VersionChangeNeeded()) {
-            newVersionNeeded = this.FDb.version + 1;
-            this.FDb.close();
-            newOpenRequest = window.indexedDB.open(this.FDatabaseName,newVersionNeeded);
-            $impl.SetOpCode({get: function () {
-                return newOpenRequest;
-              }, set: function (v) {
-                newOpenRequest = v;
-              }},0);
-            $impl.SetSeqId({get: function () {
-                return newOpenRequest;
-              }, set: function (v) {
-                newOpenRequest = v;
-              }},$impl.GetSeqId({get: function () {
-                return theReq;
-              }, set: function (v) {
-                theReq = v;
-              }}));
-            newOpenRequest.onupgradeneeded = rtl.createSafeCallback(this,"DoUpgradeNeeded");
-            newOpenRequest.onsuccess = rtl.createSafeCallback(this,"DoSuccess");
-            newOpenRequest.onerror = rtl.createSafeCallback(this,"DoFail");
-            newOpenRequest.onblocked = rtl.createSafeCallback(this,"DoBlocked");
-            return Result;
-          };
-          this.FAutoIncrement = this.GetAutoIncrementDynamic();
-          if (!this.FCreatedIndexes && (this.FIndexFields !== null) && (this.FIndexFields.length > 0)) window.console.log("IndexedDB Warning: AddIndex commands ignored for existing database.");
-          if (this.FOnResult != null) this.FOnResult(true,theOpCode,0,$impl.GetSeqId({get: function () {
-              return theReq;
-            }, set: function (v) {
-              theReq = v;
-            }}),"","");
-        } else if (($tmp === 2) || ($tmp === 3)) {
-          if (this.FOnResult != null) this.FOnResult(true,theOpCode,$impl.GetKeyId({get: function () {
-              return theReq;
-            }, set: function (v) {
-              theReq = v;
-            }}),$impl.GetSeqId({get: function () {
-              return theReq;
-            }, set: function (v) {
-              theReq = v;
-            }}),"","");
-        } else if (($tmp === 4) || ($tmp === 1)) {
-          if (this.FOnResult != null) this.FOnResult(true,theOpCode,theReq.result,$impl.GetSeqId({get: function () {
-              return theReq;
-            }, set: function (v) {
-              theReq = v;
-            }}),"","");
-        } else if ($tmp === 5) {
-          if (this.FOnResult != null) this.FOnResult(true,theOpCode,theReq.result,$impl.GetSeqId({get: function () {
-              return theReq;
-            }, set: function (v) {
-              theReq = v;
-            }}),"","");
-        } else if ($tmp === 6) {
-          if (this.FOnResult != null) this.FOnResult(true,theOpCode,theReq.result,$impl.GetSeqId({get: function () {
-              return theReq;
-            }, set: function (v) {
-              theReq = v;
-            }}),"","");
-        } else if ($tmp === 7) {
-          aCursor = theReq.result;
-          if (aCursor !== null) {
-            this.FAllResult.push(aCursor.key);
-            aCursor.continue();
-          } else {
-            if (this.FOnResult != null) this.FOnResult(true,theOpCode,this.FAllResult,$impl.GetSeqId({get: function () {
-                return theReq;
-              }, set: function (v) {
-                theReq = v;
-              }}),"","");
-          };
-        } else if ($tmp === 8) {
-          aCursor = theReq.result;
-          if (aCursor !== null) {
-            this.FAllResult.push(aCursor.value);
-            aCursor.continue();
-          } else {
-            if (this.FOnResult != null) this.FOnResult(true,theOpCode,this.FAllResult,$impl.GetSeqId({get: function () {
-                return theReq;
-              }, set: function (v) {
-                theReq = v;
-              }}),"","");
-          };
-        };
-      } catch ($e) {
-        exe = $e;
-        if (!$impl.GetJSExceptionDetails(exe,{get: function () {
-            return excName;
-          }, set: function (v) {
-            excName = v;
-          }},{get: function () {
-            return excMsg;
-          }, set: function (v) {
-            excMsg = v;
-          }})) throw exe;
-        excMsg = $impl.FormatErrorMessage(theOpCode,excName,excMsg);
-        if (this.FOnResult != null) this.FOnResult(false,theOpCode,0,$impl.GetSeqId({get: function () {
-            return theReq;
-          }, set: function (v) {
-            theReq = v;
-          }}),excName,excMsg);
-      };
-      Result = true;
-      return Result;
-    };
-    this.DoFail = function (Event) {
-      var Result = false;
-      var errorMsg = "";
-      var theReq = null;
-      var theOpCode = 0;
-      var errObj = null;
-      theReq = rtl.asExt(Event.target,IDBRequest);
-      theOpCode = $impl.GetOpCode({get: function () {
-          return theReq;
-        }, set: function (v) {
-          theReq = v;
-        }});
-      errObj = theReq["error"];
-      errorMsg = $impl.FormatErrorMessage(theOpCode,"" + errObj["name"],"" + errObj["message"]);
-      window.console.log(errorMsg);
-      if (this.FOnResult != null) {
-        this.FOnResult(false,theOpCode,0,$impl.GetSeqId({get: function () {
-            return theReq;
-          }, set: function (v) {
-            theReq = v;
-          }}),"" + errObj["name"],errorMsg);
-      };
-      Result = true;
-      return Result;
-    };
-    this.DoVersionChange = function (Event) {
-      var Result = false;
-      window.console.log("IndexedDB Warning: Version change detected for the CDS using objectstore " + this.FObjectStoreName + ". If you are using multiple CDS components on the same Database, before making them Active, please call Init, wait for OnInitSuccess then call Init on next CDS and so on.");
-      Result = true;
-      return Result;
-    };
-    this.DoBlocked = function (Event) {
-      var Result = false;
-      this.FOnResult(false,0,0,0,"Error CDS Blocked","IndexedDB Error: CDS has been blocked that uses objectstore " + this.FObjectStoreName + ". If you are using multiple CDS components on the same Database, before making them Active, please call Init, wait for OnInitSuccess then call Init on next CDS and so on.");
-      Result = true;
-      return Result;
-    };
-    this.GetAutoIncrementDynamic = function () {
-      var Result = false;
-      var aTransaction = null;
-      var objectStore = null;
-      Result = false;
-      if (this.FDb === null) return Result;
-      aTransaction = this.FDb.transaction([this.FObjectStoreName],pas.libindexeddb.TMIDBTransactionMode.readwrite);
-      objectStore = aTransaction.objectStore(this.FObjectStoreName);
-      Result = objectStore.autoIncrement;
-      return Result;
-    };
-    this.CorrectPrimaryKey = function (dataObj) {
-      if (!this.FAutoIncrement) return;
-      pas.JS.JSDelete(dataObj,this.FKeyFieldName);
-    };
-    this.SetIndexFields = function (aFields) {
-      this.FIndexFields = aFields;
-    };
-    this.Create$1 = function (AOwner) {
-      pas.Classes.TComponent.Create$1.apply(this,arguments);
-      this.FDb = null;
-      this.FIsOpen = false;
-      this.FAllResult = new Array();
-      this.FActiveIndex = "";
-      this.FIndexDescending = false;
-      this.FIndexFields = null;
-      this.FCreatedIndexes = false;
-      return this;
-    };
-    this.Destroy = function () {
-      if (this.FIsOpen) this.FDb.close();
-      pas.Classes.TComponent.Destroy.call(this);
-    };
-    this.Open = function (aDbName, aObjectStoreName, KeyFieldName, autoIncrement, sequenceID) {
-      var aRequest = null;
-      this.FDatabaseName = aDbName;
-      this.FObjectStoreName = aObjectStoreName;
-      this.FKeyFieldName = KeyFieldName;
-      this.FAutoIncrement = autoIncrement;
-      aRequest = window.indexedDB.open(aDbName);
-      $impl.SetOpCode({get: function () {
-          return aRequest;
-        }, set: function (v) {
-          aRequest = v;
-        }},0);
-      $impl.SetSeqId({get: function () {
-          return aRequest;
-        }, set: function (v) {
-          aRequest = v;
-        }},sequenceID);
-      aRequest.onupgradeneeded = rtl.createSafeCallback(this,"DoUpgradeNeeded");
-      aRequest.onsuccess = rtl.createSafeCallback(this,"DoSuccess");
-      aRequest.onerror = rtl.createSafeCallback(this,"DoFail");
-      aRequest.onblocked = rtl.createSafeCallback(this,"DoBlocked");
-    };
-    this.PutData$1 = function (data, sequenceID) {
-      var aTransaction = null;
-      var objectStore = null;
-      var aRequest = null;
-      aTransaction = this.FDb.transaction([this.FObjectStoreName],pas.libindexeddb.TMIDBTransactionMode.readwrite);
-      objectStore = aTransaction.objectStore(this.FObjectStoreName);
-      aRequest = objectStore.put(data);
-      $impl.SetOpCode({get: function () {
-          return aRequest;
-        }, set: function (v) {
-          aRequest = v;
-        }},2);
-      $impl.SetSeqId({get: function () {
-          return aRequest;
-        }, set: function (v) {
-          aRequest = v;
-        }},sequenceID);
-      $impl.SetKeyId({get: function () {
-          return aRequest;
-        }, set: function (v) {
-          aRequest = v;
-        }},data[this.FKeyFieldName]);
-      aRequest.onsuccess = rtl.createSafeCallback(this,"DoSuccess");
-      aRequest.onerror = rtl.createSafeCallback(this,"DoFail");
-    };
-    this.AddData = function (data, sequenceID) {
-      var aTransaction = null;
-      var objectStore = null;
-      var aRequest = null;
-      aTransaction = this.FDb.transaction([this.FObjectStoreName],pas.libindexeddb.TMIDBTransactionMode.readwrite);
-      objectStore = aTransaction.objectStore(this.FObjectStoreName);
-      this.CorrectPrimaryKey(data);
-      aRequest = objectStore.add(data);
-      $impl.SetOpCode({get: function () {
-          return aRequest;
-        }, set: function (v) {
-          aRequest = v;
-        }},1);
-      $impl.SetSeqId({get: function () {
-          return aRequest;
-        }, set: function (v) {
-          aRequest = v;
-        }},sequenceID);
-      aRequest.onsuccess = rtl.createSafeCallback(this,"DoSuccess");
-      aRequest.onerror = rtl.createSafeCallback(this,"DoFail");
-    };
-    this.DeleteData = function (AKey, sequenceID) {
-      var aTransaction = null;
-      var objectStore = null;
-      var aRequest = null;
-      aTransaction = this.FDb.transaction([this.FObjectStoreName],pas.libindexeddb.TMIDBTransactionMode.readwrite);
-      objectStore = aTransaction.objectStore(this.FObjectStoreName);
-      aRequest = objectStore.delete(AKey);
-      $impl.SetOpCode({get: function () {
-          return aRequest;
-        }, set: function (v) {
-          aRequest = v;
-        }},3);
-      $impl.SetSeqId({get: function () {
-          return aRequest;
-        }, set: function (v) {
-          aRequest = v;
-        }},sequenceID);
-      $impl.SetKeyId({get: function () {
-          return aRequest;
-        }, set: function (v) {
-          aRequest = v;
-        }},AKey);
-      aRequest.onsuccess = rtl.createSafeCallback(this,"DoSuccess");
-      aRequest.onerror = rtl.createSafeCallback(this,"DoFail");
-    };
-    this.GetAllObjsByIndex = function (sequenceID) {
-      var aTransaction = null;
-      var objectStore = null;
-      var aRequest = null;
-      var anIndex = null;
-      var aDirection = "";
-      aTransaction = this.FDb.transaction([this.FObjectStoreName],pas.libindexeddb.TMIDBTransactionMode.readwrite);
-      objectStore = aTransaction.objectStore(this.FObjectStoreName);
-      this.FAllResult.length = 0;
-      aDirection = "next";
-      if (this.FIndexDescending) aDirection = "prev";
-      if (this.FActiveIndex === "") {
-        aRequest = objectStore.openCursor(null,aDirection)}
-       else {
-        anIndex = objectStore.index(this.FActiveIndex);
-        aRequest = anIndex.openCursor(null,aDirection);
-      };
-      $impl.SetOpCode({get: function () {
-          return aRequest;
-        }, set: function (v) {
-          aRequest = v;
-        }},8);
-      $impl.SetSeqId({get: function () {
-          return aRequest;
-        }, set: function (v) {
-          aRequest = v;
-        }},sequenceID);
-      aRequest.onsuccess = rtl.createSafeCallback(this,"DoSuccess");
-      aRequest.onerror = rtl.createSafeCallback(this,"DoFail");
-    };
-    rtl.addIntf(this,pas.System.IUnknown);
-    var $r = this.$rtti;
-    $r.addMethod("Create$1",2,[["AOwner",pas.Classes.$rtti["TComponent"]]]);
-  });
-  rtl.createClass(this,"TIndexedDbClientDataProxy",pas.DB.TDataProxy,function () {
-    this.$init = function () {
-      pas.DB.TDataProxy.$init.call(this);
-      this.FIdb = null;
-      this.FDataRequest = null;
-      this.FDataRequestEvent = null;
-    };
-    this.$final = function () {
-      this.FIdb = undefined;
-      this.FDataRequest = undefined;
-      this.FDataRequestEvent = undefined;
-      pas.DB.TDataProxy.$final.call(this);
-    };
-    this.GetDataRequest = function (aOptions, aAfterRequest, aAfterLoad) {
-      var Result = null;
-      Result = this.GetDataRequestClass().$create("Create$1",[this,rtl.refSet(aOptions),aAfterRequest,aAfterLoad]);
-      this.FDataRequest = Result;
-      this.FDataRequestEvent = aAfterRequest;
-      return Result;
-    };
-    this.DoGetData = function (aRequest) {
-      var Result = false;
-      if (rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBDataLoaded) {
-        aRequest.FSuccess = 1;
-        aRequest.FData = new Array();
-        if (this.FDataRequestEvent != null) this.FDataRequestEvent(this.FDataRequest);
-        return Result;
-      };
-      if (this.FIdb === null) {
-        if ((rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBDatabaseName !== "") && (rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBObjectStoreName !== "") && (rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBKeyFieldName !== "")) {
-          if (!rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).IsKeyFieldValid()) throw pas.SysUtils.Exception.$create("Create$1",[pas.SysUtils.Format('TIndexedDbClientData Usage Error: The IDBKeyFieldName "%s" not found in field definitions.',pas.System.VarRecs(18,rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBKeyFieldName))]);
-          if (!rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).IsKeyFieldInteger() && rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBAutoIncrement) {
-            rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBAutoIncrement = false;
-            window.console.log("IndexedDB Warning: IDBAutoIncrement switched OFF as IDBKeyFieldName is not of type Integer.");
-          };
-          this.FIdb = $mod.TIndexedDb.$create("Create$1",[this]);
-          this.FIdb.FOnResult = rtl.createCallback(this,"DoOnSuccess");
-          this.FIdb.SetIndexFields(rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBIndexFields);
-          this.FIdb.Open(rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBDatabaseName,rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBObjectStoreName,rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBKeyFieldName,rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBAutoIncrement,0);
-          this.FIdb.FActiveIndex = rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBActiveIndex;
-          this.FIdb.FIndexDescending = rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBIndexDescending;
-        } else {
-          throw pas.SysUtils.Exception.$create("Create$1",["TIndexedDbClientData: DatabaseName, ObjectStoreName and KeyFieldName must be specified."]);
-        };
-      } else {
-        window.console.log("IndexedDB: Internal error, DoGetData entry with these conditions not possible.");
-      };
-      Result = true;
-      return Result;
-    };
-    this.DoOnError = function (opCode, errorName, errorMsg) {
-      var CDS = null;
-      if (((opCode === 0) || (opCode === 8)) && (this.FDataRequestEvent != null)) {
-        this.FDataRequest.FSuccess = 0;
-        this.FDataRequest.FErrorMsg = $impl.FormatErrorMessage(opCode,errorName,errorMsg);
-        this.FDataRequestEvent(this.FDataRequest);
-      };
-      CDS = this.FOwner;
-      CDS.DoOnError(opCode,errorName,errorMsg);
-    };
-    this.DoOnSuccess = function (success, opCode, data, sequenceID, errorName, errorMsg) {
-      var cds = null;
-      var aBookMark = pas.DB.TBookmark.$new();
-      var exe = null;
-      var excName = "";
-      var excMsg = "";
-      var aKeyId = $mod.TKeyId.$clone({value: 0});
-      cds = this.FOwner;
-      try {
-        var $tmp = opCode;
-        if ($tmp === 0) {
-          if (!success) {
-            this.DoOnError(opCode,errorName,errorMsg);
-            return;
-          };
-          if (rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBAutoIncrement !== this.FIdb.FAutoIncrement) {
-            rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBAutoIncrement = this.FIdb.FAutoIncrement;
-            if (this.FIdb.FAutoIncrement) {
-              window.console.log("IndexedDB Warning: AutoIncrement setting of ClientDataSet switched ON to match that of the existing database.")}
-             else window.console.log("IndexedDB Warning: AutoIncrement setting of ClientDataSet switched OFF to match that of the existing database.");
-          };
-          this.FIdb.FOnResult = rtl.createCallback(this,"DoOnSuccess");
-          this.FIdb.GetAllObjsByIndex(0);
-        } else if ($tmp === 8) {
-          if (!success) {
-            this.DoOnError(opCode,errorName,errorMsg);
-            return;
-          };
-          if ((this.FDataRequest != null) && (this.FDataRequest.FDataset != null)) {
-            this.FDataRequest.FSuccess = 1;
-            this.FDataRequest.FData = data;
-            if (cds.GetActive()) cds.Close();
-            if (rtl.isArray(data)) cds.SetRows(pas.JS.toArray(data));
-            cds.FIDBDataLoaded = true;
-            if (this.FDataRequestEvent != null) this.FDataRequestEvent(this.FDataRequest);
-          };
-        } else if (($tmp === 2) || ($tmp === 3)) {
-          cds.UpdateEnds();
-          if (!success) {
-            if (!(cds.FONIDBAfterUpdate != null)) {
-              this.DoOnError(opCode,errorName,errorMsg)}
-             else cds.FONIDBAfterUpdate(false,opCode,$mod.TKeyId.$clone(aKeyId),errorName,errorMsg);
-            return;
-          } else if (cds.FONIDBAfterUpdate != null) {
-            aKeyId.value = data;
-            cds.FONIDBAfterUpdate(true,opCode,$mod.TKeyId.$clone(aKeyId),"","");
-          };
-        } else if ($tmp === 1) {
-          cds.UpdateEnds();
-          if (!success) {
-            if (!(cds.FONIDBAfterUpdate != null)) {
-              this.DoOnError(opCode,errorName,errorMsg)}
-             else cds.FONIDBAfterUpdate(false,opCode,$mod.TKeyId.$clone(aKeyId),errorName,errorMsg);
-            return;
-          };
-          if (success && this.FIdb.FAutoIncrement) {
-            cds = this.FOwner;
-            aBookMark.Flag = 0;
-            aBookMark.Data = sequenceID;
-            cds.GotoBookmark(aBookMark);
-            cds.Edit();
-            cds.FieldByName(rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBKeyFieldName).SetAsInteger(rtl.trunc(data));
-            cds.FInsertIdUpdated = true;
-            try {
-              cds.Post();
-            } finally {
-              cds.FInsertIdUpdated = false;
-            };
-          };
-          if (cds.FONIDBAfterUpdate != null) {
-            aKeyId.value = data;
-            cds.FONIDBAfterUpdate(true,opCode,$mod.TKeyId.$clone(aKeyId),"","");
-          };
-        };
-      } catch ($e) {
-        exe = $e;
-        if (!$impl.GetJSExceptionDetails(exe,{get: function () {
-            return excName;
-          }, set: function (v) {
-            excName = v;
-          }},{get: function () {
-            return excMsg;
-          }, set: function (v) {
-            excMsg = v;
-          }})) throw exe;
-        excMsg = $impl.FormatErrorMessage(opCode,excName,excMsg);
-        this.DoOnError(opCode,excName,excMsg);
-      };
-    };
-    this.ProcessUpdate = function (desc) {
-      var dataObj = null;
-      var aBookMark = pas.DB.TBookmark.$new();
-      var cds = null;
-      var op = 0;
-      var exe = null;
-      var excName = "";
-      var excMsg = "";
-      cds = this.FOwner;
-      try {
-        if (desc.FStatus === 0) {
-          op = 2;
-          this.FIdb.FOnResult = rtl.createCallback(this,"DoOnSuccess");
-          cds.UpdateStarts();
-          this.FIdb.PutData$1(desc.FData,0);
-        };
-        if (desc.FStatus === 1) {
-          op = 1;
-          this.FIdb.FOnResult = rtl.createCallback(this,"DoOnSuccess");
-          dataObj = desc.FData;
-          aBookMark.$assign(cds.GetBookmark());
-          if (aBookMark.Flag !== 0) window.console.log("IndexedDB: Internal Warning, bookmark flag on insert not current as expected.");
-          cds.UpdateStarts();
-          this.FIdb.AddData(desc.FData,aBookMark.Data);
-        };
-        if (desc.FStatus === 2) {
-          op = 3;
-          dataObj = desc.FData;
-          this.FIdb.FOnResult = rtl.createCallback(this,"DoOnSuccess");
-          cds.UpdateStarts();
-          this.FIdb.DeleteData(dataObj[rtl.as(this.FOwner,$mod.TIndexedDbClientDataset).FIDBKeyFieldName],0);
-        };
-      } catch ($e) {
-        exe = $e;
-        if (!$impl.GetJSExceptionDetails(exe,{get: function () {
-            return excName;
-          }, set: function (v) {
-            excName = v;
-          }},{get: function () {
-            return excMsg;
-          }, set: function (v) {
-            excMsg = v;
-          }})) throw exe;
-        excMsg = $impl.FormatErrorMessage(op,excName,excMsg);
-        this.DoOnError(op,excName,excMsg);
-      };
-    };
-    this.Close = function () {
-      if (this.FIdb !== null) rtl.free(this,"FIdb");
-      this.FIdb = null;
-    };
-    this.Create$1 = function (AOwner) {
-      pas.Classes.TComponent.Create$1.apply(this,arguments);
-      this.FDataRequest = null;
-      this.FDataRequestEvent = null;
-      this.FIdb = null;
-      return this;
-    };
-    this.Destroy = function () {
-      if (this.FIdb !== null) rtl.free(this,"FIdb");
-      pas.Classes.TComponent.Destroy.call(this);
-    };
-    rtl.addIntf(this,pas.System.IUnknown);
-    var $r = this.$rtti;
-    $r.addMethod("Create$1",2,[["AOwner",pas.Classes.$rtti["TComponent"]]]);
-  });
-  this.$rtti.$MethodVar("TIDBErrorEvent",{procsig: rtl.newTIProcSig([["DataSet",pas.DB.$rtti["TDataSet"]],["opCode",this.$rtti["TIndexedDbOpCode"]],["errorName",rtl.string],["errorMsg",rtl.string]]), methodkind: 0});
-  this.$rtti.$MethodVar("TIDBInitSuccessEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]]]), methodkind: 0});
-  rtl.recNewT(this,"TKeyId",function () {
-    this.value = undefined;
-    this.$eq = function (b) {
-      return this.value === b.value;
-    };
-    this.$assign = function (s) {
-      this.value = s.value;
-      return this;
-    };
-    var $r = $mod.$rtti.$Record("TKeyId",{});
-    $r.addField("value",rtl.jsvalue);
-  });
-  this.$rtti.$MethodVar("TIDBAfterUpdateEvent",{procsig: rtl.newTIProcSig([["success",rtl.boolean],["opCode",this.$rtti["TIndexedDbOpCode"]],["keyId",this.$rtti["TKeyId"]],["errorName",rtl.string],["errorMsg",rtl.string]]), methodkind: 0});
-  rtl.createClass(this,"TIndexedDbClientDataset",pas["WEBLib.CDS"].TClientDataSet,function () {
-    this.$init = function () {
-      pas["WEBLib.CDS"].TClientDataSet.$init.call(this);
-      this.FIDBProxy = null;
-      this.FIDBDatabaseName = "";
-      this.FIDBObjectStoreName = "";
-      this.FIDBKeyFieldName = "";
-      this.FIDBActiveIndex = "";
-      this.FIDBIndexDescending = false;
-      this.FIDBIndexFields = null;
-      this.FIDBAutoIncrement = false;
-      this.FIDBDataLoaded = false;
-      this.FOpenAfterLoadDFM = false;
-      this.FRemKeyPos = undefined;
-      this.FOnIDBError = null;
-      this.FONIDBAfterUpdate = null;
-      this.FOnInitSuccess = null;
-      this.FIdbInit = null;
-      this.FInsertIdUpdated = false;
-      this.FUpdateCount$1 = 0;
-      this.FRefreshPending = false;
-    };
-    this.$final = function () {
-      this.FIDBProxy = undefined;
-      this.FIDBIndexFields = undefined;
-      this.FOnIDBError = undefined;
-      this.FONIDBAfterUpdate = undefined;
-      this.FOnInitSuccess = undefined;
-      this.FIdbInit = undefined;
-      pas["WEBLib.CDS"].TClientDataSet.$final.call(this);
-    };
-    this.InternalClose = function () {
-      pas.JSONDataset.TBaseJSONDataSet.InternalClose.call(this);
-      this.FIDBProxy.Close();
-      this.FIDBDataLoaded = false;
-      this.FOpenAfterLoadDFM = false;
-    };
-    this.AddToChangeList = function (aChange) {
-      var Result = null;
-      var desc = null;
-      desc = this.FIDBProxy.GetUpdateDescriptor(this,pas.DB.TBookmark.$clone(this.GetBookmark()),this.ActiveBuffer().data,aChange);
-      if (!this.FInsertIdUpdated || (desc.FStatus !== 0)) this.FIDBProxy.ProcessUpdate(desc);
-      Result = null;
-      return Result;
-      return Result;
-    };
-    this.SetActive = function (Value) {
-      if ((this.FFieldDefs.GetCount() === 0) && Value && (this.FState === 0) && !this.FIDBDataLoaded && !this.FOpenAfterLoadDFM) {
-        this.FOpenAfterLoadDFM = true;
-        return;
-      };
-      if (Value && (this.FState === 0) && !this.FIDBDataLoaded) {
-        this.FOpenAfterLoadDFM = false;
-        this.Load(rtl.createSet(1),null);
-        return;
-      };
-      pas["WEBLib.CDS"].TCustomClientDataSet.SetActive.apply(this,arguments);
-    };
-    this.AfterLoadDFMValues = function () {
-      pas["WEBLib.CDS"].TCustomClientDataSet.AfterLoadDFMValues.call(this);
-      if (this.FOpenAfterLoadDFM) {
-        if (this.FFieldDefs.GetCount() === 0) throw pas.SysUtils.Exception.$create("Create$1",["TIndexedDbClientData Usage Error: Can not Set Active, Field definitions missing."]);
-        this.SetActive(true);
-      };
-    };
-    this.DoAfterOpen = function () {
-      pas["WEBLib.CDS"].TCustomClientDataSet.DoAfterOpen.call(this);
-      if (this.FRemKeyPos != null) {
-        this.Locate(this.FIDBKeyFieldName,this.FRemKeyPos,{});
-        this.FRemKeyPos = null;
-      };
-    };
-    this.DoOnError = function (opCode, errorName, errorMsg) {
-      window.console.log(errorMsg);
-      if (this.FOnIDBError != null) {
-        this.FOnIDBError(this,opCode,errorName,errorMsg)}
-       else throw pas.SysUtils.Exception.$create("Create$1",[errorMsg]);
-    };
-    this.UpdateStarts = function () {
-      this.FUpdateCount$1 += 1;
-    };
-    this.UpdateEnds = function () {
-      if (this.FUpdateCount$1 === 0) {
-        window.console.log("IndexedDB Internal Warning: Update count is already zero in UpdateEnds")}
-       else this.FUpdateCount$1 -= 1;
-      if (this.FRefreshPending && (this.FUpdateCount$1 === 0)) this.Refresh$2();
-    };
-    this.FixKeyFieldCase = function () {
-      var i = 0;
-      for (var $l = 0, $end = this.FFieldDefs.GetCount() - 1; $l <= $end; $l++) {
-        i = $l;
-        if (pas.SysUtils.SameText(this.FFieldDefs.GetItem$1(i).FName,this.FIDBKeyFieldName)) {
-          this.FIDBKeyFieldName = this.FFieldDefs.GetItem$1(i).FName;
-          break;
-        };
-      };
-    };
-    this.IsKeyFieldValid = function () {
-      var Result = false;
-      var aFieldDef = null;
-      this.FixKeyFieldCase();
-      aFieldDef = this.FFieldDefs.Find(this.FIDBKeyFieldName);
-      Result = aFieldDef !== null;
-      return Result;
-    };
-    this.IsKeyFieldInteger = function () {
-      var Result = false;
-      var aFieldDef = null;
-      aFieldDef = this.FFieldDefs.Find(this.FIDBKeyFieldName);
-      Result = (aFieldDef !== null) && (aFieldDef.FDataType === 3);
-      return Result;
-    };
-    this.Create$1 = function (AOwner) {
-      pas["WEBLib.CDS"].TCustomClientDataSet.Create$1.apply(this,arguments);
-      this.FIDBDatabaseName = "";
-      this.FIDBObjectStoreName = "";
-      this.FIDBKeyFieldName = "";
-      this.FIDBActiveIndex = "";
-      this.FIDBIndexDescending = false;
-      this.FIDBAutoIncrement = false;
-      this.FIDBDataLoaded = false;
-      this.FOpenAfterLoadDFM = false;
-      this.FRemKeyPos = null;
-      this.FIDBProxy = null;
-      this.FIDBIndexFields = null;
-      this.FIDBProxy = $mod.TIndexedDbClientDataProxy.$create("Create$1",[this]);
-      this.SetDataProxy(this.FIDBProxy);
-      this.FInsertIdUpdated = false;
-      this.FUpdateCount$1 = 0;
-      this.FRefreshPending = false;
-      return this;
-    };
-    this.Destroy = function () {
-      if (this.GetActive()) this.Close();
-      if (this.FIDBProxy !== null) rtl.free(this,"FIDBProxy");
-      if (this.FIdbInit !== null) rtl.free(this,"FIdbInit");
-      pas["WEBLib.CDS"].TCustomClientDataSet.Destroy.call(this);
-    };
-    this.Refresh$2 = function () {
-      if (this.FUpdateCount$1 > 0) {
-        this.FRefreshPending = true;
-        return;
-      };
-      this.FRefreshPending = false;
-      if (this.FCurrentRecord > -1) this.FRemKeyPos = this.FieldByName(this.FIDBKeyFieldName).GetAsJSValue();
-      this.Close();
-      this.Load(rtl.createSet(1),null);
-    };
-    rtl.addIntf(this,pas.System.IUnknown);
-    var $r = this.$rtti;
-    $r.addMethod("Create$1",2,[["AOwner",pas.Classes.$rtti["TComponent"]]]);
-    $r.addProperty("Active",3,rtl.boolean,"GetActive","SetActive",{Default: false});
-    $r.addProperty("IDBDatabaseName",0,rtl.string,"FIDBDatabaseName","FIDBDatabaseName");
-    $r.addProperty("IDBObjectStoreName",0,rtl.string,"FIDBObjectStoreName","FIDBObjectStoreName");
-    $r.addProperty("IDBKeyFieldName",0,rtl.string,"FIDBKeyFieldName","FIDBKeyFieldName");
-    $r.addProperty("IDBAutoIncrement",0,rtl.boolean,"FIDBAutoIncrement","FIDBAutoIncrement");
-    $r.addProperty("OnIDBError",0,$mod.$rtti["TIDBErrorEvent"],"FOnIDBError","FOnIDBError");
-    $r.addProperty("ONIDBAfterUpdate",0,$mod.$rtti["TIDBAfterUpdateEvent"],"FONIDBAfterUpdate","FONIDBAfterUpdate");
-    $r.addProperty("OnInitSuccess",0,$mod.$rtti["TIDBInitSuccessEvent"],"FOnInitSuccess","FOnInitSuccess");
-  });
-  $mod.$implcode = function () {
-    $impl.SetOpCode = function (aReq, anOpCode) {
-      aReq.get()["op"] = anOpCode;
-    };
-    $impl.GetOpCode = function (aReq) {
-      var Result = 0;
-      Result = aReq.get()["op"];
-      return Result;
-    };
-    $impl.SetSeqId = function (aReq, aSeqId) {
-      aReq.get()["seqId"] = aSeqId;
-    };
-    $impl.GetSeqId = function (aReq) {
-      var Result = undefined;
-      Result = aReq.get()["seqId"];
-      return Result;
-    };
-    $impl.SetKeyId = function (aReq, anId) {
-      aReq.get()["keyId"] = anId;
-    };
-    $impl.GetKeyId = function (aReq) {
-      var Result = undefined;
-      Result = aReq.get()["keyId"];
-      return Result;
-    };
-    $impl.GetJSExceptionDetails = function (ExceptObject, errorName, errorMsg) {
-      var Result = false;
-      var idbException = null;
-      Result = false;
-      if (pas.SysUtils.Exception.isPrototypeOf(ExceptObject)) return Result;
-      Result = true;
-      idbException = ExceptObject;
-      if (pas.JS.isUndefined(idbException.name)) {
-        errorName.set("UnknownError")}
-       else errorName.set(idbException.name);
-      if (pas.JS.isUndefined(idbException.message)) {
-        errorMsg.set("Unknown Error")}
-       else errorMsg.set(idbException.message);
-      return Result;
-    };
-    $impl.FormatErrorMessage = function (theOpCode, errorName, errorMessage) {
-      var Result = "";
-      var oper = "";
-      var $tmp = theOpCode;
-      if ($tmp === 0) {
-        oper = "(Open) "}
-       else if ($tmp === 1) {
-        oper = "(Add) "}
-       else if ($tmp === 2) {
-        oper = "(Put) "}
-       else if ($tmp === 3) {
-        oper = "(Delete) "}
-       else if ($tmp === 4) {
-        oper = "(Get) "}
-       else if ($tmp === 5) {
-        oper = "(GetAllKeys) "}
-       else if ($tmp === 6) {
-        oper = "(GetAllObjs) "}
-       else if ($tmp === 7) {
-        oper = "(GetAllIndexKeys) "}
-       else if ($tmp === 8) {
-        oper = "(GetAllObjsByIndex) "}
-       else {
-        oper = "(Unknown) ";
-      };
-      Result = pas.SysUtils.Format("IndexedDB Error %s: %s, %s",pas.System.VarRecs(18,oper,18,errorName,18,errorMessage));
-      return Result;
-    };
-  };
-},[]);
 rtl.module("StrUtils",["System","SysUtils","Types"],function () {
   "use strict";
   var $mod = this;
@@ -38737,6 +36936,876 @@ rtl.module("WEBLib.WebCtrls",["System","Classes","WEBLib.Controls","WEBLib.Graph
     $r.addProperty("OnStartDrag",0,pas["WEBLib.Controls"].$rtti["TStartDragEvent"],"FOnStartDrag","FOnStartDrag");
   });
 },["WEBLib.Dialogs","WEBLib.WebTools"]);
+rtl.module("WEBLib.CDS",["System","Classes","DB","JSONDataset","Web","JS","WEBLib.Controls","WEBLib.REST"],function () {
+  "use strict";
+  var $mod = this;
+  var $impl = $mod.$impl;
+  this.$rtti.$MethodVar("TConnectErrorEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["ErrorCode",rtl.longint]]), methodkind: 0});
+  this.TURLType = {"0": "utGet", utGet: 0, "1": "utPost", utPost: 1, "2": "utPut", utPut: 2, "3": "utDelete", utDelete: 3};
+  this.$rtti.$Enum("TURLType",{minvalue: 0, maxvalue: 3, ordtype: 1, enumtype: this.TURLType});
+  this.$rtti.$MethodVar("TClientConnectionGetURLEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["Dataset",pas.DB.$rtti["TDataSet"]],["urlType",this.$rtti["TURLType"]],["URL",rtl.string,1]]), methodkind: 0});
+  this.$rtti.$MethodVar("TGetUpdatePayloadEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["Dataset",pas.DB.$rtti["TDataSet"]],["urlType",this.$rtti["TURLType"]],["Data",rtl.jsvalue],["aPayLoad",rtl.string,4]]), methodkind: 0});
+  this.$rtti.$MethodVar("TGetDataPayloadEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["Dataset",pas.DB.$rtti["TDataSet"]],["urlType",this.$rtti["TURLType"]],["aPayLoad",rtl.jsvalue,1]]), methodkind: 0});
+  this.$rtti.$MethodVar("TProcessMetaDataEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["Dataset",pas.DB.$rtti["TDataSet"]],["FieldDefs",pas.DB.$rtti["TFieldDefs"]],["aMetaData",pas.JS.$rtti["TJSObject"]]]), methodkind: 0});
+  this.$rtti.$MethodVar("TDataReceivedEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["ARequest",pas["WEBLib.Controls"].$rtti["TJSXMLHttpRequestRecord"]],["AResponse",rtl.string,1]]), methodkind: 0});
+  rtl.createClass(this,"TClientConnection",pas.Classes.TComponent,function () {
+    this.$init = function () {
+      pas.Classes.TComponent.$init.call(this);
+      this.FDataProxy = null;
+      this.FActive = false;
+      this.FURI = "";
+      this.FDS = null;
+      this.FDataNode = "";
+      this.FAutoOpen = false;
+      this.FUpdateCount = 0;
+      this.FOnConnectError = null;
+      this.FBeforeConnect = null;
+      this.FAfterConnect = null;
+      this.FHeaders = null;
+      this.FPassword = "";
+      this.FUser = "";
+      this.FOnGetURL = null;
+      this.FPageParam = "";
+      this.FOnGetUpdatePayLoad = null;
+      this.FAppendKeyToURL = false;
+      this.FOnGetDataPayLoad = null;
+      this.FMetaDataNode = "";
+      this.FOnProcessMetaData = null;
+      this.FOnDataReceived = null;
+      this.FXHR = null;
+      this.FCommand = 0;
+      this.FCustomCommand = "";
+      this.FPostData = "";
+      this.FDelimiter = "\x00";
+      this.FSkipFirstCSVLine = false;
+      this.FOpenResolver = null;
+    };
+    this.$final = function () {
+      this.FDataProxy = undefined;
+      this.FDS = undefined;
+      this.FOnConnectError = undefined;
+      this.FBeforeConnect = undefined;
+      this.FAfterConnect = undefined;
+      this.FHeaders = undefined;
+      this.FOnGetURL = undefined;
+      this.FOnGetUpdatePayLoad = undefined;
+      this.FOnGetDataPayLoad = undefined;
+      this.FOnProcessMetaData = undefined;
+      this.FOnDataReceived = undefined;
+      this.FXHR = undefined;
+      this.FOpenResolver = undefined;
+      pas.Classes.TComponent.$final.call(this);
+    };
+    this.SetHeaders = function (Value) {
+      this.FHeaders.Assign(Value);
+    };
+    this.GetPageURL = function (aRequest) {
+      var Result = "";
+      var URL = "";
+      URL = this.GetReadBaseURL(aRequest);
+      if (this.FPageParam !== "") {
+        if (pas.System.Pos("?",URL) !== 0) {
+          URL = URL + "&"}
+         else URL = URL + "?";
+        URL = URL + this.FPageParam + "=" + pas.SysUtils.IntToStr(aRequest.FRequestID - 1);
+      };
+      Result = URL;
+      return Result;
+    };
+    this.GetDataProxy = function () {
+      var Result = null;
+      if (this.FDataProxy === null) this.FDataProxy = this.DoGetDataProxy();
+      Result = this.FDataProxy;
+      return Result;
+    };
+    this.SetDataNode = function (Value) {
+      if ((this.FDataNode !== Value) && (this.FUpdateCount === 0)) this.SetActive(false);
+      this.FDataNode = Value;
+    };
+    this.SetURI = function (Value) {
+      if ((this.FURI !== Value) && (this.FUpdateCount === 0)) this.SetActive(false);
+      this.FURI = Value;
+    };
+    this.onError = function (Event) {
+      var Result = false;
+      if (this.FOnConnectError != null) {
+        this.FOnConnectError(this,this.FXHR.status);
+      };
+      Result = true;
+      return Result;
+    };
+    this.onAbort = function (Event) {
+      var Result = false;
+      if (this.FOnConnectError != null) {
+        this.FOnConnectError(this,this.FXHR.status);
+      };
+      Result = true;
+      return Result;
+    };
+    this.onLoad = function (Event) {
+      var Result = false;
+      var rec = pas["WEBLib.Controls"].TJSXMLHttpRequestRecord.$new();
+      var s = "";
+      if (this.FOnDataReceived != null) {
+        rec.req = this.FXHR;
+        s = this.FXHR.responseText;
+        this.FOnDataReceived(this,pas["WEBLib.Controls"].TJSXMLHttpRequestRecord.$clone(rec),{get: function () {
+            return s;
+          }, set: function (v) {
+            s = v;
+          }});
+      };
+      Result = true;
+      return Result;
+    };
+    this.SetActive = function (Value) {
+      if (this.FActive !== Value) {
+        this.FActive = Value;
+        if (this.FUpdateCount > 0) return;
+        if (0 in this.FComponentState) return;
+        if (Value) {
+          if (this.FURI !== "") this.DoConnect();
+        } else this.DoDisconnect();
+      };
+    };
+    this.ProcessMetadata = function (Dataset, FieldDefs, aMetaData) {
+      if (this.FOnProcessMetaData != null) this.FOnProcessMetaData(this,Dataset,FieldDefs,aMetaData);
+    };
+    this.GetReadBaseURL = function (aRequest) {
+      var Result = "";
+      Result = this.FURI;
+      if (this.FOnGetURL != null) this.FOnGetURL(this,aRequest.FDataset,0,{get: function () {
+          return Result;
+        }, set: function (v) {
+          Result = v;
+        }});
+      return Result;
+    };
+    this.RegisterDataSet = function (value) {
+      this.FDS = value;
+    };
+    this.DoOpenResolve = function (AResult) {
+      if (this.FOpenResolver != null) this.FOpenResolver(AResult);
+    };
+    this.DoAfterLoad = function (DataSet) {
+      this.DoOpenResolve(true);
+    };
+    this.DoRequest = function () {
+      var cmd = "";
+      this.FXHR = new XMLHttpRequest();
+      this.FXHR.addEventListener("load",rtl.createSafeCallback(this,"onLoad"));
+      this.FXHR.addEventListener("abort",rtl.createSafeCallback(this,"onAbort"));
+      this.FXHR.addEventListener("error",rtl.createSafeCallback(this,"onError"));
+      cmd = pas["WEBLib.REST"].HTTPCommand(this.FCommand,this.FCustomCommand);
+      this.FXHR.open(cmd,this.FURI);
+      this.SetupRequest(this.FXHR);
+      this.FXHR.setRequestHeader("content-type","application/json");
+      if (this.FPostData !== "") {
+        this.FXHR.send(this.FPostData)}
+       else this.FXHR.send();
+    };
+    this.DoConnect = function () {
+      if (this.FDS != null) {
+        this.DoBeforeConnect();
+        if (this.FAutoOpen) {
+          this.FDS.SetActive(false);
+          this.FDS.FAfterLoad = rtl.createCallback(this,"DoAfterLoad");
+          this.FDS.Load({},null);
+        } else {
+          this.DoRequest();
+        };
+      } else this.DoRequest();
+    };
+    this.DoDisconnect = function () {
+      if (this.FDS != null) {
+        if (this.FAutoOpen) this.FDS.SetActive(false);
+      };
+    };
+    this.DoBeforeConnect = function () {
+      if (this.FBeforeConnect != null) this.FBeforeConnect(this);
+    };
+    this.DoAfterConnect = function () {
+      if (this.FAfterConnect != null) this.FAfterConnect(this);
+    };
+    this.DoError = function (ErrorCode) {
+      if (this.FOnConnectError != null) this.FOnConnectError(this,ErrorCode);
+      this.DoOpenResolve(false);
+      throw pas.SysUtils.Exception.$create("Create$1",["Error connecting to URI " + this.FURI]);
+    };
+    this.DoDataReceived = function (ARequest, AResponse) {
+      var LRequestRec = pas["WEBLib.Controls"].TJSXMLHttpRequestRecord.$new();
+      if (this.FOnDataReceived != null) {
+        LRequestRec.req = ARequest;
+        this.FOnDataReceived(this,pas["WEBLib.Controls"].TJSXMLHttpRequestRecord.$clone(LRequestRec),AResponse);
+      };
+    };
+    this.SetupRequest = function (aXHR) {
+      var I = 0;
+      var headname = "";
+      var headvalue = "";
+      if (this.FUser !== "") aXHR.setRequestHeader("X-Requested-With","XMLHttpRequest");
+      for (var $l = 0, $end = this.FHeaders.GetCount() - 1; $l <= $end; $l++) {
+        I = $l;
+        this.FHeaders.GetNameValue(I,{get: function () {
+            return headname;
+          }, set: function (v) {
+            headname = v;
+          }},{get: function () {
+            return headvalue;
+          }, set: function (v) {
+            headvalue = v;
+          }});
+        aXHR.setRequestHeader(headname,headvalue);
+      };
+      if (this.FUser !== "") aXHR.setRequestHeader("Authorization","Basic " + window.btoa(this.FUser + ":" + this.FPassword));
+    };
+    this.GetDataNode = function () {
+      var Result = "";
+      Result = this.FDataNode;
+      if (Result === "") Result = "data";
+      return Result;
+    };
+    this.GetMetaDataNode = function () {
+      var Result = "";
+      Result = this.FMetaDataNode;
+      if (Result === "") Result = "metaData";
+      return Result;
+    };
+    this.DoGetDataProxy = function () {
+      var Result = null;
+      Result = $mod.TWebClientDataProxy.$create("Create$1",[this]);
+      return Result;
+    };
+    this.Create$1 = function (AOwner) {
+      pas.Classes.TComponent.Create$1.apply(this,arguments);
+      this.FActive = false;
+      this.FDS = null;
+      this.FAutoOpen = true;
+      this.FCommand = 0;
+      this.FHeaders = pas.Classes.TStringList.$create("Create$1");
+      this.FDelimiter = ";";
+      this.FSkipFirstCSVLine = false;
+      this.FAppendKeyToURL = true;
+      return this;
+    };
+    this.Destroy = function () {
+      rtl.free(this,"FHeaders");
+      pas.Classes.TComponent.Destroy.call(this);
+    };
+    this.BeginUpdate = function () {
+      pas.Classes.TComponent.BeginUpdate.call(this);
+      this.FUpdateCount += 1;
+    };
+    this.EndUpdate = function () {
+      pas.Classes.TComponent.EndUpdate.call(this);
+      if (this.FUpdateCount > 0) this.FUpdateCount -= 1;
+    };
+    this.AfterLoadDFMValues = function () {
+      pas.Classes.TComponent.AfterLoadDFMValues.call(this);
+      if (this.FActive && (this.FURI !== "")) this.DoConnect();
+    };
+    rtl.addIntf(this,pas.System.IUnknown);
+    var $r = this.$rtti;
+    $r.addMethod("Create$1",2,[["AOwner",pas.Classes.$rtti["TComponent"]]]);
+    $r.addProperty("Active",2,rtl.boolean,"FActive","SetActive");
+    $r.addProperty("AppendKeyToURL",0,rtl.boolean,"FAppendKeyToURL","FAppendKeyToURL",{Default: true});
+    $r.addProperty("AutoOpenDataSet",0,rtl.boolean,"FAutoOpen","FAutoOpen",{Default: true});
+    $r.addProperty("Command",0,pas["WEBLib.REST"].$rtti["THTTPCommand"],"FCommand","FCommand",{Default: pas["WEBLib.REST"].THTTPCommand.httpGET});
+    $r.addProperty("CustomCommand",0,rtl.string,"FCustomCommand","FCustomCommand");
+    $r.addProperty("DataNode",2,rtl.string,"FDataNode","SetDataNode");
+    $r.addProperty("Delimiter",0,rtl.char,"FDelimiter","FDelimiter");
+    $r.addProperty("MetaDataNode",0,rtl.string,"FMetaDataNode","FMetaDataNode");
+    $r.addProperty("PageParam",0,rtl.string,"FPageParam","FPageParam");
+    $r.addProperty("PostData",0,rtl.string,"FPostData","FPostData");
+    $r.addProperty("Headers",2,pas.Classes.$rtti["TStringList"],"FHeaders","SetHeaders");
+    $r.addProperty("Password",0,rtl.string,"FPassword","FPassword");
+    $r.addProperty("SkipFirstCSVLine",0,rtl.boolean,"FSkipFirstCSVLine","FSkipFirstCSVLine",{Default: false});
+    $r.addProperty("User",0,rtl.string,"FUser","FUser");
+    $r.addProperty("URI",2,rtl.string,"FURI","SetURI");
+    $r.addProperty("AfterConnect",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FAfterConnect","FAfterConnect");
+    $r.addProperty("BeforeConnect",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FBeforeConnect","FBeforeConnect");
+    $r.addProperty("OnConnectError",0,$mod.$rtti["TConnectErrorEvent"],"FOnConnectError","FOnConnectError");
+    $r.addProperty("OnDataReceived",0,$mod.$rtti["TDataReceivedEvent"],"FOnDataReceived","FOnDataReceived");
+    $r.addProperty("OnGetURL",0,$mod.$rtti["TClientConnectionGetURLEvent"],"FOnGetURL","FOnGetURL");
+    $r.addProperty("OnGetUpdatePayLoad",0,$mod.$rtti["TGetUpdatePayloadEvent"],"FOnGetUpdatePayLoad","FOnGetUpdatePayLoad");
+    $r.addProperty("OnGetDataPayload",0,$mod.$rtti["TGetDataPayloadEvent"],"FOnGetDataPayLoad","FOnGetDataPayLoad");
+    $r.addProperty("OnProcessMetaData",0,$mod.$rtti["TProcessMetaDataEvent"],"FOnProcessMetaData","FOnProcessMetaData");
+  });
+  rtl.createClass(this,"TWebClientDataProxy",pas.DB.TDataProxy,function () {
+    this.$init = function () {
+      pas.DB.TDataProxy.$init.call(this);
+      this.FConnection = null;
+    };
+    this.$final = function () {
+      this.FConnection = undefined;
+      pas.DB.TDataProxy.$final.call(this);
+    };
+    this.GetUpdateDescriptorClass = function () {
+      var Result = null;
+      Result = $impl.TWebClientUpdateRequest;
+      return Result;
+    };
+    this.DoGetData = function (aRequest) {
+      var Result = false;
+      var R = null;
+      var URL = "";
+      var cmd = "";
+      Result = false;
+      R = rtl.as(aRequest,$impl.TWebClientDataRequest);
+      R.FXHR = new XMLHttpRequest();
+      URL = this.FConnection.GetPageURL(aRequest);
+      if (URL === "") {
+        if (2 in R.FLoadOptions) {
+          R.FSuccess = 1}
+         else {
+          R.FSuccess = 0;
+          R.FErrorMsg = "No URL to get data";
+          R.DoAfterRequest();
+        };
+      } else {
+        if ((2 in R.FLoadOptions) && (this.FConnection.FPageParam === "")) {
+          R.FSuccess = 1}
+         else {
+          cmd = pas["WEBLib.REST"].HTTPCommand(this.FConnection.FCommand,this.FConnection.FCustomCommand);
+          R.FXHR.open(cmd,URL,true);
+          this.FConnection.SetupRequest(R.FXHR);
+          R.FXHR.addEventListener("load",rtl.createSafeCallback(R,"onLoad"));
+          R.FXHR.addEventListener("abort",rtl.createSafeCallback(R,"onAbort"));
+          R.FXHR.addEventListener("error",rtl.createSafeCallback(R,"onError"));
+          if (this.FConnection.FPostData !== "") {
+            R.FXHR.send(this.FConnection.FPostData)}
+           else R.FXHR.send();
+        };
+        Result = true;
+      };
+      return Result;
+    };
+    this.GetDataRequest = function (aOptions, aAfterRequest, aAfterLoad) {
+      var Result = null;
+      Result = $impl.TWebClientDataRequest.$create("Create$1",[this,rtl.refSet(aOptions),aAfterRequest,aAfterLoad]);
+      Result.FConnection = this.FConnection;
+      return Result;
+    };
+    this.Create$1 = function (AOwner) {
+      pas.Classes.TComponent.Create$1.apply(this,arguments);
+      if ($mod.TClientConnection.isPrototypeOf(AOwner)) this.FConnection = AOwner;
+      return this;
+    };
+    rtl.addIntf(this,pas.System.IUnknown);
+    var $r = this.$rtti;
+    $r.addMethod("Create$1",2,[["AOwner",pas.Classes.$rtti["TComponent"]]]);
+  });
+  this.$rtti.$MethodVar("TUpdateRecordEvent",{procsig: rtl.newTIProcSig([["Sender",pas.System.$rtti["TObject"]],["ADescriptor",pas.DB.$rtti["TRecordUpdateDescriptor"]]]), methodkind: 0});
+  rtl.createClass(this,"TCustomClientDataSet",pas.JSONDataset.TBaseJSONDataSet,function () {
+    this.$init = function () {
+      pas.JSONDataset.TBaseJSONDataSet.$init.call(this);
+      this.FConnection = null;
+      this.FOnUpdateRecord = null;
+      this.FUpdateCount = 0;
+      this.FFilterCount = 0;
+      this.FIDField = "";
+      this.FuseServerMetadata = false;
+      this.FParams = null;
+      this.FOpenResolver = null;
+      this.FPostResolver = null;
+      this.FInsertResolver = null;
+      this.FDeleteResolver = null;
+    };
+    this.$final = function () {
+      this.FConnection = undefined;
+      this.FOnUpdateRecord = undefined;
+      this.FParams = undefined;
+      this.FOpenResolver = undefined;
+      this.FPostResolver = undefined;
+      this.FInsertResolver = undefined;
+      this.FDeleteResolver = undefined;
+      pas.JSONDataset.TBaseJSONDataSet.$final.call(this);
+    };
+    this.SetParams = function (Value) {
+      this.FParams.Assign(Value);
+    };
+    this.GetStringFieldLength = function (F, AName, AIndex) {
+      var Result = 0;
+      var I = 0;
+      var L = 0;
+      var D = undefined;
+      Result = 0;
+      D = F["maxLen"];
+      if (!isNaN(pas.JS.toNumber(D))) {
+        Result = pas.System.Trunc(pas.JS.toNumber(D));
+        if (Result <= 0) pas.DB.DatabaseErrorFmt$1("Invalid maximum length specifier for field %s",pas.System.VarRecs(18,AName),this);
+      } else {
+        for (var $l = 0, $end = this.FRows.length - 1; $l <= $end; $l++) {
+          I = $l;
+          D = this.FFieldMapper.GetJSONDataForField(AName,AIndex,this.FRows[I]);
+          if (rtl.isString(D)) {
+            L = ("" + D).length;
+            if (L > Result) Result = L;
+          };
+        };
+      };
+      if (Result === 0) Result = 20;
+      return Result;
+    };
+    this.StringToFieldType = function (S) {
+      var Result = 0;
+      if (S === "int") {
+        Result = 3}
+       else if (S === "bigint") {
+        Result = 25}
+       else if (S === "float") {
+        Result = 6}
+       else if (S === "bool") {
+        Result = 5}
+       else if (S === "date") {
+        Result = 9}
+       else if (S === "datetime") {
+        Result = 11}
+       else if (S === "time") {
+        Result = 10}
+       else if (S === "blob") {
+        Result = 15}
+       else if (S === "string") {
+        Result = 1}
+       else Result = 1;
+      return Result;
+    };
+    this.DataPacketReceived = function (aRequest) {
+      var Result = false;
+      var O = null;
+      var MD = null;
+      var V = undefined;
+      var A = null;
+      var lmetadata = "";
+      var Root = "";
+      var subn = "";
+      var s = "";
+      var isjson = false;
+      var sl = null;
+      var lines = null;
+      var fl = 0;
+      var l = 0;
+      var c = 0;
+      var flds = 0;
+      Result = false;
+      if (pas.JS.isNull(aRequest.FData)) return Result;
+      O = null;
+      A = null;
+      if (rtl.isString(aRequest.FData)) {
+        isjson = true;
+        s = pas.SysUtils.Trim("" + aRequest.FData);
+        if (s.length > 1) {
+          if ((s.charAt(0) !== "[") && (s.charAt(0) !== "{")) isjson = false;
+        };
+        if (!isjson) {
+          sl = pas.Classes.TStringList.$create("Create$1");
+          lines = pas.Classes.TStringList.$create("Create$1");
+          lines.SetDelimiter(this.FConnection.FDelimiter);
+          lines.FStrictDelimiter = true;
+          sl.SetTextStr("" + aRequest.FData);
+          A = new Array();
+          A.length = sl.GetCount();
+          fl = 0;
+          if (this.FConnection.FSkipFirstCSVLine) fl = 1;
+          for (var $l = fl, $end = sl.GetCount() - 1; $l <= $end; $l++) {
+            l = $l;
+            A[l - fl] = new Array();
+            lines.SetDelimitedText(sl.Get(l));
+            flds = lines.GetCount();
+            O = new Object();
+            for (var $l1 = 0, $end1 = lines.GetCount() - 1; $l1 <= $end1; $l1++) {
+              c = $l1;
+              O["column" + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
+                  return c;
+                }, set: function (v) {
+                  c = v;
+                }})] = lines.Get(c);
+            };
+            A[l - fl] = O;
+          };
+          Result = (A !== null) && (A.length > 0);
+          if ((A != null) && (A.length > 0) && (this.FFieldDefs != null) && (this.FFieldDefs.GetCount() === 0)) {
+            for (var $l2 = 0, $end2 = flds - 1; $l2 <= $end2; $l2++) {
+              l = $l2;
+              this.FFieldDefs.Add$4("column" + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
+                  return l;
+                }, set: function (v) {
+                  l = v;
+                }}),1,255);
+            };
+            this.AddToRows(A);
+          };
+          lines = rtl.freeLoc(lines);
+          sl = rtl.freeLoc(sl);
+          return Result;
+        };
+      };
+      if (rtl.isString(aRequest.FData)) {
+        V = JSON.parse("" + aRequest.FData);
+        if (rtl.isArray(V)) {
+          A = V;
+        } else if (rtl.isObject(V)) O = V;
+      } else if (rtl.isArray(aRequest.FData)) {
+        A = aRequest.FData;
+      } else if (rtl.isObject(aRequest.FData)) {
+        O = aRequest.FData;
+      } else pas.DB.DatabaseError("Cannot handle data packet");
+      if (O != null) {
+        Root = this.FConnection.GetDataNode();
+        lmetadata = this.FConnection.GetMetaDataNode();
+        while (pas.System.Pos("\\",Root) > 0) {
+          subn = pas.System.Copy(Root,1,pas.System.Pos("\\",Root) - 1);
+          Root = pas.System.Copy(Root,pas.System.Pos("\\",Root) + 1,Root.length);
+          O = O[subn];
+        };
+        if (this.FIDField === "") this.FIDField = "id";
+        if (this.FuseServerMetadata && O.hasOwnProperty(lmetadata) && rtl.isObject(O[lmetadata])) {
+          MD = O[lmetadata];
+          if (!this.GetActive()) this.SetMetaData(MD);
+          if (MD.hasOwnProperty("root") && rtl.isString(MD["root"])) Root = "" + this.FMetaData["root"];
+          if (MD.hasOwnProperty("idField") && rtl.isString(MD["idField"])) this.FIDField = "" + MD["idField"];
+        };
+        if ((Root !== "") && O.hasOwnProperty(Root) && rtl.isArray(O[Root])) A = O[Root];
+      };
+      if ((A != null) && (A.length > 0) && (this.FFieldDefs != null) && (this.FFieldDefs.GetCount() === 0)) {
+        this.FieldDefsFromRows(A);
+      };
+      Result = (A !== null) && (A.length > 0);
+      if (Result) this.AddToRows(A);
+      return Result;
+    };
+    this.DoOpenResolve = function (AResult) {
+      if (this.FOpenResolver != null) {
+        this.FOpenResolver(AResult);
+        this.FOpenResolver = null;
+      };
+    };
+    this.DoPostResolve = function (AResult) {
+      if (this.FPostResolver != null) this.FPostResolver(AResult);
+    };
+    this.DoInsertResolve = function (AResult) {
+      if (this.FInsertResolver != null) this.FInsertResolver(AResult);
+    };
+    this.DoDeleteResolve = function (AResult) {
+      if (this.FDeleteResolver != null) this.FDeleteResolver(AResult);
+    };
+    this.MetaDataToFieldDefs = function () {
+      var A = null;
+      var F = null;
+      var I = 0;
+      var FS = 0;
+      var N = "";
+      var ft = 0;
+      var D = undefined;
+      this.FFieldDefs.Clear();
+      this.FConnection.ProcessMetadata(this,this.FFieldDefs,this.FMetaData);
+      if (this.FFieldDefs.GetCount() > 0) return;
+      D = this.FMetaData["fields"];
+      if (!rtl.isArray(D)) throw pas.JSONDataset.EJSONDataset.$create("Create$1",["Invalid metadata object"]);
+      A = D;
+      for (var $l = 0, $end = A.length - 1; $l <= $end; $l++) {
+        I = $l;
+        if (!rtl.isObject(A[I])) throw pas.JSONDataset.EJSONDataset.$create("CreateFmt",["Field definition %d in metadata is not an object",pas.System.VarRecs(0,I)]);
+        F = A[I];
+        D = F["name"];
+        if (!rtl.isString(D)) throw pas.JSONDataset.EJSONDataset.$create("CreateFmt",["Field definition %d in has no or invalid name property",pas.System.VarRecs(0,I)]);
+        N = "" + D;
+        D = F["type"];
+        if (pas.JS.isNull(D) || pas.JS.isUndefined(D)) {
+          ft = 1}
+         else if (!rtl.isString(D)) {
+          throw pas.JSONDataset.EJSONDataset.$create("CreateFmt",["Field definition %d in has invalid type property",pas.System.VarRecs(0,I)]);
+        } else {
+          ft = this.StringToFieldType("" + D);
+        };
+        if (ft === 1) {
+          FS = this.GetStringFieldLength(F,N,I)}
+         else FS = 0;
+        this.FFieldDefs.Add$4(N,ft,FS);
+      };
+    };
+    this.SetConnection = function (Value) {
+      this.FConnection = Value;
+      if (Value != null) Value.RegisterDataSet(this);
+    };
+    this.CreateFieldMapper = function () {
+      var Result = null;
+      Result = pas.JSONDataset.TJSONObjectFieldMapper.$create("Create");
+      return Result;
+    };
+    this.InitFieldDefs = function () {
+      var $Self = this;
+      function HandleChildField(Child) {
+        if (pas.DB.TStringField.isPrototypeOf(Child)) $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TStringField).FFieldName,1,rtl.as(Child,pas.DB.TStringField).FSize);
+        if (pas.DB.TBooleanField.isPrototypeOf(Child)) $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TBooleanField).FFieldName,5,0);
+        if (pas.DB.TAutoIncField.isPrototypeOf(Child)) {
+          $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TAutoIncField).FFieldName,14,0)}
+         else if (pas.DB.TIntegerField.isPrototypeOf(Child)) {
+          $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TIntegerField).FFieldName,3,0)}
+         else if (pas.DB.TLargeintField.isPrototypeOf(Child)) {
+          $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TLargeintField).FFieldName,25,0)}
+         else if (pas.DB.TFloatField.isPrototypeOf(Child)) {
+          $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TFloatField).FFieldName,6,0)}
+         else if (pas.DB.TNumericField.isPrototypeOf(Child)) $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TNumericField).FFieldName,3,0);
+        if (pas.DB.TDateField.isPrototypeOf(Child)) {
+          $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TDateField).FFieldName,9,0)}
+         else if (pas.DB.TTimeField.isPrototypeOf(Child)) {
+          $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TTimeField).FFieldName,9,0)}
+         else if (pas.DB.TDateTimeField.isPrototypeOf(Child)) $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TDateTimeField).FFieldName,11,0);
+        if (pas.DB.TMemoField.isPrototypeOf(Child)) {
+          $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TMemoField).FFieldName,16,0)}
+         else if (pas.DB.TBlobField.isPrototypeOf(Child)) $Self.FFieldDefs.Add$4(rtl.as(Child,pas.DB.TBlobField).FFieldName,15,0);
+      };
+      this.FFieldDefs.Clear();
+      this.GetChildren(HandleChildField,$Self);
+    };
+    this.InternalInitFieldDefs = function () {
+      if ((this.FFieldDefs.GetCount() === 0) && (this.FRows != null) && (this.FRows.length > 0)) {
+        this.FieldDefsFromRows(this.FRows);
+      };
+      pas.JSONDataset.TBaseJSONDataSet.InternalInitFieldDefs.call(this);
+    };
+    this.FieldDefsFromRows = function (aRows) {
+      var J = null;
+      var JV = undefined;
+      var strArr = [];
+      var i = 0;
+      if ((this.FFieldDefs.GetCount() === 0) && (aRows != null) && (aRows.length > 0)) {
+        J = aRows[0];
+        strArr = Object.getOwnPropertyNames(J);
+        for (var $l = 0, $end = rtl.length(strArr) - 1; $l <= $end; $l++) {
+          i = $l;
+          JV = J[strArr[i]];
+          if (rtl.isString(JV)) this.FFieldDefs.Add$4(strArr[i],1,255);
+          if (rtl.isNumber(JV)) this.FFieldDefs.Add$5(strArr[i],6);
+          if (pas.JS.isBoolean(JV)) this.FFieldDefs.Add$5(strArr[i],5);
+          if (pas.JS.isDate(JV)) this.FFieldDefs.Add$5(strArr[i],9);
+          if (pas.JS.isNull(JV)) this.FFieldDefs.Add$4(strArr[i],1,255);
+        };
+      };
+    };
+    this.DoAfterOpen = function () {
+      pas.DB.TDataSet.DoAfterOpen.call(this);
+      this.DoOpenResolve(true);
+      if ((this.FConnection != null) && this.FConnection.FAutoOpen) {
+        this.FConnection.DoAfterConnect();
+      };
+    };
+    this.DoAfterPost = function () {
+      pas.DB.TDataSet.DoAfterPost.call(this);
+      this.DoPostResolve(true);
+    };
+    this.DoAfterInsert = function () {
+      pas.DB.TDataSet.DoAfterInsert.call(this);
+      this.DoInsertResolve(true);
+    };
+    this.DoAfterDelete = function () {
+      pas.DB.TDataSet.DoAfterDelete.call(this);
+      this.DoDeleteResolve(true);
+    };
+    this.DoGetDataProxy = function () {
+      var Result = null;
+      if (this.FConnection != null) {
+        Result = this.FConnection.GetDataProxy()}
+       else Result = null;
+      return Result;
+    };
+    this.SetActive = function (Value) {
+      if (0 in this.FComponentState) return;
+      pas.DB.TDataSet.SetActive.apply(this,arguments);
+    };
+    this.GetRecordCount = function () {
+      var Result = 0;
+      var bk = pas.DB.TBookmark.$new();
+      var c = 0;
+      if (this.FFiltered) {
+        if (this.FFilterCount !== -1) {
+          Result = this.FFilterCount}
+         else {
+          bk.$assign(this.GetBookmark());
+          this.DisableControls();
+          this.First();
+          c = 0;
+          while (!this.GetEOF()) {
+            c += 1;
+            this.Next();
+          };
+          this.EnableControls();
+          this.GotoBookmark(bk);
+          this.FFilterCount = c;
+          Result = c;
+        };
+      } else Result = pas.JSONDataset.TBaseJSONDataSet.GetRecordCount.call(this);
+      return Result;
+    };
+    this.SetFiltered = function (Value) {
+      this.FFilterCount = -1;
+      pas.JSONDataset.TBaseJSONDataSet.SetFiltered.apply(this,arguments);
+    };
+    this.Create$1 = function (AOwner) {
+      pas.JSONDataset.TBaseJSONDataSet.Create$1.apply(this,arguments);
+      this.FParams = pas.DB.TParams.$create("Create$1",[pas.DB.TParam]);
+      return this;
+    };
+    this.Destroy = function () {
+      pas.SysUtils.FreeAndNil({p: this, get: function () {
+          return this.p.FParams;
+        }, set: function (v) {
+          this.p.FParams = v;
+        }});
+      pas.JSONDataset.TBaseJSONDataSet.Destroy.call(this);
+    };
+    this.OpenAsync = function () {
+      var $Self = this;
+      var Result = null;
+      Result = new Promise(function (ASuccess, AFailed) {
+        $Self.FOpenResolver = ASuccess;
+        $Self.Open();
+      });
+      return Result;
+    };
+    this.PostAsync = function () {
+      var $Self = this;
+      var Result = null;
+      Result = new Promise(function (ASuccess, AFailed) {
+        $Self.FPostResolver = ASuccess;
+        $Self.Post();
+      });
+      return Result;
+    };
+    this.BeginUpdate = function () {
+      pas.Classes.TComponent.BeginUpdate.call(this);
+      this.FUpdateCount += 1;
+    };
+    this.EndUpdate = function () {
+      pas.Classes.TComponent.EndUpdate.call(this);
+      if (this.FUpdateCount > 0) this.FUpdateCount -= 1;
+    };
+    this.AfterLoadDFMValues = function () {
+      pas.Classes.TComponent.AfterLoadDFMValues.call(this);
+      this.InitFieldDefs();
+    };
+    this.GetChildren = function (Proc, Root) {
+      var i = 0;
+      for (var $l = 0, $end = this.FFieldList.GetCount() - 1; $l <= $end; $l++) {
+        i = $l;
+        if ((this.FFieldList.GetField(i).FOwner === Root) || (this.FFieldList.GetField(i).FDataSet === Root) || (Root === null)) {
+          if (this.FFieldList.GetField(i).FName === "") this.FFieldList.GetField(i).SetName(this.FName + this.FFieldList.GetField(i).FFieldName);
+          Proc(this.FFieldList.GetField(i));
+        };
+      };
+    };
+    this.EmptyDataSet = function () {
+      this.First();
+      while (!this.GetEOF()) this.Delete();
+    };
+    rtl.addIntf(this,pas.System.IUnknown);
+    var $r = this.$rtti;
+    $r.addMethod("Create$1",2,[["AOwner",pas.Classes.$rtti["TComponent"]]]);
+  });
+  rtl.createClass(this,"TClientDataSet",this.TCustomClientDataSet,function () {
+    rtl.addIntf(this,pas.System.IUnknown);
+    var $r = this.$rtti;
+    $r.addProperty("Active",3,rtl.boolean,"GetActive","SetActive",{Default: false});
+    $r.addProperty("Connection",2,$mod.$rtti["TClientConnection"],"FConnection","SetConnection");
+    $r.addProperty("Params",2,pas.DB.$rtti["TParams"],"FParams","SetParams");
+    $r.addProperty("BeforeOpen",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FBeforeOpen","FBeforeOpen");
+    $r.addProperty("AfterOpen",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FAfterOpen","FAfterOpen");
+    $r.addProperty("BeforeClose",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FBeforeClose","FBeforeClose");
+    $r.addProperty("AfterClose",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FAfterClose","FAfterClose");
+    $r.addProperty("BeforeInsert",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FBeforeInsert","FBeforeInsert");
+    $r.addProperty("AfterInsert",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FAfterInsert","FAfterInsert");
+    $r.addProperty("BeforeEdit",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FBeforeEdit","FBeforeEdit");
+    $r.addProperty("AfterEdit",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FAfterEdit","FAfterEdit");
+    $r.addProperty("BeforePost",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FBeforePost","FBeforePost");
+    $r.addProperty("AfterPost",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FAfterPost","FAfterPost");
+    $r.addProperty("BeforeCancel",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FBeforeCancel","FBeforeCancel");
+    $r.addProperty("AfterCancel",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FAfterCancel","FAfterCancel");
+    $r.addProperty("BeforeDelete",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FBeforeDelete","FBeforeDelete");
+    $r.addProperty("AfterDelete",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FAfterDelete","FAfterDelete");
+    $r.addProperty("BeforeScroll",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FBeforeScroll","FBeforeScroll");
+    $r.addProperty("AfterScroll",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FAfterScroll","FAfterScroll");
+    $r.addProperty("OnCalcFields",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FOnCalcFields","FOnCalcFields");
+    $r.addProperty("OnDeleteError",0,pas.DB.$rtti["TDataSetErrorEvent"],"FOnDeleteError","FOnDeleteError");
+    $r.addProperty("OnEditError",0,pas.DB.$rtti["TDataSetErrorEvent"],"FOnEditError","FOnEditError");
+    $r.addProperty("OnFilterRecord",2,pas.DB.$rtti["TFilterRecordEvent"],"FOnFilterRecord","SetOnFilterRecord");
+    $r.addProperty("OnNewRecord",0,pas.DB.$rtti["TDataSetNotifyEvent"],"FOnNewRecord","FOnNewRecord");
+    $r.addProperty("OnPostError",0,pas.DB.$rtti["TDataSetErrorEvent"],"FOnPostError","FOnPostError");
+    $r.addProperty("OnUpdateRecord",0,$mod.$rtti["TUpdateRecordEvent"],"FOnUpdateRecord","FOnUpdateRecord");
+  });
+  $mod.$implcode = function () {
+    rtl.createClass($impl,"TWebClientDataRequest",pas.DB.TDataRequest,function () {
+      this.$init = function () {
+        pas.DB.TDataRequest.$init.call(this);
+        this.FXHR = null;
+        this.FConnection = null;
+      };
+      this.$final = function () {
+        this.FXHR = undefined;
+        this.FConnection = undefined;
+        pas.DB.TDataRequest.$final.call(this);
+      };
+      this.onError = function (Event) {
+        var Result = false;
+        this.FSuccess = 0;
+        if (this.FConnection != null) this.FConnection.DoError(this.FXHR.status);
+        this.DoAfterRequest();
+        Result = true;
+        return Result;
+      };
+      this.onAbort = function (Event) {
+        var Result = false;
+        this.FSuccess = 0;
+        if (this.FConnection != null) this.FConnection.DoError(this.FXHR.status);
+        this.DoAfterRequest();
+        Result = true;
+        return Result;
+      };
+      this.onLoad = function (Event) {
+        var Result = false;
+        if (this.FXHR.status === 200) {
+          this.FData = this.TransformResult();
+          this.FSuccess = 2;
+        } else {
+          this.FData = null;
+          if ((2 in this.FLoadOptions) && (this.FXHR.status === 404)) {
+            this.FSuccess = 1}
+           else {
+            this.FSuccess = 0;
+            this.FErrorMsg = this.FXHR.statusText;
+          };
+          if (this.FConnection != null) this.FConnection.DoError(this.FXHR.status);
+        };
+        this.DoAfterRequest();
+        Result = true;
+        return Result;
+      };
+      this.TransformResult = function () {
+        var Result = undefined;
+        var s = "";
+        Result = this.FXHR.response;
+        if ((this.FConnection != null) && (this.FConnection.FOnDataReceived != null)) {
+          s = this.FXHR.responseText;
+          this.FConnection.DoDataReceived(this.FXHR,{get: function () {
+              return s;
+            }, set: function (v) {
+              s = v;
+            }});
+        };
+        if ((this.FConnection != null) && (this.FConnection.FOnGetDataPayLoad != null)) {
+          this.FConnection.FOnGetDataPayLoad(this.FConnection,this.FDataset,0,{get: function () {
+              return Result;
+            }, set: function (v) {
+              Result = v;
+            }});
+        };
+        return Result;
+      };
+    });
+    rtl.createClass($impl,"TWebClientUpdateRequest",pas.DB.TRecordUpdateDescriptor,function () {
+    });
+  };
+},["SysUtils","Types","WEBLib.Dialogs"]);
 rtl.module("SchedUnit2",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics","WEBLib.Controls","WEBLib.Forms","WEBLib.Dialogs","WEBLib.StdCtrls","WEBLib.StdCtrls","WEBLib.Controls","WEBLib.ExtCtrls"],function () {
   "use strict";
   var $mod = this;
@@ -39726,14 +38795,13 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
   });
   this.DetailsFrm = null;
 },["CWRmainForm"]);
-rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Graphics","WEBLib.Forms","WEBLib.StdCtrls","WEBLib.StdCtrls","WEBLib.Controls","WEBLib.Dialogs","WEBLib.Imaging.pngImage","WEBLib.ExtCtrls","WEBLib.Controls","Web","JS","WEBLib.IndexedDb","WEBLib.Menus","WEBLib.Menus","WEBLib.Grids","DB","WEBLib.Grids","StrUtils","WEBLib.DBCtrls","WEBLib.WebCtrls","WEBLib.REST","Types","WEBLib.Storage","WEBLib.CDS","WEBLib.JSON","WEBLib.WebTools"],function () {
+rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Graphics","WEBLib.Forms","WEBLib.StdCtrls","WEBLib.StdCtrls","WEBLib.Controls","WEBLib.Dialogs","WEBLib.Imaging.pngImage","WEBLib.ExtCtrls","WEBLib.Controls","Web","JS","WEBLib.Menus","WEBLib.Menus","WEBLib.Grids","DB","WEBLib.Grids","StrUtils","WEBLib.DBCtrls","WEBLib.WebCtrls","WEBLib.REST","Types","WEBLib.Storage","WEBLib.CDS","WEBLib.JSON","WEBLib.WebTools"],function () {
   "use strict";
   var $mod = this;
   var $impl = $mod.$impl;
   rtl.createClass(this,"TCWRmainFrm",pas["WEBLib.Forms"].TForm,function () {
     this.$init = function () {
       pas["WEBLib.Forms"].TForm.$init.call(this);
-      this.WIDBCDS = null;
       this.WebMemo2 = null;
       this.Captures = null;
       this.HistoryTable = null;
@@ -39785,7 +38853,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.btnOptOK = null;
     };
     this.$final = function () {
-      this.WIDBCDS = undefined;
       this.WebMemo2 = undefined;
       this.Captures = undefined;
       this.HistoryTable = undefined;
@@ -40156,14 +39223,14 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       if (this.pnlFilterComboBox.FVisible) this.pnlFilterComboBox.Hide();
       this.EPG.BeginUpdate();
       await sleep(10);
-      DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[null]);
-      $impl.Log("========== finished TDetailsFrm.Create(nil) ");
       await this.EpgDb.DisableControls();
       $impl.Log("========== finished EpgDb.DisableControls ");
       try {
         $impl.Log("========== starting Locate " + this.EPG.GetCells(3,ARow));
         if (this.EpgDb.Locate("id",this.EPG.GetCells(3,ARow),{})) try {
           $impl.Log("========== Located " + this.EPG.GetCells(3,ARow));
+          DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[null]);
+          $impl.Log("========== finished TDetailsFrm.Create(nil) ");
           DetailsFrm.FPopup = true;
           DetailsFrm.SetBorder(1);
           $impl.Log("========== starting DetailsFrm.Load() ");
@@ -40302,7 +39369,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.ClearMenuChecks();
       this.ByAll.SetChecked(true);
       $impl.VisiblePanelNum = 0;
-      await this.SetFilter("");
+      if (this.EpgDb.FFiltered) await this.SetFilter("");
       await this.SetPage(0);
     };
     this.ByChannelClick = async function (Sender) {
@@ -40320,7 +39387,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       if (this.ByAll.FChecked) this.WebComboBox3FocusOut(Sender);
     };
     this.cbNumDisplayDaysChange = async function (Sender) {
-      if (pas.System.Trunc($impl.LastStartDate - pas.SysUtils.Now()) < pas.SysUtils.StrToInt(this.cbNumDisplayDays.GetText())) {
+      if (pas.System.Trunc($impl.LastStartDate - pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false)) < pas.SysUtils.StrToInt(this.cbNumDisplayDays.GetText())) {
         await pas["WEBLib.Dialogs"].MessageDlgAsync("I currently have less than the requested " + this.cbNumDisplayDays.GetText() + " days of listings stored." + "\rTo display more, please use Options | Refresh Data",2,rtl.createSet(2));
         this.cbNumDisplayDays.SetItemIndex(this.cbNumDisplayDays.FItems.IndexOf(pas.SysUtils.TNativeIntHelper.ToString$1.call({a: pas.System.Trunc($impl.LastStartDate - pas.SysUtils.Now()), get: function () {
             return this.a;
@@ -40408,7 +39475,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         }, set: function (v) {
           this.p = v;
         }}) + "): " + pas.SysUtils.DateToStr($impl.LastStartDate));
-      $impl.Log("LastStartDate - Now: " + pas.SysUtils.TDoubleHelper.ToString$3.call({a: $impl.LastStartDate - pas.SysUtils.Now(), get: function () {
+      $impl.Log("LastStartDate - Now: " + pas.SysUtils.TDoubleHelper.ToString$3.call({a: $impl.LastStartDate - pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false), get: function () {
           return this.a;
         }, set: function (v) {
           rtl.raiseE("EPropReadOnly");
@@ -40968,7 +40035,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         };
         this.EpgDb.SetFilterText(SavedFilterString);
         this.EpgDb.SetFiltered(SavedFilterState);
-        sl.EndUpdate();
         cb.BeginUpdate();
         cb.Clear();
         $impl.Log("Adding first " + cb.FName + ' Item: "All"');
@@ -41061,7 +40127,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.ChangeHTPC1 = pas["WEBLib.Menus"].TMenuItem.$create("Create$1",[this]);
       this.ViewLog1 = pas["WEBLib.Menus"].TMenuItem.$create("Create$1",[this]);
       this.Settings1 = pas["WEBLib.Menus"].TMenuItem.$create("Create$1",[this]);
-      this.WIDBCDS = pas["WEBLib.IndexedDb"].TIndexedDbClientDataset.$create("Create$1",[this]);
       this.WebRESTClient1 = pas["WEBLib.REST"].TRESTClient.$create("Create$1",[this]);
       this.WebDataSource1 = pas.DB.TDataSource.$create("Create$1",[this]);
       this.EpgDb = pas["WEBLib.CDS"].TClientDataSet.$create("Create$1",[this]);
@@ -41111,7 +40176,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.ChangeHTPC1.BeforeLoadDFMValues();
       this.ViewLog1.BeforeLoadDFMValues();
       this.Settings1.BeforeLoadDFMValues();
-      this.WIDBCDS.BeforeLoadDFMValues();
       this.WebRESTClient1.BeforeLoadDFMValues();
       this.WebDataSource1.BeforeLoadDFMValues();
       this.EpgDb.BeforeLoadDFMValues();
@@ -41180,6 +40244,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlMenu.FFont.SetName("Arial");
         this.pnlMenu.FFont.SetStyle({});
         this.pnlMenu.SetParentFont(false);
+        this.pnlMenu.SetShowCaption(false);
         this.pnlMenu.SetTabOrder(6);
         this.pnlLog.SetParentComponent(this);
         this.pnlLog.SetName("pnlLog");
@@ -41191,6 +40256,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlLog.SetHeightStyle(0);
         this.pnlLog.SetWidthStyle(0);
         this.pnlLog.SetAlign(5);
+        this.pnlLog.SetCaption("pnlLog");
         this.pnlLog.SetChildOrderEx(9);
         this.pnlLog.FElementBodyClassName = "card-body";
         this.pnlLog.SetElementFont(1);
@@ -41236,6 +40302,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlWaitPls.SetHeightStyle(0);
         this.pnlWaitPls.SetWidthStyle(0);
         this.pnlWaitPls.SetAlign(5);
+        this.pnlWaitPls.SetCaption("pnlWaitPls");
         this.pnlWaitPls.SetChildOrderEx(10);
         this.pnlWaitPls.FElementBodyClassName = "card-body";
         this.pnlWaitPls.SetElementFont(1);
@@ -41245,6 +40312,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlWaitPls.FFont.SetName("Arial");
         this.pnlWaitPls.FFont.SetStyle({});
         this.pnlWaitPls.SetParentFont(false);
+        this.pnlWaitPls.SetShowCaption(false);
         this.pnlWaitPls.SetTabOrder(3);
         this.WebGridPanel1.SetParentComponent(this.pnlWaitPls);
         this.WebGridPanel1.SetName("WebGridPanel1");
@@ -41366,6 +40434,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlHistory.SetHeightStyle(0);
         this.pnlHistory.SetWidthStyle(0);
         this.pnlHistory.SetAlign(5);
+        this.pnlHistory.SetCaption("pnlHistory");
         this.pnlHistory.SetChildOrderEx(11);
         this.pnlHistory.FElementBodyClassName = "card-body";
         this.pnlHistory.SetElementFont(1);
@@ -41421,6 +40490,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlCaptures.SetHeightStyle(0);
         this.pnlCaptures.SetWidthStyle(0);
         this.pnlCaptures.SetAlign(5);
+        this.pnlCaptures.SetCaption("pnlCaptures");
         this.pnlCaptures.SetChildOrderEx(9);
         this.pnlCaptures.SetColor(8421504);
         this.pnlCaptures.FElementBodyClassName = "card-body";
@@ -41594,6 +40664,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlOptions.SetHeightStyle(0);
         this.pnlOptions.SetWidthStyle(0);
         this.pnlOptions.SetAlign(5);
+        this.pnlOptions.SetCaption("pnlOptions");
         this.pnlOptions.SetChildOrderEx(9);
         this.pnlOptions.FElementBodyClassName = "card-body";
         this.pnlOptions.SetElementFont(1);
@@ -42031,14 +41102,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.Settings1.SetName("Settings1");
         this.Settings1.SetCaption("Settings");
         this.SetEvent$1(this.Settings1,this,"OnClick","Settings1Click");
-        this.WIDBCDS.SetParentComponent(this);
-        this.WIDBCDS.SetName("WIDBCDS");
-        this.WIDBCDS.FIDBDatabaseName = "CWRDB-Manual-id";
-        this.WIDBCDS.FIDBObjectStoreName = "epg";
-        this.WIDBCDS.FIDBKeyFieldName = "id";
-        this.WIDBCDS.FIDBAutoIncrement = false;
-        this.WIDBCDS.SetLeft(296);
-        this.WIDBCDS.SetTop(152);
         this.WebRESTClient1.SetParentComponent(this);
         this.WebRESTClient1.SetName("WebRESTClient1");
         this.WebRESTClient1.FLoginHeight = 480;
@@ -42106,7 +41169,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.ChangeHTPC1.AfterLoadDFMValues();
         this.ViewLog1.AfterLoadDFMValues();
         this.Settings1.AfterLoadDFMValues();
-        this.WIDBCDS.AfterLoadDFMValues();
         this.WebRESTClient1.AfterLoadDFMValues();
         this.WebDataSource1.AfterLoadDFMValues();
         this.EpgDb.AfterLoadDFMValues();
@@ -42116,7 +41178,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     rtl.addIntf(this,pas["WEBLib.Controls"].IControl);
     rtl.addIntf(this,pas.System.IUnknown);
     var $r = this.$rtti;
-    $r.addField("WIDBCDS",pas["WEBLib.IndexedDb"].$rtti["TIndexedDbClientDataset"]);
     $r.addField("WebMemo2",pas["WEBLib.StdCtrls"].$rtti["TMemo"]);
     $r.addField("Captures",pas["WEBLib.Grids"].$rtti["TStringGrid"]);
     $r.addField("HistoryTable",pas["WEBLib.Grids"].$rtti["TStringGrid"]);
