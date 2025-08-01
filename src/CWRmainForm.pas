@@ -12,10 +12,10 @@ uses
   Vcl.Menus, WEBLib.Menus, WEBLib.ComCtrls, WEBLib.Grids, DB, Vcl.Grids,
   System.StrUtils, WEBLib.DBCtrls, WEBLib.FlexControls, WEBLib.WebCtrls,
   WEBLib.REST, Types, WEBLib.Storage, WEBLib.CDS, WEBLib.Auth, WEBLib.JSON,
-  WEBLib.WebTools, WEBLib.Google;
+  WEBLib.WebTools, WEBLib.Google, WEBLib.DataGrid.Common, WEBLib.DataGrid;
 
 type
-  TOpen = class(TIndexedDBClientDataSet);
+//  TOpen = class(TIndexedDBClientDataSet);
   TGridDrawState = set of (gdSelected, gdFocused, gdFixed, gdRowSelected, gdHotTrack, gdPressed);
   TCWRmainFrm = class(TWebForm)
   WIDBCDS: TWebIndexedDbClientDataset;
@@ -72,9 +72,10 @@ type
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
   [async] procedure SaveNewCapturesFile(id: string);
-  [async] procedure LoadWIDBCDS;
-  [async] procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
-    errorName, errorMsg: string);
+  [async] procedure LoadCurrEpgDb;
+//  [async] procedure LoadWIDBCDS;
+//  [async] procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
+//    errorName, errorMsg: string);
   [async] procedure RefreshData(Sender: TObject);
   [async] procedure WebFormCreate(Sender: TObject);
   [async] procedure tbCapturesShow;
@@ -112,7 +113,7 @@ type
     procedure btnOptOKClick(Sender: TObject);
 private
   { Private declarations }
-  [async] procedure LogDataRangeAndCopyData;
+  [async] procedure LogDataRange;
   procedure ClearMenuChecks;
   procedure ReloadSG(SG: TWebStringGrid; LSName: string);  [async]
   [async] procedure SetPage(PageNum: Integer);
@@ -120,6 +121,8 @@ private
   procedure FetchCapReservations;
   [async]
   procedure FetchNewCapRequests;
+  [async]
+  procedure FillTable(WSG: TWebStringGrid; rs: string);
   [async]
   procedure RefreshCSV(WSG: TWebStringGrid; TableFile, Title: string; var id: string);
   [async]
@@ -136,7 +139,7 @@ private
   function GetGoogleDriveFile(TableFile: string; var id: string): string;
   [async]
   procedure CreateGoogleFile(FName: string; var id: string);
-  [async] procedure SetupWIDBCDS;
+  [async] procedure SetupCurrEpgDb;
   [async] procedure SetupEpgDb;
   [async] procedure SetupFilterList(cb: TWebComboBox; fn: string);
   [async] procedure SetFilter(fltr: string);
@@ -275,8 +278,8 @@ begin
   if TWebLocalStorage.GetValue(NUMHIST) <> '' then
     cbNumHistList.ItemIndex := cbNumHistList.Items.IndexOf(TWebLocalStorage.GetValue(NUMHIST));
     WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
-  await(SetupWIDBCDS);
-  Log('FormCreate, ' + WIDBCDS.Name + ' record count: ' + WIDBCDS.RecordCount.ToString);
+  await(SetupCurrEpgDb);
+//  Log('FormCreate, ' + WIDBCDS.Name + ' record count: ' + WIDBCDS.RecordCount.ToString);
   await(RefreshListings);
   Log('========== FormCreate is finished');
 end;
@@ -292,7 +295,7 @@ begin
   begin
     Log('********* Starting timer');
     StartT := Now;
-    await(LoadWIDBCDS);
+    await(loadCurrEpgDb);
     await(FetchCapReservations);
     await(FetchNewCapRequests);
     await(FetchHistory);
@@ -305,7 +308,7 @@ begin
   if VisiblePanelNum <> 3 then ReFreshListings
   else SetupEpgDb;
   Log('*********** Delta t (sec): ' + SecondsBetween(Now, StartT).ToString);
-  Log('*********** Rate (ms/rec): ' + (MilliSecondsBetween(Now, StartT)/WIDBCDS.RecordCount).ToString);
+  Log('*********** Rate (ms/rec): ' + (MilliSecondsBetween(Now, StartT)/CurrEpgDb.RecordCount).ToString);
 end;
 
 procedure TCWRmainFrm.UpdateHistory(Sender: TObject);
@@ -342,6 +345,7 @@ begin
   EPG.Columns[2].Title := 'Title';
   ClearMenuChecks;
   ByAll.Checked := True;
+  VisiblePanelNum := 0;
   await(SetFilter(''));
 //  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   await(SetPage(0));
@@ -474,6 +478,25 @@ begin
   end;
 end;
 
+procedure TCWRmainFrm.FillTable(WSG: TWebStringGrid; rs: string);
+var
+  Line: string;
+  sl: TStrings;
+  ReplyArray: TArray<string>;
+begin
+  sl := TStringList.Create;
+  rs := ReplaceStr(rs, #10, ''); // dump linefeeds
+  rs := ReplaceStr(rs, #160, ''); // dump &nbsp too
+  ReplyArray := rs.Split([#13],TStringSplitOptions.ExcludeEmpty);
+  Log('Begin extract ' + IntToStr(Length(ReplyArray)) + ' strings');
+  for Line in ReplyArray do sl.Add(Line);
+  WSG.LoadFromStrings(sl, ',', True);
+  Log(WSG.Name+'.RowCount: ' + WSG.RowCount.ToString);
+  Log('Done loading '+WSG.Name);
+  sl.Free; // := nil;
+
+end;
+
 procedure TCWRmainFrm.RefreshCSV(WSG: TWebStringGrid; TableFile, Title: string; var id: string);
 var
   Reply, Line: string;
@@ -494,16 +517,22 @@ begin
         if Reply <> '' then  // Got a response
         begin
           Log(copy(Reply,1,500));
-          sl := TStringList.Create;
-          Reply := ReplaceStr(Reply, #10, ''); // dump linefeeds
-          Reply := ReplaceStr(Reply, #160, ''); // dump &nbsp too
-          ReplyArray := Reply.Split([#13],TStringSplitOptions.ExcludeEmpty);
-          Log('Begin extract ' + IntToStr(Length(ReplyArray)) + ' strings');
-          for Line in ReplyArray do sl.Add(Line);
-          WSG.LoadFromStrings(sl, ',', True);
-          Log(WSG.Name+'.RowCount: ' + WSG.RowCount.ToString);
-          Log('Done loading '+WSG.Name);
-          sl.Free; // := nil;
+          if TableFile = 'cwr_epg.csv' then
+          begin
+            TLocalStorage.RemoveKey(TableFile);
+            TLocalStorage.SetValue(TableFile,Reply);
+          end;
+//          sl := TStringList.Create;
+//          Reply := ReplaceStr(Reply, #10, ''); // dump linefeeds
+//          Reply := ReplaceStr(Reply, #160, ''); // dump &nbsp too
+//          ReplyArray := Reply.Split([#13],TStringSplitOptions.ExcludeEmpty);
+//          Log('Begin extract ' + IntToStr(Length(ReplyArray)) + ' strings');
+//          for Line in ReplyArray do sl.Add(Line);
+//          WSG.LoadFromStrings(sl, ',', True);
+//          Log(WSG.Name+'.RowCount: ' + WSG.RowCount.ToString);
+//          Log('Done loading '+WSG.Name);
+//          sl.Free; // := nil;
+          FillTable(WSG, Reply);
         end
         else WSG.RowCount := 0;
       except
@@ -526,80 +555,156 @@ begin
   Log('ReFreshCSV, '+WSG.Name+' RowCount: ' + WSG.RowCount.ToString);
 end;
 
-procedure TCWRmainFrm.LoadWIDBCDS;
+procedure TCWRmainFrm.LoadCurrEpgDb;
 var
   i,j: Integer;
   t: TDateTime;
   AColor: string;
   Text: string;
 begin
-  Log('======= Starting LoadWIDBCDS, DB is ' + IfThen(not WIDBCDS.Active, 'not ') + 'Active');
-  ShowPlsWait('Updating IndexedDB');
+  Log('======= Starting LoadCurrEpgDb, DB is ' + IfThen(not CurrEpgDb.Active, 'not ') + 'Active');
+  ShowPlsWait('Updating CurrEPG');
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  WIDBCDS.DisableControls;
-  WIDBCDS.Filtered := False;
-  Log('WIDBCDS is ' + IfThen(not WIDBCDS.Filtered, 'UN') + 'filtered');
-  WIDBCDS.Close;
-  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
+  CurrEpgDb.DisableControls;
+  CurrEpgDb.Filtered := False;
+  Log('CurrEpgDb is ' + IfThen(not CurrEpgDb.Filtered, 'UN') + 'filtered');
+  CurrEpgDb.Close;
+  TAwait.ExecP<Boolean>(CurrEpgDb.OpenAsync);
   try
-    if WIDBCDS.Active and (BufferGrid.RowCount > 1) then
+    if BufferGrid.RowCount < 2 then
     begin
-      Log('LoadWIDBCDS, CDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
-      Log('LoadWIDBCDS, Buffer Row Count: ' + BufferGrid.RowCount.ToString);
-      WIDBCDS.Edit;
-      await(WIDBCDS.EmptyDataSet);
-      Log('LoadWIDBCDS, After EmptyDataSet CDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
+      FillTable(BufferGrid, TLocalStorage.GetValue('cwr_epg.csv'));
+    end;
+
+    if CurrEpgDb.Active and (BufferGrid.RowCount > 1) then
+    begin
+      Log('LoadCurrEpgDb, CurrEpgDb.RecordCount: ' + CurrEpgDb.RecordCount.ToString);
+      Log('LoadCurrEpgDb, Buffer Row Count: ' + BufferGrid.RowCount.ToString);
+//      CurrEpgDb.Edit;
+//      await(CurrEpgDb.EmptyDataSet);
+//      Log('LoadCurrEpgDb, After EmptyDataSet CDS.RecordCount: ' + CurrEpgDb.RecordCount.ToString);
       for j := 1 to BufferGrid.RowCount - 1 do
       begin
         // Lose superfluous <">
         BufferGrid.Cells[0,j] := ReplaceStr(BufferGrid.Cells[0,j],'"','');
-        WIDBCDS.Insert;
-        WIDBCDS.Fields[0].Value := j;
+        CurrEpgDb.Append;
+        CurrEpgDb.Fields[0].Value := j;
         for i := 1 to BufferGrid.ColCount do
-          if WIDBCDS.Fields[i].DataType = ftString then
-            WIDBCDS.Fields[i].Value := BufferGrid.Cells[i-1,j]
+          if CurrEpgDb.Fields[i].DataType = ftString then
+            CurrEpgDb.Fields[i].Value := BufferGrid.Cells[i-1,j]
           else  // Keep UTC StartTime/EndTime strings
             if TryStrToDateTime(BufferGrid.Cells[i-1,j],t) then
-              WIDBCDS.Fields[i].Value := t;
-        Text := WIDBCDS.Fields[8].AsString; // i.e. ProgramID
+              CurrEpgDb.Fields[i].Value := t;
+        Text := CurrEpgDb.Fields[8].AsString; // i.e. ProgramID
         if Text.StartsWith('MV') then  // Movie item
           AColor := 'goldenRod'
         else if Text.StartsWith('SH') then  // Generic item
-          AColor := IfThen(WIDBCDS.Fields[14].AsString.Contains('"News"'),
+          AColor := IfThen(CurrEpgDb.Fields[14].AsString.Contains('"News"'),
             'green',  // News genre assumed "new"
             'gray')   // Otherwise generic episode is "unknown time"
         else
-          AColor := IfThen(WIDBCDS.Fields[10].AsString <> '',
+          AColor := IfThen(CurrEpgDb.Fields[10].AsString <> '',
             'green',  // Non-generic episode declared "new"
             'rose');  // Otherwise "rerun"
-        WIDBCDS.Fields[15].Value := AColor;
-        TAwait.ExecP<Boolean>(WIDBCDS.PostAsync);
+        CurrEpgDb.Fields[15].Value := AColor;
+        TAwait.ExecP<Boolean>(CurrEpgDb.PostAsync);
       end;
-      Log('Finished editing WIDBCDS, RecordCount: ' + WIDBCDS.RecordCount.ToString);
+      Log('Finished editing CurrEpgDb, RecordCount: ' + CurrEpgDb.RecordCount.ToString);
     end
     else
     begin
-      Log('LoadWIDBCDS, skipped WIDBCDS update because' + IfThen(not WIDBCDS.Active, ' CDS not active')
+      Log('LoadCurrEpgDb, skipped CurrEpgDb update because' + IfThen(not CurrEpgDb.Active, ' CDS not active')
         + IfThen(BufferGrid.RowCount < 2, ' BufferGrid empty'));
     end;
   finally
-    Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
-    Log('calling WIDBCDS.EnableControls');
-    WIDBCDS.EnableControls;
-    Log('WIDBCDS Controls are ' + IfThen(WIDBCDS.ControlsDisabled,'NOT ') + 'Enabled');
-    Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active,'NOT ') + 'Open');
-    Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
-    WIDBCDS.Close;  // This seems necessary to finish update    250313 TMP -- still true on Android
-    TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
-    await(LogDataRangeAndCopyData);
-//    TOpen(WIDBCDS).NestedDataSetClass := TBaseJSONDataSet;
-//    CurrEpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
-    Log('========= Finished LoadWIDBCDS');
+    Log('CurrEpgDb is ' + IfThen(CurrEpgDb.Active, 'NOT ') + 'closed');
+    Log('calling CurrEpgDb.EnableControls');
+    CurrEpgDb.EnableControls;
+    Log('CurrEpgDb Controls are ' + IfThen(CurrEpgDb.ControlsDisabled,'NOT ') + 'Enabled');
+    Log('CurrEpgDb is ' + IfThen(not CurrEpgDb.Active,'NOT ') + 'Open');
+    Log('CurrEpgDb RecordCount: ' + CurrEpgDb.RecordCount.ToString);
+//    CurrEpgDb.Close;  // This seems necessary to finish update    250313 TMP -- still true on Android
+//    TAwait.ExecP<Boolean>(CurrEpgDb.OpenAsync);
+    await(LogDataRange);
+    Log('========= Finished LoadCurrEpgDb');
     pnlWaitPls.Hide;
     {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 
   end;
 end;
+
+//procedure TCWRmainFrm.LoadWIDBCDS;
+//var
+//  i,j: Integer;
+//  t: TDateTime;
+//  AColor: string;
+//  Text: string;
+//begin
+//  Log('======= Starting LoadWIDBCDS, DB is ' + IfThen(not WIDBCDS.Active, 'not ') + 'Active');
+//  ShowPlsWait('Updating IndexedDB');
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//  WIDBCDS.DisableControls;
+//  WIDBCDS.Filtered := False;
+//  Log('WIDBCDS is ' + IfThen(not WIDBCDS.Filtered, 'UN') + 'filtered');
+//  WIDBCDS.Close;
+//  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
+//  try
+//    if WIDBCDS.Active and (BufferGrid.RowCount > 1) then
+//    begin
+//      Log('LoadWIDBCDS, CDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
+//      Log('LoadWIDBCDS, Buffer Row Count: ' + BufferGrid.RowCount.ToString);
+//      WIDBCDS.Edit;
+//      await(WIDBCDS.EmptyDataSet);
+//      Log('LoadWIDBCDS, After EmptyDataSet CDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
+//      for j := 1 to BufferGrid.RowCount - 1 do
+//      begin
+//        // Lose superfluous <">
+//        BufferGrid.Cells[0,j] := ReplaceStr(BufferGrid.Cells[0,j],'"','');
+//        WIDBCDS.Insert;
+//        WIDBCDS.Fields[0].Value := j;
+//        for i := 1 to BufferGrid.ColCount do
+//          if WIDBCDS.Fields[i].DataType = ftString then
+//            WIDBCDS.Fields[i].Value := BufferGrid.Cells[i-1,j]
+//          else  // Keep UTC StartTime/EndTime strings
+//            if TryStrToDateTime(BufferGrid.Cells[i-1,j],t) then
+//              WIDBCDS.Fields[i].Value := t;
+//        Text := WIDBCDS.Fields[8].AsString; // i.e. ProgramID
+//        if Text.StartsWith('MV') then  // Movie item
+//          AColor := 'goldenRod'
+//        else if Text.StartsWith('SH') then  // Generic item
+//          AColor := IfThen(WIDBCDS.Fields[14].AsString.Contains('"News"'),
+//            'green',  // News genre assumed "new"
+//            'gray')   // Otherwise generic episode is "unknown time"
+//        else
+//          AColor := IfThen(WIDBCDS.Fields[10].AsString <> '',
+//            'green',  // Non-generic episode declared "new"
+//            'rose');  // Otherwise "rerun"
+//        WIDBCDS.Fields[15].Value := AColor;
+//        TAwait.ExecP<Boolean>(WIDBCDS.PostAsync);
+//      end;
+//      Log('Finished editing WIDBCDS, RecordCount: ' + WIDBCDS.RecordCount.ToString);
+//    end
+//    else
+//    begin
+//      Log('LoadWIDBCDS, skipped WIDBCDS update because' + IfThen(not WIDBCDS.Active, ' CDS not active')
+//        + IfThen(BufferGrid.RowCount < 2, ' BufferGrid empty'));
+//    end;
+//  finally
+//    Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
+//    Log('calling WIDBCDS.EnableControls');
+//    WIDBCDS.EnableControls;
+//    Log('WIDBCDS Controls are ' + IfThen(WIDBCDS.ControlsDisabled,'NOT ') + 'Enabled');
+//    Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active,'NOT ') + 'Open');
+//    Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
+//    WIDBCDS.Close;  // This seems necessary to finish update    250313 TMP -- still true on Android
+//    TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
+//    await(LogDataRange);
+//    Log('========= Finished LoadWIDBCDS');
+//    pnlWaitPls.Hide;
+//    {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//
+//  end;
+//end;
 
 procedure TCWRmainFrm.NewCapturesClickCell(Sender: TObject; ACol,
   ARow: Integer);
@@ -646,36 +751,24 @@ begin
     if ACol in [1,2] then AValue := FormatDateTime('mm/dd HH:nn', StrToDateTime(AValue));
 end;
 
-procedure TCWRmainFrm.LogDataRangeAndCopyData;
+procedure TCWRmainFrm.LogDataRange;
 var
   i: Integer;
 begin
-  WIDBCDS.DisableControls;
-  CurrEpgDb.Close;
   CurrEpgDb.DisableControls;
-  CurrEpgDb.FieldDefs := WIDBCDS.FieldDefs;
-  CurrEpgDb.Open;
-  WIDBCDS.First;
-  FirstEndDate := WIDBCDS.FieldByName('EndTime').AsDateTime;
-  Log('FirstEndDate (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(FirstEndDate));
-  while not WIDBCDS.Eof do
-  begin
-    CurrEpgDb.Append;
-    for i := 0 to Pred(WIDBCDS.FieldCount) do
-      CurrEpgDb.Fields[i] := WIDBCDS.Fields[i];
-    CurrEpgDb.Post;
-    WIDBCDS.Next;
-  end;
-  CurrEpgDb.EnableControls;
-//  WIDBCDS.Last;
-  LastStartDate := WIDBCDS.FieldByName('StartTime').AsDateTime;
-  Log('LastStartDate (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(LastStartDate));
+
+  CurrEpgDb.First;
+  FirstEndDate := CurrEpgDb.FieldByName('EndTime').AsDateTime;
+  Log('FirstEndDate (Rec. ' + CurrEpgDb.RecNo.ToString + '): ' + DateToStr(FirstEndDate));
+  CurrEpgDb.Last;
+  LastStartDate := CurrEpgDb.FieldByName('StartTime').AsDateTime;
+  Log('LastStartDate (Rec. ' + CurrEpgDb.RecNo.ToString + '): ' + DateToStr(LastStartDate));
   Log('LastStartDate - Now: ' + Double(LastStartDate - Now).ToString);
   Log('CurrEpgDb.RecordCount:  ' + CurrEpgDb.RecordCount.ToString);
-  WIDBCDS.EnableControls;
+  CurrEpgDb.EnableControls;
 end;
 
-procedure TCWRmainFrm.SetupWIDBCDS;
+procedure TCWRmainFrm.SetupCurrEpgDb;
 var
   i: Integer;
 const
@@ -683,28 +776,27 @@ const
   'Description', 'StartTime', 'EndTime', 'programID', 'originalAirDate', 'new',
   'audioProperties', 'videoProperties', 'movieYear', 'genres', 'Class');
 begin
-  Log('========== SetupWIDBCDS called');
-  if WIDBCDS.FieldDefs.IndexOf('id') = -1 then
+  Log('========== SetupCurrEpgDb called');
+//  CurrEpgDb.FieldDefs.IndexOf('id') = -1 then
   begin
-    if WIDBCDS.Active then WIDBCDS.Close;
-    // don't re-add fields
-    WIDBCDS.FieldDefs.Clear;
-    WIDBCDS.FieldDefs.Add('id', ftInteger, 0, False);
+    CurrEpgDb.FieldDefs.Clear;
+    CurrEpgDb.FieldDefs.Add('id', ftInteger, 0, False);
     // add normal fields
     for i := 0 to Length(DBFIELDS) - 1 do
     begin
       if (DBFIELDS[i] = 'StartTime') or (DBFIELDS[i] = 'EndTime') then begin
-        WIDBCDS.FieldDefs.Add(DBFIELDS[i], ftDateTime);
+        CurrEpgDb.FieldDefs.Add(DBFIELDS[i], ftDateTime);
       end else begin
-        WIDBCDS.FieldDefs.Add(DBFIELDS[i], ftString);
+        CurrEpgDb.FieldDefs.Add(DBFIELDS[i], ftString);
       end;
     end;
   end;
-  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
-  Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active, 'not ')
-    + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
-  Log('SetupWIDBCDS: WIDBCDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
-  await(LogDataRangeAndCopyData);
+  TAwait.ExecP<Boolean>(CurrEpgDb.OpenAsync);
+  Log('CurrEpgDb is ' + IfThen(not CurrEpgDb.Active, 'not ')
+    + 'Active and ' + IfThen(not CurrEpgDb.IsEmpty, 'not ') + 'Empty');
+  Log('SetupCurrEpgDb: CurrEpgDb.RecordCount: ' + CurrEpgDb.RecordCount.ToString);
+  await(LoadCurrEpgDb);
+  await(LogDataRange);
   if Now > LastStartDate then
     TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'#13'Please make sure that the HTPC'
       + #13' is connected to Google Drive',mtInformation, [mbOK]))
@@ -712,10 +804,8 @@ begin
     TAwait.ExecP<TModalResult> (MessageDlgAsync('The current dataset was fetched over 3 days ago'
       + #13'and there are only about ' + Round(LastStartDate - Now).ToString + ' days now available.'
       + #13#13'To update, please use Options | Refresh Data',mtInformation, [mbOK]));
-//  TOpen(WIDBCDS).NestedDataSetClass := TBaseJSONDataSet;
-//  CurrEpgDb := TWebClientDataSet(WIDBCDS.GetClonedDataSet(False));
 
-  Log('========== SetupWIDBCDS finished');
+  Log('========== SetupCurrEpgDb finished');
 end;
 
 procedure TCWRmainFrm.SetupEpgDb;
@@ -735,14 +825,12 @@ begin
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
   LastStartTime := TTimeZone.Local.ToUniversalTime(Now) + StrToInt(cbNumDisplayDays.Text);
   CurrEpgDb.DisableControls;
-//  WIDBCDS.DisableControls;
   EpgDb.DisableControls;
   EpgDb.Filtered := False;
   if EpgDb.RecordCount > 0 then
     EpgDb.EmptyDataSet;
   EpgDb.FieldDefs := CurrEpgDb.FieldDefs;
   EpgDb.Active := True;
-//  CurrEpgDb.Open; // Active := True;
   CurrEpgDb.First;
   while not CurrEpgDb.Eof do
   begin
@@ -758,23 +846,6 @@ begin
   end;
   EpgDb.EnableControls;
   CurrEpgDb.EnableControls;
-//  EpgDb.FieldDefs := WIDBCDS.FieldDefs;
-//  EpgDb.Active := True;
-//  WIDBCDS.First;
-//  while not WIDBCDS.Eof do
-//  begin
-//    if (WIDBCDS.Fields[7].AsDateTime >= FirstEndTime) and
-//       (WIDBCDS.Fields[6].AsDateTime <= LastStartTime) then
-//    begin
-//      EpgDb.Append;
-//      for i := 0 to Pred(WIDBCDS.FieldCount) do
-//        EpgDb.Fields[i] := WIDBCDS.Fields[i];
-//      EpgDb.Post;
-//    end;
-//    WIDBCDS.Next;
-//  end;
-//  EpgDb.EnableControls;
-//  WIDBCDS.EnableControls;
   Log('SetupEpgDb: EpgDb post-filter record count: ' + EpgDb.RecordCount.ToString);
   WebDataSource1.DataSet := EpgDb;
   EPG.DataSource := WebDataSource1;
@@ -1200,7 +1271,8 @@ var
 begin
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
 //  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}  // Wait for cursor move?
-  await(EPG.Refresh);
+//  await(EPG.Refresh);
+  if pnlFilterComboBox.Visible then pnlFilterComboBox.Hide;
   EPG.BeginUpdate;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   DetailsFrm := TDetailsFrm.Create(nil);
@@ -1298,11 +1370,11 @@ begin
   EPG.EndUpdate;
 end;
 
-procedure TCWRmainFrm.WIDBCDSIDBError(DataSet: TDataSet;
-  opCode: TIndexedDbOpCode; errorName, errorMsg: string);
-begin
-  TAwait.ExecP<TModalResult> (MessageDlgAsync(DataSet.Name + ' error: ' + errorName + ', msg: ' + errorMsg, mtInformation, [mbOK]));
-end;
+//procedure TCWRmainFrm.WIDBCDSIDBError(DataSet: TDataSet;
+//  opCode: TIndexedDbOpCode; errorName, errorMsg: string);
+//begin
+//  TAwait.ExecP<TModalResult> (MessageDlgAsync(DataSet.Name + ' error: ' + errorName + ', msg: ' + errorMsg, mtInformation, [mbOK]));
+//end;
 
 procedure SaveLocalStrings(SG: TWebStringGrid; LSName: string);
 var

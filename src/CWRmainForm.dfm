@@ -21,7 +21,8 @@ object CWRmainFrm: TCWRmainFrm
     DefaultColWidth = 61
     DefaultRowHeight = 23
     FixedCols = 0
-    RowCount = 20
+    RowCount = 1
+    FixedRows = 0
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -21
@@ -921,7 +922,6 @@ object CWRmainFrm: TCWRmainFrm
     IDBKeyFieldName = 'id'
     IDBAutoIncrement = False
     Params = <>
-    OnIDBError = WIDBCDSIDBError
     Left = 296
     Top = 152
   end
