@@ -39211,6 +39211,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var DetailsFrm = null;
       var SchedFrm = null;
       var x = [];
+      this.EPG.FOnClickCell = null;
       $impl.Log("========== EPGClickCell() called from RC " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
           return ARow;
         }, set: function (v) {
@@ -39319,6 +39320,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       };
       this.EpgDb.EnableControls();
       this.EPG.EndUpdate();
+      this.EPG.FOnClickCell = rtl.createCallback(this,"EPGClickCell");
     };
     this.HistoryTableGetCellClass = function (Sender, ACol, ARow, AField, AValue, AClassName) {
       if ((ARow > 0) && (this.HistoryTable.GetCells(0,ARow) > "")) {

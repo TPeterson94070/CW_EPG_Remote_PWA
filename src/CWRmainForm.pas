@@ -1180,9 +1180,8 @@ var
   x: TArray<string>;
 
 begin
+  EPG.OnClickCell := nil; // Avoid more clicks until done
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
-//  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}  // Wait for cursor move?
-//  await(EPG.Refresh);
   // Quit Combobox if still open
   if pnlFilterComboBox.Visible then pnlFilterComboBox.Hide;
   EPG.BeginUpdate;
@@ -1282,6 +1281,7 @@ begin
   end;
   EpgDb.EnableControls;
   EPG.EndUpdate;
+  EPG.OnClickCell := EPGClickCell; // Ready for more
 end;
 
 procedure SaveLocalStrings(SG: TWebStringGrid; LSName: string);
