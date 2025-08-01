@@ -759,10 +759,10 @@ begin
 
   CurrEpgDb.First;
   FirstEndDate := CurrEpgDb.FieldByName('EndTime').AsDateTime;
-  Log('FirstEndDate (Rec. ' + CurrEpgDb.RecNo.ToString + '): ' + DateToStr(FirstEndDate));
+  Log('FirstEndDate (UTC) (Rec. ' + CurrEpgDb.RecNo.ToString + '): ' + DateToStr(FirstEndDate));
   CurrEpgDb.Last;
   LastStartDate := CurrEpgDb.FieldByName('StartTime').AsDateTime;
-  Log('LastStartDate (Rec. ' + CurrEpgDb.RecNo.ToString + '): ' + DateToStr(LastStartDate));
+  Log('LastStartDate (UTC) (Rec. ' + CurrEpgDb.RecNo.ToString + '): ' + DateToStr(LastStartDate));
   Log('LastStartDate - Now: ' + Double(LastStartDate - Now).ToString);
   Log('CurrEpgDb.RecordCount:  ' + CurrEpgDb.RecordCount.ToString);
   CurrEpgDb.EnableControls;
