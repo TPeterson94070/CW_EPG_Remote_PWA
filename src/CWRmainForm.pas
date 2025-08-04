@@ -547,7 +547,7 @@ var
   Text: string;
 begin
   Log('======= Starting LoadCurrEpgDb, DB is ' + IfThen(not CurrEpgDb.Active, 'not ') + 'Active');
-  ShowPlsWait('Updating CurrEPG');
+  ShowPlsWait('Loading EPG DB');
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   CurrEpgDb.DisableControls;
   CurrEpgDb.Filtered := False;
@@ -633,7 +633,7 @@ begin
     Title := NewCaptures.Cells[3,ARow];
     ProgID := NewCaptures.Cells[6,ARow];
     NewCaptures.BeginUpdate;
-    await(RefreshCSV(NewCaptures, 'cwr_newcaptures.csv','NewCaptures', id));
+    await(RefreshCSV(NewCaptures, 'cwr_newcaptures.csv','New Captures', id));
     Log('NewCaptures Rows: '+NewCaptures.RowCount.ToString);
     if NewCaptures.RowCount > 1 then // file exists, find matching row
       for i := 1 to Pred(NewCaptures.RowCount) do
@@ -690,6 +690,8 @@ begin
   begin
     CurrEpgDb.FieldDefs.Clear;
     CurrEpgDb.FieldDefs.Add('id', ftInteger, 0, False);
+    EpgDb.FieldDefs.Clear;
+    EpgDb.FieldDefs.Add('id', ftInteger, 0, False);
     // add normal fields
     for i := 0 to Length(DBFIELDS) - 1 do
     begin
@@ -699,6 +701,11 @@ begin
         CurrEpgDb.FieldDefs.Add(DBFIELDS[i], ftString);
       end;
     end;
+    for i := 0 to 2 do
+      EpgDb.FieldDefs.Add(DBFIELDS[i], ftString);
+      EpgDb.FieldDefs.Add(DBFIELDS[13], ftString);
+      EpgDb.FieldDefs.Add(DBFIELDS[14], ftString);
+
   end;
 //  EpgDb.FieldDefs := CurrEpgDb.FieldDefs;
   TAwait.ExecP<Boolean>(CurrEpgDb.OpenAsync);
@@ -706,7 +713,6 @@ begin
     + 'Active and ' + IfThen(not CurrEpgDb.IsEmpty, 'not ') + 'Empty');
   Log('SetupCurrEpgDb: CurrEpgDb.RecordCount: ' + CurrEpgDb.RecordCount.ToString);
   await(LoadCurrEpgDb);
-//  await(LogDataRange);     // Done in Load
   if TTimeZone.Local.ToUniversalTime(Now) > LastStartDate then
     TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'#13'Please make sure that the HTPC'
       + #13' is connected to Google Drive',mtInformation, [mbOK]))
@@ -727,17 +733,17 @@ procedure TCWRmainFrm.SetupEpgDb;
 var
   FirstEndTime, LastStartTime:  TDateTime;
   i: Integer;
+//  sl: TStringList;
 
 begin
   Log('====== SetupEpgDb called');
-  ShowPlsWait('Resetting EpgDB.');
+  ShowPlsWait('Resetting EPG');
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
   LastStartTime := FirstEndTime + StrToInt(cbNumDisplayDays.Text);
   CurrEpgDb.DisableControls;
   EpgDb.DisableControls;
   EpgDb.Filtered := False;
-  EpgDb.FieldDefs := CurrEpgDb.FieldDefs;
   EpgDb.Active := True;
   EpgDb.EmptyDataSet;
   CurrEpgDb.First;
@@ -747,8 +753,15 @@ begin
        (CurrEpgDb.Fields[6].AsDateTime <= LastStartTime) then
     begin
       EpgDb.Append;
-      for i := 0 to Pred(CurrEpgDb.FieldCount) do
+      for i := 0 to 3 do
         EpgDb.Fields[i] := CurrEpgDb.Fields[i];
+      for i := 14 to 15 do
+        EpgDb.Fields[i-10] := CurrEpgDb.Fields[i];
+//      sl := TStringList.Create;
+//      for i := 0 to EpgDb.FieldCount-1 do
+//        sl.Add(i.ToString+': '+EpgDb.Fields[i].AsString+#$D#$A);
+//        TAwait.ExecP<TModalResult> (MessageDlgAsync('sl: ' + sl.Text, mtInformation, [mbOK]));
+//      sl.Free;
       EpgDb.Post;
     end;
     CurrEpgDb.Next;
@@ -1168,7 +1181,7 @@ procedure TCWRmainFrm.EPGGetCellClass(Sender: TObject; ACol,
 { show listings row in color coded for type based on current IDB record }
 begin
   if ARow = 0 then exit;
-  if EPG.Cells[3,ARow] = EpgDb.Fields[0].AsString then
+  if EPG.Cells[3,ARow] = EpgDb.Fields[0].AsString then  {ids=}
     AClassName := EPG.Cells[4,ARow] // EpgDb.Fields[15].AsString
   else AClassName := 'white'; // Should not occur!
 end;
@@ -1186,15 +1199,14 @@ begin
   if pnlFilterComboBox.Visible then pnlFilterComboBox.Hide;
   EPG.BeginUpdate;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-//  DetailsFrm := TDetailsFrm.Create(nil);
-//  Log('========== finished TDetailsFrm.Create(nil) ');
   // Speed up form opening
   await(EpgDb.DisableControls);
+  CurrEpgDb.DisableControls;
   Log('========== finished EpgDb.DisableControls ');
   // Wrap in try-except-end because of Locate bug with filtered data
   try
     Log('========== starting Locate ' + EPG.Cells[3,ARow]);
-    if EpgDb.Locate('id', EPG.Cells[3,ARow],[]) then
+    if CurrEpgDb.Locate('id', EPG.Cells[3,ARow],[]) then
     try
       Log('========== Located ' + EPG.Cells[3,ARow]);
       DetailsFrm := TDetailsFrm.Create(nil);
@@ -1206,24 +1218,24 @@ begin
       TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load());
       Log('========== finished DetailsFrm.Load() ');
       // init controls after loading
-      DetailsFrm.mmTitle.Text := EpgDb.Fields[3].AsString;
-      DetailsFrm.mmSubTitle.Text := EpgDb.Fields[4].AsString;
-      DetailsFrm.lb11Time.Caption := EpgDb.Fields[2].AsString;
-      DetailsFrm.lb10Channel.Caption := EpgDb.Fields[1].AsString;
-      x := EpgDb.Fields[9].AsString.Split(['-']);                 // Parse 1st-air date
+      DetailsFrm.mmTitle.Text := CurrEpgDb.Fields[3].AsString;
+      DetailsFrm.mmSubTitle.Text := CurrEpgDb.Fields[4].AsString;
+      DetailsFrm.lb11Time.Caption := CurrEpgDb.Fields[2].AsString;
+      DetailsFrm.lb10Channel.Caption := CurrEpgDb.Fields[1].AsString;
+      x := CurrEpgDb.Fields[9].AsString.Split(['-']);                 // Parse 1st-air date
       DetailsFrm.lb09OrigDate.Caption := IfThen(Length(x) = 3,      // Have 1st-air date
         '1st Aired ' + x[1] + '/' + x[2] + '/' + RightStr(x[0],2),  // Use 1st-air date
-        IfThen(EpgDb.Fields[13].AsString > '',                    // Check Movie year
-        'Movie Yr ' + EpgDb.Fields[13].AsString,''));             // Use Movie year or nil
-      SetLabelStyle(DetailsFrm.lb02New, EpgDb.Fields[10].AsString <> '');
-      SetLabelStyle(DetailsFrm.lb08CC, EpgDb.Fields[11].AsString.Contains('cc'));
-      SetLabelStyle(DetailsFrm.lb03Stereo, EpgDb.Fields[11].AsString.Contains('stereo'));
-      SetLabelStyle(DetailsFrm.lb07Dolby, EpgDb.Fields[11].AsString.Contains('DD'));
+        IfThen(CurrEpgDb.Fields[13].AsString > '',                    // Check Movie year
+        'Movie Yr ' + CurrEpgDb.Fields[13].AsString,''));             // Use Movie year or nil
+      SetLabelStyle(DetailsFrm.lb02New, CurrEpgDb.Fields[10].AsString <> '');
+      SetLabelStyle(DetailsFrm.lb08CC, CurrEpgDb.Fields[11].AsString.Contains('cc'));
+      SetLabelStyle(DetailsFrm.lb03Stereo, CurrEpgDb.Fields[11].AsString.Contains('stereo'));
+      SetLabelStyle(DetailsFrm.lb07Dolby, CurrEpgDb.Fields[11].AsString.Contains('DD'));
       DetailsFrm.lb04HD.Caption := 'SD';
-      if EpgDb.Fields[12].AsString > '' then
-        DetailsFrm.lb04HD.Caption := EpgDb.Fields[12].AsString.Split(['["HD ','"'])[1];
+      if CurrEpgDb.Fields[12].AsString > '' then
+        DetailsFrm.lb04HD.Caption := CurrEpgDb.Fields[12].AsString.Split(['["HD ','"'])[1];
       SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
-      DetailsFrm.mmDescription.Text := EpgDb.Fields[5].AsString;
+      DetailsFrm.mmDescription.Text := CurrEpgDb.Fields[5].AsString;
     // execute form and wait for close
       Log('========== starting DetailsFrm.Execute ');
       TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
@@ -1246,7 +1258,7 @@ begin
           SchedFrm.mmSubTitle.Text := DetailsFrm.mmSubTitle.Text;
           SchedFrm.mmDescription.Text := DetailsFrm.mmDescription.Text;
           SchedFrm.lblChannelValue.Caption := DetailsFrm.lb10Channel.Caption;
-          // N.B.:  EpgDb DateTimes are UTC, but we need to specify HTPC's TZ for capture!
+          // N.B.:  CurrEpgDb DateTimes are UTC, but we need to specify HTPC's TZ for capture!
           // So we decode the times from the "Time" field (format: mm/yy HH:nn--HH:nn)
           x := string(DetailsFrm.lb11Time.Caption).Split([' ','--']);
   //        console.log(x);
@@ -1280,6 +1292,7 @@ begin
     Log('Locate raised an improper Exception instead of "False"');
   end;
   EpgDb.EnableControls;
+  CurrEpgDb.EnableControls;
   EPG.EndUpdate;
   EPG.OnClickCell := EPGClickCell; // Ready for more
 end;
@@ -1377,7 +1390,7 @@ var
   id: string;
 begin
   Log(' ====== UpdateNewCaptures called =========');
-  await(RefreshCSV(NewCaptures, 'cwr_newcaptures.csv','NewCaptures', id));
+  await(RefreshCSV(NewCaptures, 'cwr_newcaptures.csv','New Captures', id));
   Log('NewCaptures Rows: '+NewCaptures.RowCount.ToString);
   if NewCaptures.RowCount = 0 then // fnf, create new one
   begin

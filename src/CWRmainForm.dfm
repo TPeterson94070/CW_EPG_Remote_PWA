@@ -686,6 +686,7 @@ object CWRmainFrm: TCWRmainFrm
           AutoFormatDateTime = False
           DataField = 'PSIP'
           Title = 'Channel'
+          TitleElementClassName = 'h6'
           Width = 75
         end
         item
@@ -700,6 +701,7 @@ object CWRmainFrm: TCWRmainFrm
           AutoFormatDateTime = False
           DataField = 'Title'
           Title = 'Title'
+          TitleElementClassName = 'h6'
           Width = 300
         end
         item
@@ -707,6 +709,7 @@ object CWRmainFrm: TCWRmainFrm
           DataField = 'id'
           Editor = geNone
           Title = 'ID'
+          TitleElementClassName = 'h6'
           Width = 0
         end
         item
@@ -714,6 +717,7 @@ object CWRmainFrm: TCWRmainFrm
           ElementClassName = 'white'
           DataField = 'Class'
           Title = 'Class'
+          TitleElementClassName = 'h6'
           Width = 0
         end>
       DataSource = WebDataSource1

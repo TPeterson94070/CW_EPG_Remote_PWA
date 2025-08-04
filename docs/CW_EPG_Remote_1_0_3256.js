@@ -19029,14 +19029,6 @@ rtl.module("DB",["System","Classes","SysUtils","JS","Types","DateUtils"],functio
     this.Add$5 = function (AName, ADataType) {
       this.Add$3(AName,ADataType,0,false);
     };
-    this.Assign$2 = function (FieldDefs) {
-      var I = 0;
-      this.Clear();
-      for (var $l = 0, $end = FieldDefs.GetCount() - 1; $l <= $end; $l++) {
-        I = $l;
-        this.Add$3(FieldDefs.GetItem$1(I).FName,FieldDefs.GetItem$1(I).FDataType,FieldDefs.GetItem$1(I).FSize,FieldDefs.GetItem$1(I).FRequired);
-      };
-    };
     var $r = this.$rtti;
     $r.addMethod("Create$4",2,[["ADataSet",$mod.$rtti["TDataSet"]]]);
   });
@@ -21345,10 +21337,6 @@ rtl.module("DB",["System","Classes","SysUtils","JS","Types","DateUtils"],functio
     };
     this.UnRegisterDataSource = function (ADataSource) {
       this.FDataSources.Remove(ADataSource);
-    };
-    this.SetFieldDefs = function (AFieldDefs) {
-      this.FFieldList.ClearFieldDefs();
-      this.FFieldDefs.Assign$2(AFieldDefs);
     };
     this.HandleRequestResponse = function (ARequest) {
       var DataAdded = false;
@@ -38942,7 +38930,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var AColor = "";
       var Text = "";
       $impl.Log("======= Starting LoadCurrEpgDb, DB is " + pas.StrUtils.IfThen(!this.CurrEpgDb.GetActive(),"not ","") + "Active");
-      this.ShowPlsWait("Updating CurrEPG");
+      this.ShowPlsWait("Loading EPG DB");
       await sleep(10);
       this.CurrEpgDb.DisableControls();
       this.CurrEpgDb.SetFiltered(false);
@@ -39225,10 +39213,11 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.EPG.BeginUpdate();
       await sleep(10);
       await this.EpgDb.DisableControls();
+      this.CurrEpgDb.DisableControls();
       $impl.Log("========== finished EpgDb.DisableControls ");
       try {
         $impl.Log("========== starting Locate " + this.EPG.GetCells(3,ARow));
-        if (this.EpgDb.Locate("id",this.EPG.GetCells(3,ARow),{})) try {
+        if (this.CurrEpgDb.Locate("id",this.EPG.GetCells(3,ARow),{})) try {
           $impl.Log("========== Located " + this.EPG.GetCells(3,ARow));
           DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[null]);
           $impl.Log("========== finished TDetailsFrm.Create(nil) ");
@@ -39237,40 +39226,40 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           $impl.Log("========== starting DetailsFrm.Load() ");
           await DetailsFrm.Load();
           $impl.Log("========== finished DetailsFrm.Load() ");
-          DetailsFrm.mmTitle.SetText(this.EpgDb.FFieldList.GetField(3).GetAsString());
-          DetailsFrm.mmSubTitle.SetText(this.EpgDb.FFieldList.GetField(4).GetAsString());
-          DetailsFrm.lb11Time.SetCaption(this.EpgDb.FFieldList.GetField(2).GetAsString());
-          DetailsFrm.lb10Channel.SetCaption(this.EpgDb.FFieldList.GetField(1).GetAsString());
-          x = pas.SysUtils.TStringHelper.Split$1.call({p: this.EpgDb.FFieldList.GetField(9).GetAsString(), get: function () {
+          DetailsFrm.mmTitle.SetText(this.CurrEpgDb.FFieldList.GetField(3).GetAsString());
+          DetailsFrm.mmSubTitle.SetText(this.CurrEpgDb.FFieldList.GetField(4).GetAsString());
+          DetailsFrm.lb11Time.SetCaption(this.CurrEpgDb.FFieldList.GetField(2).GetAsString());
+          DetailsFrm.lb10Channel.SetCaption(this.CurrEpgDb.FFieldList.GetField(1).GetAsString());
+          x = pas.SysUtils.TStringHelper.Split$1.call({p: this.CurrEpgDb.FFieldList.GetField(9).GetAsString(), get: function () {
               return this.p;
             }, set: function (v) {
               this.p = v;
             }},["-"]);
-          DetailsFrm.lb09OrigDate.SetCaption(pas.StrUtils.IfThen(rtl.length(x) === 3,"1st Aired " + x[1] + "/" + x[2] + "/" + pas.StrUtils.RightStr(x[0],2),pas.StrUtils.IfThen(this.EpgDb.FFieldList.GetField(13).GetAsString() > "","Movie Yr " + this.EpgDb.FFieldList.GetField(13).GetAsString(),"")));
-          $impl.SetLabelStyle(DetailsFrm.lb02New,this.EpgDb.FFieldList.GetField(10).GetAsString() !== "");
-          $impl.SetLabelStyle(DetailsFrm.lb08CC,pas.SysUtils.TStringHelper.Contains.call({p: this.EpgDb.FFieldList.GetField(11).GetAsString(), get: function () {
+          DetailsFrm.lb09OrigDate.SetCaption(pas.StrUtils.IfThen(rtl.length(x) === 3,"1st Aired " + x[1] + "/" + x[2] + "/" + pas.StrUtils.RightStr(x[0],2),pas.StrUtils.IfThen(this.CurrEpgDb.FFieldList.GetField(13).GetAsString() > "","Movie Yr " + this.CurrEpgDb.FFieldList.GetField(13).GetAsString(),"")));
+          $impl.SetLabelStyle(DetailsFrm.lb02New,this.CurrEpgDb.FFieldList.GetField(10).GetAsString() !== "");
+          $impl.SetLabelStyle(DetailsFrm.lb08CC,pas.SysUtils.TStringHelper.Contains.call({p: this.CurrEpgDb.FFieldList.GetField(11).GetAsString(), get: function () {
               return this.p;
             }, set: function (v) {
               this.p = v;
             }},"cc"));
-          $impl.SetLabelStyle(DetailsFrm.lb03Stereo,pas.SysUtils.TStringHelper.Contains.call({p: this.EpgDb.FFieldList.GetField(11).GetAsString(), get: function () {
+          $impl.SetLabelStyle(DetailsFrm.lb03Stereo,pas.SysUtils.TStringHelper.Contains.call({p: this.CurrEpgDb.FFieldList.GetField(11).GetAsString(), get: function () {
               return this.p;
             }, set: function (v) {
               this.p = v;
             }},"stereo"));
-          $impl.SetLabelStyle(DetailsFrm.lb07Dolby,pas.SysUtils.TStringHelper.Contains.call({p: this.EpgDb.FFieldList.GetField(11).GetAsString(), get: function () {
+          $impl.SetLabelStyle(DetailsFrm.lb07Dolby,pas.SysUtils.TStringHelper.Contains.call({p: this.CurrEpgDb.FFieldList.GetField(11).GetAsString(), get: function () {
               return this.p;
             }, set: function (v) {
               this.p = v;
             }},"DD"));
           DetailsFrm.lb04HD.SetCaption("SD");
-          if (this.EpgDb.FFieldList.GetField(12).GetAsString() > "") DetailsFrm.lb04HD.SetCaption(pas.SysUtils.TStringHelper.Split$8.call({p: this.EpgDb.FFieldList.GetField(12).GetAsString(), get: function () {
+          if (this.CurrEpgDb.FFieldList.GetField(12).GetAsString() > "") DetailsFrm.lb04HD.SetCaption(pas.SysUtils.TStringHelper.Split$8.call({p: this.CurrEpgDb.FFieldList.GetField(12).GetAsString(), get: function () {
               return this.p;
             }, set: function (v) {
               this.p = v;
             }},['["HD ','"'])[1]);
           $impl.SetLabelStyle(DetailsFrm.lb04HD,DetailsFrm.lb04HD.FCaption !== "SD");
-          DetailsFrm.mmDescription.SetText(this.EpgDb.FFieldList.GetField(5).GetAsString());
+          DetailsFrm.mmDescription.SetText(this.CurrEpgDb.FFieldList.GetField(5).GetAsString());
           $impl.Log("========== starting DetailsFrm.Execute ");
           await DetailsFrm.Execute();
           $impl.Log("========== finished DetailsFrm.Execute ");
@@ -39319,6 +39308,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $impl.Log('Locate raised an improper Exception instead of "False"');
       };
       this.EpgDb.EnableControls();
+      this.CurrEpgDb.EnableControls();
       this.EPG.EndUpdate();
       this.EPG.FOnClickCell = rtl.createCallback(this,"EPGClickCell");
     };
@@ -39414,7 +39404,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         Title = this.NewCaptures.GetCells(3,ARow);
         ProgID = this.NewCaptures.GetCells(6,ARow);
         this.NewCaptures.BeginUpdate();
-        await this.RefreshCSV(this.NewCaptures,"cwr_newcaptures.csv","NewCaptures",{get: function () {
+        await this.RefreshCSV(this.NewCaptures,"cwr_newcaptures.csv","New Captures",{get: function () {
             return id;
           }, set: function (v) {
             id = v;
@@ -39787,7 +39777,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var i = 0;
       var id = "";
       $impl.Log(" ====== UpdateNewCaptures called =========");
-      await this.RefreshCSV(this.NewCaptures,"cwr_newcaptures.csv","NewCaptures",{get: function () {
+      await this.RefreshCSV(this.NewCaptures,"cwr_newcaptures.csv","New Captures",{get: function () {
           return id;
         }, set: function (v) {
           id = v;
@@ -39920,6 +39910,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log("========== SetupCurrEpgDb called");
       this.CurrEpgDb.FFieldDefs.Clear();
       this.CurrEpgDb.FFieldDefs.Add$3("id",3,0,false);
+      this.EpgDb.FFieldDefs.Clear();
+      this.EpgDb.FFieldDefs.Add$3("id",3,0,false);
       for (i = 0; i <= 14; i++) {
         if ((DBFIELDS[i] === "StartTime") || (DBFIELDS[i] === "EndTime")) {
           this.CurrEpgDb.FFieldDefs.Add$5(DBFIELDS[i],11);
@@ -39927,6 +39919,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           this.CurrEpgDb.FFieldDefs.Add$5(DBFIELDS[i],1);
         };
       };
+      for (i = 0; i <= 2; i++) this.EpgDb.FFieldDefs.Add$5(DBFIELDS[i],1);
+      this.EpgDb.FFieldDefs.Add$5(DBFIELDS[13],1);
+      this.EpgDb.FFieldDefs.Add$5(DBFIELDS[14],1);
       await this.CurrEpgDb.OpenAsync();
       $impl.Log("CurrEpgDb is " + pas.StrUtils.IfThen(!this.CurrEpgDb.GetActive(),"not ","") + "Active and " + pas.StrUtils.IfThen(!this.CurrEpgDb.IsEmpty(),"not ","") + "Empty");
       $impl.Log("SetupCurrEpgDb: CurrEpgDb.RecordCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.CurrEpgDb.GetRecordCount(), get: function () {
@@ -39954,24 +39949,21 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var LastStartTime = 0.0;
       var i = 0;
       $impl.Log("====== SetupEpgDb called");
-      this.ShowPlsWait("Resetting EpgDB.");
+      this.ShowPlsWait("Resetting EPG");
       await sleep(10);
       FirstEndTime = pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false);
       LastStartTime = FirstEndTime + pas.SysUtils.StrToInt(this.cbNumDisplayDays.GetText());
       this.CurrEpgDb.DisableControls();
       this.EpgDb.DisableControls();
       this.EpgDb.SetFiltered(false);
-      this.EpgDb.SetFieldDefs(this.CurrEpgDb.FFieldDefs);
       this.EpgDb.SetActive(true);
       this.EpgDb.EmptyDataSet();
       this.CurrEpgDb.First();
       while (!this.CurrEpgDb.GetEOF()) {
         if ((this.CurrEpgDb.FFieldList.GetField(7).GetAsDateTime() >= FirstEndTime) && (this.CurrEpgDb.FFieldList.GetField(6).GetAsDateTime() <= LastStartTime)) {
           this.EpgDb.Append();
-          for (var $l = 0, $end = this.CurrEpgDb.GetfieldCount() - 1; $l <= $end; $l++) {
-            i = $l;
-            this.EpgDb.FFieldList.SetField(i,this.CurrEpgDb.FFieldList.GetField(i));
-          };
+          for (i = 0; i <= 3; i++) this.EpgDb.FFieldList.SetField(i,this.CurrEpgDb.FFieldList.GetField(i));
+          for (i = 14; i <= 15; i++) this.EpgDb.FFieldList.SetField(i - 10,this.CurrEpgDb.FFieldList.GetField(i));
           this.EpgDb.Post();
         };
         this.CurrEpgDb.Next();
@@ -40876,6 +40868,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $with8.FAutoFormatDateTime = false;
         $with8.SetDataField("PSIP");
         $with8.SetTitle("Channel");
+        $with8.FTitleClassName = "h6";
         $with8.SetWidth(75);
         var $with9 = this.EPG.FColumns.Add$1();
         $with9.SetAlignment(2);
@@ -40888,18 +40881,21 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $with10.FAutoFormatDateTime = false;
         $with10.SetDataField("Title");
         $with10.SetTitle("Title");
+        $with10.FTitleClassName = "h6";
         $with10.SetWidth(300);
         var $with11 = this.EPG.FColumns.Add$1();
         $with11.FAutoFormatDateTime = false;
         $with11.SetDataField("id");
         $with11.FEditor = 14;
         $with11.SetTitle("ID");
+        $with11.FTitleClassName = "h6";
         $with11.SetWidth(0);
         var $with12 = this.EPG.FColumns.Add$1();
         $with12.FAutoFormatDateTime = false;
         $with12.FClassName$1 = "white";
         $with12.SetDataField("Class");
         $with12.SetTitle("Class");
+        $with12.FTitleClassName = "h6";
         $with12.SetWidth(0);
         this.EPG.SetDataSource(this.WebDataSource1);
         this.EPG.SetElementFont(1);
