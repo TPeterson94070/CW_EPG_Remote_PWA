@@ -39211,10 +39211,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         }}));
       if (this.pnlFilterComboBox.FVisible) this.pnlFilterComboBox.Hide();
       this.ShowPlsWait("Preparing Details");
-      this.EPG.BeginUpdate();
       await sleep(100);
-      await this.EpgDb.DisableControls();
-      await this.CurrEpgDb.DisableControls();
       $impl.Log("========== finished EpgDb.DisableControls ");
       try {
         $impl.Log("========== starting Locate " + this.EPG.GetCells(3,ARow));
@@ -39309,10 +39306,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       };
       this.ShowPlsWait("Refreshing List");
       await sleep(100);
-      await this.EpgDb.EnableControls();
-      await this.CurrEpgDb.EnableControls();
-      await this.EPG.EndUpdate();
-      await this.EPG.Refresh();
       this.EPG.FOnClickCell = rtl.createCallback(this,"EPGClickCell");
       this.pnlWaitPls.Hide();
     };

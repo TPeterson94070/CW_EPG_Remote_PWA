@@ -1205,11 +1205,11 @@ begin
   // Quit Combobox if still open
   if pnlFilterComboBox.Visible then pnlFilterComboBox.Hide;
   ShowPlsWait('Preparing Details');
-  EPG.BeginUpdate;
+//  EPG.BeginUpdate;
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   // Speed up form opening
-  await(EpgDb.DisableControls);
-  await(CurrEpgDb.DisableControls);
+//  await(EpgDb.DisableControls);
+//  await(CurrEpgDb.DisableControls);
   Log('========== finished EpgDb.DisableControls ');
   // Wrap in try-except-end because of Locate bug with filtered data
   try
@@ -1302,10 +1302,10 @@ begin
   end;
   ShowPlsWait('Refreshing List');
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
-  await(EpgDb.EnableControls);
-  await(CurrEpgDb.EnableControls);
-  await(EPG.EndUpdate);
-  await(EPG.Refresh);
+//  await(EpgDb.EnableControls);
+//  await(CurrEpgDb.EnableControls);
+//  await(EPG.EndUpdate);
+//  await(EPG.Refresh);
   EPG.OnClickCell := EPGClickCell; // Ready for more
   pnlWaitPls.Hide;
 end;
