@@ -592,6 +592,7 @@ begin
             'rose');  // Otherwise "rerun"
         CurrEpgDb.Fields[15].Value := AColor;
         TAwait.ExecP<Boolean>(CurrEpgDb.PostAsync);
+      if t > Now + StrToInt(cbNumDisplayDays.Text) + 2 then Break;
       end;
       Log('Finished editing CurrEpgDb, RecordCount: ' + CurrEpgDb.RecordCount.ToString);
     end
