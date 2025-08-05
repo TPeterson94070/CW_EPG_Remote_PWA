@@ -39306,6 +39306,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       };
       this.ShowPlsWait("Refreshing List");
       await sleep(100);
+      await this.EPG.Refresh();
       this.EPG.FOnClickCell = rtl.createCallback(this,"EPGClickCell");
       this.pnlWaitPls.Hide();
     };

@@ -1305,7 +1305,7 @@ begin
 //  await(EpgDb.EnableControls);
 //  await(CurrEpgDb.EnableControls);
 //  await(EPG.EndUpdate);
-//  await(EPG.Refresh);
+  await(EPG.Refresh);
   EPG.OnClickCell := EPGClickCell; // Ready for more
   pnlWaitPls.Hide;
 end;
