@@ -1300,11 +1300,12 @@ begin
   except
     Log('Locate raised an improper Exception instead of "False"');
   end;
-  ShowPlsWait('Housekeeping...');
+  ShowPlsWait('Refreshing List');
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   await(EpgDb.EnableControls);
   await(CurrEpgDb.EnableControls);
   await(EPG.EndUpdate);
+  await(EPG.Refresh);
   EPG.OnClickCell := EPGClickCell; // Ready for more
   pnlWaitPls.Hide;
 end;
