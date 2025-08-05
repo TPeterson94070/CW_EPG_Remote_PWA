@@ -39308,10 +39308,13 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       } catch ($e) {
         $impl.Log('Locate raised an improper Exception instead of "False"');
       };
+      this.ShowPlsWait("Housekeeping...");
+      await sleep(100);
       await this.EpgDb.EnableControls();
       await this.CurrEpgDb.EnableControls();
       await this.EPG.EndUpdate();
       this.EPG.FOnClickCell = rtl.createCallback(this,"EPGClickCell");
+      this.pnlWaitPls.Hide();
     };
     this.HistoryTableGetCellClass = function (Sender, ACol, ARow, AField, AValue, AClassName) {
       if ((ARow > 0) && (this.HistoryTable.GetCells(0,ARow) > "")) {
