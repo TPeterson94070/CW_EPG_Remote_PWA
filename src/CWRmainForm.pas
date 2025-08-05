@@ -804,7 +804,7 @@ begin
   if cb.Items.Count = 0 then
   begin
     ShowPlsWait('Preparing ' + x + ' list.');
-    {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+    {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
     SavedFilterState := EpgDb.Filtered;
     SavedFilterString := EpgDb.Filter;
     EpgDb.DisableControls;
@@ -842,12 +842,13 @@ begin
     sl.Free;
     cb.ItemIndex := -1;
     EpgDb.EnableControls;
-    pnlWaitPls.Hide;
+//    pnlWaitPls.Hide;
   end;
   pnlFilterComboBox.Show;
   cb.Show;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   await(SetPage(0));
+  pnlWaitPls.Hide;
 end;
 
 procedure TCWRmainFrm.SetFilter(fltr: string);
@@ -1203,8 +1204,9 @@ begin
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   // Quit Combobox if still open
   if pnlFilterComboBox.Visible then pnlFilterComboBox.Hide;
+  ShowPlsWait('Preparing Details');
   EPG.BeginUpdate;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   // Speed up form opening
   await(EpgDb.DisableControls);
   await(CurrEpgDb.DisableControls);
@@ -1244,6 +1246,7 @@ begin
       DetailsFrm.mmDescription.Text := CurrEpgDb.Fields[5].AsString;
     // execute form and wait for close
       Log('========== starting DetailsFrm.Execute ');
+      pnlWaitPls.Hide;
       TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
       Log('========== finished DetailsFrm.Execute ');
       if DetailsFrm.ModalResult = mrOk then

@@ -39211,8 +39211,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           ACol = v;
         }}));
       if (this.pnlFilterComboBox.FVisible) this.pnlFilterComboBox.Hide();
+      this.ShowPlsWait("Preparing Details");
       this.EPG.BeginUpdate();
-      await sleep(10);
+      await sleep(100);
       await this.EpgDb.DisableControls();
       await this.CurrEpgDb.DisableControls();
       $impl.Log("========== finished EpgDb.DisableControls ");
@@ -39262,6 +39263,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           $impl.SetLabelStyle(DetailsFrm.lb04HD,DetailsFrm.lb04HD.FCaption !== "SD");
           DetailsFrm.mmDescription.SetText(this.CurrEpgDb.FFieldList.GetField(5).GetAsString());
           $impl.Log("========== starting DetailsFrm.Execute ");
+          this.pnlWaitPls.Hide();
           await DetailsFrm.Execute();
           $impl.Log("========== finished DetailsFrm.Execute ");
           if (DetailsFrm.FModalResult === 1) {
@@ -40009,7 +40011,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.ClearMenuChecks();
       if (cb.FItems.GetCount() === 0) {
         this.ShowPlsWait("Preparing " + x + " list.");
-        await sleep(10);
+        await sleep(100);
         SavedFilterState = this.EpgDb.FFiltered;
         SavedFilterString = this.EpgDb.FFilterText;
         this.EpgDb.DisableControls();
@@ -40051,12 +40053,12 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         sl = rtl.freeLoc(sl);
         cb.SetItemIndex(-1);
         this.EpgDb.EnableControls();
-        this.pnlWaitPls.Hide();
       };
       this.pnlFilterComboBox.Show();
       cb.Show();
-      await sleep(10);
+      await sleep(100);
       await this.SetPage(0);
+      this.pnlWaitPls.Hide();
     };
     this.SetFilter = async function (fltr) {
       this.ShowPlsWait("Preparing " + pas.StrUtils.IfThen(fltr === "","Un","") + "Filtered List");
