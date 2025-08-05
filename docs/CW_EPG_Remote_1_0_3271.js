@@ -38987,7 +38987,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
              else AColor = pas.StrUtils.IfThen(this.CurrEpgDb.FFieldList.GetField(10).GetAsString() !== "","green","rose");
             this.CurrEpgDb.FFieldList.GetField(15).SetAsJSValue(AColor);
             await this.CurrEpgDb.PostAsync();
-            if (t > (pas.SysUtils.Now() + pas.SysUtils.StrToInt(this.cbNumDisplayDays.GetText()) + 2)) break;
           };
           $impl.Log("Finished editing CurrEpgDb, RecordCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.CurrEpgDb.GetRecordCount(), get: function () {
               return this.p;

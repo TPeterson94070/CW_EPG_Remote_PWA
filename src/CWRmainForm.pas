@@ -598,7 +598,7 @@ begin
             'rose');  // Otherwise "rerun"
         CurrEpgDb.Fields[15].Value := AColor;
         TAwait.ExecP<Boolean>(CurrEpgDb.PostAsync);
-      if t > Now + StrToInt(cbNumDisplayDays.Text) + 2 then Break;
+//      if t > Now + StrToInt(cbNumDisplayDays.Text) + 2 then Break;
       end;
       Log('Finished editing CurrEpgDb, RecordCount: ' + CurrEpgDb.RecordCount.ToString);
     end
@@ -1300,10 +1300,13 @@ begin
   except
     Log('Locate raised an improper Exception instead of "False"');
   end;
+  ShowPlsWait('Housekeeping...');
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   await(EpgDb.EnableControls);
   await(CurrEpgDb.EnableControls);
   await(EPG.EndUpdate);
   EPG.OnClickCell := EPGClickCell; // Ready for more
+  pnlWaitPls.Hide;
 end;
 
 procedure SaveLocalStrings(SG: TWebStringGrid; LSName: string);
