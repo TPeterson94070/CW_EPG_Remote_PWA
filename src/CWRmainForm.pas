@@ -707,7 +707,6 @@ begin
       EpgDb.FieldDefs.Add(DBFIELDS[14], ftString);
 
   end;
-//  EpgDb.FieldDefs := CurrEpgDb.FieldDefs;
   TAwait.ExecP<Boolean>(CurrEpgDb.OpenAsync);
   Log('CurrEpgDb is ' + IfThen(not CurrEpgDb.Active, 'not ')
     + 'Active and ' + IfThen(not CurrEpgDb.IsEmpty, 'not ') + 'Empty');
@@ -1201,7 +1200,7 @@ begin
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   // Speed up form opening
   await(EpgDb.DisableControls);
-  CurrEpgDb.DisableControls;
+  await(CurrEpgDb.DisableControls);
   Log('========== finished EpgDb.DisableControls ');
   // Wrap in try-except-end because of Locate bug with filtered data
   try
@@ -1274,7 +1273,7 @@ begin
           if SchedFrm.ModalResult = mrOk then
           begin
             ShowPlsWait('Saving Capture Request.');
-            {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+            {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
             await (UpdateNewCaptures(SchedFrm.tpStartTime.DateTime, SchedFrm.tpEndTime.DateTime));
           end;
         finally
@@ -1404,14 +1403,14 @@ begin
   SetNewCapturesFixedRow;
 // Add the new capture to the list
   NewCaptures.RowCount := NewCaptures.RowCount + 1;
-  NewCaptures.Cells[0,NewCaptures.RowCount-1] := EpgDb.FieldByName('PSIP').AsString;
+  NewCaptures.Cells[0,NewCaptures.RowCount-1] := CurrEpgDb.FieldByName('PSIP').AsString;
   NewCaptures.Cells[1,NewCaptures.RowCount-1] := FormatDateTime('mm/dd hh:nn',RecordStart);
   NewCaptures.Cells[2,NewCaptures.RowCount-1] := FormatDateTime('mm/dd hh:nn',RecordEnd);
-  NewCaptures.Cells[3,NewCaptures.RowCount-1] := ReplaceStr(EpgDb.FieldByName('Title').AsString, '&', '&&');
-  NewCaptures.Cells[4,NewCaptures.RowCount-1] := EpgDb.FieldByName('SubTitle').AsString;
-  NewCaptures.Cells[5,NewCaptures.RowCount-1] := EpgDb.FieldByName('Time').AsString.Split(['--'])[0]; // EPG StartTime (HTPC TZ)
-  NewCaptures.Cells[6,NewCaptures.RowCount-1] := EpgDb.FieldByName('ProgramID').AsString; // Episode No.
-  SaveNewCapturesFile(id);
+  NewCaptures.Cells[3,NewCaptures.RowCount-1] := ReplaceStr(CurrEpgDb.FieldByName('Title').AsString, '&', '&&');
+  NewCaptures.Cells[4,NewCaptures.RowCount-1] := CurrEpgDb.FieldByName('SubTitle').AsString;
+  NewCaptures.Cells[5,NewCaptures.RowCount-1] := CurrEpgDb.FieldByName('Time').AsString.Split(['--'])[0]; // EPG StartTime (HTPC TZ)
+  NewCaptures.Cells[6,NewCaptures.RowCount-1] := CurrEpgDb.FieldByName('ProgramID').AsString; // Episode No.
+  await(SaveNewCapturesFile(id));
 
   // ==============================
   Log('Final NewCaptures Table Rows: '+NewCaptures.RowCount.ToString);

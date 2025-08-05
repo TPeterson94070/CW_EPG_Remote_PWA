@@ -39213,7 +39213,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.EPG.BeginUpdate();
       await sleep(10);
       await this.EpgDb.DisableControls();
-      this.CurrEpgDb.DisableControls();
+      await this.CurrEpgDb.DisableControls();
       $impl.Log("========== finished EpgDb.DisableControls ");
       try {
         $impl.Log("========== starting Locate " + this.EPG.GetCells(3,ARow));
@@ -39290,7 +39290,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
               $impl.Log("========== finished SchedFrm.Execute ");
               if (SchedFrm.FModalResult === 1) {
                 this.ShowPlsWait("Saving Capture Request.");
-                await sleep(10);
+                await sleep(100);
                 await this.UpdateNewCaptures(SchedFrm.tpStartTime.GetDateTime(),SchedFrm.tpEndTime.GetDateTime());
               };
             } finally {
@@ -39801,18 +39801,18 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       };
       this.SetNewCapturesFixedRow();
       this.NewCaptures.SetRowCount(this.NewCaptures.FRowCount + 1);
-      this.NewCaptures.SetCells(0,this.NewCaptures.FRowCount - 1,this.EpgDb.FieldByName("PSIP").GetAsString());
+      this.NewCaptures.SetCells(0,this.NewCaptures.FRowCount - 1,this.CurrEpgDb.FieldByName("PSIP").GetAsString());
       this.NewCaptures.SetCells(1,this.NewCaptures.FRowCount - 1,pas.SysUtils.FormatDateTime("mm/dd hh:nn",RecordStart));
       this.NewCaptures.SetCells(2,this.NewCaptures.FRowCount - 1,pas.SysUtils.FormatDateTime("mm/dd hh:nn",RecordEnd));
-      this.NewCaptures.SetCells(3,this.NewCaptures.FRowCount - 1,pas.StrUtils.ReplaceStr(this.EpgDb.FieldByName("Title").GetAsString(),"&","&&"));
-      this.NewCaptures.SetCells(4,this.NewCaptures.FRowCount - 1,this.EpgDb.FieldByName("SubTitle").GetAsString());
-      this.NewCaptures.SetCells(5,this.NewCaptures.FRowCount - 1,pas.SysUtils.TStringHelper.Split$8.call({p: this.EpgDb.FieldByName("Time").GetAsString(), get: function () {
+      this.NewCaptures.SetCells(3,this.NewCaptures.FRowCount - 1,pas.StrUtils.ReplaceStr(this.CurrEpgDb.FieldByName("Title").GetAsString(),"&","&&"));
+      this.NewCaptures.SetCells(4,this.NewCaptures.FRowCount - 1,this.CurrEpgDb.FieldByName("SubTitle").GetAsString());
+      this.NewCaptures.SetCells(5,this.NewCaptures.FRowCount - 1,pas.SysUtils.TStringHelper.Split$8.call({p: this.CurrEpgDb.FieldByName("Time").GetAsString(), get: function () {
           return this.p;
         }, set: function (v) {
           this.p = v;
         }},["--"])[0]);
-      this.NewCaptures.SetCells(6,this.NewCaptures.FRowCount - 1,this.EpgDb.FieldByName("ProgramID").GetAsString());
-      this.SaveNewCapturesFile(id);
+      this.NewCaptures.SetCells(6,this.NewCaptures.FRowCount - 1,this.CurrEpgDb.FieldByName("ProgramID").GetAsString());
+      await this.SaveNewCapturesFile(id);
       $impl.Log("Final NewCaptures Table Rows: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.NewCaptures, get: function () {
           return this.p.FRowCount;
         }, set: function (v) {
