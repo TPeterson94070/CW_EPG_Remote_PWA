@@ -336,6 +336,7 @@ end;
 procedure TCWRmainFrm.ByAllClick(Sender: TObject);
 begin
   Log('ByAllClick called');
+  ByAll.OnClick := nil;
   EPG.Columns[2].Title := 'Title';
   ClearMenuChecks;
   ByAll.Checked := True;
@@ -343,28 +344,35 @@ begin
   if EpgDb.Filter > '' then
     await(SetFilter(''));
   await(SetPage(0));
+  ByAll.OnClick := ByAllClick;
 end;
 
 procedure TCWRmainFrm.ByChannelClick(Sender: TObject);
 begin
   Log('ByChannelClick called');
+  ByChannel.OnClick := nil;
   await(SetupFilterList(WebComboBox3, 'PSIP'));
   ByChannel.Checked := True;
+  ByChannel.OnClick := ByChannelClick;
 end;
 
 procedure TCWRmainFrm.ByGenreClick(Sender: TObject);
 begin
   Log('ByGenreClick called');
+  ByGenre.OnClick := nil;
   await(SetupFilterList(WebComboBox1, 'genres'));
   ByGenre.Checked := True;
+  ByGenre.OnClick := ByGenreClick;
 end;
 
 procedure TCWRmainFrm.ByTitleClick(Sender: TObject);
 begin
   Log('byTitleClick called');
+  ByTitle.OnClick := nil;
   await(SetupFilterList(WebComboBox2, 'Title'));
   WebComboBox2.ItemIndex := WebComboBox2.Items.IndexOf(EpgDb.FieldByName('Title').AsString);
   ByTitle.Checked := True;
+  ByTitle.OnClick := ByTitleClick;
 end;
 
 procedure TCWRmainFrm.cbNumDisplayDaysChange(Sender: TObject);
@@ -493,9 +501,7 @@ end;
 
 procedure TCWRmainFrm.RefreshCSV(WSG: TWebStringGrid; TableFile, Title: string; var id: string);
 var
-  Reply, Line: string;
-  sl: TStrings;
-  ReplyArray: TArray<string>;
+  Reply: string;
 begin
   Log('ReFreshCSV called for ' + TableFile);
   ShowPlsWait('Refreshing ' + Title);
@@ -1279,21 +1285,21 @@ begin
           end;
         finally
           Log('Finished with Schedule form');
-          SchedFrm.Free;
+//          SchedFrm.Free;
         end;
       end;
     finally
       pnlWaitPls.Hide;
       Log('Finished with Details form');
-      DetailsFrm.Free;
+//      DetailsFrm.Free;
       {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
     end;
   except
     Log('Locate raised an improper Exception instead of "False"');
   end;
-  EpgDb.EnableControls;
-  CurrEpgDb.EnableControls;
-  EPG.EndUpdate;
+  await(EpgDb.EnableControls);
+  await(CurrEpgDb.EnableControls);
+  await(EPG.EndUpdate);
   EPG.OnClickCell := EPGClickCell; // Ready for more
 end;
 

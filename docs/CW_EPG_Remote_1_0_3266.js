@@ -39296,21 +39296,19 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
               };
             } finally {
               $impl.Log("Finished with Schedule form");
-              SchedFrm = rtl.freeLoc(SchedFrm);
             };
           };
         } finally {
           this.pnlWaitPls.Hide();
           $impl.Log("Finished with Details form");
-          DetailsFrm = rtl.freeLoc(DetailsFrm);
           await sleep(100);
         };
       } catch ($e) {
         $impl.Log('Locate raised an improper Exception instead of "False"');
       };
-      this.EpgDb.EnableControls();
-      this.CurrEpgDb.EnableControls();
-      this.EPG.EndUpdate();
+      await this.EpgDb.EnableControls();
+      await this.CurrEpgDb.EnableControls();
+      await this.EPG.EndUpdate();
       this.EPG.FOnClickCell = rtl.createCallback(this,"EPGClickCell");
     };
     this.HistoryTableGetCellClass = function (Sender, ACol, ARow, AField, AValue, AClassName) {
@@ -39329,8 +39327,10 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     };
     this.ByGenreClick = async function (Sender) {
       $impl.Log("ByGenreClick called");
+      this.ByGenre.FOnClick = null;
       await this.SetupFilterList(this.WebComboBox1,"genres");
       this.ByGenre.SetChecked(true);
+      this.ByGenre.FOnClick = rtl.createCallback(this,"ByGenreClick");
     };
     this.WebComboBox1Change = async function (Sender) {
       this.EPG.FColumns.GetItem$1(2).SetTitle(pas.StrUtils.IfThen(this.WebComboBox1.GetText() === "All","Title",'Programs in genre "' + this.WebComboBox1.GetText() + '"'));
@@ -39343,9 +39343,11 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     };
     this.ByTitleClick = async function (Sender) {
       $impl.Log("byTitleClick called");
+      this.ByTitle.FOnClick = null;
       await this.SetupFilterList(this.WebComboBox2,"Title");
       this.WebComboBox2.SetItemIndex(this.WebComboBox2.FItems.IndexOf(this.EpgDb.FieldByName("Title").GetAsString()));
       this.ByTitle.SetChecked(true);
+      this.ByTitle.FOnClick = rtl.createCallback(this,"ByTitleClick");
     };
     this.WebComboBox2Change = async function (Sender) {
       this.EPG.FColumns.GetItem$1(2).SetTitle("Title" + pas.StrUtils.IfThen(this.WebComboBox2.GetText() !== "All",': "' + this.WebComboBox2.GetText() + '"',""));
@@ -39358,17 +39360,21 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     };
     this.ByAllClick = async function (Sender) {
       $impl.Log("ByAllClick called");
+      this.ByAll.FOnClick = null;
       this.EPG.FColumns.GetItem$1(2).SetTitle("Title");
       this.ClearMenuChecks();
       this.ByAll.SetChecked(true);
       $impl.VisiblePanelNum = 0;
       if (this.EpgDb.FFilterText > "") await this.SetFilter("");
       await this.SetPage(0);
+      this.ByAll.FOnClick = rtl.createCallback(this,"ByAllClick");
     };
     this.ByChannelClick = async function (Sender) {
       $impl.Log("ByChannelClick called");
+      this.ByChannel.FOnClick = null;
       await this.SetupFilterList(this.WebComboBox3,"PSIP");
       this.ByChannel.SetChecked(true);
+      this.ByChannel.FOnClick = rtl.createCallback(this,"ByChannelClick");
     };
     this.WebComboBox3Change = async function (Sender) {
       this.EPG.FColumns.GetItem$1(2).SetTitle(pas.StrUtils.IfThen(this.WebComboBox1.GetText() === "All","Title",'Programs on channel "' + this.WebComboBox3.GetText() + '"'));
