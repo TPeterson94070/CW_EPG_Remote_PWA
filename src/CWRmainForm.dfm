@@ -858,23 +858,6 @@ object CWRmainFrm: TCWRmainFrm
         ItemIndex = -1
       end
     end
-    object WebStringGrid1: TWebStringGrid
-      Left = 56
-      Top = 288
-      Width = 320
-      Height = 120
-      TabOrder = 2
-      ElementFont = efCSS
-      FixedFont.Charset = DEFAULT_CHARSET
-      FixedFont.Color = clWindowText
-      FixedFont.Height = -21
-      FixedFont.Name = 'Segoe UI'
-      FixedFont.Style = []
-      RangeEdit.Max = 100.000000000000000000
-      RangeEdit.Step = 1.000000000000000000
-      HeightPercent = 100.000000000000000000
-      WidthPercent = 100.000000000000000000
-    end
   end
   object WebMainMenu1: TWebMainMenu
     Appearance.BackgroundColor = clSilver

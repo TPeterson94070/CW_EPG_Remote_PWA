@@ -66,7 +66,6 @@ type
     cbNumDisplayDays: TWebComboBox;
     cbNumHistList: TWebComboBox;
     btnOptOK: TWebButton;
-    WebStringGrid1: TWebStringGrid;
   procedure SetNewCapturesFixedRow;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
@@ -1202,12 +1201,13 @@ var
 
 begin
   EPG.OnClickCell := nil; // Avoid more clicks until done
+  WebMainMenu1.Enabled := False;
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   // Quit Combobox if still open
   if pnlFilterComboBox.Visible then pnlFilterComboBox.Hide;
-  ShowPlsWait('Preparing Details');
+//  ShowPlsWait('Preparing Details');
+//  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
 //  EPG.BeginUpdate;
-  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   // Speed up form opening
 //  await(EpgDb.DisableControls);
 //  await(CurrEpgDb.DisableControls);
@@ -1301,16 +1301,17 @@ begin
   except
     Log('Locate raised an improper Exception instead of "False"');
   end;
-  ShowPlsWait('Refreshing List');
-  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+//  ShowPlsWait('Refreshing List');
+//  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
 //  await(EpgDb.EnableControls);
 //  await(CurrEpgDb.EnableControls);
 //  await(EPG.EndUpdate);
 //  await(EPG.Refresh);
-  EPG.DataSource := WebDataSource1;
-  EPG.Show;
+//  EPG.DataSource := WebDataSource1;
+//  EPG.Show;
   EPG.OnClickCell := EPGClickCell; // Ready for more
-  pnlWaitPls.Hide;
+  WebMainMenu1.Enabled := True;
+//  pnlWaitPls.Hide;
 end;
 
 procedure SaveLocalStrings(SG: TWebStringGrid; LSName: string);
