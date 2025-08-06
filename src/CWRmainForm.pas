@@ -1198,10 +1198,14 @@ var
   DetailsFrm: TDetailsFrm;
   SchedFrm: TSchedForm;
   x: TArray<string>;
+  CurrentID: string;
 
 begin
 //  EPG.OnClickCell := nil; // Avoid more clicks until done
   EPG.Enabled := False;
+//  RWIW := EpgDb.RecNo;
+  CurrentID := EPG.Cells[3,ARow];
+  EPG.DataSource := nil;
   WebMainMenu1.Enabled := False;
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   // Quit Combobox if still open
@@ -1215,8 +1219,8 @@ begin
   Log('========== finished EpgDb.DisableControls ');
   // Wrap in try-except-end because of Locate bug with filtered data
   try
-    Log('========== starting Locate ' + EPG.Cells[3,ARow]);
-    if CurrEpgDb.Locate('id', EPG.Cells[3,ARow],[]) then
+    Log('========== starting Locate ' + CurrentID);
+    if CurrEpgDb.Locate('id', CurrentID,[]) then
     try
       Log('========== Located ' + EPG.Cells[3,ARow]);
       DetailsFrm := TDetailsFrm.Create(nil);
@@ -1308,9 +1312,10 @@ begin
 //  await(CurrEpgDb.EnableControls);
 //  await(EPG.EndUpdate);
 //  await(EPG.Refresh);
-//  EPG.DataSource := WebDataSource1;
+  EPG.DataSource := WebDataSource1;
 //  EPG.Show;
 //  EPG.OnClickCell := EPGClickCell; // Ready for more
+//  EpgDb.RecNo := RWIW;
   EPG.Enabled := True;
 //  EPG.BringToFront;
   WebMainMenu1.Enabled := True;

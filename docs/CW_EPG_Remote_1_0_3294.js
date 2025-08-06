@@ -39199,7 +39199,10 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var DetailsFrm = null;
       var SchedFrm = null;
       var x = [];
+      var CurrentID = "";
       this.EPG.SetEnabled(false);
+      CurrentID = this.EPG.GetCells(3,ARow);
+      this.EPG.SetDataSource(null);
       this.WebMainMenu1.SetEnabled(false);
       $impl.Log("========== EPGClickCell() called from RC " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
           return ARow;
@@ -39213,8 +39216,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       if (this.pnlFilterComboBox.FVisible) this.pnlFilterComboBox.Hide();
       $impl.Log("========== finished EpgDb.DisableControls ");
       try {
-        $impl.Log("========== starting Locate " + this.EPG.GetCells(3,ARow));
-        if (this.CurrEpgDb.Locate("id",this.EPG.GetCells(3,ARow),{})) try {
+        $impl.Log("========== starting Locate " + CurrentID);
+        if (this.CurrEpgDb.Locate("id",CurrentID,{})) try {
           $impl.Log("========== Located " + this.EPG.GetCells(3,ARow));
           DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[null]);
           $impl.Log("========== finished TDetailsFrm.Create(nil) ");
@@ -39303,6 +39306,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       } catch ($e) {
         $impl.Log('Locate raised an improper Exception instead of "False"');
       };
+      this.EPG.SetDataSource(this.WebDataSource1);
       this.EPG.SetEnabled(true);
       this.WebMainMenu1.SetEnabled(true);
     };
