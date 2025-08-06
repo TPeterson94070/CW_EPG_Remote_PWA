@@ -1200,7 +1200,8 @@ var
   x: TArray<string>;
 
 begin
-  EPG.OnClickCell := nil; // Avoid more clicks until done
+//  EPG.OnClickCell := nil; // Avoid more clicks until done
+  EPG.Enabled := False;
   WebMainMenu1.Enabled := False;
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   // Quit Combobox if still open
@@ -1309,7 +1310,9 @@ begin
 //  await(EPG.Refresh);
 //  EPG.DataSource := WebDataSource1;
 //  EPG.Show;
-  EPG.OnClickCell := EPGClickCell; // Ready for more
+//  EPG.OnClickCell := EPGClickCell; // Ready for more
+  EPG.Enabled := True;
+//  EPG.BringToFront;
   WebMainMenu1.Enabled := True;
 //  pnlWaitPls.Hide;
 end;

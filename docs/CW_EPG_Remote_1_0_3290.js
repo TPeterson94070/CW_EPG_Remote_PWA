@@ -39199,7 +39199,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var DetailsFrm = null;
       var SchedFrm = null;
       var x = [];
-      this.EPG.FOnClickCell = null;
+      this.EPG.SetEnabled(false);
       this.WebMainMenu1.SetEnabled(false);
       $impl.Log("========== EPGClickCell() called from RC " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
           return ARow;
@@ -39303,7 +39303,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       } catch ($e) {
         $impl.Log('Locate raised an improper Exception instead of "False"');
       };
-      this.EPG.FOnClickCell = rtl.createCallback(this,"EPGClickCell");
+      this.EPG.SetEnabled(true);
       this.WebMainMenu1.SetEnabled(true);
     };
     this.HistoryTableGetCellClass = function (Sender, ACol, ARow, AField, AValue, AClassName) {
