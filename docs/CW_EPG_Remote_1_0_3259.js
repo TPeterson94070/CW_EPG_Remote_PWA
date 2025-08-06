@@ -40859,14 +40859,14 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var i = 0;
       $impl.Log("Setting up to (re)open WIDBCDS");
       this.WIDBCDS.FFieldDefs.Clear();
-      this.WIDBCDS.FFieldDefs.Add$3("id",3,0,false);
+      this.WIDBCDS.FFieldDefs.Add$3("id",3,0,true);
       for (i = 0; i <= 14; i++) {
         if ((DBFIELDS[i] === "StartTime") || (DBFIELDS[i] === "EndTime")) {
           this.WIDBCDS.FFieldDefs.Add$5(DBFIELDS[i],11)}
          else this.WIDBCDS.FFieldDefs.Add$5(DBFIELDS[i],1);
       };
       this.EpgDb.FFieldDefs.Clear();
-      this.EpgDb.FFieldDefs.Add$3("id",3,0,false);
+      this.EpgDb.FFieldDefs.Add$5("id",3);
       for (i = 0; i <= 2; i++) this.EpgDb.FFieldDefs.Add$5(DBFIELDS[i],1);
       this.EpgDb.FFieldDefs.Add$5(DBFIELDS[13],1);
       this.EpgDb.FFieldDefs.Add$5(DBFIELDS[14],1);
@@ -41192,7 +41192,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlLog.SetLeft(0);
         this.pnlLog.SetTop(50);
         this.pnlLog.SetWidth(428);
-        this.pnlLog.SetHeight(767);
+        this.pnlLog.SetHeight(699);
         this.pnlLog.SetElementClassName("card");
         this.pnlLog.SetHeightStyle(0);
         this.pnlLog.SetWidthStyle(0);
@@ -41215,7 +41215,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebMemo2.SetLeft(3);
         this.WebMemo2.SetTop(3);
         this.WebMemo2.SetWidth(422);
-        this.WebMemo2.SetHeight(761);
+        this.WebMemo2.SetHeight(693);
         this.WebMemo2.SetAlign(5);
         this.WebMemo2.SetColor(0);
         this.WebMemo2.SetElementClassName("white");
@@ -41238,7 +41238,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlWaitPls.SetLeft(0);
         this.pnlWaitPls.SetTop(50);
         this.pnlWaitPls.SetWidth(428);
-        this.pnlWaitPls.SetHeight(767);
+        this.pnlWaitPls.SetHeight(699);
         this.pnlWaitPls.SetElementClassName("container-fluid");
         this.pnlWaitPls.SetHeightStyle(0);
         this.pnlWaitPls.SetWidthStyle(0);
@@ -41260,7 +41260,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebGridPanel1.SetLeft(0);
         this.WebGridPanel1.SetTop(0);
         this.WebGridPanel1.SetWidth(428);
-        this.WebGridPanel1.SetHeight(767);
+        this.WebGridPanel1.SetHeight(699);
         this.WebGridPanel1.SetWidthStyle(0);
         this.WebGridPanel1.SetAlign(5);
         this.WebGridPanel1.FColumnCollection.Clear();
@@ -41293,9 +41293,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebLabel2.SetParentComponent(this.WebGridPanel1);
         this.WebLabel2.SetName("WebLabel2");
         this.WebLabel2.SetLeft(2);
-        this.WebLabel2.SetTop(386);
+        this.WebLabel2.SetTop(352);
         this.WebLabel2.SetWidth(424);
-        this.WebLabel2.SetHeight(188);
+        this.WebLabel2.SetHeight(171);
         this.WebLabel2.SetAlign(5);
         this.WebLabel2.SetAlignment(2);
         this.WebLabel2.SetCaption("Please Wait...");
@@ -41318,9 +41318,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebLabel1.SetParentComponent(this.WebGridPanel1);
         this.WebLabel1.SetName("WebLabel1");
         this.WebLabel1.SetLeft(2);
-        this.WebLabel1.SetTop(194);
+        this.WebLabel1.SetTop(177);
         this.WebLabel1.SetWidth(424);
-        this.WebLabel1.SetHeight(188);
+        this.WebLabel1.SetHeight(171);
         this.WebLabel1.SetAlign(5);
         this.WebLabel1.SetAlignment(2);
         this.WebLabel1.SetCaption("Preparing EPG Listings.");
@@ -41346,7 +41346,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebButton1.SetLeft(2);
         this.WebButton1.SetTop(2);
         this.WebButton1.SetWidth(424);
-        this.WebButton1.SetHeight(188);
+        this.WebButton1.SetHeight(171);
         this.WebButton1.SetAlign(5);
         this.WebButton1.SetCaption('<i class="fa-solid fa-spinner fa-spin"></>');
         this.WebButton1.SetColor(65535);
@@ -41370,7 +41370,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlHistory.SetLeft(0);
         this.pnlHistory.SetTop(50);
         this.pnlHistory.SetWidth(428);
-        this.pnlHistory.SetHeight(767);
+        this.pnlHistory.SetHeight(699);
         this.pnlHistory.SetElementClassName("card");
         this.pnlHistory.SetHeightStyle(0);
         this.pnlHistory.SetWidthStyle(0);
@@ -41426,7 +41426,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlCaptures.SetLeft(0);
         this.pnlCaptures.SetTop(50);
         this.pnlCaptures.SetWidth(428);
-        this.pnlCaptures.SetHeight(767);
+        this.pnlCaptures.SetHeight(699);
         this.pnlCaptures.SetElementClassName("greenBG");
         this.pnlCaptures.SetHeightStyle(0);
         this.pnlCaptures.SetWidthStyle(0);
@@ -41600,7 +41600,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlOptions.SetLeft(0);
         this.pnlOptions.SetTop(50);
         this.pnlOptions.SetWidth(428);
-        this.pnlOptions.SetHeight(767);
+        this.pnlOptions.SetHeight(699);
         this.pnlOptions.SetElementClassName("card");
         this.pnlOptions.SetHeightStyle(0);
         this.pnlOptions.SetWidthStyle(0);
@@ -41758,7 +41758,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlListings.SetLeft(0);
         this.pnlListings.SetTop(50);
         this.pnlListings.SetWidth(428);
-        this.pnlListings.SetHeight(767);
+        this.pnlListings.SetHeight(699);
         this.pnlListings.SetElementClassName("card");
         this.pnlListings.SetHeightStyle(0);
         this.pnlListings.SetWidthStyle(0);
@@ -41804,7 +41804,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.EPG.SetLeft(0);
         this.EPG.SetTop(0);
         this.EPG.SetWidth(428);
-        this.EPG.SetHeight(767);
+        this.EPG.SetHeight(699);
         this.EPG.SetAlign(5);
         this.EPG.SetBorderStyle(0);
         this.EPG.SetColor(8388608);
@@ -41892,7 +41892,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.lblFilterSelect.SetName("lblFilterSelect");
         this.lblFilterSelect.SetLeft(0);
         this.lblFilterSelect.SetTop(0);
-        this.lblFilterSelect.SetWidth(110);
+        this.lblFilterSelect.SetWidth(150);
         this.lblFilterSelect.SetHeight(22);
         this.lblFilterSelect.SetAlign(1);
         this.lblFilterSelect.SetCaption("Choose Item");
@@ -42070,10 +42070,10 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.CurrEpgDbOld.SetTop(400);
         this.WIDBCDS.SetParentComponent(this);
         this.WIDBCDS.SetName("WIDBCDS");
-        this.WIDBCDS.FIDBDatabaseName = "CWRDB";
+        this.WIDBCDS.FIDBDatabaseName = "CWRDB-Manual-id";
         this.WIDBCDS.FIDBObjectStoreName = "epg";
         this.WIDBCDS.FIDBKeyFieldName = "id";
-        this.WIDBCDS.FIDBAutoIncrement = true;
+        this.WIDBCDS.FIDBAutoIncrement = false;
         this.SetEvent$1(this.WIDBCDS,this,"OnIDBError","WIDBCDSIDBError");
         this.WIDBCDS.SetLeft(216);
         this.WIDBCDS.SetTop(408);
