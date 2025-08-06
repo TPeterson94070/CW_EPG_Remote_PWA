@@ -66,6 +66,7 @@ type
     cbNumDisplayDays: TWebComboBox;
     cbNumHistList: TWebComboBox;
     btnOptOK: TWebButton;
+    WebStringGrid1: TWebStringGrid;
   procedure SetNewCapturesFixedRow;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
@@ -861,10 +862,10 @@ begin
   Log('EpgDb.Filter: ' + fltr);
   EpgDb.Filter := fltr;
   {if fltr > '' then} EpgDb.Filtered := True;
+  EpgDb.First;
   EpgDb.EnableControls;
   EPG.EndUpdate;
-  await(EPG.Refresh);
-  EpgDb.First;
+  EPG.Show;
   pnlWaitPls.Hide;
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   // cannot position selection visibly?
@@ -1305,7 +1306,9 @@ begin
 //  await(EpgDb.EnableControls);
 //  await(CurrEpgDb.EnableControls);
 //  await(EPG.EndUpdate);
-  await(EPG.Refresh);
+//  await(EPG.Refresh);
+  EPG.DataSource := WebDataSource1;
+  EPG.Show;
   EPG.OnClickCell := EPGClickCell; // Ready for more
   pnlWaitPls.Hide;
 end;

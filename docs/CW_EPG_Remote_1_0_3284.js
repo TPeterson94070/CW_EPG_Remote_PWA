@@ -38839,6 +38839,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.cbNumDisplayDays = null;
       this.cbNumHistList = null;
       this.btnOptOK = null;
+      this.WebStringGrid1 = null;
     };
     this.$final = function () {
       this.WebMemo2 = undefined;
@@ -38890,6 +38891,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.cbNumDisplayDays = undefined;
       this.cbNumHistList = undefined;
       this.btnOptOK = undefined;
+      this.WebStringGrid1 = undefined;
       pas["WEBLib.Forms"].TForm.$final.call(this);
     };
     var HEADINGS = ["Ch Name","RecordStart","RecordEnd","Title","SubTitle","StartTime","ProgramID"];
@@ -39306,7 +39308,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       };
       this.ShowPlsWait("Refreshing List");
       await sleep(100);
-      await this.EPG.Refresh();
+      this.EPG.SetDataSource(this.WebDataSource1);
+      this.EPG.Show();
       this.EPG.FOnClickCell = rtl.createCallback(this,"EPGClickCell");
       this.pnlWaitPls.Hide();
     };
@@ -40066,10 +40069,10 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log("EpgDb.Filter: " + fltr);
       this.EpgDb.SetFilterText(fltr);
       this.EpgDb.SetFiltered(true);
+      this.EpgDb.First();
       this.EpgDb.EnableControls();
       this.EPG.EndUpdate();
-      await this.EPG.Refresh();
-      this.EpgDb.First();
+      this.EPG.Show();
       this.pnlWaitPls.Hide();
       await sleep(100);
     };
@@ -40116,6 +40119,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WebComboBox1 = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
       this.WebComboBox2 = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
       this.WebComboBox3 = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
+      this.WebStringGrid1 = pas["WEBLib.Grids"].TStringGrid.$create("Create$1",[this]);
       this.WebMainMenu1 = pas["WEBLib.Menus"].TMainMenu.$create("Create$1",[this]);
       this.ByAll = pas["WEBLib.Menus"].TMenuItem.$create("Create$1",[this]);
       this.ByGenre = pas["WEBLib.Menus"].TMenuItem.$create("Create$1",[this]);
@@ -40165,6 +40169,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WebComboBox1.BeforeLoadDFMValues();
       this.WebComboBox2.BeforeLoadDFMValues();
       this.WebComboBox3.BeforeLoadDFMValues();
+      this.WebStringGrid1.BeforeLoadDFMValues();
       this.WebMainMenu1.BeforeLoadDFMValues();
       this.ByAll.BeforeLoadDFMValues();
       this.ByGenre.BeforeLoadDFMValues();
@@ -41039,6 +41044,23 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.SetEvent$1(this.WebComboBox3,this,"OnDblClick","WebComboBox3Change");
         this.SetEvent$1(this.WebComboBox3,this,"OnFocusOut","WebComboBox3FocusOut");
         this.WebComboBox3.SetItemIndex(-1);
+        this.WebStringGrid1.SetParentComponent(this.pnlListings);
+        this.WebStringGrid1.SetName("WebStringGrid1");
+        this.WebStringGrid1.SetLeft(56);
+        this.WebStringGrid1.SetTop(288);
+        this.WebStringGrid1.SetWidth(320);
+        this.WebStringGrid1.SetHeight(120);
+        this.WebStringGrid1.SetTabOrder(2);
+        this.WebStringGrid1.SetElementFont(1);
+        this.WebStringGrid1.FFixedFont.FCharset = 1;
+        this.WebStringGrid1.FFixedFont.SetColor(65793);
+        this.WebStringGrid1.FFixedFont.SetHeight(-21);
+        this.WebStringGrid1.FFixedFont.SetName("Segoe UI");
+        this.WebStringGrid1.FFixedFont.SetStyle({});
+        this.WebStringGrid1.FRange.FMax = 100.000000000000000000;
+        this.WebStringGrid1.FRange.FStep = 1.000000000000000000;
+        this.WebStringGrid1.SetHeightPercent(100.000000000000000000);
+        this.WebStringGrid1.SetWidthPercent(100.000000000000000000);
         this.WebMainMenu1.SetParentComponent(this);
         this.WebMainMenu1.SetName("WebMainMenu1");
         this.WebMainMenu1.FAppearance.SetBackgroundColor(12632256);
@@ -41162,6 +41184,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebComboBox1.AfterLoadDFMValues();
         this.WebComboBox2.AfterLoadDFMValues();
         this.WebComboBox3.AfterLoadDFMValues();
+        this.WebStringGrid1.AfterLoadDFMValues();
         this.WebMainMenu1.AfterLoadDFMValues();
         this.ByAll.AfterLoadDFMValues();
         this.ByGenre.AfterLoadDFMValues();
@@ -41232,6 +41255,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addField("cbNumDisplayDays",pas["WEBLib.StdCtrls"].$rtti["TComboBox"]);
     $r.addField("cbNumHistList",pas["WEBLib.StdCtrls"].$rtti["TComboBox"]);
     $r.addField("btnOptOK",pas["WEBLib.StdCtrls"].$rtti["TButton"]);
+    $r.addField("WebStringGrid1",pas["WEBLib.Grids"].$rtti["TStringGrid"]);
     $r.addMethod("SetNewCapturesFixedRow",0,[]);
     $r.addMethod("EPGGetCellClass",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint],["AField",pas.DB.$rtti["TField"]],["AValue",rtl.string],["AClassName",rtl.string,1]]);
     $r.addMethod("SaveNewCapturesFile",0,[["id",rtl.string]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
