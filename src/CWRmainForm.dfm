@@ -951,10 +951,10 @@ object CWRmainFrm: TCWRmainFrm
     Top = 400
   end
   object WIDBCDS: TWebIndexedDbClientDataset
-    IDBDatabaseName = 'CWRDB'
+    IDBDatabaseName = 'CWRDB-Manual-id'
     IDBObjectStoreName = 'epg'
     IDBKeyFieldName = 'id'
-    IDBAutoIncrement = True
+    IDBAutoIncrement = False
     Params = <>
     OnIDBError = WIDBCDSIDBError
     Left = 216

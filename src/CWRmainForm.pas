@@ -470,6 +470,7 @@ begin
       for i := 0 to ja.Count - 1 do
       begin
         jso := TJSONObject(ja.Items[i]);
+        Log('File[' + i.ToString + '] name: ' + jso.GetJSONValue('name'));
         if jso.GetJSONValue('name') = TableFile then
           id := string(jso.GetJSONValue('id'));
       end;
@@ -705,7 +706,7 @@ begin
   Log('Setting up to (re)open WIDBCDS');
   WIDBCDS.FieldDefs.Clear;
   // add key field
-  WIDBCDS.FieldDefs.Add('id', ftInteger, 0, False);
+  WIDBCDS.FieldDefs.Add('id', ftInteger, 0, True);
   // add normal fields
   for i := 0 to Length(DBFIELDS) - 1 do
   begin
@@ -715,7 +716,7 @@ begin
       WIDBCDS.FieldDefs.Add(DBFIELDS[i], ftString);
   end;
   EpgDb.FieldDefs.Clear;
-  EpgDb.FieldDefs.Add('id', ftInteger, 0, False);
+  EpgDb.FieldDefs.Add('id', ftInteger); //, 0, True);
   for i := 0 to 2 do
     EpgDb.FieldDefs.Add(DBFIELDS[i], ftString);
   EpgDb.FieldDefs.Add(DBFIELDS[13], ftString);
@@ -727,19 +728,19 @@ begin
   if TTimeZone.Local.ToUniversalTime(Now) > LastStartDate then
     TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'#13'Please make sure that the HTPC'
       + #13' is connected to Google Drive',mtInformation, [mbOK]))
-  else if Now - FirstEndDate > 3 then
+  else if TTimeZone.Local.ToUniversalTime(Now) - FirstEndDate > 3 then
     TAwait.ExecP<TModalResult> (MessageDlgAsync('The current dataset was fetched over 3 days ago'
-      + #13'and there are only about ' + Round(LastStartDate - Now).ToString + ' days now available.'
+      + #13'and there are only about ' + Round(LastStartDate - TTimeZone.Local.ToUniversalTime(Now)).ToString + ' days now available.'
       + #13#13'To update, please use Options | Refresh Data',mtInformation, [mbOK]));
 end;
 
 procedure TCWRmainFrm.SetupCurrEpgDb;
-var
-  i: Integer;
-const
-  DBFIELDS: array[0..14] of string = ('PSIP', 'Time', 'Title', 'SubTitle',
-  'Description', 'StartTime', 'EndTime', 'programID', 'originalAirDate', 'new',
-  'audioProperties', 'videoProperties', 'movieYear', 'genres', 'Class');
+//var
+//  i: Integer;
+//const
+//  DBFIELDS: array[0..14] of string = ('PSIP', 'Time', 'Title', 'SubTitle',
+//  'Description', 'StartTime', 'EndTime', 'programID', 'originalAirDate', 'new',
+//  'audioProperties', 'videoProperties', 'movieYear', 'genres', 'Class');
 begin
 //  Log('========== SetupCurrEpgDb called');
 //  CurrEpgDb.FieldDefs.IndexOf('id') = -1 then
@@ -788,7 +789,6 @@ procedure TCWRmainFrm.SetupEpgDb;
 var
   FirstEndTime, LastStartTime:  TDateTime;
   i: Integer;
-//  sl: TStringList;
 
 begin
   Log('====== SetupEpgDb called');
@@ -812,11 +812,6 @@ begin
         EpgDb.Fields[i] := WIDBCDS.Fields[i];
       for i := 14 to 15 do
         EpgDb.Fields[i-10] := WIDBCDS.Fields[i];
-//      sl := TStringList.Create;
-//      for i := 0 to EpgDb.FieldCount-1 do
-//        sl.Add(i.ToString+': '+EpgDb.Fields[i].AsString+#$D#$A);
-//        TAwait.ExecP<TModalResult> (MessageDlgAsync('sl: ' + sl.Text, mtInformation, [mbOK]));
-//      sl.Free;
       EpgDb.Post;
     end;
     WIDBCDS.Next;
@@ -852,6 +847,7 @@ begin
   if cb <> WebComboBox1 then WebComboBox1.Hide;
   if cb <> WebComboBox2 then WebComboBox2.Hide;
   if cb <> WebComboBox3 then WebComboBox3.Hide;
+  EPG.ClearSelection;
   ClearMenuChecks;
   if cb.Items.Count = 0 then
   begin
@@ -894,7 +890,6 @@ begin
     sl.Free;
     cb.ItemIndex := -1;
     EpgDb.EnableControls;
-//    pnlWaitPls.Hide;
   end;
   pnlFilterComboBox.Show;
   cb.Show;
@@ -915,12 +910,11 @@ begin
   {if fltr > '' then} EpgDb.Filtered := True;
   EpgDb.First;
   EpgDb.EnableControls;
+  EPG.Row := 1;
   EPG.EndUpdate;
   EPG.Show;
   pnlWaitPls.Hide;
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
-  // cannot position selection visibly?
-//  EpgDb.selectedrows
 end;
 
 procedure TCWRmainFrm.ShowPlsWait(PlsWaitCap: string);
@@ -1253,11 +1247,14 @@ var
   SchedFrm: TSchedForm;
   x: TArray<string>;
   CurrentID: string;
+  CurrentRow: Integer;
 
 begin
   EPG.Enabled := False;
   CurrentID := EPG.Cells[3,ARow];
 //  WebDataSource1.Enabled := False;
+  CurrentRow := ARow;
+  EPG.ClearSelection;
   EPG.DataSource := nil;
   WebMainMenu1.Enabled := False;
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
@@ -1360,6 +1357,7 @@ begin
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
 //  WebDataSource1.Enabled := True;
   EPG.DataSource := WebDataSource1;
+  EPG.Row := CurrentRow;
   EPG.Enabled := True;
   WebMainMenu1.Enabled := True;
   pnlWaitPls.Hide;
