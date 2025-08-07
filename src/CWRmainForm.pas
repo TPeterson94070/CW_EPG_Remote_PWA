@@ -839,7 +839,7 @@ end;
 procedure TCWRmainFrm.SetupFilterList(cb: TWebComboBox; fn: string);
 var
   x, y, SavedFilterString: string;
-  sl: TStringList;
+//  sl: TStringList;
   SavedFilterState: Boolean;
 begin
   x := IfThen(fn='genres', 'Genre', IfThen(fn='PSIP', 'Channel', 'Title'));
@@ -857,10 +857,13 @@ begin
     SavedFilterString := EpgDb.Filter;
     EpgDb.DisableControls;
     EpgDb.Filtered := False;
-    sl := TStringList.Create;
-    sl.Sorted := True;
-    sl.Duplicates := dupIgnore;
-    sl.BeginUpdate;
+//    sl := TStringList.Create;
+//    sl.Sorted := True;
+//    sl.Duplicates := dupIgnore;
+//    sl.BeginUpdate;
+    cb.BeginUpdate;
+    cb.Clear;
+    cb.Sorted := True;
     EpgDb.First;
     Log('Looping over EpgDb "' + fn + '" field');
     while not EpgDb.Eof do
@@ -872,22 +875,27 @@ begin
         // Split the genres string 'xxx;yyy;zzz' into array xxx, yyy, zzz
         // ignoring JSON "punctuation" around items
         for x in y.Split([';','[',']','"',','], TStringSplitOptions.ExcludeEmpty) do
-          sl.Add(x);
+          if cb.Items.IndexOf(x) < 0 then cb.Items.Add(x); // sl.Add(x);
       end
-      else sl.Add(x);
+      else if cb.Items.IndexOf(x) < 0 then cb.Items.Add(x); // sl.Add(x);
       EpgDb.Next;
     end;
+    cb.EndUpdate;
+//    while cb.Sorted do cb.Sorted := False;
+//    Log('Adding first ' + cb.Name + ' Item: "All"');
+//    cb.Items.Insert(0,'All');
+//    cb.EndUpdate;
     EpgDb.Filter := SavedFilterString;
     EpgDb.Filtered := SavedFilterState;
 //    sl.EndUpdate;
-    cb.BeginUpdate;
-    cb.Clear;
-    Log('Adding first '+cb.Name+' Item: "All"');
-    cb.Items.Add('All');
-    cb.Items.AddStrings(sl);
-    cb.EndUpdate;
+//    cb.BeginUpdate;
+//    cb.Clear;
+//    Log('Adding first '+cb.Name+' Item: "All"');
+//    cb.Items.Add('All');
+//    cb.Items.AddStrings(sl);
+//    cb.EndUpdate;
     Log('Added ' + cb.Items.Count.ToString + ' to ' + cb.Name);
-    sl.Free;
+//    sl.Free;
     cb.ItemIndex := -1;
     EpgDb.EnableControls;
   end;

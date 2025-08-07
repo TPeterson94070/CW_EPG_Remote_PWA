@@ -29302,6 +29302,7 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
       this.FRequired = false;
       this.FRequiredText = "";
       this.FHandleInvalidPtr = null;
+      this.FSorted = false;
     };
     this.$final = function () {
       this.FItems = undefined;
@@ -29388,6 +29389,10 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
         this.FRequired = Value;
         this.UpdateElement();
       };
+    };
+    this.SetSorted = function (Value) {
+      this.FItems.SetSorted(true);
+      this.FSorted = Value;
     };
     this.DoHandleChange = function (Event) {
       var Result = false;
@@ -40967,7 +40972,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var x = "";
       var y = "";
       var SavedFilterString = "";
-      var sl = null;
       var SavedFilterState = false;
       x = pas.StrUtils.IfThen(fn === "genres","Genre",pas.StrUtils.IfThen(fn === "PSIP","Channel","Title"));
       this.lblFilterSelect.SetCaption("Choose " + x);
@@ -40983,10 +40987,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         SavedFilterString = this.EpgDb.FFilterText;
         this.EpgDb.DisableControls();
         this.EpgDb.SetFiltered(false);
-        sl = pas.Classes.TStringList.$create("Create$1");
-        sl.SetSorted(true);
-        sl.FDuplicates = 0;
-        sl.BeginUpdate();
+        cb.BeginUpdate();
+        cb.Clear();
+        cb.SetSorted(true);
         this.EpgDb.First();
         $impl.Log('Looping over EpgDb "' + fn + '" field');
         while (!this.EpgDb.GetEOF()) {
@@ -40999,25 +41002,19 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
                 y = v;
               }},[";","[","]",'"',","],1), $l = 0, $end = rtl.length($in) - 1; $l <= $end; $l++) {
               x = $in[$l];
-              sl.Add(x);
+              if (cb.FItems.IndexOf(x) < 0) cb.FItems.Add(x);
             };
-          } else sl.Add(x);
+          } else if (cb.FItems.IndexOf(x) < 0) cb.FItems.Add(x);
           this.EpgDb.Next();
         };
+        cb.EndUpdate();
         this.EpgDb.SetFilterText(SavedFilterString);
         this.EpgDb.SetFiltered(SavedFilterState);
-        cb.BeginUpdate();
-        cb.Clear();
-        $impl.Log("Adding first " + cb.FName + ' Item: "All"');
-        cb.FItems.Add("All");
-        cb.FItems.AddStrings(sl);
-        cb.EndUpdate();
         $impl.Log("Added " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: cb.FItems.GetCount(), get: function () {
             return this.p;
           }, set: function (v) {
             this.p = v;
           }}) + " to " + cb.FName);
-        sl = rtl.freeLoc(sl);
         cb.SetItemIndex(-1);
         this.EpgDb.EnableControls();
       };
