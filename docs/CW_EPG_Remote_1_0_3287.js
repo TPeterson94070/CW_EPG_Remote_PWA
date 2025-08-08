@@ -29302,7 +29302,6 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
       this.FRequired = false;
       this.FRequiredText = "";
       this.FHandleInvalidPtr = null;
-      this.FSorted = false;
     };
     this.$final = function () {
       this.FItems = undefined;
@@ -29389,10 +29388,6 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
         this.FRequired = Value;
         this.UpdateElement();
       };
-    };
-    this.SetSorted = function (Value) {
-      this.FItems.SetSorted(true);
-      this.FSorted = Value;
     };
     this.DoHandleChange = function (Event) {
       var Result = false;
@@ -40972,7 +40967,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var x = "";
       var y = "";
       var SavedFilterString = "";
+      var sl = null;
       var SavedFilterState = false;
+      $impl.Log("====== SetupFilterList started");
       x = pas.StrUtils.IfThen(fn === "genres","Genre",pas.StrUtils.IfThen(fn === "PSIP","Channel","Title"));
       this.lblFilterSelect.SetCaption("Choose " + x);
       if (cb !== this.WebComboBox1) this.WebComboBox1.Hide();
@@ -40981,15 +40978,17 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.EPG.ClearSelection();
       this.ClearMenuChecks();
       if (cb.FItems.GetCount() === 0) {
+        $impl.Log("====== Showing Pls Wait panel");
         this.ShowPlsWait("Preparing " + x + " list.");
         await sleep(100);
         SavedFilterState = this.EpgDb.FFiltered;
         SavedFilterString = this.EpgDb.FFilterText;
         this.EpgDb.DisableControls();
         this.EpgDb.SetFiltered(false);
-        cb.BeginUpdate();
-        cb.Clear();
-        cb.SetSorted(true);
+        sl = pas.Classes.TStringList.$create("Create$1");
+        sl.SetSorted(true);
+        sl.FDuplicates = 0;
+        sl.BeginUpdate();
         this.EpgDb.First();
         $impl.Log('Looping over EpgDb "' + fn + '" field');
         while (!this.EpgDb.GetEOF()) {
@@ -41002,27 +41001,37 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
                 y = v;
               }},[";","[","]",'"',","],1), $l = 0, $end = rtl.length($in) - 1; $l <= $end; $l++) {
               x = $in[$l];
-              if (cb.FItems.IndexOf(x) < 0) cb.FItems.Add(x);
+              sl.Add(x);
             };
-          } else if (cb.FItems.IndexOf(x) < 0) cb.FItems.Add(x);
+          } else sl.Add(x);
           this.EpgDb.Next();
         };
-        cb.EndUpdate();
+        $impl.Log("====== Finished EpgDb scan");
         this.EpgDb.SetFilterText(SavedFilterString);
         this.EpgDb.SetFiltered(SavedFilterState);
+        sl.EndUpdate();
+        cb.BeginUpdate();
+        cb.Clear();
+        $impl.Log("Adding first " + cb.FName + ' Item: "All"');
+        cb.FItems.Add("All");
+        cb.FItems.AddStrings(sl);
+        cb.EndUpdate();
         $impl.Log("Added " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: cb.FItems.GetCount(), get: function () {
             return this.p;
           }, set: function (v) {
             this.p = v;
           }}) + " to " + cb.FName);
+        sl = rtl.freeLoc(sl);
         cb.SetItemIndex(-1);
         this.EpgDb.EnableControls();
       };
+      $impl.Log("====== Showing ComboBox");
       this.pnlFilterComboBox.Show();
       cb.Show();
       await sleep(100);
       await this.SetPage(0);
       this.pnlWaitPls.Hide();
+      $impl.Log("====== Exiting SetupFilterList");
     };
     this.SetFilter = async function (fltr) {
       this.ShowPlsWait("Preparing " + pas.StrUtils.IfThen(fltr === "","Un","") + "Filtered List");

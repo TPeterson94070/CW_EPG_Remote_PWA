@@ -137,7 +137,7 @@ private
   [async]
   procedure CreateGoogleFile(FName: string; var id: string);
   [async] procedure SetupWIDBCDS;
-  [async] procedure SetupCurrEpgDb;
+//  [async] procedure SetupCurrEpgDb;
   [async] procedure SetupEpgDb;
   [async] procedure SetupFilterList(cb: TWebComboBox; fn: string);
   [async] procedure SetFilter(fltr: string);
@@ -679,8 +679,6 @@ begin
 end;
 
 procedure TCWRmainFrm.LogDataRange;
-var
-  i: Integer;
 begin
   WIDBCDS.DisableControls;
 
@@ -734,14 +732,14 @@ begin
       + #13#13'To update, please use Options | Refresh Data',mtInformation, [mbOK]));
 end;
 
-procedure TCWRmainFrm.SetupCurrEpgDb;
+//procedure TCWRmainFrm.SetupCurrEpgDb;
 //var
 //  i: Integer;
 //const
 //  DBFIELDS: array[0..14] of string = ('PSIP', 'Time', 'Title', 'SubTitle',
 //  'Description', 'StartTime', 'EndTime', 'programID', 'originalAirDate', 'new',
 //  'audioProperties', 'videoProperties', 'movieYear', 'genres', 'Class');
-begin
+//begin
 //  Log('========== SetupCurrEpgDb called');
 //  CurrEpgDb.FieldDefs.IndexOf('id') = -1 then
 //  begin
@@ -778,7 +776,7 @@ begin
 //      + #13#13'To update, please use Options | Refresh Data',mtInformation, [mbOK]));
 //
 //  Log('========== SetupCurrEpgDb finished');
-end;
+//end;
 
 procedure TCWRmainFrm.SetupEpgDb;
   procedure ResetComboBox(cb: TWebComboBox);
@@ -839,9 +837,10 @@ end;
 procedure TCWRmainFrm.SetupFilterList(cb: TWebComboBox; fn: string);
 var
   x, y, SavedFilterString: string;
-//  sl: TStringList;
+  sl: TStringList;
   SavedFilterState: Boolean;
 begin
+  Log('====== SetupFilterList started');
   x := IfThen(fn='genres', 'Genre', IfThen(fn='PSIP', 'Channel', 'Title'));
   lblFilterSelect.Caption := 'Choose ' + x;
   if cb <> WebComboBox1 then WebComboBox1.Hide;
@@ -851,19 +850,21 @@ begin
   ClearMenuChecks;
   if cb.Items.Count = 0 then
   begin
+    Log('====== Showing Pls Wait panel');
     ShowPlsWait('Preparing ' + x + ' list.');
     {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
     SavedFilterState := EpgDb.Filtered;
     SavedFilterString := EpgDb.Filter;
     EpgDb.DisableControls;
     EpgDb.Filtered := False;
-//    sl := TStringList.Create;
-//    sl.Sorted := True;
-//    sl.Duplicates := dupIgnore;
-//    sl.BeginUpdate;
-    cb.BeginUpdate;
-    cb.Clear;
-    cb.Sorted := True;
+    sl := TStringList.Create;
+    sl.Sorted := True;
+    sl.Duplicates := dupIgnore;
+    sl.BeginUpdate;
+//    cb.BeginUpdate;
+//    cb.Clear;
+//    cb.Sorted := True;
+//    cb.Items.Add('0'); // Placeholder for 'All'
     EpgDb.First;
     Log('Looping over EpgDb "' + fn + '" field');
     while not EpgDb.Eof do
@@ -875,35 +876,38 @@ begin
         // Split the genres string 'xxx;yyy;zzz' into array xxx, yyy, zzz
         // ignoring JSON "punctuation" around items
         for x in y.Split([';','[',']','"',','], TStringSplitOptions.ExcludeEmpty) do
-          if cb.Items.IndexOf(x) < 0 then cb.Items.Add(x); // sl.Add(x);
+          {if cb.Items.IndexOf(x) < 0 then cb.Items.Add(x); //} sl.Add(x);
       end
-      else if cb.Items.IndexOf(x) < 0 then cb.Items.Add(x); // sl.Add(x);
+      else {if cb.Items.IndexOf(x) < 0 then cb.Items.Add(x); //} sl.Add(x);
       EpgDb.Next;
     end;
-    cb.EndUpdate;
+    Log('====== Finished EpgDb scan');
+//    cb.EndUpdate;
 //    while cb.Sorted do cb.Sorted := False;
 //    Log('Adding first ' + cb.Name + ' Item: "All"');
-//    cb.Items.Insert(0,'All');
+//    cb.Items.Add('All');
 //    cb.EndUpdate;
     EpgDb.Filter := SavedFilterString;
     EpgDb.Filtered := SavedFilterState;
-//    sl.EndUpdate;
-//    cb.BeginUpdate;
-//    cb.Clear;
-//    Log('Adding first '+cb.Name+' Item: "All"');
-//    cb.Items.Add('All');
-//    cb.Items.AddStrings(sl);
-//    cb.EndUpdate;
+    sl.EndUpdate;
+    cb.BeginUpdate;
+    cb.Clear;
+    Log('Adding first '+cb.Name+' Item: "All"');
+    cb.Items.Add('All');
+    cb.Items.AddStrings(sl);
+    cb.EndUpdate;
     Log('Added ' + cb.Items.Count.ToString + ' to ' + cb.Name);
-//    sl.Free;
+    sl.Free;
     cb.ItemIndex := -1;
     EpgDb.EnableControls;
   end;
+  Log('====== Showing ComboBox');
   pnlFilterComboBox.Show;
   cb.Show;
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   await(SetPage(0));
   pnlWaitPls.Hide;
+  Log('====== Exiting SetupFilterList');
 end;
 
 procedure TCWRmainFrm.SetFilter(fltr: string);
