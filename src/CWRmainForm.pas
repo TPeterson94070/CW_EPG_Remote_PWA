@@ -142,6 +142,7 @@ private
   [async] procedure SetupFilterList(cb: TWebComboBox; fn: string);
   [async] procedure SetFilter(fltr: string);
   [async] procedure ShowPlsWait(PlsWaitCap: string);
+  procedure SetupFilterList1;
 public
   { Public declarations }
 end;
@@ -829,9 +830,68 @@ begin
   ResetComboBox(WebComboBox1);
   ResetComboBox(WebComboBox2);
   ResetComboBox(WebComboBox3);
+  SetupFilterList1;
   pnlWaitPls.Hide;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   Log('====== SetupEpgDb finished');
+end;
+
+procedure TCWRmainFrm.SetupFilterList1;
+const
+  FilterTypes: array of string = ['PSIP', 'Title', 'genres'];
+var
+  fn, x, y: string;
+  sl: TStringList;
+  EpgDbTemp: TWebClientDataSet;
+  cb: TWebComboBox;
+begin
+  Log('====== SetupFilterList1 started');
+  sl := TStringList.Create;
+  EpgDbTemp := TWebClientDataSet(EpgDb.GetClonedDataSet(False));
+  EpgDbTemp.DisableControls;
+  EpgDbTemp.Filtered := False;
+  for fn in FilterTypes do
+  begin
+    x := IfThen(fn='genres', 'Genre', IfThen(fn='PSIP', 'Channel', 'Title'));
+    if fn = 'genres' then
+      cb := WebComboBox1
+    else if fn = 'Title' then
+      cb := WebComboBox2
+    else cb := WebComboBox3;
+    sl.Clear;
+    sl.Sorted := True;
+    sl.Duplicates := dupIgnore;
+    sl.BeginUpdate;
+    EpgDbTemp.First;
+    Log('Looping over EpgDbTemp "' + fn + '" field');
+    while not EpgDbTemp.Eof do
+    begin
+      x := EpgDbTemp.FieldByName(fn).AsString;
+      if fn='genres' then
+      begin
+        y := ReplaceStr(x, '\', ''); // Remove escape "\" char
+        // Split the genres string 'xxx;yyy;zzz' into array xxx, yyy, zzz
+        // ignoring JSON "punctuation" around items
+        for x in y.Split([';','[',']','"',','], TStringSplitOptions.ExcludeEmpty) do
+          sl.Add(x);
+      end
+      else sl.Add(x);
+      EpgDbTemp.Next;
+    end;
+    Log('====== Finished EpgDb scan');
+    sl.EndUpdate;
+    cb.BeginUpdate;
+    cb.Clear;
+    Log('Adding first '+cb.Name+' Item: "All"');
+    cb.Items.Add('All');
+    cb.Items.AddStrings(sl);
+    cb.EndUpdate;
+    Log('Added ' + cb.Items.Count.ToString + ' to ' + cb.Name);
+    cb.ItemIndex := -1;
+  end;
+  sl.Free;
+  EpgDbTemp.Free;
+  Log('====== Exiting SetupFilterList1');
 end;
 
 procedure TCWRmainFrm.SetupFilterList(cb: TWebComboBox; fn: string);
@@ -861,10 +921,6 @@ begin
     sl.Sorted := True;
     sl.Duplicates := dupIgnore;
     sl.BeginUpdate;
-//    cb.BeginUpdate;
-//    cb.Clear;
-//    cb.Sorted := True;
-//    cb.Items.Add('0'); // Placeholder for 'All'
     EpgDb.First;
     Log('Looping over EpgDb "' + fn + '" field');
     while not EpgDb.Eof do
@@ -882,11 +938,6 @@ begin
       EpgDb.Next;
     end;
     Log('====== Finished EpgDb scan');
-//    cb.EndUpdate;
-//    while cb.Sorted do cb.Sorted := False;
-//    Log('Adding first ' + cb.Name + ' Item: "All"');
-//    cb.Items.Add('All');
-//    cb.EndUpdate;
     EpgDb.Filter := SavedFilterString;
     EpgDb.Filtered := SavedFilterState;
     sl.EndUpdate;

@@ -19041,6 +19041,14 @@ rtl.module("DB",["System","Classes","SysUtils","JS","Types","DateUtils"],functio
     this.Add$5 = function (AName, ADataType) {
       this.Add$3(AName,ADataType,0,false);
     };
+    this.Assign$2 = function (FieldDefs) {
+      var I = 0;
+      this.Clear();
+      for (var $l = 0, $end = FieldDefs.GetCount() - 1; $l <= $end; $l++) {
+        I = $l;
+        this.Add$3(FieldDefs.GetItem$1(I).FName,FieldDefs.GetItem$1(I).FDataType,FieldDefs.GetItem$1(I).FSize,FieldDefs.GetItem$1(I).FRequired);
+      };
+    };
     var $r = this.$rtti;
     $r.addMethod("Create$4",2,[["ADataSet",$mod.$rtti["TDataSet"]]]);
   });
@@ -21082,6 +21090,7 @@ rtl.module("DB",["System","Classes","SysUtils","JS","Types","DateUtils"],functio
   this.TLocateOption = {"0": "loCaseInsensitive", loCaseInsensitive: 0, "1": "loPartialKey", loPartialKey: 1, "2": "loFromCurrent", loFromCurrent: 2};
   this.$rtti.$MethodVar("TDataSetNotifyEvent",{procsig: rtl.newTIProcSig([["DataSet",this.$rtti["TDataSet"]]]), methodkind: 0});
   this.$rtti.$MethodVar("TDataSetErrorEvent",{procsig: rtl.newTIProcSig([["DataSet",this.$rtti["TDataSet"]],["E",this.$rtti["EDatabaseError"]],["DataAction",this.$rtti["TDataAction"],1]]), methodkind: 0});
+  this.TFilterOption = {"0": "foCaseInsensitive", foCaseInsensitive: 0, "1": "foNoPartialCompare", foNoPartialCompare: 1};
   this.TLoadOption = {"0": "loNoOpen", loNoOpen: 0, "1": "loNoEvents", loNoEvents: 1, "2": "loAtEOF", loAtEOF: 2, "3": "loCancelPending", loCancelPending: 3};
   this.$rtti.$MethodVar("TFilterRecordEvent",{procsig: rtl.newTIProcSig([["DataSet",this.$rtti["TDataSet"]],["Accept",rtl.boolean,1]]), methodkind: 0});
   this.TRecordState = {"0": "rsNew", rsNew: 0, "1": "rsClean", rsClean: 1, "2": "rsUpdate", rsUpdate: 2, "3": "rsDelete", rsDelete: 3};
@@ -21143,6 +21152,7 @@ rtl.module("DB",["System","Classes","SysUtils","JS","Types","DateUtils"],functio
       this.FEnableControlsEvent = 0;
       this.FFieldList = null;
       this.FFieldDefs = null;
+      this.FFilterOptions = {};
       this.FFilterText = "";
       this.FFiltered = false;
       this.FInternalCalcFields = false;
@@ -21192,6 +21202,7 @@ rtl.module("DB",["System","Classes","SysUtils","JS","Types","DateUtils"],functio
       this.FDataSources = undefined;
       this.FFieldList = undefined;
       this.FFieldDefs = undefined;
+      this.FFilterOptions = undefined;
       this.FOnCalcFields = undefined;
       this.FOnDeleteError = undefined;
       this.FOnEditError = undefined;
@@ -21805,6 +21816,24 @@ rtl.module("DB",["System","Classes","SysUtils","JS","Types","DateUtils"],functio
       Result = -1;
       return Result;
     };
+    this.InitFieldDefsFromfields = function () {
+      var i = 0;
+      if (this.FFieldDefs.GetCount() === 0) {
+        this.FFieldDefs.BeginUpdate();
+        try {
+          for (var $l = 0, $end = this.FFieldList.GetCount() - 1; $l <= $end; $l++) {
+            i = $l;
+            if (!(this.FFieldList.GetField(i).FFieldKind in rtl.createSet(1,2))) {
+              this.FFieldList.GetField(i).FFieldDef = this.FFieldDefs.$class.FieldDefClass().$create("Create$3",[this.FFieldDefs,this.FFieldList.GetField(i).FFieldName,this.FFieldList.GetField(i).FDataType,this.FFieldList.GetField(i).FSize,this.FFieldList.GetField(i).FRequired,this.FFieldDefs.GetCount() + 1]);
+              if (this.FFieldList.GetField(i).FRequired) this.FFieldList.GetField(i).FFieldDef.SetAttributes(rtl.unionSet(this.FFieldList.GetField(i).FFieldDef.FAttributes,rtl.createSet(2)));
+              if (this.FFieldList.GetField(i).FReadOnly) this.FFieldList.GetField(i).FFieldDef.SetAttributes(rtl.unionSet(this.FFieldList.GetField(i).FFieldDef.FAttributes,rtl.createSet(1)));
+            };
+          };
+        } finally {
+          this.FFieldDefs.EndUpdate();
+        };
+      };
+    };
     this.InitRecord = function (Buffer) {
       this.InternalInitRecord(Buffer);
       this.ClearCalcFields(Buffer);
@@ -21904,6 +21933,10 @@ rtl.module("DB",["System","Classes","SysUtils","JS","Types","DateUtils"],functio
     this.SetFiltered = function (Value) {
       if (Value) this.CheckBiDirectional();
       this.FFiltered = Value;
+    };
+    this.SetFilterOptions = function (Value) {
+      this.CheckBiDirectional();
+      this.FFilterOptions = rtl.refSet(Value);
     };
     this.SetFilterText = function (Value) {
       this.FFilterText = Value;
@@ -26879,6 +26912,17 @@ rtl.module("JSONDataset",["System","Types","JS","DB","Classes","SysUtils","TypIn
       this.FDefaultIndex.AppendToIndex();
       if ((this.FCurrentIndex != null) && (this.FCurrentIndex !== this.FDefaultIndex)) this.FCurrentIndex.AppendToIndex();
     };
+    this.Clone = function (Source) {
+      if (Source.FFieldDefs.GetCount() > 0) {
+        this.FFieldDefs.Assign$2(Source.FFieldDefs);
+        this.CreateFields();
+      } else {
+        Source.InitFieldDefsFromfields();
+        this.FFieldDefs.Assign$2(Source.FFieldDefs);
+        this.CreateFields();
+      };
+      this.SetRows(Source.FRows);
+    };
     this.CreateIndexes = function () {
       this.FDefaultIndex = $mod.TDefaultJSONIndex.$create("Create$1",[this,this.FRows]);
       this.AppendToIndexes();
@@ -27060,6 +27104,26 @@ rtl.module("JSONDataset",["System","Types","JS","DB","Classes","SysUtils","TypIn
       this.FFieldMapper.SetJSONDataForField$1(Field,R,AValue);
       if (!(this.FState in rtl.createSet(5,11,6,7))) this.DataEvent(0,Field);
       this.SetModified(true);
+    };
+    this.GetClonedDataSet = function (WithSettings) {
+      var Result = null;
+      var DS = null;
+      Result = this.FNestedDataSetClass.$create("Create$1",[null]);
+      try {
+        DS = rtl.as(Result,$mod.TBaseJSONDataSet);
+        if (WithSettings) {
+          DS.SetFilterText(this.FFilterText);
+          DS.SetOnFilterRecord(this.FOnFilterRecord);
+          DS.SetFilterOptions(rtl.refSet(this.FFilterOptions));
+          DS.SetFiltered(this.FFiltered);
+        };
+        DS.Clone(this);
+        DS.SetActive(this.GetActive());
+      } catch ($e) {
+        Result = rtl.freeLoc(Result);
+        throw $e;
+      };
+      return Result;
     };
     this.BookmarkValid = function (ABookmark) {
       var Result = false;
@@ -33392,6 +33456,14 @@ rtl.module("WEBLib.IndexedDb",["System","Classes","JS","Web","SysUtils","WEBLib.
           this.FIDBKeyFieldName = this.FFieldDefs.GetItem$1(i).FName;
           break;
         };
+      };
+    };
+    this.Clone = function (Source) {
+      pas.JSONDataset.TBaseJSONDataSet.Clone.call(this,Source);
+      if ($mod.TIndexedDbClientDataset.isPrototypeOf(Source)) {
+        this.FIDBDatabaseName = rtl.as(Source,$mod.TIndexedDbClientDataset).FIDBDatabaseName;
+        this.FIDBObjectStoreName = rtl.as(Source,$mod.TIndexedDbClientDataset).FIDBObjectStoreName;
+        this.FIDBKeyFieldName = rtl.as(Source,$mod.TIndexedDbClientDataset).FIDBKeyFieldName;
       };
     };
     this.IsKeyFieldValid = function () {
@@ -40959,6 +41031,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       ResetComboBox(this.WebComboBox1);
       ResetComboBox(this.WebComboBox2);
       ResetComboBox(this.WebComboBox3);
+      this.SetupFilterList1();
       this.pnlWaitPls.Hide();
       await sleep(10);
       $impl.Log("====== SetupEpgDb finished");
@@ -41057,6 +41130,67 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlWaitPls.Show();
         await sleep(10);
       } else $impl.Log("####### " + PlsWaitCap);
+    };
+    var FilterTypes = ["PSIP","Title","genres"];
+    this.SetupFilterList1 = function () {
+      var fn = "";
+      var x = "";
+      var y = "";
+      var sl = null;
+      var EpgDbTemp = null;
+      var cb = null;
+      $impl.Log("====== SetupFilterList1 started");
+      sl = pas.Classes.TStringList.$create("Create$1");
+      EpgDbTemp = this.EpgDb.GetClonedDataSet(false);
+      EpgDbTemp.DisableControls();
+      EpgDbTemp.SetFiltered(false);
+      for (var $in = FilterTypes, $l = 0, $end = rtl.length($in) - 1; $l <= $end; $l++) {
+        fn = $in[$l];
+        x = pas.StrUtils.IfThen(fn === "genres","Genre",pas.StrUtils.IfThen(fn === "PSIP","Channel","Title"));
+        if (fn === "genres") {
+          cb = this.WebComboBox1}
+         else if (fn === "Title") {
+          cb = this.WebComboBox2}
+         else cb = this.WebComboBox3;
+        sl.Clear();
+        sl.SetSorted(true);
+        sl.FDuplicates = 0;
+        sl.BeginUpdate();
+        EpgDbTemp.First();
+        $impl.Log('Looping over EpgDbTemp "' + fn + '" field');
+        while (!EpgDbTemp.GetEOF()) {
+          x = EpgDbTemp.FieldByName(fn).GetAsString();
+          if (fn === "genres") {
+            y = pas.StrUtils.ReplaceStr(x,"\\","");
+            for (var $in1 = pas.SysUtils.TStringHelper.Split$5.call({get: function () {
+                return y;
+              }, set: function (v) {
+                y = v;
+              }},[";","[","]",'"',","],1), $l1 = 0, $end1 = rtl.length($in1) - 1; $l1 <= $end1; $l1++) {
+              x = $in1[$l1];
+              sl.Add(x);
+            };
+          } else sl.Add(x);
+          EpgDbTemp.Next();
+        };
+        $impl.Log("====== Finished EpgDb scan");
+        sl.EndUpdate();
+        cb.BeginUpdate();
+        cb.Clear();
+        $impl.Log("Adding first " + cb.FName + ' Item: "All"');
+        cb.FItems.Add("All");
+        cb.FItems.AddStrings(sl);
+        cb.EndUpdate();
+        $impl.Log("Added " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: cb.FItems.GetCount(), get: function () {
+            return this.p;
+          }, set: function (v) {
+            this.p = v;
+          }}) + " to " + cb.FName);
+        cb.SetItemIndex(-1);
+      };
+      sl = rtl.freeLoc(sl);
+      EpgDbTemp = rtl.freeLoc(EpgDbTemp);
+      $impl.Log("====== Exiting SetupFilterList1");
     };
     this.LoadDFMValues = function () {
       pas["WEBLib.Forms"].TCustomForm.LoadDFMValues.call(this);
