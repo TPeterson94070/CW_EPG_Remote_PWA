@@ -295,6 +295,7 @@ var
   StartT: TDateTime;
 begin
   Log('======== "Refresh Data" clicked');
+  EpgDb.Close;
   await(RefreshCSV(BufferGrid, 'cwr_epg.csv','EPG', id));
   if BufferGrid.RowCount > 0 then
   begin
@@ -337,6 +338,7 @@ end;
 
 procedure TCWRmainFrm.btnOptOKClick(Sender: TObject);
 begin
+  ShowPlsWait('Updating Settings');
   TWebLocalStorage.SetValue(NUMDAYS, cbNumDisplayDays.Text);
   Log('New number EPG Display Days: ' + cbNumDisplayDays.Text);
   TWebLocalStorage.SetValue(NUMHIST, cbNumHistList.Text);
@@ -800,7 +802,7 @@ begin
   ShowPlsWait('Resetting EPG');
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
-  LastStartTime := FirstEndTime + StrToInt(cbNumDisplayDays.Text);
+  LastStartTime := FirstEndTime + StrToIntDef(cbNumDisplayDays.Text,1);
   WIDBCDS.DisableControls;
   EpgDb.DisableControls;
   EpgDb.Filtered := False;
@@ -821,9 +823,7 @@ begin
     end;
     WIDBCDS.Next;
   end;
-//  EpgDb.Filter := '';
-//  EpgDb.Filtered := True;
-  Log('SetupEpgDb: EpgDb post-filter record count: ' + EpgDb.RecordCount.ToString);
+  Log('SetupEpgDb: EpgDb record count: ' + EpgDb.RecordCount.ToString);
   if EpgDb.RecordCount > 0 then
   begin
     WebDataSource1.DataSet := EpgDb;
@@ -1014,6 +1014,7 @@ procedure TCWRmainFrm.tbCapturesShow;
 var
   i: Integer;
   st, et: TDateTime;
+  UserMsg: string;
 
 begin
   ReloadSG(Captures, 'sl');
@@ -1064,24 +1065,22 @@ begin
 
   if (Captures.RowCount = 2) and (Captures.Cells[25,1] = '-1') then  // Valid list, no captures, reload??
   begin
-    Log('No captures listed, prompting for EPG fetch');
-    if TAwait.ExecP<TModalResult> (MessageDlgAsync('There were no scheduled items at last fetch.'
-      + #13#13'Do you want to refresh the list?',mtConfirmation, [mbYes,mbNo]))
-      = mrYes then
-    begin
-      await (RefreshData(Self));
-    end;
+    Log('No captures listed, prompting for refresh');
+    UserMsg := 'There were no scheduled items at last fetch.';
   end
   else if Captures.RowCount < 2 then // Invalid list
   begin
-    Log('No fresh captures, prompting for EPG fetch');
-    if TAwait.ExecP<TModalResult> (MessageDlgAsync('Scheduled list appears to be stale.'
-      + #13#13'Do you want to refresh it?',mtConfirmation, [mbYes,mbNo]))
-      = mrYes then
-    begin
-      await (RefreshData(Self));
-    end;
-  end  ;
+    Log('No fresh captures, prompting for refresh');
+    UserMsg := 'Scheduled list appears to be stale.';
+  end else exit;
+  if TAwait.ExecP<TModalResult> (MessageDlgAsync(UserMsg
+    + #13#13'Do you want to refresh?',mtConfirmation, [mbYes,mbNo]))
+    = mrYes then
+  begin
+    await(FetchCapReservations);
+    await(FetchNewCapRequests);
+    pnlWaitPls.Hide;
+  end;
 end;
 
 procedure TCWRmainFrm.FillHistoryDisplay;

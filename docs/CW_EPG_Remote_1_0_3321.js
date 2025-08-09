@@ -40051,6 +40051,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var id = "";
       var StartT = 0.0;
       $impl.Log('======== "Refresh Data" clicked');
+      this.EpgDb.Close();
       await this.RefreshCSV(this.BufferGrid,"cwr_epg.csv","EPG",{get: function () {
           return id;
         }, set: function (v) {
@@ -40105,6 +40106,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var i = 0;
       var st = 0.0;
       var et = 0.0;
+      var UserMsg = "";
       this.ReloadSG(this.Captures,"sl");
       if (this.Captures.FRowCount > 1) {
         for (var $l = this.Captures.FRowCount - 1; $l >= 1; $l--) {
@@ -40153,15 +40155,16 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           this.p.FRowCount = v;
         }}));
       if ((this.Captures.FRowCount === 2) && (this.Captures.GetCells(25,1) === "-1")) {
-        $impl.Log("No captures listed, prompting for EPG fetch");
-        if (await pas["WEBLib.Dialogs"].MessageDlgAsync("There were no scheduled items at last fetch." + "\r\rDo you want to refresh the list?",3,rtl.createSet(0,1)) === 6) {
-          await this.RefreshData(this);
-        };
+        $impl.Log("No captures listed, prompting for refresh");
+        UserMsg = "There were no scheduled items at last fetch.";
       } else if (this.Captures.FRowCount < 2) {
-        $impl.Log("No fresh captures, prompting for EPG fetch");
-        if (await pas["WEBLib.Dialogs"].MessageDlgAsync("Scheduled list appears to be stale." + "\r\rDo you want to refresh it?",3,rtl.createSet(0,1)) === 6) {
-          await this.RefreshData(this);
-        };
+        $impl.Log("No fresh captures, prompting for refresh");
+        UserMsg = "Scheduled list appears to be stale.";
+      } else return;
+      if (await pas["WEBLib.Dialogs"].MessageDlgAsync(UserMsg + "\r\rDo you want to refresh?",3,rtl.createSet(0,1)) === 6) {
+        await this.FetchCapReservations();
+        await this.FetchNewCapRequests();
+        this.pnlWaitPls.Hide();
       };
     };
     this.AllCapsGridGetCellData = function (Sender, ACol, ARow, AField, AValue) {
@@ -40493,6 +40496,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WebComboBox3.Hide();
     };
     this.btnOptOKClick = async function (Sender) {
+      this.ShowPlsWait("Updating Settings");
       pas["WEBLib.Storage"].TLocalStorage.SetValue($impl.NUMDAYS,this.cbNumDisplayDays.GetText());
       $impl.Log("New number EPG Display Days: " + this.cbNumDisplayDays.GetText());
       pas["WEBLib.Storage"].TLocalStorage.SetValue($impl.NUMHIST,this.cbNumHistList.GetText());
@@ -40999,7 +41003,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.ShowPlsWait("Resetting EPG");
       await sleep(10);
       FirstEndTime = pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false);
-      LastStartTime = FirstEndTime + pas.SysUtils.StrToInt(this.cbNumDisplayDays.GetText());
+      LastStartTime = FirstEndTime + pas.SysUtils.StrToIntDef(this.cbNumDisplayDays.GetText(),1);
       this.WIDBCDS.DisableControls();
       this.EpgDb.DisableControls();
       this.EpgDb.SetFiltered(false);
@@ -41015,7 +41019,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         };
         this.WIDBCDS.Next();
       };
-      $impl.Log("SetupEpgDb: EpgDb post-filter record count: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.EpgDb.GetRecordCount(), get: function () {
+      $impl.Log("SetupEpgDb: EpgDb record count: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.EpgDb.GetRecordCount(), get: function () {
           return this.p;
         }, set: function (v) {
           this.p = v;
