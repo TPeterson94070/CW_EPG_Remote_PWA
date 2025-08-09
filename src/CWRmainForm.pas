@@ -67,6 +67,7 @@ type
     cbNumHistList: TWebComboBox;
     btnOptOK: TWebButton;
     WIDBCDS: TWebIndexedDbClientDataset;
+    btnSchdRefrsh: TWebButton;
   procedure SetNewCapturesFixedRow;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
@@ -108,6 +109,7 @@ type
     procedure WebComboBox2FocusOut(Sender: TObject);
     procedure WebComboBox3FocusOut(Sender: TObject);
   [async] procedure btnOptOKClick(Sender: TObject);
+  [async] procedure btnSchdRefrshClick(Sender: TObject);
 private
   { Private declarations }
   [async] procedure LogDataRange;
@@ -278,7 +280,7 @@ begin
     cbNumHistList.ItemIndex := cbNumHistList.Items.IndexOf(TWebLocalStorage.GetValue(NUMHIST));
     WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
   await(SetupWIDBCDS);
-  await(RefreshListings);
+  {await}(RefreshListings);
   Log('========== FormCreate is finished');
 end;
 
@@ -311,8 +313,8 @@ begin
     TAwait.ExecP<TModalResult> (MessageDlgAsync('The data update failed!'#13'Please make sure that the HTPC'
       + #13' is connected to Google Drive',mtInformation, [mbOK]))
   end;
-  if VisiblePanelNum <> 3 then await(ReFreshListings)
-  else await(SetupEpgDb);
+  if VisiblePanelNum <> 3 then {await}(ReFreshListings)
+  else {await}(SetupEpgDb);
   Log('*********** Delta t (sec): ' + SecondsBetween(Now, StartT).ToString);
   Log('*********** Rate (ms/rec): ' + (MilliSecondsBetween(Now, StartT)/WIDBCDS.RecordCount).ToString);
 end;
@@ -346,6 +348,13 @@ begin
   EpgDb.Close;
   await(SetupWIDBCDS);
   ReFreshListings;
+end;
+
+procedure TCWRmainFrm.btnSchdRefrshClick(Sender: TObject);
+begin
+  await(FetchCapReservations);
+  await(FetchNewCapRequests);
+  pnlWaitPls.Hide;
 end;
 
 procedure TCWRmainFrm.ByAllClick(Sender: TObject);
@@ -522,7 +531,7 @@ var
 begin
   Log('ReFreshCSV called for ' + TableFile);
   ShowPlsWait('Refreshing ' + Title);
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   if application.IsOnline then
   begin
     WSG.BeginUpdate;
@@ -800,7 +809,7 @@ var
 begin
   Log('====== SetupEpgDb called');
   ShowPlsWait('Resetting EPG');
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
   LastStartTime := FirstEndTime + StrToIntDef(cbNumDisplayDays.Text,1);
   WIDBCDS.DisableControls;
@@ -838,7 +847,7 @@ begin
   ResetComboBox(WebComboBox3);
   SetupFilterLists;
   pnlWaitPls.Hide;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   Log('====== SetupEpgDb finished');
 end;
 
@@ -954,15 +963,16 @@ procedure TCWRmainFrm.ReFreshListings;
 begin
   Log(' ======== RefreshListings is called.');
   EPG.Visible := False;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   Await(SetupEpgDb);
-//  Log('EpgDb.RecordCount: ' + EpgDb.RecordCount.ToString);
   Log('Days to Display: ' + cbNumDisplayDays.Text);
-//  EPG.BeginUpdate;
   ShowPlsWait('Preparing ' + cbNumDisplayDays.Text + '-day Listing.');
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-//  EPG.EndUpdate;
-  if EpgDb.RecordCount > 0 then EPG.Refresh
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+  if EpgDb.RecordCount > 0 then
+  begin
+    EPG.Refresh;
+    ByAllClick(Self)
+  end
   else TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'
       + #13#13'To update, please use Options | Refresh Data',mtInformation, [mbOK]));
   EPG.Visible := True;
@@ -1017,6 +1027,8 @@ var
   UserMsg: string;
 
 begin
+//  btnSchdRefrsh.BringToFront;
+  btnSchdRefrsh.Show;
   ReloadSG(Captures, 'sl');
   if Captures.RowCount > 1 then  // have stored value(s)
   begin
@@ -1075,12 +1087,12 @@ begin
   end else exit;
   if TAwait.ExecP<TModalResult> (MessageDlgAsync(UserMsg
     + #13#13'Do you want to refresh?',mtConfirmation, [mbYes,mbNo]))
-    = mrYes then
-  begin
-    await(FetchCapReservations);
-    await(FetchNewCapRequests);
-    pnlWaitPls.Hide;
-  end;
+    = mrYes then btnSchdRefrshClick(Self);
+//  begin
+//    await(FetchCapReservations);
+//    await(FetchNewCapRequests);
+//    pnlWaitPls.Hide;
+//  end;
 end;
 
 procedure TCWRmainFrm.FillHistoryDisplay;
@@ -1377,6 +1389,7 @@ begin
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
 //  WebDataSource1.Enabled := True;
   EPG.DataSource := WebDataSource1;
+  EPG.Refresh;
   EPG.Row := CurrentRow;
   EPG.Enabled := True;
   WebMainMenu1.Enabled := True;
