@@ -525,6 +525,8 @@ object CWRmainFrm: TCWRmainFrm
       Top = 301
       Width = 428
       Height = 231
+      HeightStyle = ssPercent
+      HeightPercent = 30.000000000000000000
       Align = alTop
       ChildOrder = 2
       ElementFont = efCSS
@@ -569,6 +571,8 @@ object CWRmainFrm: TCWRmainFrm
       Top = 35
       Width = 428
       Height = 231
+      HeightStyle = ssPercent
+      HeightPercent = 40.000000000000000000
       Align = alTop
       ChildOrder = 2
       ElementFont = efCSS
@@ -622,10 +626,15 @@ object CWRmainFrm: TCWRmainFrm
       Role = ''
     end
     object btnSchdRefrsh: TWebButton
-      Left = 1
-      Top = 1
-      Width = 80
+      AlignWithMargins = True
+      Left = 150
+      Top = 535
+      Width = 128
       Height = 33
+      Margins.Left = 150
+      Margins.Right = 150
+      Margins.Bottom = 50
+      Align = alTop
       Caption = 'Refresh'
       ChildOrder = 4
       ElementClassName = 'btn btn-light'
@@ -767,12 +776,11 @@ object CWRmainFrm: TCWRmainFrm
         0)
     end
     object pnlFilterComboBox: TWebPanel
-      Left = 88
-      Top = 49
+      Left = 117
+      Top = 153
       Width = 150
-      Height = 60
+      Height = 75
       ElementClassName = 'card'
-      Caption = 'Choose Filter'
       ChildOrder = 5
       ElementBodyClassName = 'card-body'
       ElementFont = efCSS
@@ -782,14 +790,17 @@ object CWRmainFrm: TCWRmainFrm
       Font.Name = 'Arial'
       Font.Style = []
       ParentFont = False
+      ShowCaption = False
       TabOrder = 1
       Visible = False
       object lblFilterSelect: TWebLabel
-        Left = 0
-        Top = 0
-        Width = 150
+        AlignWithMargins = True
+        Left = 3
+        Top = 3
+        Width = 144
         Height = 22
         Align = alTop
+        Alignment = taCenter
         Caption = 'Choose Item'
         ElementClassName = 'form-label'
         ElementFont = efCSS
@@ -801,14 +812,16 @@ object CWRmainFrm: TCWRmainFrm
         HeightStyle = ssAuto
         HeightPercent = 100.000000000000000000
         ParentFont = False
+        WidthStyle = ssAuto
         WidthPercent = 100.000000000000000000
       end
       object WebComboBox1: TWebComboBox
-        Left = 0
-        Top = 30
-        Width = 150
+        AlignWithMargins = True
+        Left = 3
+        Top = 31
+        Width = 144
         Height = 30
-        Align = alBottom
+        Align = alClient
         ElementClassName = 'form-select'
         ElementFont = efCSS
         Font.Charset = ANSI_CHARSET
@@ -821,6 +834,7 @@ object CWRmainFrm: TCWRmainFrm
         ParentFont = False
         Role = 'combobox'
         Visible = False
+        WidthStyle = ssPercent
         WidthPercent = 100.000000000000000000
         OnChange = WebComboBox1Change
         OnDblClick = WebComboBox1Change
@@ -828,11 +842,12 @@ object CWRmainFrm: TCWRmainFrm
         ItemIndex = -1
       end
       object WebComboBox2: TWebComboBox
-        Left = 0
-        Top = -30
-        Width = 150
+        AlignWithMargins = True
+        Left = 3
+        Top = 31
+        Width = 144
         Height = 30
-        Align = alBottom
+        Align = alClient
         ElementClassName = 'form-select'
         ElementFont = efCSS
         Font.Charset = ANSI_CHARSET
@@ -845,6 +860,7 @@ object CWRmainFrm: TCWRmainFrm
         ParentFont = False
         Role = 'combobox'
         Visible = False
+        WidthStyle = ssPercent
         WidthPercent = 100.000000000000000000
         OnChange = WebComboBox2Change
         OnDblClick = WebComboBox2Change
@@ -852,11 +868,12 @@ object CWRmainFrm: TCWRmainFrm
         ItemIndex = -1
       end
       object WebComboBox3: TWebComboBox
-        Left = 0
-        Top = 0
-        Width = 150
+        AlignWithMargins = True
+        Left = 3
+        Top = 31
+        Width = 144
         Height = 30
-        Align = alBottom
+        Align = alClient
         ElementClassName = 'form-select'
         ElementFont = efCSS
         Font.Charset = ANSI_CHARSET
@@ -869,6 +886,7 @@ object CWRmainFrm: TCWRmainFrm
         ParentFont = False
         Role = 'combobox'
         Visible = False
+        WidthStyle = ssPercent
         WidthPercent = 100.000000000000000000
         OnChange = WebComboBox3Change
         OnDblClick = WebComboBox3Change
