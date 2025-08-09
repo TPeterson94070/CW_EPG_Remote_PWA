@@ -915,7 +915,7 @@ begin
   pnlFilterComboBox.Show;
   cb.Show;
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
-//  await(SetPage(0));
+  if VisiblePanelNum <> 0 then await(SetPage(0));
   Log('====== Exiting PopupFilterList');
 end;
 

@@ -41052,6 +41052,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.pnlFilterComboBox.Show();
       cb.Show();
       await sleep(100);
+      if ($impl.VisiblePanelNum !== 0) await this.SetPage(0);
       $impl.Log("====== Exiting PopupFilterList");
     };
     this.SetFilter = async function (fltr) {
