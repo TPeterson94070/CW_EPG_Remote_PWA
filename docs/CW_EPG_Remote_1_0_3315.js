@@ -40067,8 +40067,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         await pas["WEBLib.Dialogs"].MessageDlgAsync("The data update failed!\rPlease make sure that the HTPC" + "\r is connected to Google Drive",2,rtl.createSet(2));
       };
       if ($impl.VisiblePanelNum !== 3) {
-        this.ReFreshListings()}
-       else this.SetupEpgDb();
+        await this.ReFreshListings()}
+       else await this.SetupEpgDb();
       $impl.Log("*********** Delta t (sec): " + pas.SysUtils.TNativeIntHelper.ToString$1.call({a: pas.DateUtils.SecondsBetween(pas.SysUtils.Now(),StartT), get: function () {
           return this.a;
         }, set: function (v) {
@@ -40368,8 +40368,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.ByGenreClick = async function (Sender) {
       $impl.Log("ByGenreClick called");
       this.ByGenre.FOnClick = null;
-      await this.SetupFilterList(this.WebComboBox1,"genres");
-      this.ByGenre.SetChecked(true);
+      await this.PopupFilterList(this.WebComboBox1,"genres");
       this.ByGenre.FOnClick = rtl.createCallback(this,"ByGenreClick");
     };
     this.WebComboBox1Change = async function (Sender) {
@@ -40384,9 +40383,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.ByTitleClick = async function (Sender) {
       $impl.Log("byTitleClick called");
       this.ByTitle.FOnClick = null;
-      await this.SetupFilterList(this.WebComboBox2,"Title");
+      await this.PopupFilterList(this.WebComboBox2,"Title");
       this.WebComboBox2.SetItemIndex(this.WebComboBox2.FItems.IndexOf(this.EpgDb.FieldByName("Title").GetAsString()));
-      this.ByTitle.SetChecked(true);
       this.ByTitle.FOnClick = rtl.createCallback(this,"ByTitleClick");
     };
     this.WebComboBox2Change = async function (Sender) {
@@ -40403,6 +40401,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.ByAll.FOnClick = null;
       this.EPG.FColumns.GetItem$1(2).SetTitle("Title");
       this.ClearMenuChecks();
+      this.pnlFilterComboBox.Hide();
       this.ByAll.SetChecked(true);
       $impl.VisiblePanelNum = 0;
       if (this.EpgDb.FFilterText > "") await this.SetFilter("");
@@ -40412,8 +40411,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.ByChannelClick = async function (Sender) {
       $impl.Log("ByChannelClick called");
       this.ByChannel.FOnClick = null;
-      await this.SetupFilterList(this.WebComboBox3,"PSIP");
-      this.ByChannel.SetChecked(true);
+      await this.PopupFilterList(this.WebComboBox3,"PSIP");
       this.ByChannel.FOnClick = rtl.createCallback(this,"ByChannelClick");
     };
     this.WebComboBox3Change = async function (Sender) {
@@ -40494,11 +40492,13 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.pnlFilterComboBox.Hide();
       this.WebComboBox3.Hide();
     };
-    this.btnOptOKClick = function (Sender) {
+    this.btnOptOKClick = async function (Sender) {
       pas["WEBLib.Storage"].TLocalStorage.SetValue($impl.NUMDAYS,this.cbNumDisplayDays.GetText());
       $impl.Log("New number EPG Display Days: " + this.cbNumDisplayDays.GetText());
       pas["WEBLib.Storage"].TLocalStorage.SetValue($impl.NUMHIST,this.cbNumHistList.GetText());
       $impl.Log("New number History Display Days: " + this.cbNumHistList.GetText());
+      this.EpgDb.Close();
+      await this.SetupWIDBCDS();
       this.ReFreshListings();
     };
     this.LogDataRange = async function () {
@@ -40961,19 +40961,21 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.SetupWIDBCDS = async function () {
       var i = 0;
       $impl.Log("Setting up to (re)open WIDBCDS");
-      this.WIDBCDS.FFieldDefs.Clear();
-      this.WIDBCDS.FFieldDefs.Add$3("id",3,0,true);
-      for (i = 0; i <= 14; i++) {
-        if ((DBFIELDS[i] === "StartTime") || (DBFIELDS[i] === "EndTime")) {
-          this.WIDBCDS.FFieldDefs.Add$5(DBFIELDS[i],11)}
-         else this.WIDBCDS.FFieldDefs.Add$5(DBFIELDS[i],1);
+      if (this.WIDBCDS.GetfieldCount() === 0) {
+        this.WIDBCDS.FFieldDefs.Clear();
+        this.WIDBCDS.FFieldDefs.Add$3("id",3,0,true);
+        for (i = 0; i <= 14; i++) {
+          if ((DBFIELDS[i] === "StartTime") || (DBFIELDS[i] === "EndTime")) {
+            this.WIDBCDS.FFieldDefs.Add$5(DBFIELDS[i],11)}
+           else this.WIDBCDS.FFieldDefs.Add$5(DBFIELDS[i],1);
+        };
+        await this.WIDBCDS.OpenAsync();
       };
       this.EpgDb.FFieldDefs.Clear();
       this.EpgDb.FFieldDefs.Add$5("id",3);
       for (i = 0; i <= 2; i++) this.EpgDb.FFieldDefs.Add$5(DBFIELDS[i],1);
       this.EpgDb.FFieldDefs.Add$5(DBFIELDS[13],1);
       this.EpgDb.FFieldDefs.Add$5(DBFIELDS[14],1);
-      await this.WIDBCDS.OpenAsync();
       $impl.Log("WIDBCDS is " + pas.StrUtils.IfThen(!this.WIDBCDS.GetActive(),"not ","") + "Active and " + pas.StrUtils.IfThen(!this.WIDBCDS.IsEmpty(),"not ","") + "Empty");
       this.LogDataRange();
       if (pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false) > $impl.LastStartDate) {
@@ -41013,8 +41015,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         };
         this.WIDBCDS.Next();
       };
-      this.EpgDb.SetFilterText("");
-      this.EpgDb.SetFiltered(true);
       $impl.Log("SetupEpgDb: EpgDb post-filter record count: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.EpgDb.GetRecordCount(), get: function () {
           return this.p;
         }, set: function (v) {
@@ -41031,80 +41031,24 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       ResetComboBox(this.WebComboBox1);
       ResetComboBox(this.WebComboBox2);
       ResetComboBox(this.WebComboBox3);
-      this.SetupFilterList1();
+      this.SetupFilterLists();
       this.pnlWaitPls.Hide();
       await sleep(10);
       $impl.Log("====== SetupEpgDb finished");
     };
-    this.SetupFilterList = async function (cb, fn) {
-      var x = "";
-      var y = "";
-      var SavedFilterString = "";
-      var sl = null;
-      var SavedFilterState = false;
-      $impl.Log("====== SetupFilterList started");
-      x = pas.StrUtils.IfThen(fn === "genres","Genre",pas.StrUtils.IfThen(fn === "PSIP","Channel","Title"));
-      this.lblFilterSelect.SetCaption("Choose " + x);
-      if (cb !== this.WebComboBox1) this.WebComboBox1.Hide();
-      if (cb !== this.WebComboBox2) this.WebComboBox2.Hide();
-      if (cb !== this.WebComboBox3) this.WebComboBox3.Hide();
+    this.PopupFilterList = async function (cb, fn) {
+      $impl.Log("====== PopupFilterList started");
+      this.lblFilterSelect.SetCaption("Choose " + pas.StrUtils.IfThen(fn === "genres","Genre",pas.StrUtils.IfThen(fn === "PSIP","Channel","Title")));
+      this.WebComboBox1.Hide();
+      this.WebComboBox2.Hide();
+      this.WebComboBox3.Hide();
       this.EPG.ClearSelection();
-      this.ClearMenuChecks();
-      if (cb.FItems.GetCount() === 0) {
-        $impl.Log("====== Showing Pls Wait panel");
-        this.ShowPlsWait("Preparing " + x + " list.");
-        await sleep(100);
-        SavedFilterState = this.EpgDb.FFiltered;
-        SavedFilterString = this.EpgDb.FFilterText;
-        this.EpgDb.DisableControls();
-        this.EpgDb.SetFiltered(false);
-        sl = pas.Classes.TStringList.$create("Create$1");
-        sl.SetSorted(true);
-        sl.FDuplicates = 0;
-        sl.BeginUpdate();
-        this.EpgDb.First();
-        $impl.Log('Looping over EpgDb "' + fn + '" field');
-        while (!this.EpgDb.GetEOF()) {
-          x = this.EpgDb.FieldByName(fn).GetAsString();
-          if (fn === "genres") {
-            y = pas.StrUtils.ReplaceStr(x,"\\","");
-            for (var $in = pas.SysUtils.TStringHelper.Split$5.call({get: function () {
-                return y;
-              }, set: function (v) {
-                y = v;
-              }},[";","[","]",'"',","],1), $l = 0, $end = rtl.length($in) - 1; $l <= $end; $l++) {
-              x = $in[$l];
-              sl.Add(x);
-            };
-          } else sl.Add(x);
-          this.EpgDb.Next();
-        };
-        $impl.Log("====== Finished EpgDb scan");
-        this.EpgDb.SetFilterText(SavedFilterString);
-        this.EpgDb.SetFiltered(SavedFilterState);
-        sl.EndUpdate();
-        cb.BeginUpdate();
-        cb.Clear();
-        $impl.Log("Adding first " + cb.FName + ' Item: "All"');
-        cb.FItems.Add("All");
-        cb.FItems.AddStrings(sl);
-        cb.EndUpdate();
-        $impl.Log("Added " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: cb.FItems.GetCount(), get: function () {
-            return this.p;
-          }, set: function (v) {
-            this.p = v;
-          }}) + " to " + cb.FName);
-        sl = rtl.freeLoc(sl);
-        cb.SetItemIndex(-1);
-        this.EpgDb.EnableControls();
-      };
+      if (cb.FItems.GetCount() === 0) this.SetupFilterLists();
       $impl.Log("====== Showing ComboBox");
       this.pnlFilterComboBox.Show();
       cb.Show();
       await sleep(100);
-      await this.SetPage(0);
-      this.pnlWaitPls.Hide();
-      $impl.Log("====== Exiting SetupFilterList");
+      $impl.Log("====== Exiting PopupFilterList");
     };
     this.SetFilter = async function (fltr) {
       this.ShowPlsWait("Preparing " + pas.StrUtils.IfThen(fltr === "","Un","") + "Filtered List");
@@ -41132,14 +41076,14 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       } else $impl.Log("####### " + PlsWaitCap);
     };
     var FilterTypes = ["PSIP","Title","genres"];
-    this.SetupFilterList1 = function () {
+    this.SetupFilterLists = function () {
       var fn = "";
       var x = "";
       var y = "";
       var sl = null;
       var EpgDbTemp = null;
       var cb = null;
-      $impl.Log("====== SetupFilterList1 started");
+      $impl.Log("====== SetupFilterLists started");
       sl = pas.Classes.TStringList.$create("Create$1");
       EpgDbTemp = this.EpgDb.GetClonedDataSet(false);
       EpgDbTemp.DisableControls();
@@ -41190,7 +41134,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       };
       sl = rtl.freeLoc(sl);
       EpgDbTemp = rtl.freeLoc(EpgDbTemp);
-      $impl.Log("====== Exiting SetupFilterList1");
+      $impl.Log("====== Exiting SetupFilterLists");
     };
     this.LoadDFMValues = function () {
       pas["WEBLib.Forms"].TCustomForm.LoadDFMValues.call(this);
@@ -42387,7 +42331,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addMethod("WebComboBox1FocusOut",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("WebComboBox2FocusOut",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("WebComboBox3FocusOut",0,[["Sender",pas.System.$rtti["TObject"]]]);
-    $r.addMethod("btnOptOKClick",0,[["Sender",pas.System.$rtti["TObject"]]]);
+    $r.addMethod("btnOptOKClick",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
   });
   this.CWRmainFrm = null;
   $mod.$implcode = function () {

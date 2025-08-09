@@ -107,7 +107,7 @@ type
     procedure WebComboBox1FocusOut(Sender: TObject);
     procedure WebComboBox2FocusOut(Sender: TObject);
     procedure WebComboBox3FocusOut(Sender: TObject);
-    procedure btnOptOKClick(Sender: TObject);
+  [async] procedure btnOptOKClick(Sender: TObject);
 private
   { Private declarations }
   [async] procedure LogDataRange;
@@ -139,10 +139,10 @@ private
   [async] procedure SetupWIDBCDS;
 //  [async] procedure SetupCurrEpgDb;
   [async] procedure SetupEpgDb;
-  [async] procedure SetupFilterList(cb: TWebComboBox; fn: string);
+  [async] procedure PopupFilterList(cb: TWebComboBox; fn: string);
   [async] procedure SetFilter(fltr: string);
   [async] procedure ShowPlsWait(PlsWaitCap: string);
-  procedure SetupFilterList1;
+  {[async]} procedure SetupFilterLists;
 public
   { Public declarations }
 end;
@@ -310,8 +310,8 @@ begin
     TAwait.ExecP<TModalResult> (MessageDlgAsync('The data update failed!'#13'Please make sure that the HTPC'
       + #13' is connected to Google Drive',mtInformation, [mbOK]))
   end;
-  if VisiblePanelNum <> 3 then ReFreshListings
-  else SetupEpgDb;
+  if VisiblePanelNum <> 3 then await(ReFreshListings)
+  else await(SetupEpgDb);
   Log('*********** Delta t (sec): ' + SecondsBetween(Now, StartT).ToString);
   Log('*********** Rate (ms/rec): ' + (MilliSecondsBetween(Now, StartT)/WIDBCDS.RecordCount).ToString);
 end;
@@ -341,6 +341,8 @@ begin
   Log('New number EPG Display Days: ' + cbNumDisplayDays.Text);
   TWebLocalStorage.SetValue(NUMHIST, cbNumHistList.Text);
   Log('New number History Display Days: ' + cbNumHistList.Text);
+  EpgDb.Close;
+  await(SetupWIDBCDS);
   ReFreshListings;
 end;
 
@@ -350,6 +352,7 @@ begin
   ByAll.OnClick := nil;
   EPG.Columns[2].Title := 'Title';
   ClearMenuChecks;
+  pnlFilterComboBox.Hide;
   ByAll.Checked := True;
   VisiblePanelNum := 0;
   if EpgDb.Filter > '' then
@@ -362,8 +365,8 @@ procedure TCWRmainFrm.ByChannelClick(Sender: TObject);
 begin
   Log('ByChannelClick called');
   ByChannel.OnClick := nil;
-  await(SetupFilterList(WebComboBox3, 'PSIP'));
-  ByChannel.Checked := True;
+  await(PopupFilterList(WebComboBox3, 'PSIP'));
+//  ByChannel.Checked := True;
   ByChannel.OnClick := ByChannelClick;
 end;
 
@@ -371,8 +374,8 @@ procedure TCWRmainFrm.ByGenreClick(Sender: TObject);
 begin
   Log('ByGenreClick called');
   ByGenre.OnClick := nil;
-  await(SetupFilterList(WebComboBox1, 'genres'));
-  ByGenre.Checked := True;
+  await(PopupFilterList(WebComboBox1, 'genres'));
+//  ByGenre.Checked := True;
   ByGenre.OnClick := ByGenreClick;
 end;
 
@@ -380,9 +383,9 @@ procedure TCWRmainFrm.ByTitleClick(Sender: TObject);
 begin
   Log('byTitleClick called');
   ByTitle.OnClick := nil;
-  await(SetupFilterList(WebComboBox2, 'Title'));
+  await(PopupFilterList(WebComboBox2, 'Title'));
   WebComboBox2.ItemIndex := WebComboBox2.Items.IndexOf(EpgDb.FieldByName('Title').AsString);
-  ByTitle.Checked := True;
+//  ByTitle.Checked := True;
   ByTitle.OnClick := ByTitleClick;
 end;
 
@@ -703,16 +706,20 @@ const
   'audioProperties', 'videoProperties', 'movieYear', 'genres', 'Class');
 begin
   Log('Setting up to (re)open WIDBCDS');
-  WIDBCDS.FieldDefs.Clear;
-  // add key field
-  WIDBCDS.FieldDefs.Add('id', ftInteger, 0, True);
-  // add normal fields
-  for i := 0 to Length(DBFIELDS) - 1 do
+  if WIDBCDS.FieldCount = 0 then
   begin
-    if (DBFIELDS[i] = 'StartTime') or (DBFIELDS[i] = 'EndTime') then
-      WIDBCDS.FieldDefs.Add(DBFIELDS[i], ftDateTime)
-    else
-      WIDBCDS.FieldDefs.Add(DBFIELDS[i], ftString);
+    WIDBCDS.FieldDefs.Clear;
+    // add key field
+    WIDBCDS.FieldDefs.Add('id', ftInteger, 0, True);
+    // add normal fields
+    for i := 0 to Length(DBFIELDS) - 1 do
+    begin
+      if (DBFIELDS[i] = 'StartTime') or (DBFIELDS[i] = 'EndTime') then
+        WIDBCDS.FieldDefs.Add(DBFIELDS[i], ftDateTime)
+      else
+        WIDBCDS.FieldDefs.Add(DBFIELDS[i], ftString);
+    end;
+    TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   end;
   EpgDb.FieldDefs.Clear;
   EpgDb.FieldDefs.Add('id', ftInteger); //, 0, True);
@@ -720,7 +727,6 @@ begin
     EpgDb.FieldDefs.Add(DBFIELDS[i], ftString);
   EpgDb.FieldDefs.Add(DBFIELDS[13], ftString);
   EpgDb.FieldDefs.Add(DBFIELDS[14], ftString);
-  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active, 'not ')
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   LogDataRange;
@@ -815,8 +821,8 @@ begin
     end;
     WIDBCDS.Next;
   end;
-  EpgDb.Filter := '';
-  EpgDb.Filtered := True;
+//  EpgDb.Filter := '';
+//  EpgDb.Filtered := True;
   Log('SetupEpgDb: EpgDb post-filter record count: ' + EpgDb.RecordCount.ToString);
   if EpgDb.RecordCount > 0 then
   begin
@@ -830,13 +836,13 @@ begin
   ResetComboBox(WebComboBox1);
   ResetComboBox(WebComboBox2);
   ResetComboBox(WebComboBox3);
-  SetupFilterList1;
+  SetupFilterLists;
   pnlWaitPls.Hide;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   Log('====== SetupEpgDb finished');
 end;
 
-procedure TCWRmainFrm.SetupFilterList1;
+procedure TCWRmainFrm.SetupFilterLists;
 const
   FilterTypes: array of string = ['PSIP', 'Title', 'genres'];
 var
@@ -845,7 +851,7 @@ var
   EpgDbTemp: TWebClientDataSet;
   cb: TWebComboBox;
 begin
-  Log('====== SetupFilterList1 started');
+  Log('====== SetupFilterLists started');
   sl := TStringList.Create;
   EpgDbTemp := TWebClientDataSet(EpgDb.GetClonedDataSet(False));
   EpgDbTemp.DisableControls;
@@ -891,74 +897,26 @@ begin
   end;
   sl.Free;
   EpgDbTemp.Free;
-  Log('====== Exiting SetupFilterList1');
+  Log('====== Exiting SetupFilterLists');
 end;
 
-procedure TCWRmainFrm.SetupFilterList(cb: TWebComboBox; fn: string);
-var
-  x, y, SavedFilterString: string;
-  sl: TStringList;
-  SavedFilterState: Boolean;
+procedure TCWRmainFrm.PopupFilterList(cb: TWebComboBox; fn: string);
 begin
-  Log('====== SetupFilterList started');
-  x := IfThen(fn='genres', 'Genre', IfThen(fn='PSIP', 'Channel', 'Title'));
-  lblFilterSelect.Caption := 'Choose ' + x;
-  if cb <> WebComboBox1 then WebComboBox1.Hide;
-  if cb <> WebComboBox2 then WebComboBox2.Hide;
-  if cb <> WebComboBox3 then WebComboBox3.Hide;
+  Log('====== PopupFilterList started');
+  lblFilterSelect.Caption := 'Choose '
+    + IfThen(fn='genres', 'Genre', IfThen(fn='PSIP', 'Channel', 'Title'));
+  WebComboBox1.Hide;
+  WebComboBox2.Hide;
+  WebComboBox3.Hide;
   EPG.ClearSelection;
-  ClearMenuChecks;
   if cb.Items.Count = 0 then
-  begin
-    Log('====== Showing Pls Wait panel');
-    ShowPlsWait('Preparing ' + x + ' list.');
-    {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
-    SavedFilterState := EpgDb.Filtered;
-    SavedFilterString := EpgDb.Filter;
-    EpgDb.DisableControls;
-    EpgDb.Filtered := False;
-    sl := TStringList.Create;
-    sl.Sorted := True;
-    sl.Duplicates := dupIgnore;
-    sl.BeginUpdate;
-    EpgDb.First;
-    Log('Looping over EpgDb "' + fn + '" field');
-    while not EpgDb.Eof do
-    begin
-      x := EpgDb.FieldByName(fn).AsString;
-      if fn='genres' then
-      begin
-        y := ReplaceStr(x, '\', ''); // Remove escape "\" char
-        // Split the genres string 'xxx;yyy;zzz' into array xxx, yyy, zzz
-        // ignoring JSON "punctuation" around items
-        for x in y.Split([';','[',']','"',','], TStringSplitOptions.ExcludeEmpty) do
-          {if cb.Items.IndexOf(x) < 0 then cb.Items.Add(x); //} sl.Add(x);
-      end
-      else {if cb.Items.IndexOf(x) < 0 then cb.Items.Add(x); //} sl.Add(x);
-      EpgDb.Next;
-    end;
-    Log('====== Finished EpgDb scan');
-    EpgDb.Filter := SavedFilterString;
-    EpgDb.Filtered := SavedFilterState;
-    sl.EndUpdate;
-    cb.BeginUpdate;
-    cb.Clear;
-    Log('Adding first '+cb.Name+' Item: "All"');
-    cb.Items.Add('All');
-    cb.Items.AddStrings(sl);
-    cb.EndUpdate;
-    Log('Added ' + cb.Items.Count.ToString + ' to ' + cb.Name);
-    sl.Free;
-    cb.ItemIndex := -1;
-    EpgDb.EnableControls;
-  end;
+    SetupFilterLists;
   Log('====== Showing ComboBox');
   pnlFilterComboBox.Show;
   cb.Show;
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
-  await(SetPage(0));
-  pnlWaitPls.Hide;
-  Log('====== Exiting SetupFilterList');
+//  await(SetPage(0));
+  Log('====== Exiting PopupFilterList');
 end;
 
 procedure TCWRmainFrm.SetFilter(fltr: string);
