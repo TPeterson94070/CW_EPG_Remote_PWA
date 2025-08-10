@@ -139,12 +139,11 @@ private
   [async]
   procedure CreateGoogleFile(FName: string; var id: string);
   [async] procedure SetupWIDBCDS;
-//  [async] procedure SetupCurrEpgDb;
   [async] procedure SetupEpgDb;
   [async] procedure PopupFilterList(cb: TWebComboBox; fn: string);
   [async] procedure SetFilter(fltr: string);
   [async] procedure ShowPlsWait(PlsWaitCap: string);
-  {[async]} procedure SetupFilterLists;
+  [async] procedure SetupFilterLists;
 public
   { Public declarations }
 end;
@@ -280,7 +279,7 @@ begin
     cbNumHistList.ItemIndex := cbNumHistList.Items.IndexOf(TWebLocalStorage.GetValue(NUMHIST));
     WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
   await(SetupWIDBCDS);
-  {await}(RefreshListings);
+  await(RefreshListings);
   Log('========== FormCreate is finished');
 end;
 
@@ -313,8 +312,8 @@ begin
     TAwait.ExecP<TModalResult> (MessageDlgAsync('The data update failed!'#13'Please make sure that the HTPC'
       + #13' is connected to Google Drive',mtInformation, [mbOK]))
   end;
-  if VisiblePanelNum <> 3 then {await}(ReFreshListings)
-  else {await}(SetupEpgDb);
+  if VisiblePanelNum <> 3 then await(ReFreshListings)
+  else await(SetupEpgDb);
   Log('*********** Delta t (sec): ' + SecondsBetween(Now, StartT).ToString);
   Log('*********** Rate (ms/rec): ' + (MilliSecondsBetween(Now, StartT)/WIDBCDS.RecordCount).ToString);
 end;
@@ -347,7 +346,7 @@ begin
   Log('New number History Display Days: ' + cbNumHistList.Text);
   EpgDb.Close;
   await(SetupWIDBCDS);
-  ReFreshListings;
+  await(ReFreshListings);
 end;
 
 procedure TCWRmainFrm.btnSchdRefrshClick(Sender: TObject);
@@ -845,7 +844,7 @@ begin
   ResetComboBox(WebComboBox1);
   ResetComboBox(WebComboBox2);
   ResetComboBox(WebComboBox3);
-  SetupFilterLists;
+  await(SetupFilterLists);
   pnlWaitPls.Hide;
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   Log('====== SetupEpgDb finished');

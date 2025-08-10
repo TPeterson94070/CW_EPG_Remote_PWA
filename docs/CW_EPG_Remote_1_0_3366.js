@@ -40070,8 +40070,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         await pas["WEBLib.Dialogs"].MessageDlgAsync("The data update failed!\rPlease make sure that the HTPC" + "\r is connected to Google Drive",2,rtl.createSet(2));
       };
       if ($impl.VisiblePanelNum !== 3) {
-        this.ReFreshListings()}
-       else this.SetupEpgDb();
+        await this.ReFreshListings()}
+       else await this.SetupEpgDb();
       $impl.Log("*********** Delta t (sec): " + pas.SysUtils.TNativeIntHelper.ToString$1.call({a: pas.DateUtils.SecondsBetween(pas.SysUtils.Now(),StartT), get: function () {
           return this.a;
         }, set: function (v) {
@@ -40101,7 +40101,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       if (pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMHIST) !== "") this.cbNumHistList.SetItemIndex(this.cbNumHistList.FItems.IndexOf(pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMHIST)));
       this.WebMainMenu1.FAppearance.FHamburgerMenu.SetCaption("[" + pas["WEBLib.Storage"].TWebLocalStorage.GetValue($impl.EMAILADDR) + "]");
       await this.SetupWIDBCDS();
-      this.ReFreshListings();
+      await this.ReFreshListings();
       $impl.Log("========== FormCreate is finished");
     };
     this.tbCapturesShow = async function () {
@@ -40503,7 +40503,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log("New number History Display Days: " + this.cbNumHistList.GetText());
       this.EpgDb.Close();
       await this.SetupWIDBCDS();
-      this.ReFreshListings();
+      await this.ReFreshListings();
     };
     this.btnSchdRefrshClick = async function (Sender) {
       await this.FetchCapReservations();
@@ -41040,7 +41040,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       ResetComboBox(this.WebComboBox1);
       ResetComboBox(this.WebComboBox2);
       ResetComboBox(this.WebComboBox3);
-      this.SetupFilterLists();
+      await this.SetupFilterLists();
       this.pnlWaitPls.Hide();
       await sleep(100);
       $impl.Log("====== SetupEpgDb finished");
@@ -41086,7 +41086,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       } else $impl.Log("####### " + PlsWaitCap);
     };
     var FilterTypes = ["PSIP","Title","genres"];
-    this.SetupFilterLists = function () {
+    this.SetupFilterLists = async function () {
       var fn = "";
       var x = "";
       var y = "";
@@ -41321,7 +41321,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlLog.SetLeft(0);
         this.pnlLog.SetTop(50);
         this.pnlLog.SetWidth(428);
-        this.pnlLog.SetHeight(699);
+        this.pnlLog.SetHeight(733);
         this.pnlLog.SetElementClassName("card");
         this.pnlLog.SetHeightStyle(0);
         this.pnlLog.SetWidthStyle(0);
@@ -41344,7 +41344,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebMemo2.SetLeft(3);
         this.WebMemo2.SetTop(3);
         this.WebMemo2.SetWidth(422);
-        this.WebMemo2.SetHeight(693);
+        this.WebMemo2.SetHeight(727);
         this.WebMemo2.SetAlign(5);
         this.WebMemo2.SetColor(0);
         this.WebMemo2.SetElementClassName("white");
@@ -41367,7 +41367,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlWaitPls.SetLeft(0);
         this.pnlWaitPls.SetTop(50);
         this.pnlWaitPls.SetWidth(428);
-        this.pnlWaitPls.SetHeight(699);
+        this.pnlWaitPls.SetHeight(733);
         this.pnlWaitPls.SetElementClassName("container-fluid");
         this.pnlWaitPls.SetHeightStyle(0);
         this.pnlWaitPls.SetWidthStyle(0);
@@ -41389,7 +41389,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebGridPanel1.SetLeft(0);
         this.WebGridPanel1.SetTop(0);
         this.WebGridPanel1.SetWidth(428);
-        this.WebGridPanel1.SetHeight(699);
+        this.WebGridPanel1.SetHeight(733);
         this.WebGridPanel1.SetWidthStyle(0);
         this.WebGridPanel1.SetAlign(5);
         this.WebGridPanel1.FColumnCollection.Clear();
@@ -41422,9 +41422,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebLabel2.SetParentComponent(this.WebGridPanel1);
         this.WebLabel2.SetName("WebLabel2");
         this.WebLabel2.SetLeft(2);
-        this.WebLabel2.SetTop(352);
+        this.WebLabel2.SetTop(368);
         this.WebLabel2.SetWidth(424);
-        this.WebLabel2.SetHeight(171);
+        this.WebLabel2.SetHeight(179);
         this.WebLabel2.SetAlign(5);
         this.WebLabel2.SetAlignment(2);
         this.WebLabel2.SetCaption("Please Wait...");
@@ -41447,9 +41447,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebLabel1.SetParentComponent(this.WebGridPanel1);
         this.WebLabel1.SetName("WebLabel1");
         this.WebLabel1.SetLeft(2);
-        this.WebLabel1.SetTop(177);
+        this.WebLabel1.SetTop(185);
         this.WebLabel1.SetWidth(424);
-        this.WebLabel1.SetHeight(171);
+        this.WebLabel1.SetHeight(179);
         this.WebLabel1.SetAlign(5);
         this.WebLabel1.SetAlignment(2);
         this.WebLabel1.SetCaption("Preparing EPG Listings.");
@@ -41475,7 +41475,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebButton1.SetLeft(2);
         this.WebButton1.SetTop(2);
         this.WebButton1.SetWidth(424);
-        this.WebButton1.SetHeight(171);
+        this.WebButton1.SetHeight(179);
         this.WebButton1.SetAlign(5);
         this.WebButton1.SetCaption('<i class="fa-solid fa-spinner fa-spin"></>');
         this.WebButton1.SetColor(65535);
@@ -41499,7 +41499,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlHistory.SetLeft(0);
         this.pnlHistory.SetTop(50);
         this.pnlHistory.SetWidth(428);
-        this.pnlHistory.SetHeight(699);
+        this.pnlHistory.SetHeight(733);
         this.pnlHistory.SetElementClassName("card");
         this.pnlHistory.SetHeightStyle(0);
         this.pnlHistory.SetWidthStyle(0);
@@ -41521,7 +41521,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.HistoryTable.SetLeft(0);
         this.HistoryTable.SetTop(0);
         this.HistoryTable.SetWidth(428);
-        this.HistoryTable.SetHeight(699);
+        this.HistoryTable.SetHeight(733);
         this.HistoryTable.SetAlign(5);
         this.HistoryTable.SetColor(5197615);
         this.HistoryTable.SetColCount(32);
@@ -41584,7 +41584,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlOptions.SetLeft(0);
         this.pnlOptions.SetTop(50);
         this.pnlOptions.SetWidth(428);
-        this.pnlOptions.SetHeight(699);
+        this.pnlOptions.SetHeight(733);
         this.pnlOptions.SetElementClassName("card");
         this.pnlOptions.SetHeightStyle(0);
         this.pnlOptions.SetWidthStyle(0);
@@ -41742,7 +41742,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlCaptures.SetLeft(0);
         this.pnlCaptures.SetTop(50);
         this.pnlCaptures.SetWidth(428);
-        this.pnlCaptures.SetHeight(699);
+        this.pnlCaptures.SetHeight(733);
         this.pnlCaptures.SetElementClassName("greenBG");
         this.pnlCaptures.SetHeightStyle(0);
         this.pnlCaptures.SetWidthStyle(0);
@@ -41889,12 +41889,12 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.btnSchdRefrsh.SetParentComponent(this.pnlCaptures);
         this.btnSchdRefrsh.SetName("btnSchdRefrsh");
         this.btnSchdRefrsh.SetAlignWithMargins(true);
-        this.btnSchdRefrsh.SetLeft(150);
+        this.btnSchdRefrsh.SetLeft(125);
         this.btnSchdRefrsh.SetTop(535);
-        this.btnSchdRefrsh.SetWidth(128);
+        this.btnSchdRefrsh.SetWidth(178);
         this.btnSchdRefrsh.SetHeight(33);
-        this.btnSchdRefrsh.FMargins.SetLeft(150);
-        this.btnSchdRefrsh.FMargins.SetRight(150);
+        this.btnSchdRefrsh.FMargins.SetLeft(125);
+        this.btnSchdRefrsh.FMargins.SetRight(125);
         this.btnSchdRefrsh.FMargins.SetBottom(50);
         this.btnSchdRefrsh.SetAlign(1);
         this.btnSchdRefrsh.SetCaption("Refresh");
@@ -41914,7 +41914,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlListings.SetLeft(0);
         this.pnlListings.SetTop(50);
         this.pnlListings.SetWidth(428);
-        this.pnlListings.SetHeight(699);
+        this.pnlListings.SetHeight(733);
         this.pnlListings.SetElementClassName("card");
         this.pnlListings.SetHeightStyle(0);
         this.pnlListings.SetWidthStyle(0);
@@ -41960,7 +41960,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.EPG.SetLeft(0);
         this.EPG.SetTop(0);
         this.EPG.SetWidth(428);
-        this.EPG.SetHeight(699);
+        this.EPG.SetHeight(733);
         this.EPG.SetAlign(5);
         this.EPG.SetBorderStyle(0);
         this.EPG.SetColor(8388608);
