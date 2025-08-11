@@ -41497,6 +41497,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.EPG.ClearSelection();
       if (cb.FItems.GetCount() === 0) return;
       $impl.Log("====== Showing ComboBox");
+      this.pnlFilterComboBox.BringToFront();
       this.pnlFilterComboBox.Show();
       cb.Show();
       await sleep(100);
@@ -42599,9 +42600,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebComboBox3.SetItemIndex(-1);
         this.btnRefreshData.SetParentComponent(this.pnlListings);
         this.btnRefreshData.SetName("btnRefreshData");
-        this.btnRefreshData.SetLeft(272);
-        this.btnRefreshData.SetTop(408);
-        this.btnRefreshData.SetWidth(135);
+        this.btnRefreshData.SetLeft(120);
+        this.btnRefreshData.SetTop(150);
+        this.btnRefreshData.SetWidth(144);
         this.btnRefreshData.SetHeight(52);
         this.btnRefreshData.SetCaption("Refresh Data");
         this.btnRefreshData.SetColorEx(-1);
