@@ -67,7 +67,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 699
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -89,7 +89,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 3
       Top = 3
       Width = 422
-      Height = 727
+      Height = 693
       Align = alClient
       Color = clBlack
       ElementClassName = 'white'
@@ -114,7 +114,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 699
     ElementClassName = 'container-fluid'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -135,7 +135,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 733
+      Height = 699
       WidthStyle = ssPercent
       Align = alClient
       ColumnCollection = <
@@ -175,9 +175,9 @@ object CWRmainFrm: TCWRmainFrm
         end>
       object WebLabel2: TWebLabel
         Left = 2
-        Top = 368
+        Top = 352
         Width = 424
-        Height = 179
+        Height = 171
         Align = alClient
         Alignment = taCenter
         Caption = 'Please Wait...'
@@ -200,9 +200,9 @@ object CWRmainFrm: TCWRmainFrm
       end
       object WebLabel1: TWebLabel
         Left = 2
-        Top = 185
+        Top = 177
         Width = 424
-        Height = 179
+        Height = 171
         Align = alClient
         Alignment = taCenter
         Caption = 'Preparing EPG Listings.'
@@ -228,7 +228,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 2
         Top = 2
         Width = 424
-        Height = 179
+        Height = 171
         Align = alClient
         Caption = '<i class="fa-solid fa-spinner fa-spin"></>'
         Color = clYellow
@@ -254,7 +254,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 699
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -275,7 +275,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 733
+      Height = 699
       Align = alClient
       Color = clDarkslategray
       ColCount = 32
@@ -339,7 +339,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 699
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -487,7 +487,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 699
     ElementClassName = 'greenBG'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -653,7 +653,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 699
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -672,7 +672,7 @@ object CWRmainFrm: TCWRmainFrm
     TabOrder = 5
     DesignSize = (
       428
-      733)
+      699)
     object lblEmptyEPG: TWebLabel
       Left = 96
       Top = 58
@@ -703,7 +703,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 733
+      Height = 699
       Align = alClient
       BorderStyle = bsNone
       Color = clNavy
@@ -893,6 +893,31 @@ object CWRmainFrm: TCWRmainFrm
         OnFocusOut = WebComboBox3FocusOut
         ItemIndex = -1
       end
+    end
+    object btnRefreshData: TWebSpeedButton
+      Left = 272
+      Top = 408
+      Width = 135
+      Height = 52
+      Caption = 'Refresh Data'
+      Color = clNone
+      ElementClassName = 'btn btn-warning'
+      ElementFont = efCSS
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clDarkorange
+      Font.Height = -19
+      Font.Name = 'Arial'
+      Font.Style = []
+      HeightStyle = ssAuto
+      HeightPercent = 100.000000000000000000
+      MaterialGlyph = 'update'
+      MaterialGlyphColor = clDarkorange
+      MaterialGlyphSize = 25
+      ParentFont = False
+      TabOrder = 2
+      Visible = False
+      WidthPercent = 100.000000000000000000
+      OnClick = btnRefreshDataClick
     end
   end
   object WebMainMenu1: TWebMainMenu

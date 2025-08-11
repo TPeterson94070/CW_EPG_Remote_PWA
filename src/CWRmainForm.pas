@@ -12,7 +12,8 @@ uses
   Vcl.Menus, WEBLib.Menus, WEBLib.ComCtrls, WEBLib.Grids, DB, Vcl.Grids,
   System.StrUtils, WEBLib.DBCtrls, WEBLib.FlexControls, WEBLib.WebCtrls,
   WEBLib.REST, Types, WEBLib.Storage, WEBLib.CDS, WEBLib.Auth, WEBLib.JSON,
-  WEBLib.WebTools, WEBLib.Google, WEBLib.DataGrid.Common, WEBLib.DataGrid;
+  WEBLib.WebTools, WEBLib.Google, WEBLib.DataGrid.Common, WEBLib.DataGrid,
+  WEBLib.Buttons;
 
 type
   TGridDrawState = set of (gdSelected, gdFocused, gdFixed, gdRowSelected, gdHotTrack, gdPressed);
@@ -68,6 +69,7 @@ type
     btnOptOK: TWebButton;
     WIDBCDS: TWebIndexedDbClientDataset;
     btnSchdRefrsh: TWebButton;
+    btnRefreshData: TWebSpeedButton;
   procedure SetNewCapturesFixedRow;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
@@ -110,6 +112,7 @@ type
     procedure WebComboBox3FocusOut(Sender: TObject);
   [async] procedure btnOptOKClick(Sender: TObject);
   [async] procedure btnSchdRefrshClick(Sender: TObject);
+    procedure btnRefreshDataClick(Sender: TObject);
 private
   { Private declarations }
   [async] procedure LogDataRange;
@@ -347,6 +350,12 @@ begin
   EpgDb.Close;
   await(SetupWIDBCDS);
   await(ReFreshListings);
+end;
+
+procedure TCWRmainFrm.btnRefreshDataClick(Sender: TObject);
+begin
+  btnRefreshData.Hide;
+  RefreshData(Self);
 end;
 
 procedure TCWRmainFrm.btnSchdRefrshClick(Sender: TObject);
@@ -740,74 +749,25 @@ begin
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active, 'not ')
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   LogDataRange;
+  btnRefreshData.Show;
   if TTimeZone.Local.ToUniversalTime(Now) > LastStartDate then
     TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'#13'Please make sure that the HTPC'
       + #13' is connected to Google Drive',mtInformation, [mbOK]))
   else if TTimeZone.Local.ToUniversalTime(Now) - FirstEndDate > 3 then
     TAwait.ExecP<TModalResult> (MessageDlgAsync('The current dataset was fetched over 3 days ago'
       + #13'and there are only about ' + Round(LastStartDate - TTimeZone.Local.ToUniversalTime(Now)).ToString + ' days now available.'
-      + #13#13'To update, please use Options | Refresh Data',mtInformation, [mbOK]));
+      + #13#13'To update, please use the Refresh Data button.',mtInformation, [mbOK]))
+  else btnRefreshData.Hide;
 end;
 
-//procedure TCWRmainFrm.SetupCurrEpgDb;
-//var
-//  i: Integer;
-//const
-//  DBFIELDS: array[0..14] of string = ('PSIP', 'Time', 'Title', 'SubTitle',
-//  'Description', 'StartTime', 'EndTime', 'programID', 'originalAirDate', 'new',
-//  'audioProperties', 'videoProperties', 'movieYear', 'genres', 'Class');
-//begin
-//  Log('========== SetupCurrEpgDb called');
-//  CurrEpgDb.FieldDefs.IndexOf('id') = -1 then
-//  begin
-//    CurrEpgDb.FieldDefs.Clear;
-//    CurrEpgDb.FieldDefs.Add('id', ftInteger, 0, False);
-//    EpgDb.FieldDefs.Clear;
-//    EpgDb.FieldDefs.Add('id', ftInteger, 0, False);
-//    // add normal fields
-//    for i := 0 to Length(DBFIELDS) - 1 do
-//    begin
-//      if (DBFIELDS[i] = 'StartTime') or (DBFIELDS[i] = 'EndTime') then begin
-//        CurrEpgDb.FieldDefs.Add(DBFIELDS[i], ftDateTime);
-//      end else begin
-//        CurrEpgDb.FieldDefs.Add(DBFIELDS[i], ftString);
-//      end;
-//    end;
-//    for i := 0 to 2 do
-//      EpgDb.FieldDefs.Add(DBFIELDS[i], ftString);
-//      EpgDb.FieldDefs.Add(DBFIELDS[13], ftString);
-//      EpgDb.FieldDefs.Add(DBFIELDS[14], ftString);
-//
-//  end;
-//  TAwait.ExecP<Boolean>(CurrEpgDb.OpenAsync);
-//  Log('CurrEpgDb is ' + IfThen(not CurrEpgDb.Active, 'not ')
-//    + 'Active and ' + IfThen(not CurrEpgDb.IsEmpty, 'not ') + 'Empty');
-//  Log('SetupCurrEpgDb: CurrEpgDb.RecordCount: ' + CurrEpgDb.RecordCount.ToString);
-//  await(LoadWIDBCDS);
-//  if TTimeZone.Local.ToUniversalTime(Now) > LastStartDate then
-//    TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'#13'Please make sure that the HTPC'
-//      + #13' is connected to Google Drive',mtInformation, [mbOK]))
-//  else if Now - FirstEndDate > 3 then
-//    TAwait.ExecP<TModalResult> (MessageDlgAsync('The current dataset was fetched over 3 days ago'
-//      + #13'and there are only about ' + Round(LastStartDate - Now).ToString + ' days now available.'
-//      + #13#13'To update, please use Options | Refresh Data',mtInformation, [mbOK]));
-//
-//  Log('========== SetupCurrEpgDb finished');
-//end;
-
 procedure TCWRmainFrm.SetupEpgDb;
-  procedure ResetComboBox(cb: TWebComboBox);
-  begin
-    cb.ItemIndex := -1;
-    cb.Items.Clear;
-  end;
 var
   FirstEndTime, LastStartTime:  TDateTime;
   i: Integer;
 
 begin
   Log('====== SetupEpgDb called');
-  ShowPlsWait('Resetting EPG');
+  ShowPlsWait('Preparing Stored Data');
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
   LastStartTime := FirstEndTime + StrToIntDef(cbNumDisplayDays.Text,1);
@@ -841,9 +801,6 @@ begin
     EpgDb.EnableControls;
   end;
   WIDBCDS.EnableControls;
-  ResetComboBox(WebComboBox1);
-  ResetComboBox(WebComboBox2);
-  ResetComboBox(WebComboBox3);
   await(SetupFilterLists);
   pnlWaitPls.Hide;
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
@@ -851,6 +808,13 @@ begin
 end;
 
 procedure TCWRmainFrm.SetupFilterLists;
+
+  procedure ResetComboBox(cb: TWebComboBox);
+  begin
+    cb.ItemIndex := -1;
+    cb.Items.Clear;
+  end;
+
 const
   FilterTypes: array of string = ['PSIP', 'Title', 'genres'];
 var
@@ -860,6 +824,9 @@ var
   cb: TWebComboBox;
 begin
   Log('====== SetupFilterLists started');
+  ResetComboBox(WebComboBox1);
+  ResetComboBox(WebComboBox2);
+  ResetComboBox(WebComboBox3);
   sl := TStringList.Create;
   EpgDbTemp := TWebClientDataSet(EpgDb.GetClonedDataSet(False));
   EpgDbTemp.DisableControls;
@@ -917,8 +884,8 @@ begin
   WebComboBox2.Hide;
   WebComboBox3.Hide;
   EPG.ClearSelection;
-  if cb.Items.Count = 0 then
-    SetupFilterLists;
+  if cb.Items.Count = 0 then Exit;  // Can happen??
+//    SetupFilterLists;
   Log('====== Showing ComboBox');
   pnlFilterComboBox.Show;
   cb.Show;
@@ -973,7 +940,7 @@ begin
     ByAllClick(Self)
   end
   else TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'
-      + #13#13'To update, please use Options | Refresh Data',mtInformation, [mbOK]));
+      + #13#13'To update, please use the Refresh Data button.',mtInformation, [mbOK]));
   EPG.Visible := True;
   pnlListings.BringToFront;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
