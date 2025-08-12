@@ -29782,9 +29782,6 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
       rtl.free(this,"FItems");
       pas["WEBLib.Controls"].TCustomControl.Destroy.call(this);
     };
-    this.Clear = function () {
-      this.FItems.Clear();
-    };
     rtl.addIntf(this,pas["WEBLib.Controls"].IControl);
     rtl.addIntf(this,pas.System.IUnknown);
   });
@@ -41529,51 +41526,46 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         await sleep(10);
       } else $impl.Log("####### " + PlsWaitCap);
     };
-    var FilterTypes = ["PSIP","Title","genres"];
+    var FilterTypes = ["genres","Title","PSIP"];
     this.SetupFilterLists = async function () {
-      var $Self = this;
-      function ResetComboBox(cb) {
-        cb.SetItemIndex(-1);
-        cb.FItems.Clear();
-      };
-      var fn = "";
+      var i = 0;
       var x = "";
       var y = "";
       var sl = null;
       var EpgDbTemp = null;
       var cb = null;
       $impl.Log("====== SetupFilterLists started");
-      ResetComboBox(this.WebComboBox1);
-      ResetComboBox(this.WebComboBox2);
-      ResetComboBox(this.WebComboBox3);
       sl = pas.Classes.TStringList.$create("Create$1");
       EpgDbTemp = this.EpgDb.GetClonedDataSet(false);
       EpgDbTemp.DisableControls();
       EpgDbTemp.SetFiltered(false);
-      for (var $in = FilterTypes, $l = 0, $end = rtl.length($in) - 1; $l <= $end; $l++) {
-        fn = $in[$l];
-        x = pas.StrUtils.IfThen(fn === "genres","Genre",pas.StrUtils.IfThen(fn === "PSIP","Channel","Title"));
-        if (fn === "genres") {
+      for (i = 0; i <= 2; i++) {
+        var $tmp = i;
+        if ($tmp === 0) {
           cb = this.WebComboBox1}
-         else if (fn === "Title") {
+         else if ($tmp === 1) {
           cb = this.WebComboBox2}
-         else cb = this.WebComboBox3;
+         else if ($tmp === 2) cb = this.WebComboBox3;
+        cb.SetItemIndex(-1);
+        cb.FItems.Clear();
+        $impl.Log("Adding first " + cb.FName + ' Item: "All"');
+        cb.FItems.Add("All");
         sl.Clear();
         sl.SetSorted(true);
         sl.FDuplicates = 0;
         sl.BeginUpdate();
         EpgDbTemp.First();
-        $impl.Log('Looping over EpgDbTemp "' + fn + '" field');
+        $impl.Log('Looping over EpgDbTemp "' + FilterTypes[i] + '" field');
         while (!EpgDbTemp.GetEOF()) {
-          x = EpgDbTemp.FieldByName(fn).GetAsString();
-          if (fn === "genres") {
+          x = EpgDbTemp.FieldByName(FilterTypes[i]).GetAsString();
+          if (i === 0) {
             y = pas.StrUtils.ReplaceStr(x,"\\","");
-            for (var $in1 = pas.SysUtils.TStringHelper.Split$5.call({get: function () {
+            for (var $in = pas.SysUtils.TStringHelper.Split$5.call({get: function () {
                 return y;
               }, set: function (v) {
                 y = v;
-              }},[";","[","]",'"',","],1), $l1 = 0, $end1 = rtl.length($in1) - 1; $l1 <= $end1; $l1++) {
-              x = $in1[$l1];
+              }},[";","[","]",'"',","],1), $l = 0, $end = rtl.length($in) - 1; $l <= $end; $l++) {
+              x = $in[$l];
               sl.Add(x);
             };
           } else sl.Add(x);
@@ -41582,9 +41574,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $impl.Log("====== Finished EpgDb scan");
         sl.EndUpdate();
         cb.BeginUpdate();
-        cb.Clear();
-        $impl.Log("Adding first " + cb.FName + ' Item: "All"');
-        cb.FItems.Add("All");
         cb.FItems.AddStrings(sl);
         cb.EndUpdate();
         $impl.Log("Added " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: cb.FItems.GetCount(), get: function () {
@@ -41592,7 +41581,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           }, set: function (v) {
             this.p = v;
           }}) + " to " + cb.FName);
-        cb.SetItemIndex(-1);
       };
       sl = rtl.freeLoc(sl);
       EpgDbTemp = rtl.freeLoc(EpgDbTemp);

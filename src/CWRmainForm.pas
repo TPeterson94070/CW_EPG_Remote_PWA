@@ -809,46 +809,41 @@ end;
 
 procedure TCWRmainFrm.SetupFilterLists;
 
-  procedure ResetComboBox(cb: TWebComboBox);
-  begin
-    cb.ItemIndex := -1;
-    cb.Items.Clear;
-  end;
-
 const
-  FilterTypes: array of string = ['PSIP', 'Title', 'genres'];
+  FilterTypes: array of string = ['genres', 'Title', 'PSIP'];
 var
-  fn, x, y: string;
+  i: Integer;
+  x, y: string;
   sl: TStringList;
   EpgDbTemp: TWebClientDataSet;
   cb: TWebComboBox;
 begin
   Log('====== SetupFilterLists started');
-  ResetComboBox(WebComboBox1);
-  ResetComboBox(WebComboBox2);
-  ResetComboBox(WebComboBox3);
   sl := TStringList.Create;
   EpgDbTemp := TWebClientDataSet(EpgDb.GetClonedDataSet(False));
   EpgDbTemp.DisableControls;
   EpgDbTemp.Filtered := False;
-  for fn in FilterTypes do
+  for i := 0 to 2 do
   begin
-    x := IfThen(fn='genres', 'Genre', IfThen(fn='PSIP', 'Channel', 'Title'));
-    if fn = 'genres' then
-      cb := WebComboBox1
-    else if fn = 'Title' then
-      cb := WebComboBox2
-    else cb := WebComboBox3;
+    case i of
+      0: cb := WebComboBox1;
+      1: cb := WebComboBox2;
+      2: cb := WebComboBox3;
+    end;
+    cb.ItemIndex := -1;
+    cb.Items.Clear;
+    Log('Adding first '+cb.Name+' Item: "All"');
+    cb.Items.Add('All');
     sl.Clear;
     sl.Sorted := True;
     sl.Duplicates := dupIgnore;
     sl.BeginUpdate;
     EpgDbTemp.First;
-    Log('Looping over EpgDbTemp "' + fn + '" field');
+    Log('Looping over EpgDbTemp "' + FilterTypes[i] + '" field');
     while not EpgDbTemp.Eof do
     begin
-      x := EpgDbTemp.FieldByName(fn).AsString;
-      if fn='genres' then
+      x := EpgDbTemp.FieldByName(FilterTypes[i]).AsString;
+      if i = 0{'genres'} then
       begin
         y := ReplaceStr(x, '\', ''); // Remove escape "\" char
         // Split the genres string 'xxx;yyy;zzz' into array xxx, yyy, zzz
@@ -862,13 +857,9 @@ begin
     Log('====== Finished EpgDb scan');
     sl.EndUpdate;
     cb.BeginUpdate;
-    cb.Clear;
-    Log('Adding first '+cb.Name+' Item: "All"');
-    cb.Items.Add('All');
     cb.Items.AddStrings(sl);
     cb.EndUpdate;
     Log('Added ' + cb.Items.Count.ToString + ' to ' + cb.Name);
-    cb.ItemIndex := -1;
   end;
   sl.Free;
   EpgDbTemp.Free;
@@ -887,6 +878,7 @@ begin
   if cb.Items.Count = 0 then Exit;  // Can happen??
 //    SetupFilterLists;
   Log('====== Showing ComboBox');
+  pnlFilterComboBox.BringToFront;
   pnlFilterComboBox.Show;
   cb.Show;
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}

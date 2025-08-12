@@ -895,9 +895,9 @@ object CWRmainFrm: TCWRmainFrm
       end
     end
     object btnRefreshData: TWebSpeedButton
-      Left = 272
-      Top = 408
-      Width = 135
+      Left = 120
+      Top = 150
+      Width = 144
       Height = 52
       Caption = 'Refresh Data'
       Color = clNone
