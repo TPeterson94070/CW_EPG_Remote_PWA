@@ -70,6 +70,7 @@ type
     WIDBCDS: TWebIndexedDbClientDataset;
     btnSchdRefrsh: TWebButton;
     btnRefreshData: TWebSpeedButton;
+  procedure ResetFilterLists;
   procedure SetNewCapturesFixedRow;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
@@ -239,7 +240,7 @@ end;
 
 procedure TCWRmainFrm.WebComboBox3Change(Sender: TObject);
 begin
-  EPG.Columns[2].Title := IfThen(WebComboBox1.Text = 'All', 'Title', 'Programs on channel "' + WebComboBox3.Text + '"');
+  EPG.Columns[2].Title := IfThen(WebComboBox3.Text = 'All', 'Title', 'Programs on channel "' + WebComboBox3.Text + '"');
   Log('WebComboBox3.Text: ' + WebComboBox3.Text);
   ClearMenuChecks;
   ByChannel.Checked := WebComboBox3.Text <> 'All';
@@ -293,6 +294,13 @@ begin
     ,mtInformation, [mbOK]))
 end;
 
+procedure TCWRmainFrm.ResetFilterLists;
+begin
+  TLocalStorage.RemoveKey('WebComboBox1Items');
+  TLocalStorage.RemoveKey('WebComboBox2Items');
+  TLocalStorage.RemoveKey('WebComboBox3Items');
+end;
+
 procedure TCWRmainFrm.RefreshData(Sender: TObject);
 var
   id: string; {param used only by UpdateNewcaptures}
@@ -300,6 +308,7 @@ var
 begin
   Log('======== "Refresh Data" clicked');
   EpgDb.Close;
+  ResetFilterLists;
   await(RefreshCSV(BufferGrid, 'cwr_epg.csv','EPG', id));
   if BufferGrid.RowCount > 0 then
   begin
@@ -348,6 +357,7 @@ begin
   TWebLocalStorage.SetValue(NUMHIST, cbNumHistList.Text);
   Log('New number History Display Days: ' + cbNumHistList.Text);
   EpgDb.Close;
+  ResetFilterLists;
   await(SetupWIDBCDS);
   await(ReFreshListings);
 end;
@@ -385,7 +395,6 @@ begin
   Log('ByChannelClick called');
   ByChannel.OnClick := nil;
   await(PopupFilterList(WebComboBox3, 'PSIP'));
-//  ByChannel.Checked := True;
   ByChannel.OnClick := ByChannelClick;
 end;
 
@@ -394,7 +403,6 @@ begin
   Log('ByGenreClick called');
   ByGenre.OnClick := nil;
   await(PopupFilterList(WebComboBox1, 'genres'));
-//  ByGenre.Checked := True;
   ByGenre.OnClick := ByGenreClick;
 end;
 
@@ -404,7 +412,6 @@ begin
   ByTitle.OnClick := nil;
   await(PopupFilterList(WebComboBox2, 'Title'));
   WebComboBox2.ItemIndex := WebComboBox2.Items.IndexOf(EpgDb.FieldByName('Title').AsString);
-//  ByTitle.Checked := True;
   ByTitle.OnClick := ByTitleClick;
 end;
 
@@ -830,6 +837,11 @@ begin
       1: cb := WebComboBox2;
       2: cb := WebComboBox3;
     end;
+    if TLocalStorage.GetValue(cb.Name + 'Items') > '' then // Reload saved list
+    begin
+      cb.Items.AddStrings(TLocalStorage.GetValue(cb.Name + 'Items').Split([#10], TStringSplitOptions.ExcludeEmpty));
+      Continue;
+    end;
     cb.ItemIndex := -1;
     cb.Items.Clear;
     Log('Adding first '+cb.Name+' Item: "All"');
@@ -860,6 +872,8 @@ begin
     cb.Items.AddStrings(sl);
     cb.EndUpdate;
     Log('Added ' + cb.Items.Count.ToString + ' to ' + cb.Name);
+    // Save list to speed restart
+    TLocalStorage.SetValue(cb.Name + 'Items', cb.Items.Text);
   end;
   sl.Free;
   EpgDbTemp.Free;
