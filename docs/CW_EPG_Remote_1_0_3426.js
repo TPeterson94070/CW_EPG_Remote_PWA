@@ -41128,7 +41128,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         }, set: function (v) {
           this.p.TotalAvailableDays = v;
         }}));
-      this.ShowPlsWait("Preparing " + pas.SysUtils.TIntegerHelper.ToString$1.call({a: Math.max(pas.SysUtils.StrToIntDef(this.cbNumDisplayDays.GetText(),1),$impl.TotalAvailableDays), get: function () {
+      this.ShowPlsWait("Preparing " + pas.SysUtils.TIntegerHelper.ToString$1.call({a: Math.min(pas.SysUtils.StrToIntDef(this.cbNumDisplayDays.GetText(),1),$impl.TotalAvailableDays), get: function () {
           return this.a;
         }, set: function (v) {
           this.a = v;

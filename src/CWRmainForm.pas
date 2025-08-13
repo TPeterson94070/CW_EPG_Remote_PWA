@@ -143,7 +143,7 @@ private
   [async]
   procedure CreateGoogleFile(FName: string; var id: string);
   [async] procedure SetupWIDBCDS;
-  [async] procedure SetupEpgDb;
+  [async] procedure SetupEpg;
   [async] procedure PopupFilterList(cb: TWebComboBox; fn: string);
   [async] procedure SetFilter(fltr: string);
   [async] procedure ShowPlsWait(PlsWaitCap: string);
@@ -167,6 +167,7 @@ var
   VisiblePanelNum:  Integer = 0;
   FirstEndDate,
   LastStartDate:    TDate;
+  TotalAvailableDays: Integer;
   BaseFilter:       string;
 
 const
@@ -326,7 +327,7 @@ begin
       + #13' is connected to Google Drive',mtInformation, [mbOK]))
   end;
   if VisiblePanelNum <> 3 then await(ReFreshListings)
-  else await(SetupEpgDb);
+  else await(SetupEpg);
   Log('*********** Delta t (sec): ' + SecondsBetween(Now, StartT).ToString);
   Log('*********** Rate (ms/rec): ' + (MilliSecondsBetween(Now, StartT)/WIDBCDS.RecordCount).ToString);
 end;
@@ -712,7 +713,7 @@ end;
 procedure TCWRmainFrm.LogDataRange;
 begin
   WIDBCDS.DisableControls;
-
+  WIDBCDS.Filtered := False;
   WIDBCDS.First;
   FirstEndDate := WIDBCDS.FieldByName('EndTime').AsDateTime;
   Log('FirstEndDate (UTC) (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(FirstEndDate));
@@ -721,6 +722,8 @@ begin
   Log('LastStartDate (UTC) (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(LastStartDate));
   Log('LastStartDate - Now: ' + Double(LastStartDate - TTimeZone.Local.ToUniversalTime(Now)).ToString);
   Log('WIDBCDS.RecordCount:  ' + WIDBCDS.RecordCount.ToString);
+  TotalAvailableDays := DaysBetween(LastStartDate, TTimeZone.Local.ToUniversalTime(Now));
+//  Log('Avail days: ' + TotalAvailableDays.ToString);
   WIDBCDS.EnableControls;
 end;
 
@@ -768,13 +771,13 @@ begin
   else btnRefreshData.Hide;
 end;
 
-procedure TCWRmainFrm.SetupEpgDb;
+procedure TCWRmainFrm.SetupEpg;
 var
   FirstEndTime, LastStartTime:  TDateTime;
   i: Integer;
 
 begin
-  Log('====== SetupEpgDb called');
+  Log('====== SetupEpg called');
   ShowPlsWait('Preparing Stored Data');
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
@@ -799,9 +802,11 @@ begin
 //    end;
 //    WIDBCDS.Next;
 //  end;
-//  Log('SetupEpgDb: EpgDb record count: ' + EpgDb.RecordCount.ToString);
+//  Log('SetupEpg: EpgDb record count: ' + EpgDb.RecordCount.ToString);
   BaseFilter := 'EndTime >= ' + Double(FirstEndTime).ToString + ' and '
       + 'StartTime <= ' + Double(LastStartTime).ToString;
+  WIDBCDS.Filter := BaseFilter;
+  WIDBCDS.Filtered := True;
 
 //  if EpgDb.RecordCount > 0 then
 //  begin
@@ -813,10 +818,10 @@ begin
 //  end;
 //  WIDBCDS.EnableControls;
   await(SetupFilterLists);
-  await(SetFilter(''));
+//  await(SetFilter(''));
   pnlWaitPls.Hide;
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
-  Log('====== SetupEpgDb finished');
+  Log('====== SetupEpg finished');
 end;
 
 procedure TCWRmainFrm.SetupFilterLists;
@@ -833,8 +838,8 @@ begin
   Log('====== SetupFilterLists started');
   sl := TStringList.Create;
 //  EpgDbTemp := TWebClientDataSet(EpgDb.GetClonedDataSet(False));
-  {EpgDbTemp}WIDBCDS.DisableControls;
-  {EpgDbTemp}WIDBCDS.Filtered := False;
+//  {EpgDbTemp}WIDBCDS.DisableControls;
+//  {EpgDbTemp}WIDBCDS.Filtered := False;
   for i := 0 to 2 do
   begin
     case i of
@@ -842,11 +847,13 @@ begin
       1: cb := WebComboBox2;
       2: cb := WebComboBox3;
     end;
-    if TLocalStorage.GetValue(cb.Name + 'Items') > '' then // Reload saved list
-    begin
-      cb.Items.AddStrings(TLocalStorage.GetValue(cb.Name + 'Items').Split([#10], TStringSplitOptions.ExcludeEmpty));
-      Continue;
-    end;
+//    if TLocalStorage.GetValue(cb.Name + 'Items') > '' then // Reload saved list
+//    begin
+//      cb.Items.AddStrings(TLocalStorage.GetValue(cb.Name + 'Items').Split([#10], TStringSplitOptions.ExcludeEmpty));
+//      Continue;
+//    end;
+    if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
+//    if WIDBCDS.Filtered then WIDBCDS.Filtered := False;
     cb.ItemIndex := -1;
     cb.Items.Clear;
     Log('Adding first '+cb.Name+' Item: "All"');
@@ -878,11 +885,11 @@ begin
     cb.EndUpdate;
     Log('Added ' + cb.Items.Count.ToString + ' to ' + cb.Name);
     // Save list to speed restart
-    TLocalStorage.SetValue(cb.Name + 'Items', cb.Items.Text);
+//    TLocalStorage.SetValue(cb.Name + 'Items', cb.Items.Text);
   end;
   sl.Free;
 //  EpgDbTemp.Free;
-  WIDBCDS.EnableControls;
+  if WIDBCDS.ControlsDisabled then WIDBCDS.EnableControls;
   Log('====== Exiting SetupFilterLists');
 end;
 
@@ -919,7 +926,6 @@ begin
   if fltr>'' then Log('Epg Filter: BaseFilter + ' + fltr);
   {EpgDb}WIDBCDS.Filter := BaseFilter + IfThen(fltr>'', ' and ' + fltr);
   {EpgDb}WIDBCDS.Filtered := True;
-//  {EpgDb}WIDBCDS.First;
   {EpgDb}WIDBCDS.EnableControls;
   EPG.DataSource := WebDataSource1;
   EPG.EndUpdate;
@@ -947,9 +953,10 @@ begin
   Log(' ======== RefreshListings is called.');
   EPG.Visible := False;
 //  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  Await(SetupEpgDb);
-  Log('Days to Display: ' + cbNumDisplayDays.Text);
-  ShowPlsWait('Preparing ' + cbNumDisplayDays.Text + '-day Listing.');
+  Await(SetupEpg);
+  Log('Days to Display, Available: ' + cbNumDisplayDays.Text + ', ' + TotalAvailableDays.ToString);
+
+  ShowPlsWait('Preparing ' + Min(StrToIntDef(cbNumDisplayDays.Text, 1), TotalAvailableDays).ToString + '-day Listing.');
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   if {EpgDb}WIDBCDS.RecordCount > 0 then
   begin
