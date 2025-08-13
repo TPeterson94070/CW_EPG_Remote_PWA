@@ -41391,7 +41391,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       await sleep(100);
       FirstEndTime = pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false);
       LastStartTime = FirstEndTime + pas.SysUtils.StrToIntDef(this.cbNumDisplayDays.GetText(),1);
-      this.WIDBCDS.DisableControls();
       $impl.BaseFilter = "EndTime >= " + pas.SysUtils.TDoubleHelper.ToString$3.call({get: function () {
           return FirstEndTime;
         }, set: function (v) {
@@ -41405,8 +41404,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.EPG.SetDataSource(this.WebDataSource1);
       this.EPG.FColumns.GetItem$1(0).SetAlignment(2);
       this.EPG.FColumns.GetItem$1(2).SetAlignment(0);
-      this.WIDBCDS.EnableControls();
       await this.SetupFilterLists();
+      await this.SetFilter("");
       this.pnlWaitPls.Hide();
       await sleep(100);
       $impl.Log("====== SetupEpgDb finished");
@@ -41520,6 +41519,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         pas["WEBLib.Storage"].TLocalStorage.SetValue(cb.FName + "Items",cb.FItems.GetTextStr());
       };
       sl = rtl.freeLoc(sl);
+      this.WIDBCDS.EnableControls();
       $impl.Log("====== Exiting SetupFilterLists");
     };
     this.LoadDFMValues = function () {
