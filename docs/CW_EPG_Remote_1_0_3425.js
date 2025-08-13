@@ -6079,9 +6079,6 @@ rtl.module("Classes",["System","RTLConsts","Types","SysUtils","JS","TypInfo"],fu
       if (Index === 0) return;
       if (AObject === null) return;
     };
-    this.SetCapacity = function (NewCapacity) {
-      if (NewCapacity === 0) ;
-    };
     this.SetTextStr = function (Value) {
       this.CheckSpecialChars();
       this.DoSetTextStr(Value,true);
@@ -6222,14 +6219,6 @@ rtl.module("Classes",["System","RTLConsts","Types","SysUtils","JS","TypInfo"],fu
       for (var $l = 0, $end = TheStrings.GetCount() - 1; $l <= $end; $l++) {
         Runner = $l;
         this.AddObject(TheStrings.Get(Runner),TheStrings.GetObject(Runner));
-      };
-    };
-    this.AddStrings$2 = function (TheStrings) {
-      var Runner = 0;
-      if ((this.GetCount() + (rtl.length(TheStrings) - 1) + 1) > this.GetCapacity()) this.SetCapacity(this.GetCount() + (rtl.length(TheStrings) - 1) + 1);
-      for (var $l = 0, $end = rtl.length(TheStrings) - 1; $l <= $end; $l++) {
-        Runner = $l;
-        this.Add(TheStrings[Runner]);
       };
     };
     this.AddPair = function (AName, AValue) {
@@ -18214,6 +18203,11 @@ rtl.module("DateUtils",["System","SysUtils","Math","dateutils.helper"],function 
       }, set: function (v) {
         M = v;
       }});
+    return Result;
+  };
+  this.DaysBetween = function (ANow, AThen) {
+    var Result = 0;
+    Result = pas.System.Trunc(Math.abs($impl.DateTimeDiff(ANow,AThen)) + 5.7870370370370369E-9);
     return Result;
   };
   this.SecondsBetween = function (ANow, AThen) {
@@ -40454,7 +40448,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       };
       if ($impl.VisiblePanelNum !== 3) {
         await this.ReFreshListings()}
-       else await this.SetupEpgDb();
+       else await this.SetupEpg();
       $impl.Log("*********** Delta t (sec): " + pas.SysUtils.TNativeIntHelper.ToString$1.call({a: pas.DateUtils.SecondsBetween(pas.SysUtils.Now(),StartT), get: function () {
           return this.a;
         }, set: function (v) {
@@ -40902,6 +40896,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     };
     this.LogDataRange = async function () {
       this.WIDBCDS.DisableControls();
+      this.WIDBCDS.SetFiltered(false);
       this.WIDBCDS.First();
       $impl.FirstEndDate = this.WIDBCDS.FieldByName("EndTime").GetAsDateTime();
       $impl.Log("FirstEndDate (UTC) (Rec. " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecNo(), get: function () {
@@ -40926,6 +40921,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         }, set: function (v) {
           this.p = v;
         }}));
+      $impl.TotalAvailableDays = pas.DateUtils.DaysBetween($impl.LastStartDate,pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false));
       this.WIDBCDS.EnableControls();
     };
     this.ClearMenuChecks = function () {
@@ -41126,9 +41122,17 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.ReFreshListings = async function () {
       $impl.Log(" ======== RefreshListings is called.");
       this.EPG.SetVisible(false);
-      await this.SetupEpgDb();
-      $impl.Log("Days to Display: " + this.cbNumDisplayDays.GetText());
-      this.ShowPlsWait("Preparing " + this.cbNumDisplayDays.GetText() + "-day Listing.");
+      await this.SetupEpg();
+      $impl.Log("Days to Display, Available: " + this.cbNumDisplayDays.GetText() + ", " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: $impl, get: function () {
+          return this.p.TotalAvailableDays;
+        }, set: function (v) {
+          this.p.TotalAvailableDays = v;
+        }}));
+      this.ShowPlsWait("Preparing " + pas.SysUtils.TIntegerHelper.ToString$1.call({a: Math.max(pas.SysUtils.StrToIntDef(this.cbNumDisplayDays.GetText(),1),$impl.TotalAvailableDays), get: function () {
+          return this.a;
+        }, set: function (v) {
+          this.a = v;
+        }}) + "-day Listing.");
       await sleep(100);
       if (this.WIDBCDS.GetRecordCount() > 0) {
         this.EPG.Refresh();
@@ -41383,10 +41387,10 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           }}) + " days now available." + "\r\rTo update, please use the Refresh Data button.",2,rtl.createSet(2))}
        else this.btnRefreshData.Hide();
     };
-    this.SetupEpgDb = async function () {
+    this.SetupEpg = async function () {
       var FirstEndTime = 0.0;
       var LastStartTime = 0.0;
-      $impl.Log("====== SetupEpgDb called");
+      $impl.Log("====== SetupEpg called");
       this.ShowPlsWait("Preparing Stored Data");
       await sleep(100);
       FirstEndTime = pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false);
@@ -41400,15 +41404,16 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         }, set: function (v) {
           LastStartTime = v;
         }});
+      this.WIDBCDS.SetFilterText($impl.BaseFilter);
+      this.WIDBCDS.SetFiltered(true);
       this.WebDataSource1.SetDataSet(this.WIDBCDS);
       this.EPG.SetDataSource(this.WebDataSource1);
       this.EPG.FColumns.GetItem$1(0).SetAlignment(2);
       this.EPG.FColumns.GetItem$1(2).SetAlignment(0);
       await this.SetupFilterLists();
-      await this.SetFilter("");
       this.pnlWaitPls.Hide();
       await sleep(100);
-      $impl.Log("====== SetupEpgDb finished");
+      $impl.Log("====== SetupEpg finished");
     };
     this.PopupFilterList = async function (cb, fn) {
       $impl.Log("====== PopupFilterList started");
@@ -41464,8 +41469,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var cb = null;
       $impl.Log("====== SetupFilterLists started");
       sl = pas.Classes.TStringList.$create("Create$1");
-      this.WIDBCDS.DisableControls();
-      this.WIDBCDS.SetFiltered(false);
       for (i = 0; i <= 2; i++) {
         var $tmp = i;
         if ($tmp === 0) {
@@ -41473,14 +41476,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
          else if ($tmp === 1) {
           cb = this.WebComboBox2}
          else if ($tmp === 2) cb = this.WebComboBox3;
-        if (pas["WEBLib.Storage"].TLocalStorage.GetValue(cb.FName + "Items") > "") {
-          cb.FItems.AddStrings$2(pas.SysUtils.TStringHelper.Split$5.call({a: pas["WEBLib.Storage"].TLocalStorage.GetValue(cb.FName + "Items"), get: function () {
-              return this.a;
-            }, set: function (v) {
-              this.a = v;
-            }},["\n"],1));
-          continue;
-        };
+        if (!this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.DisableControls();
         cb.SetItemIndex(-1);
         cb.FItems.Clear();
         $impl.Log("Adding first " + cb.FName + ' Item: "All"');
@@ -41516,10 +41512,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           }, set: function (v) {
             this.p = v;
           }}) + " to " + cb.FName);
-        pas["WEBLib.Storage"].TLocalStorage.SetValue(cb.FName + "Items",cb.FItems.GetTextStr());
       };
       sl = rtl.freeLoc(sl);
-      this.WIDBCDS.EnableControls();
+      if (this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.EnableControls();
       $impl.Log("====== Exiting SetupFilterLists");
     };
     this.LoadDFMValues = function () {
@@ -41699,7 +41694,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlLog.SetLeft(0);
         this.pnlLog.SetTop(50);
         this.pnlLog.SetWidth(428);
-        this.pnlLog.SetHeight(699);
+        this.pnlLog.SetHeight(733);
         this.pnlLog.SetElementClassName("card");
         this.pnlLog.SetHeightStyle(0);
         this.pnlLog.SetWidthStyle(0);
@@ -41722,7 +41717,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebMemo2.SetLeft(3);
         this.WebMemo2.SetTop(3);
         this.WebMemo2.SetWidth(422);
-        this.WebMemo2.SetHeight(693);
+        this.WebMemo2.SetHeight(761);
         this.WebMemo2.SetAlign(5);
         this.WebMemo2.SetColor(0);
         this.WebMemo2.SetElementClassName("white");
@@ -41745,7 +41740,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlWaitPls.SetLeft(0);
         this.pnlWaitPls.SetTop(50);
         this.pnlWaitPls.SetWidth(428);
-        this.pnlWaitPls.SetHeight(699);
+        this.pnlWaitPls.SetHeight(733);
         this.pnlWaitPls.SetElementClassName("container-fluid");
         this.pnlWaitPls.SetHeightStyle(0);
         this.pnlWaitPls.SetWidthStyle(0);
@@ -41767,7 +41762,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebGridPanel1.SetLeft(0);
         this.WebGridPanel1.SetTop(0);
         this.WebGridPanel1.SetWidth(428);
-        this.WebGridPanel1.SetHeight(699);
+        this.WebGridPanel1.SetHeight(767);
         this.WebGridPanel1.SetWidthStyle(0);
         this.WebGridPanel1.SetAlign(5);
         this.WebGridPanel1.FColumnCollection.Clear();
@@ -41800,9 +41795,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebLabel2.SetParentComponent(this.WebGridPanel1);
         this.WebLabel2.SetName("WebLabel2");
         this.WebLabel2.SetLeft(2);
-        this.WebLabel2.SetTop(352);
+        this.WebLabel2.SetTop(386);
         this.WebLabel2.SetWidth(424);
-        this.WebLabel2.SetHeight(171);
+        this.WebLabel2.SetHeight(188);
         this.WebLabel2.SetAlign(5);
         this.WebLabel2.SetAlignment(2);
         this.WebLabel2.SetCaption("Please Wait...");
@@ -41825,9 +41820,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebLabel1.SetParentComponent(this.WebGridPanel1);
         this.WebLabel1.SetName("WebLabel1");
         this.WebLabel1.SetLeft(2);
-        this.WebLabel1.SetTop(177);
+        this.WebLabel1.SetTop(194);
         this.WebLabel1.SetWidth(424);
-        this.WebLabel1.SetHeight(171);
+        this.WebLabel1.SetHeight(188);
         this.WebLabel1.SetAlign(5);
         this.WebLabel1.SetAlignment(2);
         this.WebLabel1.SetCaption("Preparing EPG Listings.");
@@ -41853,7 +41848,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebButton1.SetLeft(2);
         this.WebButton1.SetTop(2);
         this.WebButton1.SetWidth(424);
-        this.WebButton1.SetHeight(171);
+        this.WebButton1.SetHeight(188);
         this.WebButton1.SetAlign(5);
         this.WebButton1.SetCaption('<i class="fa-solid fa-spinner fa-spin"></>');
         this.WebButton1.SetColor(65535);
@@ -41877,7 +41872,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlHistory.SetLeft(0);
         this.pnlHistory.SetTop(50);
         this.pnlHistory.SetWidth(428);
-        this.pnlHistory.SetHeight(699);
+        this.pnlHistory.SetHeight(733);
         this.pnlHistory.SetElementClassName("card");
         this.pnlHistory.SetHeightStyle(0);
         this.pnlHistory.SetWidthStyle(0);
@@ -41962,7 +41957,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlOptions.SetLeft(0);
         this.pnlOptions.SetTop(50);
         this.pnlOptions.SetWidth(428);
-        this.pnlOptions.SetHeight(699);
+        this.pnlOptions.SetHeight(733);
         this.pnlOptions.SetElementClassName("card");
         this.pnlOptions.SetHeightStyle(0);
         this.pnlOptions.SetWidthStyle(0);
@@ -42120,7 +42115,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlCaptures.SetLeft(0);
         this.pnlCaptures.SetTop(50);
         this.pnlCaptures.SetWidth(428);
-        this.pnlCaptures.SetHeight(699);
+        this.pnlCaptures.SetHeight(733);
         this.pnlCaptures.SetElementClassName("greenBG");
         this.pnlCaptures.SetHeightStyle(0);
         this.pnlCaptures.SetWidthStyle(0);
@@ -42292,7 +42287,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlListings.SetLeft(0);
         this.pnlListings.SetTop(50);
         this.pnlListings.SetWidth(428);
-        this.pnlListings.SetHeight(699);
+        this.pnlListings.SetHeight(733);
         this.pnlListings.SetElementClassName("card");
         this.pnlListings.SetHeightStyle(0);
         this.pnlListings.SetWidthStyle(0);
@@ -42338,7 +42333,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.EPG.SetLeft(0);
         this.EPG.SetTop(0);
         this.EPG.SetWidth(428);
-        this.EPG.SetHeight(699);
+        this.EPG.SetHeight(733);
         this.EPG.SetAlign(5);
         this.EPG.SetBorderStyle(0);
         this.EPG.SetColor(8388608);
@@ -42426,7 +42421,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.lblFilterSelect.SetAlignWithMargins(true);
         this.lblFilterSelect.SetLeft(3);
         this.lblFilterSelect.SetTop(3);
-        this.lblFilterSelect.SetWidth(144);
+        this.lblFilterSelect.SetWidth(110);
         this.lblFilterSelect.SetHeight(22);
         this.lblFilterSelect.SetAlign(1);
         this.lblFilterSelect.SetAlignment(2);
@@ -42475,7 +42470,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebComboBox2.SetLeft(3);
         this.WebComboBox2.SetTop(31);
         this.WebComboBox2.SetWidth(144);
-        this.WebComboBox2.SetHeight(30);
+        this.WebComboBox2.SetHeight(41);
         this.WebComboBox2.SetAlign(5);
         this.WebComboBox2.SetElementClassName("form-select");
         this.WebComboBox2.SetElementFont(1);
@@ -42501,7 +42496,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebComboBox3.SetLeft(3);
         this.WebComboBox3.SetTop(31);
         this.WebComboBox3.SetWidth(144);
-        this.WebComboBox3.SetHeight(30);
+        this.WebComboBox3.SetHeight(41);
         this.WebComboBox3.SetAlign(5);
         this.WebComboBox3.SetElementClassName("form-select");
         this.WebComboBox3.SetElementFont(1);
@@ -42796,6 +42791,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $impl.VisiblePanelNum = 0;
     $impl.FirstEndDate = 0.0;
     $impl.LastStartDate = 0.0;
+    $impl.TotalAvailableDays = 0;
     $impl.BaseFilter = "";
     $impl.NUMDAYS = "NumDisplayDays";
     $impl.NUMHIST = "NumHistoryItems";
