@@ -116,7 +116,7 @@ type
     procedure wcbChannelsFocusOut(Sender: TObject);
   [async] procedure btnOptOKClick(Sender: TObject);
   [async] procedure btnSchdRefrshClick(Sender: TObject);
-    procedure btnRefreshDataClick(Sender: TObject);
+  [async] procedure btnRefreshDataClick(Sender: TObject);
     procedure wcbTypesChange(Sender: TObject);
     procedure wcbTypesFocusOut(Sender: TObject);
 private
@@ -373,6 +373,10 @@ end;
 procedure TCWRmainFrm.btnRefreshDataClick(Sender: TObject);
 begin
   btnRefreshData.Hide;
+  // In case of a hang, allow user to show Log here
+  if TAwait.ExecP<TModalResult> (MessageDlgAsync('Do you want to switch to viewing the Log'
+    + #13'during the Data Refresh?',mtConfirmation, [mbYes,mbNo])) = mrYes then
+    {$IfDef PAS2JS}await{$EndIf}(SetPage(3));
   RefreshData(Self);
 end;
 
@@ -746,19 +750,22 @@ end;
 
 procedure TCWRmainFrm.LogDataRange;
 begin
-  if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
-  WIDBCDS.Filtered := False;
-  WIDBCDS.First;
-  FirstEndDate := WIDBCDS.{FieldByName('EndTime')}Fields[7].AsDateTime;
-  Log('FirstEndDate (UTC) (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(FirstEndDate));
-  WIDBCDS.Last;
-  LastStartDate := WIDBCDS.{FieldByName('StartTime')}Fields[6].AsDateTime;
-  Log('LastStartDate (UTC) (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(LastStartDate));
-  Log('LastStartDate - Now: ' + Double(LastStartDate - TTimeZone.Local.ToUniversalTime(Now)).ToString);
   Log('WIDBCDS.RecordCount:  ' + WIDBCDS.RecordCount.ToString);
-  TotalAvailableDays := DaysBetween(LastStartDate, TTimeZone.Local.ToUniversalTime(Now));
-//  Log('Avail days: ' + TotalAvailableDays.ToString);
-  if WIDBCDS.ControlsDisabled then WIDBCDS.EnableControls;
+  if WIDBCDS.RecordCount > 0 then
+  begin
+    if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
+    WIDBCDS.Filtered := False;
+    WIDBCDS.First;
+    FirstEndDate := WIDBCDS.{FieldByName('EndTime')}Fields[7].AsDateTime;
+    Log('FirstEndDate (UTC) (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(FirstEndDate));
+    WIDBCDS.Last;
+    LastStartDate := WIDBCDS.{FieldByName('StartTime')}Fields[6].AsDateTime;
+    Log('LastStartDate (UTC) (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(LastStartDate));
+    Log('LastStartDate - Now: ' + Double(LastStartDate - TTimeZone.Local.ToUniversalTime(Now)).ToString);
+    TotalAvailableDays := DaysBetween(LastStartDate, TTimeZone.Local.ToUniversalTime(Now));
+  //  Log('Avail days: ' + TotalAvailableDays.ToString);
+    if WIDBCDS.ControlsDisabled then WIDBCDS.EnableControls;
+  end;
 end;
 
 procedure TCWRmainFrm.SetupWIDBCDS;
@@ -812,6 +819,7 @@ var
 
 begin
   Log('====== SetupEpg called');
+  if WIDBCDS.RecordCount = 0 then Exit;
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing Stored Data'));
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
   LastStartTime := FirstEndTime + StrToIntDef(cbNumDisplayDays.Text,1);
@@ -1028,9 +1036,9 @@ begin
   {$IfDef PAS2JS}await{$EndIf}(SetupEpg);
   Log('Days to Display, Available: ' + cbNumDisplayDays.Text + ', ' + TotalAvailableDays.ToString);
 
-  {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + Min(StrToIntDef(cbNumDisplayDays.Text, 1), TotalAvailableDays).ToString + '-day Listing.'));
   if {EpgDb}WIDBCDS.RecordCount > 0 then
   begin
+    {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + Min(StrToIntDef(cbNumDisplayDays.Text, 1), TotalAvailableDays).ToString + '-day Listing.'));
     EPG.Refresh;
     ByAllClick(Self)
   end

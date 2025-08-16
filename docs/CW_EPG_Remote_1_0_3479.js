@@ -13655,6 +13655,7 @@ rtl.module("WEBLib.Graphics",["System","Classes","Types","UITypes","Web","JS"],f
   this.clWindow = 0xFEFEFE;
   this.clHighlight = 0xD77800;
   this.clHighlightText = 0x30303;
+  this.clBackground = 15790320;
   this.clBurlywood = 0x87B8DE;
   this.clDarkgreen = 0x6400;
   this.clDarkorange = 0x8CFF;
@@ -40761,66 +40762,75 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.ByGenreClick = async function (Sender) {
       $impl.Log("ByGenreClick called");
       this.ByGenre.FOnClick = null;
-      await this.PopupFilterList(this.wcbGenres,"genres");
+      if (this.ByGenre.FChecked) {
+        this.ByGenre.SetChecked(false);
+        this.wcbGenres.SetItemIndex(-1);
+        await this.SetFilters();
+      } else await this.PopupFilterList(this.wcbGenres,"genres");
       this.ByGenre.FOnClick = rtl.createCallback(this,"ByGenreClick");
     };
     this.wcbGenresChange = async function (Sender) {
-      this.EPG.FColumns.GetItem$1(2).SetTitle(pas.StrUtils.IfThen(this.wcbGenres.GetText() === "All","Title",'Programs in genre "' + this.wcbGenres.GetText() + '"'));
       $impl.Log("wcbGenres.Text: " + this.wcbGenres.GetText());
-      this.ClearMenuChecks();
       this.ByGenre.SetChecked(this.wcbGenres.GetText() !== "All");
-      this.SetFilter(pas.StrUtils.IfThen(this.ByGenre.FChecked,"genres like " + pas.SysUtils.QuotedStr('%"' + pas.StrUtils.ReplaceStr(this.wcbGenres.GetText(),"/","_") + '"%',"'"),""));
-      this.ByAll.SetChecked(!this.ByGenre.FChecked);
-      if (this.ByAll.FChecked) this.wcbGenresFocusOut(Sender);
+      if (this.ByGenre.FChecked) this.ByAll.SetChecked(false);
+      this.SetFilters();
     };
     this.ByTitleClick = async function (Sender) {
       $impl.Log("byTitleClick called");
       this.ByTitle.FOnClick = null;
-      await this.PopupFilterList(this.wcbTitles,"Title");
-      this.wcbTitles.SetItemIndex(this.wcbTitles.FItems.IndexOf(this.WIDBCDS.FFieldList.GetField(3).GetAsString()));
+      if (this.ByTitle.FChecked) {
+        this.ByTitle.SetChecked(false);
+        this.wcbTitles.SetItemIndex(-1);
+        await this.SetFilters();
+      } else await this.PopupFilterList(this.wcbTitles,"Title");
       this.ByTitle.FOnClick = rtl.createCallback(this,"ByTitleClick");
     };
     this.wcbTitlesChange = async function (Sender) {
-      this.EPG.FColumns.GetItem$1(2).SetTitle("Title" + pas.StrUtils.IfThen(this.wcbTitles.GetText() !== "All",': "' + this.wcbTitles.GetText() + '"',""));
       $impl.Log("wcbTitles.Text: " + this.wcbTitles.GetText());
-      this.ClearMenuChecks();
       this.ByTitle.SetChecked(this.wcbTitles.GetText() !== "All");
-      this.SetFilter(pas.StrUtils.IfThen(this.ByTitle.FChecked,"Title = " + pas.SysUtils.QuotedStr(this.wcbTitles.GetText(),"'"),""));
-      this.ByAll.SetChecked(!this.ByTitle.FChecked);
-      if (this.ByAll.FChecked) this.wcbTitlesFocusOut(Sender);
+      if (this.ByTitle.FChecked) this.ByAll.SetChecked(false);
+      this.SetFilters();
     };
     this.byTypeClick = async function (Sender) {
       $impl.Log("byTypeClick called");
       this.byType.FOnClick = null;
-      await this.PopupFilterList(this.wcbTypes,"Type");
+      if (this.byType.FChecked) {
+        this.byType.SetChecked(false);
+        this.wcbTypes.SetItemIndex(-1);
+        await this.SetFilters();
+      } else await this.PopupFilterList(this.wcbTypes,"Type");
       this.byType.FOnClick = rtl.createCallback(this,"byTypeClick");
     };
     this.ByAllClick = async function (Sender) {
       $impl.Log("ByAllClick called");
       this.ByAll.FOnClick = null;
       this.EPG.FColumns.GetItem$1(2).SetTitle("Title");
-      this.ClearMenuChecks();
+      this.ByGenre.SetChecked(false);
+      this.ByTitle.SetChecked(false);
+      this.byType.SetChecked(false);
+      this.ByChannel.SetChecked(false);
       this.pnlFilterComboBox.Hide();
       this.ByAll.SetChecked(true);
       $impl.VisiblePanelNum = 0;
-      if (this.WIDBCDS.FFilterText !== $impl.BaseFilter) await this.SetFilter("");
+      if (this.WIDBCDS.FFilterText !== $impl.BaseFilter) await this.SetFilters();
       await this.SetPage(0);
       this.ByAll.FOnClick = rtl.createCallback(this,"ByAllClick");
     };
     this.ByChannelClick = async function (Sender) {
       $impl.Log("ByChannelClick called");
       this.ByChannel.FOnClick = null;
-      await this.PopupFilterList(this.wcbChannels,"PSIP");
+      if (this.ByChannel.FChecked) {
+        this.ByChannel.SetChecked(false);
+        this.wcbChannels.SetItemIndex(-1);
+        await this.SetFilters();
+      } else await this.PopupFilterList(this.wcbChannels,"PSIP");
       this.ByChannel.FOnClick = rtl.createCallback(this,"ByChannelClick");
     };
     this.wcbChannelsChange = async function (Sender) {
-      this.EPG.FColumns.GetItem$1(2).SetTitle(pas.StrUtils.IfThen(this.wcbChannels.GetText() === "All","Title",'Programs on channel "' + this.wcbChannels.GetText() + '"'));
       $impl.Log("wcbChannels.Text: " + this.wcbChannels.GetText());
-      this.ClearMenuChecks();
       this.ByChannel.SetChecked(this.wcbChannels.GetText() !== "All");
-      this.SetFilter(pas.StrUtils.IfThen(this.ByChannel.FChecked,"PSIP = " + pas.SysUtils.QuotedStr(this.wcbChannels.GetText(),"'"),""));
-      this.ByAll.SetChecked(!this.ByChannel.FChecked);
-      if (this.ByAll.FChecked) this.wcbChannelsFocusOut(Sender);
+      if (this.ByChannel.FChecked) this.ByAll.SetChecked(false);
+      this.SetFilters();
     };
     this.cbNumDisplayDaysChange = async function (Sender) {
       if (pas.System.Trunc($impl.LastStartDate - pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false)) < pas.SysUtils.StrToInt(this.cbNumDisplayDays.GetText())) {
@@ -40909,59 +40919,52 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       await this.FetchNewCapRequests();
       this.pnlWaitPls.Hide();
     };
-    this.btnRefreshDataClick = function (Sender) {
+    this.btnRefreshDataClick = async function (Sender) {
       this.btnRefreshData.Hide();
+      if (await pas["WEBLib.Dialogs"].MessageDlgAsync("Do you want to switch to viewing the Log" + "\rduring the Data Refresh?",3,rtl.createSet(0,1)) === 6) await this.SetPage(3);
       this.RefreshData(this);
     };
     this.wcbTypesChange = function (Sender) {
-      this.EPG.FColumns.GetItem$1(2).SetTitle(pas.StrUtils.IfThen(this.wcbTypes.GetText() === "All","Title",'Programs with Type: "' + this.wcbTypes.GetText() + '"'));
       $impl.Log("wcbTypes.Text: " + this.wcbTypes.GetText());
-      this.ClearMenuChecks();
       this.byType.SetChecked(this.wcbTypes.GetText() !== "All");
-      this.SetFilter(pas.StrUtils.IfThen(this.byType.FChecked,"Class = " + pas.SysUtils.QuotedStr($impl.TypeClass[pas.TypInfo.GetEnumValue($mod.$rtti["ProgramTypes"],this.wcbTypes.GetText())],"'"),""));
-      this.ByAll.SetChecked(!this.byType.FChecked);
-      if (this.ByAll.FChecked) this.wcbTypesFocusOut(Sender);
+      if (this.byType.FChecked) this.ByAll.SetChecked(false);
+      this.SetFilters();
     };
     this.wcbTypesFocusOut = function (Sender) {
       this.pnlFilterComboBox.Hide();
       this.wcbTypes.Hide();
     };
     this.LogDataRange = async function () {
-      if (!this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.DisableControls();
-      this.WIDBCDS.SetFiltered(false);
-      this.WIDBCDS.First();
-      $impl.FirstEndDate = this.WIDBCDS.FFieldList.GetField(7).GetAsDateTime();
-      $impl.Log("FirstEndDate (UTC) (Rec. " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecNo(), get: function () {
-          return this.p;
-        }, set: function (v) {
-          this.p = v;
-        }}) + "): " + pas.SysUtils.DateToStr($impl.FirstEndDate));
-      this.WIDBCDS.Last();
-      $impl.LastStartDate = this.WIDBCDS.FFieldList.GetField(6).GetAsDateTime();
-      $impl.Log("LastStartDate (UTC) (Rec. " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecNo(), get: function () {
-          return this.p;
-        }, set: function (v) {
-          this.p = v;
-        }}) + "): " + pas.SysUtils.DateToStr($impl.LastStartDate));
-      $impl.Log("LastStartDate - Now: " + pas.SysUtils.TDoubleHelper.ToString$3.call({a: $impl.LastStartDate - pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false), get: function () {
-          return this.a;
-        }, set: function (v) {
-          rtl.raiseE("EPropReadOnly");
-        }}));
       $impl.Log("WIDBCDS.RecordCount:  " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
           return this.p;
         }, set: function (v) {
           this.p = v;
         }}));
-      $impl.TotalAvailableDays = pas.DateUtils.DaysBetween($impl.LastStartDate,pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false));
-      if (this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.EnableControls();
-    };
-    this.ClearMenuChecks = function () {
-      this.ByAll.SetChecked(false);
-      this.ByGenre.SetChecked(false);
-      this.ByTitle.SetChecked(false);
-      this.byType.SetChecked(false);
-      this.ByChannel.SetChecked(false);
+      if (this.WIDBCDS.GetRecordCount() > 0) {
+        if (!this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.DisableControls();
+        this.WIDBCDS.SetFiltered(false);
+        this.WIDBCDS.First();
+        $impl.FirstEndDate = this.WIDBCDS.FFieldList.GetField(7).GetAsDateTime();
+        $impl.Log("FirstEndDate (UTC) (Rec. " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecNo(), get: function () {
+            return this.p;
+          }, set: function (v) {
+            this.p = v;
+          }}) + "): " + pas.SysUtils.DateToStr($impl.FirstEndDate));
+        this.WIDBCDS.Last();
+        $impl.LastStartDate = this.WIDBCDS.FFieldList.GetField(6).GetAsDateTime();
+        $impl.Log("LastStartDate (UTC) (Rec. " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecNo(), get: function () {
+            return this.p;
+          }, set: function (v) {
+            this.p = v;
+          }}) + "): " + pas.SysUtils.DateToStr($impl.LastStartDate));
+        $impl.Log("LastStartDate - Now: " + pas.SysUtils.TDoubleHelper.ToString$3.call({a: $impl.LastStartDate - pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false), get: function () {
+            return this.a;
+          }, set: function (v) {
+            rtl.raiseE("EPropReadOnly");
+          }}));
+        $impl.TotalAvailableDays = pas.DateUtils.DaysBetween($impl.LastStartDate,pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false));
+        if (this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.EnableControls();
+      };
     };
     this.ReloadSG = function (SG, LSName) {
       var i = 0;
@@ -41160,12 +41163,12 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         }, set: function (v) {
           this.p.TotalAvailableDays = v;
         }}));
-      await this.ShowPlsWait("Preparing " + pas.SysUtils.TIntegerHelper.ToString$1.call({a: Math.min(pas.SysUtils.StrToIntDef(this.cbNumDisplayDays.GetText(),1),$impl.TotalAvailableDays), get: function () {
-          return this.a;
-        }, set: function (v) {
-          this.a = v;
-        }}) + "-day Listing.");
       if (this.WIDBCDS.GetRecordCount() > 0) {
+        await this.ShowPlsWait("Preparing " + pas.SysUtils.TIntegerHelper.ToString$1.call({a: Math.min(pas.SysUtils.StrToIntDef(this.cbNumDisplayDays.GetText(),1),$impl.TotalAvailableDays), get: function () {
+            return this.a;
+          }, set: function (v) {
+            this.a = v;
+          }}) + "-day Listing.");
         this.EPG.Refresh();
         this.ByAllClick(this);
       } else await pas["WEBLib.Dialogs"].MessageDlgAsync("There are no current data!" + "\r\rTo update, please use the Refresh Data button.",2,rtl.createSet(2));
@@ -41421,6 +41424,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var FirstEndTime = 0.0;
       var LastStartTime = 0.0;
       $impl.Log("====== SetupEpg called");
+      if (this.WIDBCDS.GetRecordCount() === 0) return;
       await this.ShowPlsWait("Preparing Stored Data");
       FirstEndTime = pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false);
       LastStartTime = FirstEndTime + pas.SysUtils.StrToIntDef(this.cbNumDisplayDays.GetText(),1);
@@ -41445,6 +41449,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.PopupFilterList = async function (cb, fn) {
       $impl.Log("====== PopupFilterList started");
       this.lblFilterSelect.SetCaption("Choose " + pas.StrUtils.IfThen(fn === "genres","Genre",pas.StrUtils.IfThen(fn === "PSIP","Channel",pas.StrUtils.IfThen(fn === "Title","Title","Type"))));
+      this.ByAll.SetChecked(false);
       this.wcbGenres.Hide();
       this.wcbTitles.Hide();
       this.wcbChannels.Hide();
@@ -41459,16 +41464,25 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       if ($impl.VisiblePanelNum !== 0) await this.SetPage(0);
       $impl.Log("====== Exiting PopupFilterList");
     };
-    this.SetFilter = async function (fltr) {
-      await this.ShowPlsWait("Preparing " + pas.StrUtils.IfThen(fltr === "","Un","") + "Filtered List");
+    this.SetFilters = async function () {
+      var fltr = "";
+      await this.ShowPlsWait("Preparing " + pas.StrUtils.IfThen(this.ByAll.FChecked,"(Un)","") + "Filtered List");
       this.EPG.BeginUpdate();
       this.EPG.Hide();
       this.EPG.SetDataSource(null);
+      this.EPG.FColumns.GetItem$1(2).SetTitle(pas.StrUtils.IfThen(this.ByChannel.FChecked,this.wcbChannels.GetText() + " ","") + pas.StrUtils.IfThen(this.byType.FChecked,this.wcbTypes.GetText() + " ","") + pas.StrUtils.IfThen(this.ByGenre.FChecked,this.wcbGenres.GetText() + " ","") + "Programs" + pas.StrUtils.IfThen(this.ByTitle.FChecked," Titled " + pas.SysUtils.QuotedStr(this.wcbTitles.GetText(),"'"),""));
+      this.EPG.SetColWidths(0,pas.Math.IfThen(this.ByChannel.FChecked,0,75));
       this.WIDBCDS.DisableControls();
       this.WIDBCDS.SetFiltered(false);
       $impl.Log("BaseFilter: " + $impl.BaseFilter);
+      fltr = "";
+      if (this.ByGenre.FChecked) fltr = fltr + " and genres like " + pas.SysUtils.QuotedStr('%"' + pas.StrUtils.ReplaceStr(this.wcbGenres.GetText(),"/","_") + '"%',"'");
+      if (this.ByTitle.FChecked) fltr = fltr + " and Title = " + pas.SysUtils.QuotedStr(this.wcbTitles.GetText(),"'");
+      if (this.ByChannel.FChecked) fltr = fltr + " and PSIP = " + pas.SysUtils.QuotedStr(this.wcbChannels.GetText(),"'");
+      if (this.byType.FChecked) fltr = fltr + " and Class = " + pas.SysUtils.QuotedStr($impl.TypeClass[pas.TypInfo.GetEnumValue($mod.$rtti["ProgramTypes"],this.wcbTypes.GetText())],"'");
       if (fltr > "") $impl.Log("Epg Filter: BaseFilter + " + fltr);
-      this.WIDBCDS.SetFilterText($impl.BaseFilter + pas.StrUtils.IfThen(fltr > ""," and " + fltr,""));
+      if (fltr > "") this.ByAll.SetChecked(false);
+      this.WIDBCDS.SetFilterText($impl.BaseFilter + fltr);
       this.WIDBCDS.SetFiltered(true);
       this.WIDBCDS.EnableControls();
       this.EPG.SetDataSource(this.WebDataSource1);
@@ -42338,6 +42352,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlListings.SetAlign(5);
         this.pnlListings.SetCaption("pnlListings");
         this.pnlListings.SetChildOrderEx(11);
+        this.pnlListings.SetColor(15790320);
         this.pnlListings.FElementBodyClassName = "card-body";
         this.pnlListings.SetElementFont(1);
         this.pnlListings.FFont.FCharset = 0;
@@ -42646,22 +42661,18 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.ByGenre.SetParentComponent(this.WebMainMenu1);
         this.ByGenre.SetName("ByGenre");
         this.ByGenre.SetCaption("Filter by Genre");
-        this.ByGenre.FRadioItem = true;
         this.SetEvent$1(this.ByGenre,this,"OnClick","ByGenreClick");
         this.ByTitle.SetParentComponent(this.WebMainMenu1);
         this.ByTitle.SetName("ByTitle");
         this.ByTitle.SetCaption("Filter by Title");
-        this.ByTitle.FRadioItem = true;
         this.SetEvent$1(this.ByTitle,this,"OnClick","ByTitleClick");
         this.ByChannel.SetParentComponent(this.WebMainMenu1);
         this.ByChannel.SetName("ByChannel");
         this.ByChannel.SetCaption("Filter by Channel");
-        this.ByChannel.FRadioItem = true;
         this.SetEvent$1(this.ByChannel,this,"OnClick","ByChannelClick");
         this.byType.SetParentComponent(this.WebMainMenu1);
         this.byType.SetName("byType");
         this.byType.SetCaption("Filter by Type");
-        this.byType.FRadioItem = true;
         this.SetEvent$1(this.byType,this,"OnClick","byTypeClick");
         this.Scheduled.SetParentComponent(this.WebMainMenu1);
         this.Scheduled.SetName("Scheduled");
@@ -42869,7 +42880,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addMethod("wcbChannelsFocusOut",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("btnOptOKClick",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("btnSchdRefrshClick",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
-    $r.addMethod("btnRefreshDataClick",0,[["Sender",pas.System.$rtti["TObject"]]]);
+    $r.addMethod("btnRefreshDataClick",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("wcbTypesChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("wcbTypesFocusOut",0,[["Sender",pas.System.$rtti["TObject"]]]);
   });

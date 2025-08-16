@@ -660,6 +660,7 @@ object CWRmainFrm: TCWRmainFrm
     Align = alClient
     Caption = 'pnlListings'
     ChildOrder = 11
+    Color = clBackground
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
     Font.Charset = ANSI_CHARSET
