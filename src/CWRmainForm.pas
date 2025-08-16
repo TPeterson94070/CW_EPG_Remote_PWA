@@ -70,7 +70,9 @@ type
     WIDBCDS: TWebIndexedDbClientDataset;
     btnSchdRefrsh: TWebButton;
     btnRefreshData: TWebSpeedButton;
-  procedure ResetFilterLists;
+    byType: TMenuItem;
+    wcbTypes: TWebComboBox;
+  procedure ClearFilterLists;
   procedure SetNewCapturesFixedRow;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
@@ -99,6 +101,7 @@ type
   [async] procedure wcbGenresChange(Sender: TObject);
   [async] procedure ByTitleClick(Sender: TObject);
   [async] procedure wcbTitlesChange(Sender: TObject);
+  [async] procedure byTypeClick(Sender: TObject);
   [async] procedure ByAllClick(Sender: TObject);
   [async] procedure ByChannelClick(Sender: TObject);
   [async] procedure wcbChannelsChange(Sender: TObject);
@@ -114,6 +117,8 @@ type
   [async] procedure btnOptOKClick(Sender: TObject);
   [async] procedure btnSchdRefrshClick(Sender: TObject);
     procedure btnRefreshDataClick(Sender: TObject);
+    procedure wcbTypesChange(Sender: TObject);
+    procedure wcbTypesFocusOut(Sender: TObject);
 private
   { Private declarations }
   [async] procedure LogDataRange;
@@ -158,7 +163,7 @@ var
 implementation
 
 uses
-  System.Math, DateUtils, SchedUnit2, Details;
+  TypInfo, System.Math, DateUtils, SchedUnit2, Details;
 
 {$R *.dfm}
 
@@ -170,10 +175,12 @@ var
   TotalAvailableDays: Integer;
   BaseFilter:       string;
 
+type ProgramTypes = (New,Rerun,Movie,Other);
 const
   NUMDAYS = 'NumDisplayDays';
   NUMHIST = 'NumHistoryItems';
   EMAILADDR = 'emailAddress';
+  TypeClass: array[ProgramTypes] of string = ('green','rose','goldenRod','gray');
 
 procedure Log(const s: string);
 begin
@@ -200,6 +207,7 @@ begin
   ByAll.Checked := False;
   ByGenre.Checked := False;
   ByTitle.Checked := False;
+  byType.Checked := False;
   ByChannel.Checked := False;
 end;
 
@@ -238,6 +246,24 @@ procedure TCWRmainFrm.wcbTitlesFocusOut(Sender: TObject);
 begin
   pnlFilterComboBox.Hide;
   wcbTitles.Hide;
+end;
+
+procedure TCWRmainFrm.wcbTypesChange(Sender: TObject);
+begin
+  EPG.Columns[2].Title := IfThen(wcbTypes.Text = 'All', 'Title', 'Programs with Type: "' + wcbTypes.Text + '"');
+  Log('wcbTypes.Text: ' + wcbTypes.Text);
+  ClearMenuChecks;
+  ByType.Checked := wcbTypes.Text <> 'All';
+  SetFilter(IfThen(ByType.Checked, 'Class = '
+    + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))])));
+  ByAll.Checked := not ByType.Checked;
+  if ByAll.Checked then wcbTypesFocusOut(Sender);
+end;
+
+procedure TCWRmainFrm.wcbTypesFocusOut(Sender: TObject);
+begin
+  pnlFilterComboBox.Hide;
+  wcbTypes.Hide;
 end;
 
 procedure TCWRmainFrm.wcbChannelsChange(Sender: TObject);
@@ -296,7 +322,7 @@ begin
     ,mtInformation, [mbOK]))
 end;
 
-procedure TCWRmainFrm.ResetFilterLists;
+procedure TCWRmainFrm.ClearFilterLists;
 begin
   TLocalStorage.RemoveKey('wcbGenresItems');
   TLocalStorage.RemoveKey('wcbTitlesItems');
@@ -310,7 +336,7 @@ var
 begin
   Log('======== "Refresh Data" clicked');
   {EpgDb}WIDBCDS.Close;
-  ResetFilterLists;
+  ClearFilterLists;
   {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(BufferGrid, 'cwr_epg.csv','EPG', id));
   if BufferGrid.RowCount > 0 then
   begin
@@ -362,7 +388,7 @@ begin
     TWebLocalStorage.SetValue(NUMDAYS, cbNumDisplayDays.Text);
     Log('New number EPG Display Days: ' + cbNumDisplayDays.Text);
     {EpgDb}WIDBCDS.Close;
-    ResetFilterLists;
+    ClearFilterLists;
     {$IfDef PAS2JS}await{$EndIf}(SetupWIDBCDS);
     {$IfDef PAS2JS}await{$EndIf}(ReFreshListings);
   end
@@ -420,6 +446,14 @@ begin
   {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTitles, 'Title'));
   wcbTitles.ItemIndex := wcbTitles.Items.IndexOf({EpgDb}WIDBCDS.{FieldByName('Title')}Fields[3].AsString);
   ByTitle.OnClick := ByTitleClick;
+end;
+
+procedure TCWRmainFrm.byTypeClick(Sender: TObject);
+begin
+  Log('byTypeClick called');
+  byType.OnClick := nil;
+  {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTypes, 'Type'));
+  byType.OnClick := byTypeClick;
 end;
 
 procedure TCWRmainFrm.cbNumDisplayDaysChange(Sender: TObject);
@@ -628,15 +662,15 @@ begin
               WIDBCDS.Fields[i].Value := t;
         Text := WIDBCDS.Fields[8].AsString; // i.e. ProgramID
         if Text.StartsWith('MV') then  // Movie item
-          AColor := 'goldenRod'
+          AColor := {'goldenRod'}TypeClass[Movie]
         else if Text.StartsWith('SH') then  // Generic item
           AColor := IfThen(WIDBCDS.Fields[14].AsString.Contains('"News"'),
-            'green',  // News genre assumed "new"
-            'gray')   // Otherwise generic episode is "unknown time"
+            {'green'}TypeClass[New],  // News genre assumed "new"
+            {'gray'}TypeClass[Other])   // Otherwise generic episode is "unknown time"
         else
           AColor := IfThen(WIDBCDS.Fields[10].AsString <> '',
-            'green',  // Non-generic episode declared "new"
-            'rose');  // Otherwise "rerun"
+            {'green'}TypeClass[New],  // Non-generic episode declared "new"
+            {'rose'}TypeClass[Rerun]);  // Otherwise "rerun"
         WIDBCDS.Fields[15].Value := AColor;
         TAwait.ExecP<Boolean>(WIDBCDS.PostAsync);
 //      if t > Now + StrToInt(cbNumDisplayDays.Text) + 2 then Break;
@@ -895,10 +929,13 @@ procedure TCWRmainFrm.PopupFilterList(cb: TWebComboBox; fn: string);
 begin
   Log('====== PopupFilterList started');
   lblFilterSelect.Caption := 'Choose '
-    + IfThen(fn='genres', 'Genre', IfThen(fn='PSIP', 'Channel', 'Title'));
+    + IfThen(fn='genres', 'Genre',
+      IfThen(fn='PSIP', 'Channel',
+      IfThen(fn='Title', 'Title', 'Type')));
   wcbGenres.Hide;
   wcbTitles.Hide;
   wcbChannels.Hide;
+  wcbTypes.Hide;
   EPG.ClearSelection;
   if cb.Items.Count = 0 then Exit;  // Can happen??
 //    SetupFilterLists;
@@ -1240,7 +1277,7 @@ procedure TCWRmainFrm.EPGGetCellClass(Sender: TObject; ACol,
 begin
   if ARow = 0 then exit;
   if EPG.Cells[3,ARow] = {EpgDb}WIDBCDS.Fields[0].AsString then  {ids=}
-    AClassName := EPG.Cells[4,ARow] // EpgDb.Fields[15].AsString
+    AClassName := EPG.Cells[4,ARow] // WIDBCDS.Fields[15].AsString
   else AClassName := 'white'; // Should not occur!
 end;
 
