@@ -67,7 +67,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 767
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -114,7 +114,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 767
     ElementClassName = 'container-fluid'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -254,7 +254,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 767
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -339,7 +339,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 767
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -487,7 +487,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 767
     ElementClassName = 'greenBG'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -653,7 +653,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 767
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -672,7 +672,7 @@ object CWRmainFrm: TCWRmainFrm
     TabOrder = 5
     DesignSize = (
       428
-      733)
+      767)
     object lblEmptyEPG: TWebLabel
       Left = 96
       Top = 58
@@ -703,7 +703,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 733
+      Height = 767
       Align = alClient
       BorderStyle = bsNone
       Color = clNavy
@@ -814,7 +814,7 @@ object CWRmainFrm: TCWRmainFrm
         WidthStyle = ssAuto
         WidthPercent = 100.000000000000000000
       end
-      object WebComboBox1: TWebComboBox
+      object wcbGenres: TWebComboBox
         AlignWithMargins = True
         Left = 3
         Top = 31
@@ -835,12 +835,11 @@ object CWRmainFrm: TCWRmainFrm
         Visible = False
         WidthStyle = ssPercent
         WidthPercent = 100.000000000000000000
-        OnChange = WebComboBox1Change
-        OnDblClick = WebComboBox1Change
-        OnFocusOut = WebComboBox1FocusOut
+        OnChange = wcbGenresChange
+        OnFocusOut = wcbGenresFocusOut
         ItemIndex = -1
       end
-      object WebComboBox2: TWebComboBox
+      object wcbTitles: TWebComboBox
         AlignWithMargins = True
         Left = 3
         Top = 31
@@ -861,12 +860,11 @@ object CWRmainFrm: TCWRmainFrm
         Visible = False
         WidthStyle = ssPercent
         WidthPercent = 100.000000000000000000
-        OnChange = WebComboBox2Change
-        OnDblClick = WebComboBox2Change
-        OnFocusOut = WebComboBox2FocusOut
+        OnChange = wcbTitlesChange
+        OnFocusOut = wcbTitlesFocusOut
         ItemIndex = -1
       end
-      object WebComboBox3: TWebComboBox
+      object wcbChannels: TWebComboBox
         AlignWithMargins = True
         Left = 3
         Top = 31
@@ -887,9 +885,8 @@ object CWRmainFrm: TCWRmainFrm
         Visible = False
         WidthStyle = ssPercent
         WidthPercent = 100.000000000000000000
-        OnChange = WebComboBox3Change
-        OnDblClick = WebComboBox3Change
-        OnFocusOut = WebComboBox3FocusOut
+        OnChange = wcbChannelsChange
+        OnFocusOut = wcbChannelsFocusOut
         ItemIndex = -1
       end
     end
