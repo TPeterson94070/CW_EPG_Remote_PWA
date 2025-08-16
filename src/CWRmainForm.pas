@@ -122,7 +122,6 @@ type
 private
   { Private declarations }
   [async] procedure LogDataRange;
-  procedure ClearMenuChecks;
   procedure ReloadSG(SG: TWebStringGrid; LSName: string);  [async]
   [async] procedure SetPage(PageNum: Integer);
   [async]
@@ -151,6 +150,7 @@ private
   [async] procedure SetupEpg;
   [async] procedure PopupFilterList(cb: TWebComboBox; fn: string);
   [async] procedure SetFilter(fltr: string);
+  [async] procedure SetFilters;
   [async] procedure ShowPlsWait(PlsWaitCap: string);
   [async] procedure SetupFilterLists;
 public
@@ -202,26 +202,12 @@ begin
 
 end;
 
-procedure TCWRmainFrm.ClearMenuChecks;
-begin
-  ByAll.Checked := False;
-  ByGenre.Checked := False;
-  ByTitle.Checked := False;
-  byType.Checked := False;
-  ByChannel.Checked := False;
-end;
-
 procedure TCWRmainFrm.wcbGenresChange(Sender: TObject);
 begin
-  EPG.Columns[2].Title := IfThen(wcbGenres.Text = 'All', 'Title', 'Programs in genre "' + wcbGenres.Text + '"');
   Log('wcbGenres.Text: ' + wcbGenres.Text);
-  ClearMenuChecks;
   ByGenre.Checked := wcbGenres.Text <> 'All';
-  // Replace esc "\" with wildcard "_"
-  SetFilter(IfThen(ByGenre.Checked, 'genres like '
-    + QuotedStr('%"'+ReplaceStr(wcbGenres.Text, '/', '_')+'"%'), ''));
-  ByAll.Checked := not ByGenre.Checked;
-  if ByAll.Checked then wcbGenresFocusOut(Sender);
+  if ByGenre.Checked then ByAll.Checked := False;
+  SetFilters;
 end;
 
 procedure TCWRmainFrm.wcbGenresFocusOut(Sender: TObject);
@@ -229,17 +215,13 @@ begin
   pnlFilterComboBox.Hide;
   wcbGenres.Hide;
 end;
-                               { TODO : Add Type filter and Title Search to menu }
+                               { TODO : Add Title Search to menu }
 procedure TCWRmainFrm.wcbTitlesChange(Sender: TObject);
 begin
-  EPG.Columns[2].Title := 'Title'
-    + IfThen(wcbTitles.Text <> 'All', ': "' + wcbTitles.Text + '"');
   Log('wcbTitles.Text: ' + wcbTitles.Text);
-  ClearMenuChecks;
   ByTitle.Checked := wcbTitles.Text <> 'All';
-  SetFilter(IfThen(ByTitle.Checked, 'Title = ' + QuotedStr(wcbTitles.Text)));
-  ByAll.Checked := not ByTitle.Checked;
-  if ByAll.Checked then wcbTitlesFocusOut(Sender);
+  if ByTitle.Checked then ByAll.Checked := False;
+  SetFilters;
 end;
 
 procedure TCWRmainFrm.wcbTitlesFocusOut(Sender: TObject);
@@ -250,14 +232,10 @@ end;
 
 procedure TCWRmainFrm.wcbTypesChange(Sender: TObject);
 begin
-  EPG.Columns[2].Title := IfThen(wcbTypes.Text = 'All', 'Title', 'Programs with Type: "' + wcbTypes.Text + '"');
   Log('wcbTypes.Text: ' + wcbTypes.Text);
-  ClearMenuChecks;
   ByType.Checked := wcbTypes.Text <> 'All';
-  SetFilter(IfThen(ByType.Checked, 'Class = '
-    + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))])));
-  ByAll.Checked := not ByType.Checked;
-  if ByAll.Checked then wcbTypesFocusOut(Sender);
+  if byType.Checked then ByAll.Checked := False;
+  SetFilters;
 end;
 
 procedure TCWRmainFrm.wcbTypesFocusOut(Sender: TObject);
@@ -268,13 +246,10 @@ end;
 
 procedure TCWRmainFrm.wcbChannelsChange(Sender: TObject);
 begin
-  EPG.Columns[2].Title := IfThen(wcbChannels.Text = 'All', 'Title', 'Programs on channel "' + wcbChannels.Text + '"');
   Log('wcbChannels.Text: ' + wcbChannels.Text);
-  ClearMenuChecks;
   ByChannel.Checked := wcbChannels.Text <> 'All';
-  SetFilter(IfThen(ByChannel.Checked, 'PSIP = ' + QuotedStr(wcbChannels.Text), ''));
-  ByAll.Checked := not ByChannel.Checked;
-  if ByAll.Checked then wcbChannelsFocusOut(Sender);
+  if ByChannel.Checked then ByAll.Checked := False;
+  SetFilters;
 end;
 
 procedure TCWRmainFrm.wcbChannelsFocusOut(Sender: TObject);
@@ -413,12 +388,15 @@ begin
   Log('ByAllClick called');
   ByAll.OnClick := nil;
   EPG.Columns[2].Title := 'Title';
-  ClearMenuChecks;
+  ByGenre.Checked := False;
+  ByTitle.Checked := False;
+  byType.Checked := False;
+  ByChannel.Checked := False;
   pnlFilterComboBox.Hide;
   ByAll.Checked := True;
   VisiblePanelNum := 0;
   if {EpgDb}WIDBCDS.Filter {> ''}<> BaseFilter then
-    {$IfDef PAS2JS}await{$EndIf}(SetFilter(''));
+    {$IfDef PAS2JS}await{$EndIf}(SetFilters);
   {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
   ByAll.OnClick := ByAllClick;
 end;
@@ -427,7 +405,13 @@ procedure TCWRmainFrm.ByChannelClick(Sender: TObject);
 begin
   Log('ByChannelClick called');
   ByChannel.OnClick := nil;
-  {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbChannels, 'PSIP'));
+  if ByChannel.Checked then // Toggle off this filter
+  begin
+    ByChannel.Checked := False;
+    wcbChannels.ItemIndex := -1;
+    {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+  end else
+    {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbChannels, 'PSIP'));
   ByChannel.OnClick := ByChannelClick;
 end;
 
@@ -435,7 +419,13 @@ procedure TCWRmainFrm.ByGenreClick(Sender: TObject);
 begin
   Log('ByGenreClick called');
   ByGenre.OnClick := nil;
-  {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbGenres, 'genres'));
+  if ByGenre.Checked then // Toggle off this filter
+  begin
+    ByGenre.Checked := False;
+    wcbGenres.ItemIndex := -1;
+    {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+  end else
+    {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbGenres, 'genres'));
   ByGenre.OnClick := ByGenreClick;
 end;
 
@@ -443,8 +433,14 @@ procedure TCWRmainFrm.ByTitleClick(Sender: TObject);
 begin
   Log('byTitleClick called');
   ByTitle.OnClick := nil;
-  {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTitles, 'Title'));
-  wcbTitles.ItemIndex := wcbTitles.Items.IndexOf({EpgDb}WIDBCDS.{FieldByName('Title')}Fields[3].AsString);
+  if ByTitle.Checked then // Toggle off this filter
+  begin
+    ByTitle.Checked := False;
+    wcbTitles.ItemIndex := -1;
+    {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+  end else
+    {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTitles, 'Title'));
+//  wcbTitles.ItemIndex := wcbTitles.Items.IndexOf({EpgDb}WIDBCDS.{FieldByName('Title')}Fields[3].AsString);
   ByTitle.OnClick := ByTitleClick;
 end;
 
@@ -452,7 +448,13 @@ procedure TCWRmainFrm.byTypeClick(Sender: TObject);
 begin
   Log('byTypeClick called');
   byType.OnClick := nil;
-  {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTypes, 'Type'));
+  if byType.Checked then // Toggle off this filter
+  begin
+    byType.Checked := False;
+    wcbTypes.ItemIndex := -1;
+    {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+  end else
+    {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTypes, 'Type'));
   byType.OnClick := byTypeClick;
 end;
 
@@ -932,6 +934,7 @@ begin
     + IfThen(fn='genres', 'Genre',
       IfThen(fn='PSIP', 'Channel',
       IfThen(fn='Title', 'Title', 'Type')));
+  ByAll.Checked := False;
   wcbGenres.Hide;
   wcbTitles.Hide;
   wcbChannels.Hide;
@@ -959,6 +962,42 @@ begin
   Log('BaseFilter: ' + BaseFilter);
   if fltr>'' then Log('Epg Filter: BaseFilter + ' + fltr);
   {EpgDb}WIDBCDS.Filter := BaseFilter + IfThen(fltr>'', ' and ' + fltr);
+  {EpgDb}WIDBCDS.Filtered := True;
+  {EpgDb}WIDBCDS.EnableControls;
+  EPG.DataSource := WebDataSource1;
+  EPG.EndUpdate;
+  EPG.Refresh;
+  {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
+  EPG.Show;
+  pnlWaitPls.Hide;
+end;
+
+procedure TCWRmainFrm.SetFilters;
+var
+  fltr: string;
+begin
+  {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, '(Un)') + 'Filtered List'));
+  EPG.BeginUpdate;
+  EPG.Hide;
+  EPG.DataSource := nil;
+  EPG.Columns[2].Title := IfThen(ByChannel.Checked, wcbChannels.Text + ' ')
+    + IfThen(byType.Checked, wcbTypes.Text + ' ')
+    + IfThen(ByGenre.Checked, wcbGenres.Text + ' ') + 'Programs'
+    + IfThen(ByTitle.Checked, ' Titled ' + QuotedStr(wcbTitles.Text));
+  EPG.ColWidths[0] := IfThen(ByChannel.Checked, 0, 75);
+  {EpgDb}WIDBCDS.DisableControls;
+  {EpgDb}WIDBCDS.Filtered := False;
+  Log('BaseFilter: ' + BaseFilter);
+  fltr := '';
+  if ByGenre.Checked then fltr := fltr + ' and genres like '
+    + QuotedStr('%"'+ReplaceStr(wcbGenres.Text, '/', '_')+'"%');
+  if ByTitle.Checked then fltr := fltr + ' and Title = ' + QuotedStr(wcbTitles.Text);
+  if ByChannel.Checked then fltr := fltr + ' and PSIP = ' + QuotedStr(wcbChannels.Text);
+  if ByType.Checked then fltr := fltr + ' and Class = '
+    + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
+  if fltr>'' then Log('Epg Filter: BaseFilter + ' + fltr);
+  if fltr>'' then ByAll.Checked := False;
+  {EpgDb}WIDBCDS.Filter := BaseFilter + fltr;
   {EpgDb}WIDBCDS.Filtered := True;
   {EpgDb}WIDBCDS.EnableControls;
   EPG.DataSource := WebDataSource1;

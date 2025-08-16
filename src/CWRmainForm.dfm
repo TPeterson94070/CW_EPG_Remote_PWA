@@ -973,17 +973,14 @@ object CWRmainFrm: TCWRmainFrm
     end
     object ByGenre: TMenuItem
       Caption = 'Filter by Genre'
-      RadioItem = True
       OnClick = ByGenreClick
     end
     object ByTitle: TMenuItem
       Caption = 'Filter by Title'
-      RadioItem = True
       OnClick = ByTitleClick
     end
     object ByChannel: TMenuItem
       Caption = 'Filter by Channel'
-      RadioItem = True
       OnClick = ByChannelClick
     end
     object byType: TMenuItem
