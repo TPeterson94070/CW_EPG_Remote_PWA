@@ -355,6 +355,7 @@ end;
 
 procedure TCWRmainFrm.btnOptOKClick(Sender: TObject);
 begin
+  Log('OptOK called');
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Updating Settings'));
   TWebLocalStorage.SetValue(NUMHIST, cbNumHistList.Text);
   Log('New number History Display Days: ' + cbNumHistList.Text);
@@ -368,6 +369,7 @@ begin
     {$IfDef PAS2JS}await{$EndIf}(ReFreshListings);
   end
   else ByAllClick(Self);
+  Log('OptOK finished');
 end;
 
 procedure TCWRmainFrm.btnRefreshDataClick(Sender: TObject);
@@ -1039,7 +1041,7 @@ begin
   if {EpgDb}WIDBCDS.RecordCount > 0 then
   begin
     {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + Min(StrToIntDef(cbNumDisplayDays.Text, 1), TotalAvailableDays).ToString + '-day Listing.'));
-    EPG.Refresh;
+//    EPG.Refresh;
     ByAllClick(Self)
   end
   else TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'
@@ -1051,7 +1053,9 @@ end;
 
 procedure TCWRmainFrm.ScheduledClick(Sender: TObject);
 begin
+  Log('Scheduled called');
   {$IfDef PAS2JS}await{$EndIf}(SetPage(1));
+  Log('Scheduled visible');
 end;
 
 
@@ -1206,7 +1210,9 @@ end;
 
 procedure TCWRmainFrm.HistoryClick(Sender: TObject);
 begin
+  Log('History called');
   {$IfDef PAS2JS}await{$EndIf}(SetPage(2));
+  Log('History visible');
 end;
 
 procedure TCWRmainFrm.HistoryTableFixedCellClick(Sender: TObject; ACol,
@@ -1298,7 +1304,9 @@ end;
 
 procedure TCWRmainFrm.Settings1Click(Sender: TObject);
 begin
+  Log('Settings called');
   {$IfDef PAS2JS}await{$EndIf}(SetPage(4));
+  Log('Settings visible');
 end;
 
 procedure SetLabelStyle(lbl: TWebLabel; State: Boolean);
@@ -1594,7 +1602,9 @@ end;
 
 procedure TCWRmainFrm.ViewLog1Click(Sender: TObject);
 begin
+  Log('ViewLog called');
   {$IfDef PAS2JS}await{$EndIf}(SetPage(3));
+  Log('Log visible');
 end;
 
 procedure TCWRmainFrm.CreateGoogleFile(FName: string; var id: string);
