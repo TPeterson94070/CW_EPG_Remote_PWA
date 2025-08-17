@@ -40613,16 +40613,24 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       };
     };
     this.HistoryClick = async function (Sender) {
+      $impl.Log("History called");
       await this.SetPage(2);
+      $impl.Log("History visible");
     };
     this.ScheduledClick = async function (Sender) {
+      $impl.Log("Scheduled called");
       await this.SetPage(1);
+      $impl.Log("Scheduled visible");
     };
     this.ViewLog1Click = async function (Sender) {
+      $impl.Log("ViewLog called");
       await this.SetPage(3);
+      $impl.Log("Log visible");
     };
     this.Settings1Click = async function (Sender) {
+      $impl.Log("Settings called");
       await this.SetPage(4);
+      $impl.Log("Settings visible");
     };
     this.EPGClickCell = async function (Sender, ACol, ARow) {
       var DetailsFrm = null;
@@ -40902,6 +40910,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.wcbChannels.Hide();
     };
     this.btnOptOKClick = async function (Sender) {
+      $impl.Log("OptOK called");
       await this.ShowPlsWait("Updating Settings");
       pas["WEBLib.Storage"].TLocalStorage.SetValue($impl.NUMHIST,this.cbNumHistList.GetText());
       $impl.Log("New number History Display Days: " + this.cbNumHistList.GetText());
@@ -40913,6 +40922,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         await this.SetupWIDBCDS();
         await this.ReFreshListings();
       } else this.ByAllClick(this);
+      $impl.Log("OptOK finished");
     };
     this.btnSchdRefrshClick = async function (Sender) {
       await this.FetchCapReservations();
@@ -41169,7 +41179,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           }, set: function (v) {
             this.a = v;
           }}) + "-day Listing.");
-        this.EPG.Refresh();
         this.ByAllClick(this);
       } else await pas["WEBLib.Dialogs"].MessageDlgAsync("There are no current data!" + "\r\rTo update, please use the Refresh Data button.",2,rtl.createSet(2));
       this.EPG.SetVisible(true);
