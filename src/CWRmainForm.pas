@@ -62,8 +62,6 @@ type
     lblFilterSelect: TWebLabel;
     WebHTMLDiv4: TWebHTMLDiv;
     HistoryGrid: TWebStringGrid;
-    EpgDb: TWebClientDataSet;
-    CurrEpgDbOld: TWebClientDataSet;
     cbNumDisplayDays: TWebComboBox;
     cbNumHistList: TWebComboBox;
     btnOptOK: TWebButton;
@@ -310,7 +308,7 @@ var
   StartT: TDateTime;
 begin
   Log('======== "Refresh Data" clicked');
-  {EpgDb}WIDBCDS.Close;
+  WIDBCDS.Close;
   ClearFilterLists;
   {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(BufferGrid, 'cwr_epg.csv','EPG', id));
   if BufferGrid.RowCount > 0 then
@@ -363,7 +361,7 @@ begin
   begin
     TWebLocalStorage.SetValue(NUMDAYS, cbNumDisplayDays.Text);
     Log('New number EPG Display Days: ' + cbNumDisplayDays.Text);
-    {EpgDb}WIDBCDS.Close;
+    WIDBCDS.Close;
     ClearFilterLists;
     {$IfDef PAS2JS}await{$EndIf}(SetupWIDBCDS);
     {$IfDef PAS2JS}await{$EndIf}(ReFreshListings);
@@ -401,7 +399,7 @@ begin
   pnlFilterComboBox.Hide;
   ByAll.Checked := True;
   VisiblePanelNum := 0;
-  if {EpgDb}WIDBCDS.Filter {> ''}<> BaseFilter then
+  if WIDBCDS.Filter {> ''}<> BaseFilter then
     {$IfDef PAS2JS}await{$EndIf}(SetFilters);
   {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
   ByAll.OnClick := ByAllClick;
@@ -446,7 +444,7 @@ begin
     {$IfDef PAS2JS}await{$EndIf}(SetFilters);
   end else
     {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTitles, 'Title'));
-//  wcbTitles.ItemIndex := wcbTitles.Items.IndexOf({EpgDb}WIDBCDS.{FieldByName('Title')}Fields[3].AsString);
+//  wcbTitles.ItemIndex := wcbTitles.Items.IndexOf(WIDBCDS.{FieldByName('Title')}Fields[3].AsString);
   ByTitle.OnClick := ByTitleClick;
 end;
 
@@ -796,21 +794,14 @@ begin
     WIDBCDS.FieldDefs.Add('id', ftInteger, 0, True);
     // add normal fields
     for DbField in DBFIELDS do
-//    for i := 0 to Length(DBFIELDS) - 1 do
     begin
-      if ({DBFIELDS[i]}DbField = 'StartTime') or ({DBFIELDS[i]}DbField = 'EndTime') then
-        WIDBCDS.FieldDefs.Add({DBFIELDS[i]}DbField, ftDateTime)
+      if (DbField = 'StartTime') or (DbField = 'EndTime') then
+        WIDBCDS.FieldDefs.Add(DbField, ftDateTime)
       else
-        WIDBCDS.FieldDefs.Add({DBFIELDS[i]}DbField, ftString);
+        WIDBCDS.FieldDefs.Add(DbField, ftString);
     end;
     TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   end;
-//  EpgDb.FieldDefs.Clear;
-//  EpgDb.FieldDefs.Add('id', ftInteger); //, 0, True);
-//  for i := 0 to 2 do
-//    EpgDb.FieldDefs.Add(DBFIELDS[i], ftString);
-//  EpgDb.FieldDefs.Add(DBFIELDS[13], ftString);
-//  EpgDb.FieldDefs.Add(DBFIELDS[14], ftString);
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active, 'not ')
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   {$IfDef PAS2JS}await{$EndIf}(LogDataRange);
@@ -828,7 +819,6 @@ end;
 procedure TCWRmainFrm.SetupEpg;
 var
   FirstEndTime, LastStartTime:  TDateTime;
-//  i: Integer;
 
 begin
   Log('====== SetupEpg called');
@@ -836,42 +826,17 @@ begin
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing Stored Data'));
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
   LastStartTime := FirstEndTime + StrToIntDef(cbNumDisplayDays.Text,1);
-//  WIDBCDS.DisableControls;
-//  EpgDb.DisableControls;
-//  EpgDb.Filtered := False;
-//  EpgDb.Active := True;
-//  EpgDb.EmptyDataSet;
-//  WIDBCDS.First;
-//  while not WIDBCDS.Eof do
-//  begin
-//    if (WIDBCDS.Fields[7].AsDateTime >= FirstEndTime) and
-//       (WIDBCDS.Fields[6].AsDateTime <= LastStartTime) then
-//    begin
-//      EpgDb.Append;
-//      for i := 0 to 3 do
-//        EpgDb.Fields[i] := WIDBCDS.Fields[i];
-//      for i := 14 to 15 do
-//        EpgDb.Fields[i-10] := WIDBCDS.Fields[i];
-//      EpgDb.Post;
-//    end;
-//    WIDBCDS.Next;
-//  end;
-//  Log('SetupEpg: EpgDb record count: ' + EpgDb.RecordCount.ToString);
   BaseFilter := 'EndTime >= ' + Double(FirstEndTime).ToString + ' and '
       + 'StartTime <= ' + Double(LastStartTime).ToString;
   WIDBCDS.Filter := BaseFilter;
 //  WIDBCDS.Filtered := True;   // Don't take the time here
 
-//  if EpgDb.RecordCount > 0 then
-//  begin
-    WebDataSource1.DataSet := {EpgDb}WIDBCDS;
-    EPG.DataSource := WebDataSource1;
-    EPG.Columns[0].Alignment := taCenter;
-    EPG.Columns[2].Alignment := taLeftJustify;
-//    EpgDb.EnableControls;
-//  end;
-//  WIDBCDS.EnableControls;
+  WebDataSource1.DataSet := WIDBCDS;
+  EPG.DataSource := WebDataSource1;
+  EPG.Columns[0].Alignment := taCenter;
+  EPG.Columns[2].Alignment := taLeftJustify;
   {$IfDef PAS2JS}await{$EndIf}(SetupFilterLists);
+  if not WIDBCDS.Filtered then WIDBCDS.Filtered := True;   // Take the hit now if not before
   Log('====== SetupEpg finished');
 end;
 
@@ -881,12 +846,10 @@ var
   fn, i: Integer;
   x, y: string;
   sl: TStringList;
-//  EpgDbTemp: TWebClientDataSet;
   cb: TWebComboBox;
 begin
   Log('====== SetupFilterLists started');
   sl := TStringList.Create;
-//  EpgDbTemp := TWebClientDataSet(EpgDb.GetClonedDataSet(False));
   for i := 1 to 3 do
   begin
     case i of
@@ -908,7 +871,7 @@ begin
       cb.Items.AddStrings(TLocalStorage.GetValue(cb.Name + 'Items').Split([#10], TStringSplitOptions.ExcludeEmpty));
       Continue;
     end;
-    if not {EpgDbTemp}WIDBCDS.ControlsDisabled then {EpgDbTemp}WIDBCDS.DisableControls;
+    if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
     if not WIDBCDS.Filtered then WIDBCDS.Filtered := True;   // Take the hit now
     cb.ItemIndex := -1;
     cb.Items.Clear;
@@ -918,11 +881,11 @@ begin
     sl.Sorted := True;
     sl.Duplicates := dupIgnore;
     sl.BeginUpdate;
-    {EpgDbTemp}WIDBCDS.First;
+    WIDBCDS.First;
     Log('Looping over Epg for ' + cb.Name + ' Items');
-    while not {EpgDbTemp}WIDBCDS.Eof do
+    while not WIDBCDS.Eof do
     begin
-      x := {EpgDbTemp}WIDBCDS.Fields[fn].AsString;
+      x := WIDBCDS.Fields[fn].AsString;
       if cb = wcbGenres then
       begin
         y := ReplaceStr(x, '\', ''); // Remove escape "\" char
@@ -932,7 +895,7 @@ begin
           sl.Add(x);
       end
       else sl.Add(x);
-      {EpgDbTemp}WIDBCDS.Next;
+      WIDBCDS.Next;
     end;
     Log('====== Finished Epg DB scan');
     sl.EndUpdate;
@@ -944,7 +907,6 @@ begin
     TLocalStorage.SetValue(cb.Name + 'Items', cb.Items.Text);
   end;
   sl.Free;
-//  EpgDbTemp.Free;
   if WIDBCDS.ControlsDisabled then WIDBCDS.EnableControls;
   Log('====== Exiting SetupFilterLists');
 end;
@@ -978,15 +940,13 @@ begin
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(fltr='','Un') + 'Filtered List'));
   EPG.BeginUpdate;
   EPG.Hide;
-//  EPG.DataSource := nil;
-  {EpgDb}WIDBCDS.DisableControls;
-  {EpgDb}WIDBCDS.Filtered := False;
+  WIDBCDS.DisableControls;
+  WIDBCDS.Filtered := False;
   Log('BaseFilter: ' + BaseFilter);
   if fltr>'' then Log('Epg Filter: BaseFilter + ' + fltr);
-  {EpgDb}WIDBCDS.Filter := BaseFilter + IfThen(fltr>'', ' and ' + fltr);
-  {EpgDb}WIDBCDS.Filtered := True;
-  {$IfDef PAS2JS}await{$EndIf}({EpgDb}WIDBCDS.EnableControls);
-//  EPG.DataSource := WebDataSource1;
+  WIDBCDS.Filter := BaseFilter + IfThen(fltr>'', ' and ' + fltr);
+  WIDBCDS.Filtered := True;
+  {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
   EPG.EndUpdate;
   EPG.Refresh;
   {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
@@ -1008,8 +968,8 @@ begin
     + IfThen(ByGenre.Checked, wcbGenres.Text + ' ') + 'Programs'
     + IfThen(ByTitle.Checked, ' Titled ' + QuotedStr(wcbTitles.Text));
   EPG.ColWidths[0] := IfThen(ByChannel.Checked, 0, 75);
-  {EpgDb}WIDBCDS.DisableControls;
-  {EpgDb}WIDBCDS.Filtered := False;
+  WIDBCDS.DisableControls;
+  WIDBCDS.Filtered := False;
   Log('BaseFilter: ' + BaseFilter);
   fltr := '';
   if ByGenre.Checked then fltr := fltr + ' and genres like '
@@ -1020,9 +980,9 @@ begin
     + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
   if fltr>'' then Log('Epg Filter: BaseFilter + ' + fltr);
 //  if fltr>'' then ByAll.Checked := False;
-  {EpgDb}WIDBCDS.Filter := BaseFilter + fltr;
-  {EpgDb}WIDBCDS.Filtered := True;
-  {EpgDb}WIDBCDS.EnableControls;
+  WIDBCDS.Filter := BaseFilter + fltr;
+  WIDBCDS.Filtered := True;
+  WIDBCDS.EnableControls;
   EPG.DataSource := WebDataSource1;
   EPG.EndUpdate;
   EPG.Refresh;
@@ -1051,7 +1011,7 @@ begin
   {$IfDef PAS2JS}await{$EndIf}(SetupEpg);
   Log('Days to Display, Available: ' + cbNumDisplayDays.Text + ', ' + TotalAvailableDays.ToString);
 
-  if {EpgDb}WIDBCDS.RecordCount > 0 then
+  if WIDBCDS.RecordCount > 0 then
   begin
     {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + Min(StrToIntDef(cbNumDisplayDays.Text, 1), TotalAvailableDays).ToString + '-day Listing.'));
     EPG.Refresh;
@@ -1344,7 +1304,7 @@ procedure TCWRmainFrm.EPGGetCellClass(Sender: TObject; ACol,
 { show listings row in color coded for type based on current IDB record }
 begin
   if ARow = 0 then exit;
-  if EPG.Cells[3,ARow] = {EpgDb}WIDBCDS.Fields[0].AsString then  {ids=}
+  if EPG.Cells[3,ARow] = WIDBCDS.Fields[0].AsString then  {ids=}
     AClassName := EPG.Cells[4,ARow] // WIDBCDS.Fields[15].AsString
   else AClassName := 'white'; // Should not occur!
 end;
