@@ -1378,12 +1378,14 @@ begin
       Log('========== Located ' + EPG.Cells[3,ARow]);
       DetailsFrm := TDetailsFrm.Create(nil);
       Log('========== finished TDetailsFrm.Create(nil) ');
-//      DetailsFrm.Popup := True;
+      DetailsFrm.Popup := True;
       DetailsFrm.Border := fbSingle;
       Log('========== starting DetailsFrm.Load ');
       // load file HTML template + controls
       try
+        EPG.DataSource := nil;
         TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load);
+        EPG.DataSource := WebDataSource1;
       except
         on E:Exception do
         ShowMessage('Exception from DetailsFrm.Load: ' + E.Message);

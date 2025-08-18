@@ -40665,10 +40665,13 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           $impl.Log("========== Located " + this.EPG.GetCells(3,ARow));
           DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[null]);
           $impl.Log("========== finished TDetailsFrm.Create(nil) ");
+          DetailsFrm.FPopup = true;
           DetailsFrm.SetBorder(1);
           $impl.Log("========== starting DetailsFrm.Load ");
           try {
+            this.EPG.SetDataSource(null);
             await DetailsFrm.Load();
+            this.EPG.SetDataSource(this.WebDataSource1);
           } catch ($e) {
             if (pas.SysUtils.Exception.isPrototypeOf($e)) {
               var E = $e;
