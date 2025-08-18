@@ -978,15 +978,15 @@ begin
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(fltr='','Un') + 'Filtered List'));
   EPG.BeginUpdate;
   EPG.Hide;
-  EPG.DataSource := nil;
+//  EPG.DataSource := nil;
   {EpgDb}WIDBCDS.DisableControls;
   {EpgDb}WIDBCDS.Filtered := False;
   Log('BaseFilter: ' + BaseFilter);
   if fltr>'' then Log('Epg Filter: BaseFilter + ' + fltr);
   {EpgDb}WIDBCDS.Filter := BaseFilter + IfThen(fltr>'', ' and ' + fltr);
   {EpgDb}WIDBCDS.Filtered := True;
-  {EpgDb}WIDBCDS.EnableControls;
-  EPG.DataSource := WebDataSource1;
+  {$IfDef PAS2JS}await{$EndIf}({EpgDb}WIDBCDS.EnableControls);
+//  EPG.DataSource := WebDataSource1;
   EPG.EndUpdate;
   EPG.Refresh;
   {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
@@ -998,6 +998,7 @@ procedure TCWRmainFrm.SetFilters;
 var
   fltr: string;
 begin
+  ByAll.Checked := not (ByChannel.Checked or ByGenre.Checked or ByTitle.Checked or byType.Checked);
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, '(Un)') + 'Filtered List'));
   EPG.BeginUpdate;
   EPG.Hide;
@@ -1018,7 +1019,7 @@ begin
   if ByType.Checked then fltr := fltr + ' and Class = '
     + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
   if fltr>'' then Log('Epg Filter: BaseFilter + ' + fltr);
-  if fltr>'' then ByAll.Checked := False;
+//  if fltr>'' then ByAll.Checked := False;
   {EpgDb}WIDBCDS.Filter := BaseFilter + fltr;
   {EpgDb}WIDBCDS.Filtered := True;
   {EpgDb}WIDBCDS.EnableControls;

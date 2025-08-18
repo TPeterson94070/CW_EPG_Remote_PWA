@@ -41480,6 +41480,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     };
     this.SetFilters = async function () {
       var fltr = "";
+      this.ByAll.SetChecked(!(this.ByChannel.FChecked || this.ByGenre.FChecked || this.ByTitle.FChecked || this.byType.FChecked));
       await this.ShowPlsWait("Preparing " + pas.StrUtils.IfThen(this.ByAll.FChecked,"(Un)","") + "Filtered List");
       this.EPG.BeginUpdate();
       this.EPG.Hide();
@@ -41495,7 +41496,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       if (this.ByChannel.FChecked) fltr = fltr + " and PSIP = " + pas.SysUtils.QuotedStr(this.wcbChannels.GetText(),"'");
       if (this.byType.FChecked) fltr = fltr + " and Class = " + pas.SysUtils.QuotedStr($impl.TypeClass[pas.TypInfo.GetEnumValue($mod.$rtti["ProgramTypes"],this.wcbTypes.GetText())],"'");
       if (fltr > "") $impl.Log("Epg Filter: BaseFilter + " + fltr);
-      if (fltr > "") this.ByAll.SetChecked(false);
       this.WIDBCDS.SetFilterText($impl.BaseFilter + fltr);
       this.WIDBCDS.SetFiltered(true);
       this.WIDBCDS.EnableControls();
