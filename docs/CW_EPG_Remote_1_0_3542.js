@@ -40242,8 +40242,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.lblFilterSelect = null;
       this.WebHTMLDiv4 = null;
       this.HistoryGrid = null;
-      this.EpgDb = null;
-      this.CurrEpgDbOld = null;
       this.cbNumDisplayDays = null;
       this.cbNumHistList = null;
       this.btnOptOK = null;
@@ -40298,8 +40296,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.lblFilterSelect = undefined;
       this.WebHTMLDiv4 = undefined;
       this.HistoryGrid = undefined;
-      this.EpgDb = undefined;
-      this.CurrEpgDbOld = undefined;
       this.cbNumDisplayDays = undefined;
       this.cbNumHistList = undefined;
       this.btnOptOK = undefined;
@@ -41465,6 +41461,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.EPG.FColumns.GetItem$1(0).SetAlignment(2);
       this.EPG.FColumns.GetItem$1(2).SetAlignment(0);
       await this.SetupFilterLists();
+      if (!this.WIDBCDS.FFiltered) this.WIDBCDS.SetFiltered(true);
       $impl.Log("====== SetupEpg finished");
     };
     this.PopupFilterList = async function (cb, fn) {
@@ -41646,8 +41643,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.Settings1 = pas["WEBLib.Menus"].TMenuItem.$create("Create$1",[this]);
       this.WebRESTClient1 = pas["WEBLib.REST"].TRESTClient.$create("Create$1",[this]);
       this.WebDataSource1 = pas.DB.TDataSource.$create("Create$1",[this]);
-      this.EpgDb = pas["WEBLib.CDS"].TClientDataSet.$create("Create$1",[this]);
-      this.CurrEpgDbOld = pas["WEBLib.CDS"].TClientDataSet.$create("Create$1",[this]);
       this.WIDBCDS = pas["WEBLib.IndexedDb"].TIndexedDbClientDataset.$create("Create$1",[this]);
       this.BufferGrid.BeforeLoadDFMValues();
       this.pnlMenu.BeforeLoadDFMValues();
@@ -41700,8 +41695,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.Settings1.BeforeLoadDFMValues();
       this.WebRESTClient1.BeforeLoadDFMValues();
       this.WebDataSource1.BeforeLoadDFMValues();
-      this.EpgDb.BeforeLoadDFMValues();
-      this.CurrEpgDbOld.BeforeLoadDFMValues();
       this.WIDBCDS.BeforeLoadDFMValues();
       try {
         this.SetName("CWRmainFrm");
@@ -42737,14 +42730,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebDataSource1.SetDataSet(this.WIDBCDS);
         this.WebDataSource1.SetLeft(296);
         this.WebDataSource1.SetTop(216);
-        this.EpgDb.SetParentComponent(this);
-        this.EpgDb.SetName("EpgDb");
-        this.EpgDb.SetLeft(200);
-        this.EpgDb.SetTop(392);
-        this.CurrEpgDbOld.SetParentComponent(this);
-        this.CurrEpgDbOld.SetName("CurrEpgDbOld");
-        this.CurrEpgDbOld.SetLeft(208);
-        this.CurrEpgDbOld.SetTop(400);
         this.WIDBCDS.SetParentComponent(this);
         this.WIDBCDS.SetName("WIDBCDS");
         this.WIDBCDS.FIDBDatabaseName = "CWRDB-Manual-id";
@@ -42806,8 +42791,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.Settings1.AfterLoadDFMValues();
         this.WebRESTClient1.AfterLoadDFMValues();
         this.WebDataSource1.AfterLoadDFMValues();
-        this.EpgDb.AfterLoadDFMValues();
-        this.CurrEpgDbOld.AfterLoadDFMValues();
         this.WIDBCDS.AfterLoadDFMValues();
       };
     };
@@ -42858,8 +42841,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addField("lblFilterSelect",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
     $r.addField("WebHTMLDiv4",pas["WEBLib.WebCtrls"].$rtti["THTMLDiv"]);
     $r.addField("HistoryGrid",pas["WEBLib.Grids"].$rtti["TStringGrid"]);
-    $r.addField("EpgDb",pas["WEBLib.CDS"].$rtti["TClientDataSet"]);
-    $r.addField("CurrEpgDbOld",pas["WEBLib.CDS"].$rtti["TClientDataSet"]);
     $r.addField("cbNumDisplayDays",pas["WEBLib.StdCtrls"].$rtti["TComboBox"]);
     $r.addField("cbNumHistList",pas["WEBLib.StdCtrls"].$rtti["TComboBox"]);
     $r.addField("btnOptOK",pas["WEBLib.StdCtrls"].$rtti["TButton"]);
