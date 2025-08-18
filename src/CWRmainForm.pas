@@ -1357,6 +1357,7 @@ var
 //  CurrentRow: Integer;
 
 begin
+  EPG.OnClickCell := nil;
 //  EPG.Enabled := False;
 //    {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
     CurrentID := EPG.Cells[3,ARow];
@@ -1464,6 +1465,7 @@ begin
 //  {$IfDef PAS2JS}await{$EndIf}(EPG.Show); //.Enabled := True;
   {$IfDef PAS2JS}await{$EndIf}(EPG.Refresh);
 //  WebMainMenu1.Enabled := True;
+  EPG.OnClickCell := EPGClickCell;
   pnlWaitPls.Hide;
 end;
 
