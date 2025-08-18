@@ -40647,7 +40647,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var x = [];
       var CurrentID = "";
       CurrentID = this.EPG.GetCells(3,ARow);
-      this.EPG.SetDataSource(null);
       $impl.Log("========== EPGClickCell() called from RC " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
           return ARow;
         }, set: function (v) {
@@ -40752,7 +40751,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       };
       await this.ShowPlsWait("Refreshing List");
       if (this.WIDBCDS.ControlsDisabled()) await this.WIDBCDS.EnableControls();
-      this.EPG.SetDataSource(this.WebDataSource1);
       await this.EPG.Refresh();
       this.EPG.FOnClickCell = rtl.createCallback(this,"EPGClickCell");
       this.pnlWaitPls.Hide();

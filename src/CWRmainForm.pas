@@ -1363,7 +1363,7 @@ begin
     CurrentID := EPG.Cells[3,ARow];
 //  WebDataSource1.Enabled := False;
 //  CurrentRow := ARow;
-  EPG.DataSource := nil;
+//  EPG.DataSource := nil;
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   // Quit Combobox if still open
   if pnlFilterComboBox.Visible then pnlFilterComboBox.Hide;
@@ -1458,7 +1458,7 @@ begin
   end;
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing List'));
   if WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
-  EPG.DataSource := WebDataSource1;
+//  EPG.DataSource := WebDataSource1;
 //  {$IfDef PAS2JS}EPG.Row := CurrentRow;{$EndIf}
 //  {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
   {$IfDef PAS2JS}await{$EndIf}(EPG.Refresh);
