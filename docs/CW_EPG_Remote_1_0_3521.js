@@ -39779,7 +39779,6 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
         this.FFont.SetStyle({});
         this.SetParentFont(false);
         this.FShowClose = false;
-        this.SetVisible(true);
         this.lb02New.SetParentComponent(this);
         this.lb02New.SetName("lb02New");
         this.lb02New.SetLeft(200);
@@ -40648,6 +40647,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var x = [];
       var CurrentID = "";
       CurrentID = this.EPG.GetCells(3,ARow);
+      this.EPG.SetDataSource(null);
       $impl.Log("========== EPGClickCell() called from RC " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
           return ARow;
         }, set: function (v) {
@@ -40667,6 +40667,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[null]);
           $impl.Log("========== finished TDetailsFrm.Create(nil) ");
           DetailsFrm.FPopup = true;
+          DetailsFrm.SetBorder(1);
           $impl.Log("========== starting DetailsFrm.Load ");
           await DetailsFrm.Load();
           $impl.Log("========== finished DetailsFrm.Load ");
@@ -40739,16 +40740,19 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
               };
             } finally {
               $impl.Log("Finished with Schedule form");
+              SchedFrm = rtl.freeLoc(SchedFrm);
             };
           };
         } finally {
           $impl.Log("Finished with Details form");
+          DetailsFrm = rtl.freeLoc(DetailsFrm);
         };
       } catch ($e) {
         $impl.Log('Locate raised an improper Exception instead of "False"');
       };
       await this.ShowPlsWait("Refreshing List");
       if (this.WIDBCDS.ControlsDisabled()) await this.WIDBCDS.EnableControls();
+      this.EPG.SetDataSource(this.WebDataSource1);
       await this.EPG.Refresh();
       this.EPG.FOnClickCell = rtl.createCallback(this,"EPGClickCell");
       this.pnlWaitPls.Hide();
