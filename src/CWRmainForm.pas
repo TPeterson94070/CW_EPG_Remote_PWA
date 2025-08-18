@@ -1357,15 +1357,12 @@ var
 //  CurrentRow: Integer;
 
 begin
-  EPG.OnClickCell := nil;
 //  EPG.Enabled := False;
-//    {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
+//    {$IfDef PAS2JS}await{$EndIf}(EPG.Hide);
     CurrentID := EPG.Cells[3,ARow];
 //  WebDataSource1.Enabled := False;
 //  CurrentRow := ARow;
-//  EPG.ClearSelection;
 //  EPG.DataSource := nil;
-//  WebMainMenu1.Enabled := False;
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   // Quit Combobox if still open
   if pnlFilterComboBox.Visible then pnlFilterComboBox.Hide;
@@ -1381,11 +1378,11 @@ begin
       DetailsFrm := TDetailsFrm.Create(nil);
       Log('========== finished TDetailsFrm.Create(nil) ');
       DetailsFrm.Popup := True;
-      DetailsFrm.Border := fbSingle;
-      Log('========== starting DetailsFrm.Load() ');
+//      DetailsFrm.Border := fbSingle;
+      Log('========== starting DetailsFrm.Load ');
       // load file HTML template + controls
-      TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load());
-      Log('========== finished DetailsFrm.Load() ');
+      TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load);
+      Log('========== finished DetailsFrm.Load ');
       // init controls after loading
       DetailsFrm.mmTitle.Text := WIDBCDS.Fields[3].AsString;
       DetailsFrm.mmSubTitle.Text := WIDBCDS.Fields[4].AsString;
@@ -1462,9 +1459,8 @@ begin
   if WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
 //  EPG.DataSource := WebDataSource1;
 //  {$IfDef PAS2JS}EPG.Row := CurrentRow;{$EndIf}
-//  {$IfDef PAS2JS}await{$EndIf}(EPG.Show); //.Enabled := True;
+//  {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
   {$IfDef PAS2JS}await{$EndIf}(EPG.Refresh);
-//  WebMainMenu1.Enabled := True;
   EPG.OnClickCell := EPGClickCell;
   pnlWaitPls.Hide;
 end;

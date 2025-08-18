@@ -39681,7 +39681,6 @@ rtl.module("SchedUnit2",["System","SysUtils","Classes","JS","Web","WEBLib.Graphi
     $r.addField("tpEndTime",pas["WEBLib.StdCtrls"].$rtti["TDateTimePicker"]);
     $r.addMethod("WebFormShow",0,[["Sender",pas.System.$rtti["TObject"]]]);
   });
-  this.SchedForm = null;
 });
 rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics","WEBLib.Controls","WEBLib.Forms","WEBLib.Dialogs","WEBLib.Controls","WEBLib.StdCtrls","WEBLib.StdCtrls","WEBLib.ExtCtrls"],function () {
   "use strict";
@@ -40192,7 +40191,6 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
     $r.addField("lb11Time",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
     $r.addMethod("WebFormShow",0,[["Sender",pas.System.$rtti["TObject"]]]);
   });
-  this.DetailsFrm = null;
 },["CWRmainForm"]);
 rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Graphics","WEBLib.Forms","WEBLib.StdCtrls","WEBLib.StdCtrls","WEBLib.Controls","WEBLib.Dialogs","WEBLib.Imaging.pngImage","WEBLib.ExtCtrls","WEBLib.Controls","Web","JS","WEBLib.IndexedDb","WEBLib.Menus","WEBLib.Menus","WEBLib.Grids","DB","WEBLib.Grids","StrUtils","WEBLib.DBCtrls","WEBLib.WebCtrls","WEBLib.REST","Types","WEBLib.Storage","WEBLib.CDS","WEBLib.JSON","WEBLib.WebTools","WEBLib.Buttons"],function () {
   "use strict";
@@ -40649,7 +40647,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var SchedFrm = null;
       var x = [];
       var CurrentID = "";
-      this.EPG.FOnClickCell = null;
       CurrentID = this.EPG.GetCells(3,ARow);
       $impl.Log("========== EPGClickCell() called from RC " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
           return ARow;
@@ -40670,10 +40667,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[null]);
           $impl.Log("========== finished TDetailsFrm.Create(nil) ");
           DetailsFrm.FPopup = true;
-          DetailsFrm.SetBorder(1);
-          $impl.Log("========== starting DetailsFrm.Load() ");
+          $impl.Log("========== starting DetailsFrm.Load ");
           await DetailsFrm.Load();
-          $impl.Log("========== finished DetailsFrm.Load() ");
+          $impl.Log("========== finished DetailsFrm.Load ");
           DetailsFrm.mmTitle.SetText(this.WIDBCDS.FFieldList.GetField(3).GetAsString());
           DetailsFrm.mmSubTitle.SetText(this.WIDBCDS.FFieldList.GetField(4).GetAsString());
           DetailsFrm.lb11Time.SetCaption(this.WIDBCDS.FFieldList.GetField(2).GetAsString());
@@ -42973,16 +42969,6 @@ rtl.module("program",["System","WEBLib.Forms","WEBLib.Forms","CWRmainForm","Sche
         return this.p.CWRmainFrm;
       }, set: function (v) {
         this.p.CWRmainFrm = v;
-      }});
-    pas["WEBLib.Forms"].Application.CreateForm(pas.SchedUnit2.TSchedForm,{p: pas.SchedUnit2, get: function () {
-        return this.p.SchedForm;
-      }, set: function (v) {
-        this.p.SchedForm = v;
-      }});
-    pas["WEBLib.Forms"].Application.CreateForm(pas.Details.TDetailsFrm,{p: pas.Details, get: function () {
-        return this.p.DetailsFrm;
-      }, set: function (v) {
-        this.p.DetailsFrm = v;
       }});
     pas["WEBLib.Forms"].Application.Run();
   };

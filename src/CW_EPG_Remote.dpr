@@ -15,7 +15,7 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TCWRmainFrm, CWRmainFrm);
-  Application.CreateForm(TSchedForm, SchedForm);
-  Application.CreateForm(TDetailsFrm, DetailsFrm);
+//  Application.CreateForm(TSchedForm, SchedForm);
+//  Application.CreateForm(TDetailsFrm, DetailsFrm);
   Application.Run;
 end.
