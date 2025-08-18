@@ -40649,9 +40649,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var SchedFrm = null;
       var x = [];
       var CurrentID = "";
-      this.EPG.SetEnabled(false);
       CurrentID = this.EPG.GetCells(3,ARow);
-      this.WebMainMenu1.SetEnabled(false);
       $impl.Log("========== EPGClickCell() called from RC " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
           return ARow;
         }, set: function (v) {
@@ -40754,10 +40752,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       };
       await this.ShowPlsWait("Refreshing List");
       if (this.WIDBCDS.ControlsDisabled()) await this.WIDBCDS.EnableControls();
-      this.EPG.SetDataSource(this.WebDataSource1);
-      this.EPG.SetEnabled(true);
       await this.EPG.Refresh();
-      this.WebMainMenu1.SetEnabled(true);
       this.pnlWaitPls.Hide();
     };
     this.HistoryTableGetCellClass = function (Sender, ACol, ARow, AField, AValue, AClassName) {
