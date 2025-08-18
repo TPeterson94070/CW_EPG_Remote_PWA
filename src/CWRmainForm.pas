@@ -1354,22 +1354,21 @@ var
   SchedFrm: TSchedForm;
   x: TArray<string>;
   CurrentID: string;
-  CurrentRow: Integer;
+//  CurrentRow: Integer;
 
 begin
   EPG.Enabled := False;
   CurrentID := EPG.Cells[3,ARow];
 //  WebDataSource1.Enabled := False;
-  CurrentRow := ARow;
-  EPG.ClearSelection;
-  EPG.DataSource := nil;
+//  CurrentRow := ARow;
+//  EPG.ClearSelection;
+//  EPG.DataSource := nil;
   WebMainMenu1.Enabled := False;
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   // Quit Combobox if still open
   if pnlFilterComboBox.Visible then pnlFilterComboBox.Hide;
-//  {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing Details'));
   // Speed up form opening
-  WIDBCDS.DisableControls;
+  if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
   Log('========== finished WIDBCDS.DisableControls ');
   // Wrap in try-except-end because of Locate bug with filtered data
   try
@@ -1458,11 +1457,11 @@ begin
     Log('Locate raised an improper Exception instead of "False"');
   end;
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing List'));
-  WIDBCDS.EnableControls;
-  EPG.DataSource := WebDataSource1;
-  EPG.Refresh;
-  {$IfDef PAS2JS}EPG.Row := CurrentRow;{$EndIf}
+  if WIDBCDS.ControlsDisabled then WIDBCDS.EnableControls;
+//  EPG.DataSource := WebDataSource1;
+//  {$IfDef PAS2JS}EPG.Row := CurrentRow;{$EndIf}
   EPG.Enabled := True;
+  EPG.Refresh;
   WebMainMenu1.Enabled := True;
   pnlWaitPls.Hide;
 end;

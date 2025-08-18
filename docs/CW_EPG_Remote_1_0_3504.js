@@ -40649,12 +40649,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var SchedFrm = null;
       var x = [];
       var CurrentID = "";
-      var CurrentRow = 0;
       this.EPG.SetEnabled(false);
       CurrentID = this.EPG.GetCells(3,ARow);
-      CurrentRow = ARow;
-      this.EPG.ClearSelection();
-      this.EPG.SetDataSource(null);
       this.WebMainMenu1.SetEnabled(false);
       $impl.Log("========== EPGClickCell() called from RC " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
           return ARow;
@@ -40666,7 +40662,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           ACol = v;
         }}));
       if (this.pnlFilterComboBox.FVisible) this.pnlFilterComboBox.Hide();
-      this.WIDBCDS.DisableControls();
+      if (!this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.DisableControls();
       $impl.Log("========== finished WIDBCDS.DisableControls ");
       try {
         $impl.Log("========== starting Locate " + CurrentID);
@@ -40757,11 +40753,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $impl.Log('Locate raised an improper Exception instead of "False"');
       };
       await this.ShowPlsWait("Refreshing List");
-      this.WIDBCDS.EnableControls();
-      this.EPG.SetDataSource(this.WebDataSource1);
-      this.EPG.Refresh();
-      this.EPG.SetRow(CurrentRow);
+      if (this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.EnableControls();
       this.EPG.SetEnabled(true);
+      this.EPG.Refresh();
       this.WebMainMenu1.SetEnabled(true);
       this.pnlWaitPls.Hide();
     };
