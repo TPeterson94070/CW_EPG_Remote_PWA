@@ -40667,7 +40667,14 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           $impl.Log("========== finished TDetailsFrm.Create(nil) ");
           DetailsFrm.SetBorder(1);
           $impl.Log("========== starting DetailsFrm.Load ");
-          await DetailsFrm.Load();
+          try {
+            await DetailsFrm.Load();
+          } catch ($e) {
+            if (pas.SysUtils.Exception.isPrototypeOf($e)) {
+              var E = $e;
+              pas["WEBLib.Dialogs"].ShowMessage("Exception from DetailsFrm.Load: " + E.FMessage);
+            } else throw $e
+          };
           $impl.Log("========== finished DetailsFrm.Load ");
           DetailsFrm.mmTitle.SetText(this.WIDBCDS.FFieldList.GetField(3).GetAsString());
           DetailsFrm.mmSubTitle.SetText(this.WIDBCDS.FFieldList.GetField(4).GetAsString());

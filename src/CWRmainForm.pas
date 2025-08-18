@@ -1382,7 +1382,12 @@ begin
       DetailsFrm.Border := fbSingle;
       Log('========== starting DetailsFrm.Load ');
       // load file HTML template + controls
-      TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load);
+      try
+        TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load);
+      except
+        on E:Exception do
+        ShowMessage('Exception from DetailsFrm.Load: ' + E.Message);
+      end;
       Log('========== finished DetailsFrm.Load ');
       // init controls after loading
       DetailsFrm.mmTitle.Text := WIDBCDS.Fields[3].AsString;
