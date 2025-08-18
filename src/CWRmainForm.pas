@@ -657,7 +657,7 @@ begin
       {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EmptyDataSet);
       Log('LoadWIDBCDS, After EmptyDataSet CDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
       for j := 1 to BufferGrid.RowCount - 1 do
-      begin
+      try
         // Lose superfluous <">
         BufferGrid.Cells[0,j] := ReplaceStr(BufferGrid.Cells[0,j],'"','');
         WIDBCDS.Append;
@@ -681,7 +681,16 @@ begin
             {'rose'}TypeClass[Rerun]);  // Otherwise "rerun"
         WIDBCDS.Fields[15].Value := AColor;
         TAwait.ExecP<Boolean>(WIDBCDS.PostAsync);
-//      if t > Now + StrToInt(cbNumDisplayDays.Text) + 2 then Break;
+//        if t > Now + StrToInt(cbNumDisplayDays.Text) + 1 then Break;
+      except
+        on E:Exception do
+        begin
+          Log('WIDBCDS Append Exception: ' + E.Message);
+          if TAwait.ExecP<TModalResult>(MessageDlgAsync('Error: ' + E.Message
+            + #13'Trying to write WIDBCDS data for record ' + j.ToString
+            + #13#13'Do you want to abort updating?', mtConfirmation, [mbYes,mbNo])) = mrYes then
+            Break;
+        end;
       end;
       Log('Finished editing WIDBCDS, RecordCount: ' + WIDBCDS.RecordCount.ToString);
     end
@@ -767,12 +776,13 @@ begin
     TotalAvailableDays := DaysBetween(LastStartDate, TTimeZone.Local.ToUniversalTime(Now));
   //  Log('Avail days: ' + TotalAvailableDays.ToString);
     if WIDBCDS.ControlsDisabled then WIDBCDS.EnableControls;
-  end;
+  end else TotalAvailableDays := 0;
 end;
 
 procedure TCWRmainFrm.SetupWIDBCDS;
 var
-  i: Integer;
+//  i: Integer;
+  DbField: string;
 const
   DBFIELDS: array[0..14] of string = ('PSIP', 'Time', 'Title', 'SubTitle',
   'Description', 'StartTime', 'EndTime', 'programID', 'originalAirDate', 'new',
@@ -785,12 +795,13 @@ begin
     // add key field
     WIDBCDS.FieldDefs.Add('id', ftInteger, 0, True);
     // add normal fields
-    for i := 0 to Length(DBFIELDS) - 1 do
+    for DbField in DBFIELDS do
+//    for i := 0 to Length(DBFIELDS) - 1 do
     begin
-      if (DBFIELDS[i] = 'StartTime') or (DBFIELDS[i] = 'EndTime') then
-        WIDBCDS.FieldDefs.Add(DBFIELDS[i], ftDateTime)
+      if ({DBFIELDS[i]}DbField = 'StartTime') or ({DBFIELDS[i]}DbField = 'EndTime') then
+        WIDBCDS.FieldDefs.Add({DBFIELDS[i]}DbField, ftDateTime)
       else
-        WIDBCDS.FieldDefs.Add(DBFIELDS[i], ftString);
+        WIDBCDS.FieldDefs.Add({DBFIELDS[i]}DbField, ftString);
     end;
     TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   end;
@@ -849,7 +860,7 @@ begin
   BaseFilter := 'EndTime >= ' + Double(FirstEndTime).ToString + ' and '
       + 'StartTime <= ' + Double(LastStartTime).ToString;
   WIDBCDS.Filter := BaseFilter;
-  WIDBCDS.Filtered := True;
+//  WIDBCDS.Filtered := True;   // Don't take the time here
 
 //  if EpgDb.RecordCount > 0 then
 //  begin
@@ -867,7 +878,7 @@ end;
 procedure TCWRmainFrm.SetupFilterLists;
 
 var
-  i, fn: Integer;
+  fn, i: Integer;
   x, y: string;
   sl: TStringList;
 //  EpgDbTemp: TWebClientDataSet;
@@ -876,20 +887,20 @@ begin
   Log('====== SetupFilterLists started');
   sl := TStringList.Create;
 //  EpgDbTemp := TWebClientDataSet(EpgDb.GetClonedDataSet(False));
-  for i := 0 to 2 do
+  for i := 1 to 3 do
   begin
     case i of
-      0:  begin
-            cb := wcbGenres;
-            fn := 14;
-          end;
       1:  begin
-            cb := wcbTitles;
-            fn := 3;
+            fn := 14;
+            cb := wcbGenres;
           end;
       2:  begin
-            cb := wcbChannels;
+            fn := 3;
+            cb := wcbTitles;
+          end;
+      3:  begin
             fn := 1;
+            cb := wcbChannels;
           end;
     end;
     if TLocalStorage.GetValue(cb.Name + 'Items') > '' then // Reload saved list
@@ -898,6 +909,7 @@ begin
       Continue;
     end;
     if not {EpgDbTemp}WIDBCDS.ControlsDisabled then {EpgDbTemp}WIDBCDS.DisableControls;
+    if not WIDBCDS.Filtered then WIDBCDS.Filtered := True;   // Take the hit now
     cb.ItemIndex := -1;
     cb.Items.Clear;
     Log('Adding first '+cb.Name+' Item: "All"');
@@ -911,7 +923,7 @@ begin
     while not {EpgDbTemp}WIDBCDS.Eof do
     begin
       x := {EpgDbTemp}WIDBCDS.Fields[fn].AsString;
-      if i = 0{'genres'} then
+      if cb = wcbGenres then
       begin
         y := ReplaceStr(x, '\', ''); // Remove escape "\" char
         // Split the genres string 'xxx;yyy;zzz' into array xxx, yyy, zzz
@@ -1041,7 +1053,7 @@ begin
   if {EpgDb}WIDBCDS.RecordCount > 0 then
   begin
     {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + Min(StrToIntDef(cbNumDisplayDays.Text, 1), TotalAvailableDays).ToString + '-day Listing.'));
-//    EPG.Refresh;
+    EPG.Refresh;
     ByAllClick(Self)
   end
   else TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'

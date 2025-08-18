@@ -40386,39 +40386,51 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
             }}));
           for (var $l = 1, $end = this.BufferGrid.FRowCount - 1; $l <= $end; $l++) {
             j = $l;
-            this.BufferGrid.SetCells(0,j,pas.StrUtils.ReplaceStr(this.BufferGrid.GetCells(0,j),'"',""));
-            this.WIDBCDS.Append();
-            this.WIDBCDS.FFieldList.GetField(0).SetAsJSValue(j);
-            for (var $l1 = 1, $end1 = this.BufferGrid.FColCount; $l1 <= $end1; $l1++) {
-              i = $l1;
-              if (this.WIDBCDS.FFieldList.GetField(i).FDataType === 1) {
-                this.WIDBCDS.FFieldList.GetField(i).SetAsJSValue(this.BufferGrid.GetCells(i - 1,j))}
-               else if (pas.SysUtils.TryStrToDateTime(this.BufferGrid.GetCells(i - 1,j),{get: function () {
-                  return t;
+            try {
+              this.BufferGrid.SetCells(0,j,pas.StrUtils.ReplaceStr(this.BufferGrid.GetCells(0,j),'"',""));
+              this.WIDBCDS.Append();
+              this.WIDBCDS.FFieldList.GetField(0).SetAsJSValue(j);
+              for (var $l1 = 1, $end1 = this.BufferGrid.FColCount; $l1 <= $end1; $l1++) {
+                i = $l1;
+                if (this.WIDBCDS.FFieldList.GetField(i).FDataType === 1) {
+                  this.WIDBCDS.FFieldList.GetField(i).SetAsJSValue(this.BufferGrid.GetCells(i - 1,j))}
+                 else if (pas.SysUtils.TryStrToDateTime(this.BufferGrid.GetCells(i - 1,j),{get: function () {
+                    return t;
+                  }, set: function (v) {
+                    t = v;
+                  }})) this.WIDBCDS.FFieldList.GetField(i).SetAsJSValue(t);
+              };
+              Text = this.WIDBCDS.FFieldList.GetField(8).GetAsString();
+              if (pas.SysUtils.TStringHelper.StartsWith.call({get: function () {
+                  return Text;
                 }, set: function (v) {
-                  t = v;
-                }})) this.WIDBCDS.FFieldList.GetField(i).SetAsJSValue(t);
+                  Text = v;
+                }},"MV")) {
+                AColor = $impl.TypeClass[2]}
+               else if (pas.SysUtils.TStringHelper.StartsWith.call({get: function () {
+                  return Text;
+                }, set: function (v) {
+                  Text = v;
+                }},"SH")) {
+                AColor = pas.StrUtils.IfThen(pas.SysUtils.TStringHelper.Contains.call({p: this.WIDBCDS.FFieldList.GetField(14).GetAsString(), get: function () {
+                    return this.p;
+                  }, set: function (v) {
+                    this.p = v;
+                  }},'"News"'),$impl.TypeClass[0],$impl.TypeClass[3])}
+               else AColor = pas.StrUtils.IfThen(this.WIDBCDS.FFieldList.GetField(10).GetAsString() !== "",$impl.TypeClass[0],$impl.TypeClass[1]);
+              this.WIDBCDS.FFieldList.GetField(15).SetAsJSValue(AColor);
+              await this.WIDBCDS.PostAsync();
+            } catch ($e) {
+              if (pas.SysUtils.Exception.isPrototypeOf($e)) {
+                var E = $e;
+                $impl.Log("WIDBCDS Append Exception: " + E.FMessage);
+                if (await pas["WEBLib.Dialogs"].MessageDlgAsync("Error: " + E.FMessage + "\rTrying to write WIDBCDS data for record " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
+                    return j;
+                  }, set: function (v) {
+                    j = v;
+                  }}) + "\r\rDo you want to abort updating?",3,rtl.createSet(0,1)) === 6) break;
+              } else throw $e
             };
-            Text = this.WIDBCDS.FFieldList.GetField(8).GetAsString();
-            if (pas.SysUtils.TStringHelper.StartsWith.call({get: function () {
-                return Text;
-              }, set: function (v) {
-                Text = v;
-              }},"MV")) {
-              AColor = $impl.TypeClass[2]}
-             else if (pas.SysUtils.TStringHelper.StartsWith.call({get: function () {
-                return Text;
-              }, set: function (v) {
-                Text = v;
-              }},"SH")) {
-              AColor = pas.StrUtils.IfThen(pas.SysUtils.TStringHelper.Contains.call({p: this.WIDBCDS.FFieldList.GetField(14).GetAsString(), get: function () {
-                  return this.p;
-                }, set: function (v) {
-                  this.p = v;
-                }},'"News"'),$impl.TypeClass[0],$impl.TypeClass[3])}
-             else AColor = pas.StrUtils.IfThen(this.WIDBCDS.FFieldList.GetField(10).GetAsString() !== "",$impl.TypeClass[0],$impl.TypeClass[1]);
-            this.WIDBCDS.FFieldList.GetField(15).SetAsJSValue(AColor);
-            await this.WIDBCDS.PostAsync();
           };
           $impl.Log("Finished editing WIDBCDS, RecordCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
               return this.p;
@@ -40974,7 +40986,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           }}));
         $impl.TotalAvailableDays = pas.DateUtils.DaysBetween($impl.LastStartDate,pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false));
         if (this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.EnableControls();
-      };
+      } else $impl.TotalAvailableDays = 0;
     };
     this.ReloadSG = function (SG, LSName) {
       var i = 0;
@@ -41179,6 +41191,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           }, set: function (v) {
             this.a = v;
           }}) + "-day Listing.");
+        this.EPG.Refresh();
         this.ByAllClick(this);
       } else await pas["WEBLib.Dialogs"].MessageDlgAsync("There are no current data!" + "\r\rTo update, please use the Refresh Data button.",2,rtl.createSet(2));
       this.EPG.SetVisible(true);
@@ -41404,15 +41417,16 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     };
     var DBFIELDS = ["PSIP","Time","Title","SubTitle","Description","StartTime","EndTime","programID","originalAirDate","new","audioProperties","videoProperties","movieYear","genres","Class"];
     this.SetupWIDBCDS = async function () {
-      var i = 0;
+      var DbField = "";
       $impl.Log("Setting up to (re)open WIDBCDS");
       if (this.WIDBCDS.GetfieldCount() === 0) {
         this.WIDBCDS.FFieldDefs.Clear();
         this.WIDBCDS.FFieldDefs.Add$3("id",3,0,true);
-        for (i = 0; i <= 14; i++) {
-          if ((DBFIELDS[i] === "StartTime") || (DBFIELDS[i] === "EndTime")) {
-            this.WIDBCDS.FFieldDefs.Add$5(DBFIELDS[i],11)}
-           else this.WIDBCDS.FFieldDefs.Add$5(DBFIELDS[i],1);
+        for (var $in = DBFIELDS, $l = 0, $end = rtl.length($in) - 1; $l <= $end; $l++) {
+          DbField = $in[$l];
+          if ((DbField === "StartTime") || (DbField === "EndTime")) {
+            this.WIDBCDS.FFieldDefs.Add$5(DbField,11)}
+           else this.WIDBCDS.FFieldDefs.Add$5(DbField,1);
         };
         await this.WIDBCDS.OpenAsync();
       };
@@ -41447,7 +41461,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           LastStartTime = v;
         }});
       this.WIDBCDS.SetFilterText($impl.BaseFilter);
-      this.WIDBCDS.SetFiltered(true);
       this.WebDataSource1.SetDataSet(this.WIDBCDS);
       this.EPG.SetDataSource(this.WebDataSource1);
       this.EPG.FColumns.GetItem$1(0).SetAlignment(2);
@@ -41510,25 +41523,25 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       } else $impl.Log("####### " + PlsWaitCap);
     };
     this.SetupFilterLists = async function () {
-      var i = 0;
       var fn = 0;
+      var i = 0;
       var x = "";
       var y = "";
       var sl = null;
       var cb = null;
       $impl.Log("====== SetupFilterLists started");
       sl = pas.Classes.TStringList.$create("Create$1");
-      for (i = 0; i <= 2; i++) {
+      for (i = 1; i <= 3; i++) {
         var $tmp = i;
-        if ($tmp === 0) {
-          cb = this.wcbGenres;
+        if ($tmp === 1) {
           fn = 14;
-        } else if ($tmp === 1) {
-          cb = this.wcbTitles;
-          fn = 3;
+          cb = this.wcbGenres;
         } else if ($tmp === 2) {
-          cb = this.wcbChannels;
+          fn = 3;
+          cb = this.wcbTitles;
+        } else if ($tmp === 3) {
           fn = 1;
+          cb = this.wcbChannels;
         };
         if (pas["WEBLib.Storage"].TLocalStorage.GetValue(cb.FName + "Items") > "") {
           cb.FItems.AddStrings$2(pas.SysUtils.TStringHelper.Split$5.call({a: pas["WEBLib.Storage"].TLocalStorage.GetValue(cb.FName + "Items"), get: function () {
@@ -41539,6 +41552,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           continue;
         };
         if (!this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.DisableControls();
+        if (!this.WIDBCDS.FFiltered) this.WIDBCDS.SetFiltered(true);
         cb.SetItemIndex(-1);
         cb.FItems.Clear();
         $impl.Log("Adding first " + cb.FName + ' Item: "All"');
@@ -41551,7 +41565,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $impl.Log("Looping over Epg for " + cb.FName + " Items");
         while (!this.WIDBCDS.GetEOF()) {
           x = this.WIDBCDS.FFieldList.GetField(fn).GetAsString();
-          if (i === 0) {
+          if (cb === this.wcbGenres) {
             y = pas.StrUtils.ReplaceStr(x,"\\","");
             for (var $in = pas.SysUtils.TStringHelper.Split$5.call({get: function () {
                 return y;
