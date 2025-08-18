@@ -1378,7 +1378,7 @@ begin
       Log('========== Located ' + EPG.Cells[3,ARow]);
       DetailsFrm := TDetailsFrm.Create(nil);
       Log('========== finished TDetailsFrm.Create(nil) ');
-      DetailsFrm.Popup := True;
+//      DetailsFrm.Popup := True;
       DetailsFrm.Border := fbSingle;
       Log('========== starting DetailsFrm.Load ');
       // load file HTML template + controls
