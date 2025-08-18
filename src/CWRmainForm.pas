@@ -1370,7 +1370,7 @@ begin
   // Quit Combobox if still open
   if pnlFilterComboBox.Visible then pnlFilterComboBox.Hide;
   // Speed up form opening
-  if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
+  if not WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.DisableControls);
   Log('========== finished WIDBCDS.DisableControls ');
   // Wrap in try-except-end because of Locate bug with filtered data
   try

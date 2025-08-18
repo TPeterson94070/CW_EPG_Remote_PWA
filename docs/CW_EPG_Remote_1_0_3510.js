@@ -40661,7 +40661,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           ACol = v;
         }}));
       if (this.pnlFilterComboBox.FVisible) this.pnlFilterComboBox.Hide();
-      if (!this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.DisableControls();
+      if (!this.WIDBCDS.ControlsDisabled()) await this.WIDBCDS.DisableControls();
       $impl.Log("========== finished WIDBCDS.DisableControls ");
       try {
         $impl.Log("========== starting Locate " + CurrentID);
