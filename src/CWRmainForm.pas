@@ -1354,15 +1354,15 @@ var
   SchedFrm: TSchedForm;
   x: TArray<string>;
   CurrentID: string;
-//  CurrentRow: Integer;
+  CurrentRow: Integer;
 
 begin
   EPG.Enabled := False;
   CurrentID := EPG.Cells[3,ARow];
 //  WebDataSource1.Enabled := False;
-//  CurrentRow := ARow;
-//  EPG.ClearSelection;
-//  EPG.DataSource := nil;
+  CurrentRow := ARow;
+  EPG.ClearSelection;
+  EPG.DataSource := nil;
   WebMainMenu1.Enabled := False;
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   // Quit Combobox if still open
@@ -1458,8 +1458,8 @@ begin
   end;
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing List'));
   if WIDBCDS.ControlsDisabled then WIDBCDS.EnableControls;
-//  EPG.DataSource := WebDataSource1;
-//  {$IfDef PAS2JS}EPG.Row := CurrentRow;{$EndIf}
+  EPG.DataSource := WebDataSource1;
+  {$IfDef PAS2JS}EPG.Row := CurrentRow;{$EndIf}
   EPG.Enabled := True;
   EPG.Refresh;
   WebMainMenu1.Enabled := True;
