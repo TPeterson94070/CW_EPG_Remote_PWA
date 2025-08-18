@@ -1359,6 +1359,7 @@ var
 
 begin
 //  EPG.Enabled := False;
+  EPG.Hide;
 //    {$IfDef PAS2JS}await{$EndIf}(EPG.Hide);
     CurrentID := EPG.Cells[3,ARow];
 //  WebDataSource1.Enabled := False;
@@ -1383,12 +1384,11 @@ begin
       Log('========== starting DetailsFrm.Load ');
       // load file HTML template + controls
       try
-        EPG.DataSource := nil;
+//        EPG.DataSource := nil;
         TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load);
-        EPG.DataSource := WebDataSource1;
       except
         on E:Exception do
-        ShowMessage('Exception from DetailsFrm.Load: ' + E.Message);
+        Log('Exception from DetailsFrm.Load: ' + E.Message);
       end;
       Log('========== finished DetailsFrm.Load ');
       // init controls after loading
@@ -1467,8 +1467,9 @@ begin
   if WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
 //  EPG.DataSource := WebDataSource1;
 //  {$IfDef PAS2JS}EPG.Row := CurrentRow;{$EndIf}
-//  {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
+  {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
   {$IfDef PAS2JS}await{$EndIf}(EPG.Refresh);
+
   EPG.OnClickCell := EPGClickCell;
   pnlWaitPls.Hide;
 end;
