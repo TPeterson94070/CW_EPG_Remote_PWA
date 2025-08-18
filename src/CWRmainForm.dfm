@@ -1,6 +1,7 @@
 object CWRmainFrm: TCWRmainFrm
   Width = 428
   Height = 817
+  Color = clTeal
   CSSLibrary = cssBootstrap
   ElementClassName = 'container-fluid'
   ElementFont = efCSS
@@ -654,13 +655,13 @@ object CWRmainFrm: TCWRmainFrm
     Top = 50
     Width = 428
     Height = 699
-    ElementClassName = 'card'
+    ElementClassName = 'greenBG'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
     Align = alClient
     Caption = 'pnlListings'
     ChildOrder = 11
-    Color = clBackground
+    Color = clBlueviolet
     ElementBodyClassName = 'card-body'
     ElementFont = efCSS
     Font.Charset = ANSI_CHARSET

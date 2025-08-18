@@ -13655,7 +13655,7 @@ rtl.module("WEBLib.Graphics",["System","Classes","Types","UITypes","Web","JS"],f
   this.clWindow = 0xFEFEFE;
   this.clHighlight = 0xD77800;
   this.clHighlightText = 0x30303;
-  this.clBackground = 15790320;
+  this.clBlueviolet = 0xE22B8A;
   this.clBurlywood = 0x87B8DE;
   this.clDarkgreen = 0x6400;
   this.clDarkorange = 0x8CFF;
@@ -40664,20 +40664,20 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $impl.Log("========== starting Locate " + CurrentID);
         if (this.WIDBCDS.Locate("id",CurrentID,{})) try {
           $impl.Log("========== Located " + this.EPG.GetCells(3,ARow));
-          DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[null]);
+          DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[this]);
           $impl.Log("========== finished TDetailsFrm.Create(nil) ");
           DetailsFrm.FPopup = true;
           DetailsFrm.SetBorder(1);
           $impl.Log("========== starting DetailsFrm.Load ");
           try {
             await DetailsFrm.Load();
+            $impl.Log("========== finished DetailsFrm.Load ");
           } catch ($e) {
             if (pas.SysUtils.Exception.isPrototypeOf($e)) {
               var E = $e;
               $impl.Log("Exception from DetailsFrm.Load: " + E.FMessage);
             } else throw $e
           };
-          $impl.Log("========== finished DetailsFrm.Load ");
           DetailsFrm.mmTitle.SetText(this.WIDBCDS.FFieldList.GetField(3).GetAsString());
           DetailsFrm.mmSubTitle.SetText(this.WIDBCDS.FFieldList.GetField(4).GetAsString());
           DetailsFrm.lb11Time.SetCaption(this.WIDBCDS.FFieldList.GetField(2).GetAsString());
@@ -40717,7 +40717,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           await DetailsFrm.Execute();
           $impl.Log("========== finished DetailsFrm.Execute ");
           if (DetailsFrm.FModalResult === 1) {
-            SchedFrm = pas.SchedUnit2.TSchedForm.$create("Create$1",[null]);
+            SchedFrm = pas.SchedUnit2.TSchedForm.$create("Create$1",[this]);
             $impl.Log("========== finished TSchedForm.Create(nil)");
             SchedFrm.SetCaption("Schedule Capture Event");
             SchedFrm.FPopup = true;
@@ -41707,6 +41707,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.SetName("CWRmainFrm");
         this.SetWidth(428);
         this.SetHeight(817);
+        this.SetColor(8421376);
         this.SetCSSLibrary(1);
         this.SetElementClassName("container-fluid");
         this.SetElementFont(1);
@@ -42368,13 +42369,13 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlListings.SetTop(50);
         this.pnlListings.SetWidth(428);
         this.pnlListings.SetHeight(699);
-        this.pnlListings.SetElementClassName("card");
+        this.pnlListings.SetElementClassName("greenBG");
         this.pnlListings.SetHeightStyle(0);
         this.pnlListings.SetWidthStyle(0);
         this.pnlListings.SetAlign(5);
         this.pnlListings.SetCaption("pnlListings");
         this.pnlListings.SetChildOrderEx(11);
-        this.pnlListings.SetColor(15790320);
+        this.pnlListings.SetColor(14822282);
         this.pnlListings.FElementBodyClassName = "card-body";
         this.pnlListings.SetElementFont(1);
         this.pnlListings.FFont.FCharset = 0;

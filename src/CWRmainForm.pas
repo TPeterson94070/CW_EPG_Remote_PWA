@@ -1358,13 +1358,8 @@ var
 //  CurrentRow: Integer;
 
 begin
-//  EPG.Enabled := False;
   EPG.Hide;
-//    {$IfDef PAS2JS}await{$EndIf}(EPG.Hide);
     CurrentID := EPG.Cells[3,ARow];
-//  WebDataSource1.Enabled := False;
-//  CurrentRow := ARow;
-//  EPG.DataSource := nil;
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   // Quit Combobox if still open
   if pnlFilterComboBox.Visible then pnlFilterComboBox.Hide;
@@ -1377,20 +1372,19 @@ begin
     if WIDBCDS.Locate('id', CurrentID,[]) then
     try
       Log('========== Located ' + EPG.Cells[3,ARow]);
-      DetailsFrm := TDetailsFrm.Create(nil);
+      DetailsFrm := TDetailsFrm.Create(Self);
       Log('========== finished TDetailsFrm.Create(nil) ');
       DetailsFrm.Popup := True;
       DetailsFrm.Border := fbSingle;
       Log('========== starting DetailsFrm.Load ');
       // load file HTML template + controls
       try
-//        EPG.DataSource := nil;
         TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load);
+        Log('========== finished DetailsFrm.Load ');
       except
         on E:Exception do
         Log('Exception from DetailsFrm.Load: ' + E.Message);
       end;
-      Log('========== finished DetailsFrm.Load ');
       // init controls after loading
       DetailsFrm.mmTitle.Text := WIDBCDS.Fields[3].AsString;
       DetailsFrm.mmSubTitle.Text := WIDBCDS.Fields[4].AsString;
@@ -1417,7 +1411,7 @@ begin
       Log('========== finished DetailsFrm.Execute ');
       if DetailsFrm.ModalResult = mrOk then
       begin
-        SchedFrm := TSchedForm.Create(nil);
+        SchedFrm := TSchedForm.Create(Self);
         Log('========== finished TSchedForm.Create(nil)');
         SchedFrm.Caption := 'Schedule Capture Event';
         SchedFrm.Popup := True;
@@ -1465,8 +1459,6 @@ begin
   end;
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing List'));
   if WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
-//  EPG.DataSource := WebDataSource1;
-//  {$IfDef PAS2JS}EPG.Row := CurrentRow;{$EndIf}
   {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
   {$IfDef PAS2JS}await{$EndIf}(EPG.Refresh);
 

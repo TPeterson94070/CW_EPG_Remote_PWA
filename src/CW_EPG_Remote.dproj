@@ -50,7 +50,7 @@
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <TMSPWAManifestFile>Manifest.json</TMSPWAManifestFile>
-        <TMSVersion>1.0.3522</TMSVersion>
+        <TMSVersion>1.0.3541</TMSVersion>
         <TMSVersionAuto>2</TMSVersionAuto>
         <TMSWebHTMLFile>index.html</TMSWebHTMLFile>
         <TMSWebPWA>2</TMSWebPWA>
