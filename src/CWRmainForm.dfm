@@ -518,7 +518,8 @@ object CWRmainFrm: TCWRmainFrm
       HTML.Strings = (
         
           '<FONT color="#FFFFFF" ><P align="center">Programs to be Schedule' +
-          'd </FONT><FONT color="#F00000" >on Next CW_EPG Run </P> </FONT>')
+          'd </FONT><FONT color="#F00000" >on Next CW_EPG Run </P> '
+        '</FONT>')
       Role = ''
     end
     object WebHTMLDiv2: TWebHTMLDiv
@@ -541,10 +542,10 @@ object CWRmainFrm: TCWRmainFrm
         Color = 212724686
         ColCount = 7
         DefaultRowHeight = 22
-        FixedColor = clTeal
+        FixedColor = clGreen
         FixedCols = 0
         Font.Charset = ANSI_CHARSET
-        Font.Color = clBlack
+        Font.Color = clWhite
         Font.Height = -19
         Font.Name = 'Arial'
         Font.Style = []
@@ -552,7 +553,7 @@ object CWRmainFrm: TCWRmainFrm
         ParentFont = False
         TabOrder = 0
         StyleElements = []
-        ElementClassName = 'greenBG'
+        ElementClassName = 'yellowBG'
         ElementFont = efCSS
         FixedFont.Charset = ANSI_CHARSET
         FixedFont.Color = clBlack
@@ -584,12 +585,12 @@ object CWRmainFrm: TCWRmainFrm
         Width = 428
         Height = 231
         Align = alClient
-        Color = 212724686
+        Color = clDarkolivegreen
         DefaultRowHeight = 22
-        FixedColor = clTeal
+        FixedColor = clGreen
         FixedCols = 0
         Font.Charset = ANSI_CHARSET
-        Font.Color = clBlack
+        Font.Color = clWhite
         Font.Height = -19
         Font.Name = 'Arial'
         Font.Style = []
@@ -597,7 +598,7 @@ object CWRmainFrm: TCWRmainFrm
         ParentFont = False
         TabOrder = 0
         StyleElements = []
-        ElementClassName = 'greenBG'
+        ElementClassName = 'whiteBG'
         ElementFont = efCSS
         FixedFont.Charset = ANSI_CHARSET
         FixedFont.Color = clBlack
@@ -1029,11 +1030,6 @@ object CWRmainFrm: TCWRmainFrm
     DataSet = WIDBCDS
     Left = 296
     Top = 216
-  end
-  object CurrEpgDbOld: TWebClientDataSet
-    Params = <>
-    Left = 208
-    Top = 400
   end
   object WIDBCDS: TWebIndexedDbClientDataset
     IDBDatabaseName = 'CWRDB-Manual-id'
