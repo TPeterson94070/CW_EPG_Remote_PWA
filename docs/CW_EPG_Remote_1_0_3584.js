@@ -13641,6 +13641,7 @@ rtl.module("WEBLib.Graphics",["System","Classes","Types","UITypes","Web","JS"],f
   this.WEBDEFAULTFONT = "Arial";
   this.clNone = -1;
   this.clBlack = 0x0;
+  this.clGreen = 0x8000;
   this.clNavy = 0x800000;
   this.clTeal = 0x808000;
   this.clGray = 0x808080;
@@ -13658,6 +13659,7 @@ rtl.module("WEBLib.Graphics",["System","Classes","Types","UITypes","Web","JS"],f
   this.clBlueviolet = 0xE22B8A;
   this.clBurlywood = 0x87B8DE;
   this.clDarkgreen = 0x6400;
+  this.clDarkolivegreen = 0x2F6B55;
   this.clDarkorange = 0x8CFF;
   this.clDarkseagreen = 0x8FBC8F;
   this.clDarkslategray = 0x4F4F2F;
@@ -28129,6 +28131,9 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
       this.FAutoSelect = true;
       this.SetHeight(25);
     };
+    this.Clear = function () {
+      this.SetText("");
+    };
     this.Change = function () {
       if (this.GetElementHandle() != null) this.FText = this.GetElementInputHandle().value;
       if (this.FOnChange != null) this.FOnChange(this);
@@ -30779,6 +30784,7 @@ rtl.module("WEBLib.Imaging.pngImage",["System"],function () {
 rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Controls","WEBLib.StdCtrls","WEBLib.Graphics","Web","JS","WEBLib.WebTools","WEBLib.Menus","WEBLib.REST"],function () {
   "use strict";
   var $mod = this;
+  var $impl = $mod.$impl;
   rtl.createClass(this,"TCustomPanel",pas["WEBLib.Menus"].TWebCustomControl,function () {
     this.$init = function () {
       pas["WEBLib.Menus"].TWebCustomControl.$init.call(this);
@@ -31851,6 +31857,188 @@ rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Cont
     $r.addProperty("OnTouchEnd",0,pas["WEBLib.Controls"].$rtti["TTouchEvent"],"FOnTouchEnd","FOnTouchEnd");
     $r.addProperty("OnTouchCancel",0,pas["WEBLib.Controls"].$rtti["TTouchEvent"],"FOnTouchCancel","FOnTouchCancel");
   });
+  rtl.createClass(this,"TSearchEdit",pas["WEBLib.StdCtrls"].TCustomEdit,function () {
+    this.$init = function () {
+      pas["WEBLib.StdCtrls"].TCustomEdit.$init.call(this);
+      this.FSearchElement = null;
+      this.FClearElement = null;
+      this.FInputElement = null;
+      this.FClearPtr = null;
+      this.FSearchPtr = null;
+      this.FOnSearchClick = null;
+      this.FOnClearClick = null;
+      this.FClearImageURL = "";
+      this.FSearchImageURL = "";
+    };
+    this.$final = function () {
+      this.FSearchElement = undefined;
+      this.FClearElement = undefined;
+      this.FInputElement = undefined;
+      this.FOnSearchClick = undefined;
+      this.FOnClearClick = undefined;
+      pas["WEBLib.StdCtrls"].TCustomEdit.$final.call(this);
+    };
+    this.GetElementBindHandle = function () {
+      var Result = null;
+      Result = this.FInputElement;
+      return Result;
+    };
+    this.GetElementInputHandle = function () {
+      var Result = null;
+      Result = this.FInputElement;
+      return Result;
+    };
+    this.UpdateElementVisual = function () {
+      pas["WEBLib.StdCtrls"].TCustomInput.UpdateElementVisual.call(this);
+      if (this.FSearchElement != null) {
+        if (this.FSearchImageURL !== "") {
+          this.FSearchElement.setAttribute("src",this.FSearchImageURL)}
+         else this.FSearchElement.setAttribute("src",$impl.btnsearchres);
+      };
+      if (this.FClearElement != null) {
+        if (this.FClearImageURL !== "") {
+          this.FClearElement.setAttribute("src",this.FClearImageURL)}
+         else this.FClearElement.setAttribute("src",$impl.btnclearres);
+      };
+    };
+    this.CreateChildElements = function (AContainer) {
+      var FTable = null;
+      var FRow = null;
+      var FCell = null;
+      pas["WEBLib.Controls"].TControl.CreateChildElements.apply(this,arguments);
+      this.FSearchElement = document.createElement("IMG");
+      this.FClearElement = document.createElement("IMG");
+      this.FInputElement = document.createElement("INPUT");
+      FTable = document.createElement("TABLE");
+      FTable.style.setProperty("height","100%");
+      FRow = document.createElement("TR");
+      AContainer.appendChild(FTable);
+      FTable.appendChild(FRow);
+      FCell = document.createElement("TD");
+      FRow.appendChild(FCell);
+      FCell.appendChild(this.FSearchElement);
+      FCell = document.createElement("TD");
+      FRow.appendChild(FCell);
+      FCell.appendChild(this.FInputElement);
+      FCell = document.createElement("TD");
+      FRow.appendChild(FCell);
+      FCell.appendChild(this.FClearElement);
+      this.FSearchElement.setAttribute("src",$impl.btnsearchres);
+      this.FClearElement.setAttribute("src",$impl.btnclearres);
+    };
+    this.BindEvents = function () {
+      pas["WEBLib.StdCtrls"].TCustomEdit.BindEvents.call(this);
+      if (this.FClearElement != null) this.FClearElement.addEventListener("click",this.FClearPtr);
+      if (this.FSearchElement != null) this.FSearchElement.addEventListener("click",this.FSearchPtr);
+    };
+    this.HandleDoClear = function (Event) {
+      var Result = false;
+      if (this.FOnClearClick != null) this.FOnClearClick(this);
+      this.FInputElement.value = '';
+      this.FInputElement.focus();
+      Result = true;
+      return Result;
+    };
+    this.HandleDoSearch = function (Event) {
+      var Result = false;
+      if (this.FOnSearchClick != null) this.FOnSearchClick(this);
+      Result = true;
+      return Result;
+    };
+    this.CreateElement = function () {
+      var Result = null;
+      Result = document.createElement("DIV");
+      return Result;
+    };
+    this.UpdateElement = function () {
+      pas["WEBLib.Controls"].TControl.UpdateElement.call(this);
+      if ((this.GetElementHandle() != null) && (this.GetElementHandle() !== this.ContainerElement()) && !this.IsUpdating()) {
+        if ((this.FElementClassName === "") && (this.FBorderStyle === 1)) {
+          this.GetElementHandle().style.setProperty("border","1px solid gray");
+          this.GetElementHandle().style.setProperty("border-radius","4px");
+        };
+        this.FInputElement.style.setProperty("border","none");
+        this.FInputElement.style.setProperty("outline","none");
+        this.FInputElement.parentElement.style.setProperty("vertical-align","middle");
+        this.FInputElement.parentElement.style.setProperty("width","100%");
+        this.FSearchElement.parentElement.style.setProperty("vertical-align","middle");
+        this.FClearElement.parentElement.style.setProperty("vertical-align","middle");
+        if (this.FElementPosition === 0) {
+          this.FInputElement.style.setProperty("width","100%")}
+         else this.FInputElement.style.removeProperty("width");
+      };
+    };
+    this.SetEnabled = function (Value) {
+      pas["WEBLib.Controls"].TControl.SetEnabled.apply(this,arguments);
+      if (this.GetElementInputHandle() != null) {
+        if (Value) {
+          this.GetElementInputHandle().removeAttribute("disabled")}
+         else this.GetElementInputHandle().setAttribute("disabled","");
+      };
+    };
+    this.ClearMethodPointers = function () {
+      pas["WEBLib.StdCtrls"].TCustomEdit.ClearMethodPointers.call(this);
+      this.FClearPtr = null;
+      this.FSearchPtr = null;
+    };
+    this.GetMethodPointers = function () {
+      pas["WEBLib.StdCtrls"].TCustomEdit.GetMethodPointers.call(this);
+      if (this.FClearPtr === null) this.FClearPtr = rtl.createCallback(this,"HandleDoClear");
+      if (this.FSearchPtr === null) this.FSearchPtr = rtl.createCallback(this,"HandleDoSearch");
+    };
+    this.SetFocus = function () {
+      var eh = null;
+      if (this.GetElementInputHandle() != null) {
+        eh = this.GetElementInputHandle();
+        eh.focus();
+      };
+    };
+    rtl.addIntf(this,pas["WEBLib.Controls"].IControl);
+    rtl.addIntf(this,pas.System.IUnknown);
+    var $r = this.$rtti;
+    $r.addProperty("Alignment",2,pas.Classes.$rtti["TAlignment"],"FAlignment","SetAlignment");
+    $r.addProperty("AutoCompletion",2,pas["WEBLib.StdCtrls"].$rtti["TAutoCompletion"],"FAutoCompletion","SetAutoCompletion",{Default: pas["WEBLib.StdCtrls"].TAutoCompletion.acOff});
+    $r.addProperty("AutoSelect",2,rtl.boolean,"FAutoSelect","SetAutoSelect",{Default: true});
+    $r.addProperty("AutoFocus",2,rtl.boolean,"FAutoFocus","SetAutoFocus",{Default: false});
+    $r.addProperty("AutoSize",2,rtl.boolean,"FAutoSize","SetAutoSize",{Default: false});
+    $r.addProperty("BorderStyle",2,pas["WEBLib.Controls"].$rtti["TBorderStyle"],"FBorderStyle","SetBorderStyle",{Default: pas["WEBLib.Controls"].TBorderStyle.bsSingle});
+    $r.addProperty("CharCase",2,pas["WEBLib.StdCtrls"].$rtti["TEditCharCase"],"FCharCase","SetCharCase",{Default: pas["WEBLib.StdCtrls"].TEditCharCase.wecNormal});
+    $r.addProperty("Color",2,pas["WEBLib.Graphics"].$rtti["TColor"],"FColor","SetColor");
+    $r.addProperty("Font",2,pas["WEBLib.Graphics"].$rtti["TFont"],"FFont","SetFont");
+    $r.addProperty("HideSelection",2,rtl.boolean,"FHideSelection","SetHideSelection");
+    $r.addProperty("MaxLength",2,rtl.longint,"FMaxLength","SetMaxLength",{Default: 0});
+    $r.addProperty("PasswordChar",2,rtl.char,"FPasswordChar","SetPasswordChar",{Default: "\x00"});
+    $r.addProperty("Pattern",2,rtl.string,"FPattern","SetPattern");
+    $r.addProperty("ReadOnly",2,rtl.boolean,"FReadOnly","SetReadOnly",{Default: false});
+    $r.addProperty("Required",2,rtl.boolean,"FRequired","SetRequired",{Default: false});
+    $r.addProperty("RequiredText",0,rtl.string,"FRequiredText","FRequiredText");
+    $r.addProperty("TextHint",2,rtl.string,"FTextHint","SetTextHint");
+    $r.addMethod("SetFocus",0,[]);
+    $r.addProperty("Text",3,rtl.string,"GetText","SetText");
+    $r.addProperty("OnChange",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnChange","FOnChange");
+    $r.addProperty("OnClick",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnClick","FOnClick");
+    $r.addProperty("OnDblClick",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnDblClick","FOnDblClick");
+    $r.addProperty("OnKeyDown",0,pas["WEBLib.Controls"].$rtti["TKeyEvent"],"FOnKeyDown","FOnKeyDown");
+    $r.addProperty("OnKeyPress",0,pas["WEBLib.Controls"].$rtti["TKeyPressEvent"],"FOnKeyPress","FOnKeyPress");
+    $r.addProperty("OnKeyUp",0,pas["WEBLib.Controls"].$rtti["TKeyEvent"],"FOnKeyUp","FOnKeyUp");
+    $r.addProperty("OnMouseDown",0,pas["WEBLib.Controls"].$rtti["TMouseEvent"],"FOnMouseDown","FOnMouseDown");
+    $r.addProperty("OnMouseUp",0,pas["WEBLib.Controls"].$rtti["TMouseEvent"],"FOnMouseUp","FOnMouseUp");
+    $r.addProperty("OnMouseMove",0,pas["WEBLib.Controls"].$rtti["TMouseMoveEvent"],"FOnMouseMove","FOnMouseMove");
+    $r.addProperty("OnMouseLeave",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnMouseLeave","FOnMouseLeave");
+    $r.addProperty("OnMouseEnter",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnMouseEnter","FOnMouseEnter");
+    $r.addProperty("OnEnter",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnEnter","FOnEnter");
+    $r.addProperty("OnExit",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnExit","FOnExit");
+    $r.addProperty("OnDragDrop",0,pas["WEBLib.Controls"].$rtti["TDragDropEvent"],"FOnDragDrop","FOnDragDrop");
+    $r.addProperty("OnDragOver",0,pas["WEBLib.Controls"].$rtti["TDragOverEvent"],"FOnDragOver","FOnDragOver");
+    $r.addProperty("OnEndDrag",0,pas["WEBLib.Controls"].$rtti["TEndDragEvent"],"FonEndDrag","FonEndDrag");
+    $r.addProperty("OnStartDrag",0,pas["WEBLib.Controls"].$rtti["TStartDragEvent"],"FOnStartDrag","FOnStartDrag");
+    $r.addProperty("OnClearClick",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnClearClick","FOnClearClick");
+    $r.addProperty("OnSearchClick",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnSearchClick","FOnSearchClick");
+  });
+  $mod.$implcode = function () {
+    $impl.btnclearres = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA70lEQVQ4jbWSzQ2CQBCFl5OROgSKgAMmHExUDia2QUSswqg9GK1COfnTjCbagm/Cw2wQFw46yZcM+5jZ+Vml/mQ2iMEcpPTt" + "NoEWyMAdHMCaiH9jMssUvAcn0KvRHXAGu29JMgZ3DBWKdgGzqmCz7PLmAfA1PQAT+q4q2unqCcaq6LM0nz/1QcjkoabnYKgnWIBlpSq59QGeIKpoK1Vs6G0ZD9smkM2kphYClh21bUGGKD07/I4rATKTKX1P1QxRsSTZc9MaryCpE+VxyCORPbs1usfgrWp4jS" + "lLPIINyXmWmIJ1k/5GTJbS/+j5J/YC/YEx2smgMEoAAAAASUVORK5CYII=";
+    $impl.btnsearchres = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAABNUlEQVQ4jZWSPU7DQBCFU5ECiEBU/AgEcmXJtvxbuAo0pOAE1CAaAigViFNBOAMRFengBNCCwgH4XrQrBXntkJGePLsz782" + "Pt9WqMc/z2mma9sEITAzk9xWr400tiqJtEsdJkjzwPfR9f0WQD4bcvyqnqfIY3OpcFMU+hHMIazaH2L1EnJ0QvFJl45/iX8dxvOXIG4LLigCEFwLdLMsO8G/qxiR2pJ24OpiYeS/AZp1AWZarynUJfElgdmaXsZsOXXy7BPSruk3keSMM7BKbjLynyhLZ9h6X" + "bwIidw3k6W9k1KUKmW8vz/MNEt45P+rxhGG4LMw+JHaw4ySbc890MgDPWiz4sU/5T2Uudk3LJ2Y5x6quFzhvD1ZgZMm2sjr6F9kIfARBsC6RhclG4AzypzpZmIz9Aj6Qcv0OcR9YAAAAAElFTkSuQmCC";
+  };
 },["WEBLib.Utils","Math"]);
 rtl.module("WEBLib.CDS",["System","Classes","DB","JSONDataset","Web","JS","WEBLib.Controls","WEBLib.REST"],function () {
   "use strict";
@@ -40238,7 +40426,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WebHTMLDiv1 = null;
       this.WebHTMLDiv2 = null;
       this.WebHTMLDiv3 = null;
-      this.pnlFilterComboBox = null;
+      this.pnlFilterSelection = null;
       this.lblFilterSelect = null;
       this.WebHTMLDiv4 = null;
       this.HistoryGrid = null;
@@ -40250,6 +40438,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.btnRefreshData = null;
       this.byType = null;
       this.wcbTypes = null;
+      this.WebSearchEdit = null;
     };
     this.$final = function () {
       this.WebMemo2 = undefined;
@@ -40292,7 +40481,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WebHTMLDiv1 = undefined;
       this.WebHTMLDiv2 = undefined;
       this.WebHTMLDiv3 = undefined;
-      this.pnlFilterComboBox = undefined;
+      this.pnlFilterSelection = undefined;
       this.lblFilterSelect = undefined;
       this.WebHTMLDiv4 = undefined;
       this.HistoryGrid = undefined;
@@ -40304,6 +40493,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.btnRefreshData = undefined;
       this.byType = undefined;
       this.wcbTypes = undefined;
+      this.WebSearchEdit = undefined;
       pas["WEBLib.Forms"].TForm.$final.call(this);
     };
     this.ClearFilterLists = function () {
@@ -40356,9 +40546,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WIDBCDS.Close();
       await this.WIDBCDS.OpenAsync();
       try {
-        if (this.BufferGrid.FRowCount < 2) {
-          this.FillTable(this.BufferGrid,pas["WEBLib.Storage"].TLocalStorage.GetValue("cwr_epg.csv"));
-        };
         if (this.WIDBCDS.GetActive() && (this.BufferGrid.FRowCount > 1)) {
           $impl.Log("LoadWIDBCDS, WIDBCDS.RecordCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
               return this.p;
@@ -40653,7 +40840,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         }, set: function (v) {
           ACol = v;
         }}));
-      if (this.pnlFilterComboBox.FVisible) this.pnlFilterComboBox.Hide();
+      if (this.pnlFilterSelection.FVisible) this.pnlFilterSelection.Hide();
       if (!this.WIDBCDS.ControlsDisabled()) await this.WIDBCDS.DisableControls();
       $impl.Log("========== finished WIDBCDS.DisableControls ");
       try {
@@ -40795,9 +40982,17 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.ByTitle.FOnClick = null;
       if (this.ByTitle.FChecked) {
         this.ByTitle.SetChecked(false);
-        this.wcbTitles.SetItemIndex(-1);
+        this.pnlFilterSelection.Hide();
+        this.WebSearchEdit.Hide();
         await this.SetFilters();
-      } else await this.PopupFilterList(this.wcbTitles,"Title");
+      } else {
+        this.ByTitle.SetChecked(true);
+        this.lblFilterSelect.SetCaption("Search Titles for:");
+        this.pnlFilterSelection.BringToFront();
+        this.pnlFilterSelection.Show();
+        this.WebSearchEdit.Clear();
+        this.WebSearchEdit.Show();
+      };
       this.ByTitle.FOnClick = rtl.createCallback(this,"ByTitleClick");
     };
     this.wcbTitlesChange = async function (Sender) {
@@ -40824,7 +41019,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.ByTitle.SetChecked(false);
       this.byType.SetChecked(false);
       this.ByChannel.SetChecked(false);
-      this.pnlFilterComboBox.Hide();
+      this.pnlFilterSelection.Hide();
       this.ByAll.SetChecked(true);
       $impl.VisiblePanelNum = 0;
       if (this.WIDBCDS.FFilterText !== $impl.BaseFilter) await this.SetFilters();
@@ -40905,15 +41100,15 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       if (ARow > 0) if (ACol in rtl.createSet(1,2)) AValue.set(pas.SysUtils.FormatDateTime("mm/dd HH:nn",pas.SysUtils.StrToDateTime(AValue.get())));
     };
     this.wcbGenresFocusOut = function (Sender) {
-      this.pnlFilterComboBox.Hide();
+      this.pnlFilterSelection.Hide();
       this.wcbGenres.Hide();
     };
     this.wcbTitlesFocusOut = function (Sender) {
-      this.pnlFilterComboBox.Hide();
+      this.pnlFilterSelection.Hide();
       this.wcbTitles.Hide();
     };
     this.wcbChannelsFocusOut = function (Sender) {
-      this.pnlFilterComboBox.Hide();
+      this.pnlFilterSelection.Hide();
       this.wcbChannels.Hide();
     };
     this.btnOptOKClick = async function (Sender) {
@@ -40948,8 +41143,21 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.SetFilters();
     };
     this.wcbTypesFocusOut = function (Sender) {
-      this.pnlFilterComboBox.Hide();
+      this.pnlFilterSelection.Hide();
       this.wcbTypes.Hide();
+    };
+    this.WebSearchEditChange = function (Sender) {
+      this.EPG.FColumns.GetItem$1(2).SetTitle("Programs w/Titles using " + pas.SysUtils.QuotedStr("*" + this.WebSearchEdit.GetText() + "*","'"));
+      if (!this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.DisableControls();
+      this.WIDBCDS.SetFiltered(false);
+      this.WIDBCDS.SetFilterText($impl.BaseFilter + " and Title like " + pas.SysUtils.QuotedStr("%" + this.WebSearchEdit.GetText() + "%","'"));
+      this.WIDBCDS.SetFiltered(true);
+      if (this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.EnableControls();
+    };
+    this.WebSearchEditSearchClick = function (Sender) {
+      this.pnlFilterSelection.Hide();
+      this.WebSearchEdit.Hide();
+      this.SetFilters();
     };
     this.LogDataRange = async function () {
       $impl.Log("WIDBCDS.RecordCount:  " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
@@ -41472,11 +41680,13 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.wcbTitles.Hide();
       this.wcbChannels.Hide();
       this.wcbTypes.Hide();
+      this.WebSearchEdit.Hide();
       this.EPG.ClearSelection();
       if (cb.FItems.GetCount() === 0) return;
       $impl.Log("====== Showing ComboBox");
-      this.pnlFilterComboBox.BringToFront();
-      this.pnlFilterComboBox.Show();
+      this.pnlFilterSelection.BringToFront();
+      this.pnlFilterSelection.Show();
+      cb.BringToFront();
       cb.Show();
       await sleep(100);
       if ($impl.VisiblePanelNum !== 0) await this.SetPage(0);
@@ -41489,14 +41699,14 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.EPG.BeginUpdate();
       this.EPG.Hide();
       this.EPG.SetDataSource(null);
-      this.EPG.FColumns.GetItem$1(2).SetTitle(pas.StrUtils.IfThen(this.ByChannel.FChecked,this.wcbChannels.GetText() + " ","") + pas.StrUtils.IfThen(this.byType.FChecked,this.wcbTypes.GetText() + " ","") + pas.StrUtils.IfThen(this.ByGenre.FChecked,this.wcbGenres.GetText() + " ","") + "Programs" + pas.StrUtils.IfThen(this.ByTitle.FChecked," Titled " + pas.SysUtils.QuotedStr(this.wcbTitles.GetText(),"'"),""));
+      this.EPG.FColumns.GetItem$1(2).SetTitle(pas.StrUtils.IfThen(this.ByChannel.FChecked,this.wcbChannels.GetText() + " ","") + pas.StrUtils.IfThen(this.byType.FChecked,this.wcbTypes.GetText() + " ","") + pas.StrUtils.IfThen(this.ByGenre.FChecked,this.wcbGenres.GetText() + " ","") + "Programs" + pas.StrUtils.IfThen(this.ByTitle.FChecked," w/Titles " + pas.SysUtils.QuotedStr("*" + this.WebSearchEdit.GetText() + "*","'"),""));
       this.EPG.SetColWidths(0,pas.Math.IfThen(this.ByChannel.FChecked,0,75));
       this.WIDBCDS.DisableControls();
       this.WIDBCDS.SetFiltered(false);
       $impl.Log("BaseFilter: " + $impl.BaseFilter);
       fltr = "";
       if (this.ByGenre.FChecked) fltr = fltr + " and genres like " + pas.SysUtils.QuotedStr('%"' + pas.StrUtils.ReplaceStr(this.wcbGenres.GetText(),"/","_") + '"%',"'");
-      if (this.ByTitle.FChecked) fltr = fltr + " and Title = " + pas.SysUtils.QuotedStr(this.wcbTitles.GetText(),"'");
+      if (this.ByTitle.FChecked) fltr = fltr + " and Title like " + pas.SysUtils.QuotedStr("%" + this.WebSearchEdit.GetText() + "%","'");
       if (this.ByChannel.FChecked) fltr = fltr + " and PSIP = " + pas.SysUtils.QuotedStr(this.wcbChannels.GetText(),"'");
       if (this.byType.FChecked) fltr = fltr + " and Class = " + pas.SysUtils.QuotedStr($impl.TypeClass[pas.TypInfo.GetEnumValue($mod.$rtti["ProgramTypes"],this.wcbTypes.GetText())],"'");
       if (fltr > "") $impl.Log("Epg Filter: BaseFilter + " + fltr);
@@ -41533,8 +41743,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           fn = 14;
           cb = this.wcbGenres;
         } else if ($tmp === 2) {
-          fn = 3;
-          cb = this.wcbTitles;
+          continue;
         } else if ($tmp === 3) {
           fn = 1;
           cb = this.wcbChannels;
@@ -41621,12 +41830,13 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.pnlListings = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
       this.lblEmptyEPG = pas["WEBLib.StdCtrls"].TLabel.$create("Create$1",[this]);
       this.EPG = pas["WEBLib.DBCtrls"].TDBGrid.$create("Create$1",[this]);
-      this.pnlFilterComboBox = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
+      this.pnlFilterSelection = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
       this.lblFilterSelect = pas["WEBLib.StdCtrls"].TLabel.$create("Create$1",[this]);
       this.wcbGenres = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
       this.wcbTitles = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
       this.wcbChannels = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
       this.wcbTypes = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
+      this.WebSearchEdit = pas["WEBLib.ExtCtrls"].TSearchEdit.$create("Create$1",[this]);
       this.btnRefreshData = pas["WEBLib.Buttons"].TSpeedButton.$create("Create$1",[this]);
       this.WebMainMenu1 = pas["WEBLib.Menus"].TMainMenu.$create("Create$1",[this]);
       this.ByAll = pas["WEBLib.Menus"].TMenuItem.$create("Create$1",[this]);
@@ -41673,12 +41883,13 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.pnlListings.BeforeLoadDFMValues();
       this.lblEmptyEPG.BeforeLoadDFMValues();
       this.EPG.BeforeLoadDFMValues();
-      this.pnlFilterComboBox.BeforeLoadDFMValues();
+      this.pnlFilterSelection.BeforeLoadDFMValues();
       this.lblFilterSelect.BeforeLoadDFMValues();
       this.wcbGenres.BeforeLoadDFMValues();
       this.wcbTitles.BeforeLoadDFMValues();
       this.wcbChannels.BeforeLoadDFMValues();
       this.wcbTypes.BeforeLoadDFMValues();
+      this.WebSearchEdit.BeforeLoadDFMValues();
       this.btnRefreshData.BeforeLoadDFMValues();
       this.WebMainMenu1.BeforeLoadDFMValues();
       this.ByAll.BeforeLoadDFMValues();
@@ -42220,7 +42431,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebHTMLDiv1.FHTML.BeginUpdate();
         try {
           this.WebHTMLDiv1.FHTML.Clear();
-          this.WebHTMLDiv1.FHTML.Add('<FONT color="#FFFFFF" ><P align="center">Programs to be Scheduled </FONT><FONT color="#F00000" >on Next CW_EPG Run </P> </FONT>');
+          this.WebHTMLDiv1.FHTML.Add('<FONT color="#FFFFFF" ><P align="center">Programs to be Scheduled </FONT><FONT color="#F00000" >on Next CW_EPG Run </P> ');
+          this.WebHTMLDiv1.FHTML.Add("</FONT>");
         } finally {
           this.WebHTMLDiv1.FHTML.EndUpdate();
         };
@@ -42247,10 +42459,10 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.NewCaptures.SetColor(212724686);
         this.NewCaptures.SetColCount(7);
         this.NewCaptures.SetDefaultRowHeight(22);
-        this.NewCaptures.SetFixedColor(8421376);
+        this.NewCaptures.SetFixedColor(32768);
         this.NewCaptures.SetFixedCols(0);
         this.NewCaptures.FFont.FCharset = 0;
-        this.NewCaptures.FFont.SetColor(0);
+        this.NewCaptures.FFont.SetColor(16777215);
         this.NewCaptures.FFont.SetHeight(-19);
         this.NewCaptures.FFont.SetName("Arial");
         this.NewCaptures.FFont.SetStyle({});
@@ -42258,7 +42470,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.NewCaptures.SetParentFont(false);
         this.NewCaptures.SetTabOrder(0);
         this.NewCaptures.FStyleElements = {};
-        this.NewCaptures.SetElementClassName("greenBG");
+        this.NewCaptures.SetElementClassName("yellowBG");
         this.NewCaptures.SetElementFont(1);
         this.NewCaptures.FFixedFont.FCharset = 0;
         this.NewCaptures.FFixedFont.SetColor(0);
@@ -42290,12 +42502,12 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.Captures.SetWidth(428);
         this.Captures.SetHeight(231);
         this.Captures.SetAlign(5);
-        this.Captures.SetColor(212724686);
+        this.Captures.SetColor(3107669);
         this.Captures.SetDefaultRowHeight(22);
-        this.Captures.SetFixedColor(8421376);
+        this.Captures.SetFixedColor(32768);
         this.Captures.SetFixedCols(0);
         this.Captures.FFont.FCharset = 0;
-        this.Captures.FFont.SetColor(0);
+        this.Captures.FFont.SetColor(16777215);
         this.Captures.FFont.SetHeight(-19);
         this.Captures.FFont.SetName("Arial");
         this.Captures.FFont.SetStyle({});
@@ -42303,7 +42515,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.Captures.SetParentFont(false);
         this.Captures.SetTabOrder(0);
         this.Captures.FStyleElements = {};
-        this.Captures.SetElementClassName("greenBG");
+        this.Captures.SetElementClassName("whiteBG");
         this.Captures.SetElementFont(1);
         this.Captures.FFixedFont.FCharset = 0;
         this.Captures.FFixedFont.SetColor(0);
@@ -42472,26 +42684,26 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.EPG.SetColWidths(2,300);
         this.EPG.SetColWidths(3,0);
         this.EPG.SetColWidths(4,0);
-        this.pnlFilterComboBox.SetParentComponent(this.pnlListings);
-        this.pnlFilterComboBox.SetName("pnlFilterComboBox");
-        this.pnlFilterComboBox.SetLeft(117);
-        this.pnlFilterComboBox.SetTop(153);
-        this.pnlFilterComboBox.SetWidth(150);
-        this.pnlFilterComboBox.SetHeight(75);
-        this.pnlFilterComboBox.SetElementClassName("card");
-        this.pnlFilterComboBox.SetChildOrderEx(5);
-        this.pnlFilterComboBox.FElementBodyClassName = "card-body";
-        this.pnlFilterComboBox.SetElementFont(1);
-        this.pnlFilterComboBox.FFont.FCharset = 0;
-        this.pnlFilterComboBox.FFont.SetColor(0);
-        this.pnlFilterComboBox.FFont.SetHeight(-19);
-        this.pnlFilterComboBox.FFont.SetName("Arial");
-        this.pnlFilterComboBox.FFont.SetStyle({});
-        this.pnlFilterComboBox.SetParentFont(false);
-        this.pnlFilterComboBox.SetShowCaption(false);
-        this.pnlFilterComboBox.SetTabOrder(1);
-        this.pnlFilterComboBox.SetVisible(false);
-        this.lblFilterSelect.SetParentComponent(this.pnlFilterComboBox);
+        this.pnlFilterSelection.SetParentComponent(this.pnlListings);
+        this.pnlFilterSelection.SetName("pnlFilterSelection");
+        this.pnlFilterSelection.SetLeft(117);
+        this.pnlFilterSelection.SetTop(153);
+        this.pnlFilterSelection.SetWidth(150);
+        this.pnlFilterSelection.SetHeight(75);
+        this.pnlFilterSelection.SetElementClassName("card");
+        this.pnlFilterSelection.SetChildOrderEx(5);
+        this.pnlFilterSelection.FElementBodyClassName = "card-body";
+        this.pnlFilterSelection.SetElementFont(1);
+        this.pnlFilterSelection.FFont.FCharset = 0;
+        this.pnlFilterSelection.FFont.SetColor(0);
+        this.pnlFilterSelection.FFont.SetHeight(-19);
+        this.pnlFilterSelection.FFont.SetName("Arial");
+        this.pnlFilterSelection.FFont.SetStyle({});
+        this.pnlFilterSelection.SetParentFont(false);
+        this.pnlFilterSelection.SetShowCaption(false);
+        this.pnlFilterSelection.SetTabOrder(1);
+        this.pnlFilterSelection.SetVisible(false);
+        this.lblFilterSelect.SetParentComponent(this.pnlFilterSelection);
         this.lblFilterSelect.SetName("lblFilterSelect");
         this.lblFilterSelect.SetAlignWithMargins(true);
         this.lblFilterSelect.SetLeft(3);
@@ -42513,7 +42725,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.lblFilterSelect.SetParentFont(false);
         this.lblFilterSelect.SetWidthStyle(2);
         this.lblFilterSelect.SetWidthPercent(100.000000000000000000);
-        this.wcbGenres.SetParentComponent(this.pnlFilterComboBox);
+        this.wcbGenres.SetParentComponent(this.pnlFilterSelection);
         this.wcbGenres.SetName("wcbGenres");
         this.wcbGenres.SetAlignWithMargins(true);
         this.wcbGenres.SetLeft(3);
@@ -42538,7 +42750,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.SetEvent$1(this.wcbGenres,this,"OnChange","wcbGenresChange");
         this.SetEvent$1(this.wcbGenres,this,"OnFocusOut","wcbGenresFocusOut");
         this.wcbGenres.SetItemIndex(-1);
-        this.wcbTitles.SetParentComponent(this.pnlFilterComboBox);
+        this.wcbTitles.SetParentComponent(this.pnlFilterSelection);
         this.wcbTitles.SetName("wcbTitles");
         this.wcbTitles.SetAlignWithMargins(true);
         this.wcbTitles.SetLeft(3);
@@ -42563,7 +42775,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.SetEvent$1(this.wcbTitles,this,"OnChange","wcbTitlesChange");
         this.SetEvent$1(this.wcbTitles,this,"OnFocusOut","wcbTitlesFocusOut");
         this.wcbTitles.SetItemIndex(-1);
-        this.wcbChannels.SetParentComponent(this.pnlFilterComboBox);
+        this.wcbChannels.SetParentComponent(this.pnlFilterSelection);
         this.wcbChannels.SetName("wcbChannels");
         this.wcbChannels.SetAlignWithMargins(true);
         this.wcbChannels.SetLeft(3);
@@ -42588,7 +42800,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.SetEvent$1(this.wcbChannels,this,"OnChange","wcbChannelsChange");
         this.SetEvent$1(this.wcbChannels,this,"OnFocusOut","wcbChannelsFocusOut");
         this.wcbChannels.SetItemIndex(-1);
-        this.wcbTypes.SetParentComponent(this.pnlFilterComboBox);
+        this.wcbTypes.SetParentComponent(this.pnlFilterSelection);
         this.wcbTypes.SetName("wcbTypes");
         this.wcbTypes.SetAlignWithMargins(true);
         this.wcbTypes.SetLeft(3);
@@ -42623,6 +42835,23 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         } finally {
           this.wcbTypes.FItems.EndUpdate();
         };
+        this.WebSearchEdit.SetParentComponent(this.pnlFilterSelection);
+        this.WebSearchEdit.SetName("WebSearchEdit");
+        this.WebSearchEdit.SetLeft(0);
+        this.WebSearchEdit.SetTop(28);
+        this.WebSearchEdit.SetWidth(150);
+        this.WebSearchEdit.SetHeight(47);
+        this.WebSearchEdit.SetAlign(5);
+        this.WebSearchEdit.SetChildOrderEx(5);
+        this.WebSearchEdit.SetElementClassName("form-control");
+        this.WebSearchEdit.SetElementFont(1);
+        this.WebSearchEdit.SetHeightStyle(2);
+        this.WebSearchEdit.SetHeightPercent(100.000000000000000000);
+        this.WebSearchEdit.SetText("WebSearchEdit");
+        this.WebSearchEdit.SetVisible(false);
+        this.WebSearchEdit.SetWidthPercent(100.000000000000000000);
+        this.SetEvent$1(this.WebSearchEdit,this,"OnChange","WebSearchEditChange");
+        this.SetEvent$1(this.WebSearchEdit,this,"OnSearchClick","WebSearchEditSearchClick");
         this.btnRefreshData.SetParentComponent(this.pnlListings);
         this.btnRefreshData.SetName("btnRefreshData");
         this.btnRefreshData.SetLeft(120);
@@ -42769,12 +42998,13 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlListings.AfterLoadDFMValues();
         this.lblEmptyEPG.AfterLoadDFMValues();
         this.EPG.AfterLoadDFMValues();
-        this.pnlFilterComboBox.AfterLoadDFMValues();
+        this.pnlFilterSelection.AfterLoadDFMValues();
         this.lblFilterSelect.AfterLoadDFMValues();
         this.wcbGenres.AfterLoadDFMValues();
         this.wcbTitles.AfterLoadDFMValues();
         this.wcbChannels.AfterLoadDFMValues();
         this.wcbTypes.AfterLoadDFMValues();
+        this.WebSearchEdit.AfterLoadDFMValues();
         this.btnRefreshData.AfterLoadDFMValues();
         this.WebMainMenu1.AfterLoadDFMValues();
         this.ByAll.AfterLoadDFMValues();
@@ -42837,7 +43067,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addField("WebHTMLDiv1",pas["WEBLib.WebCtrls"].$rtti["THTMLDiv"]);
     $r.addField("WebHTMLDiv2",pas["WEBLib.WebCtrls"].$rtti["THTMLDiv"]);
     $r.addField("WebHTMLDiv3",pas["WEBLib.WebCtrls"].$rtti["THTMLDiv"]);
-    $r.addField("pnlFilterComboBox",pas["WEBLib.ExtCtrls"].$rtti["TPanel"]);
+    $r.addField("pnlFilterSelection",pas["WEBLib.ExtCtrls"].$rtti["TPanel"]);
     $r.addField("lblFilterSelect",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
     $r.addField("WebHTMLDiv4",pas["WEBLib.WebCtrls"].$rtti["THTMLDiv"]);
     $r.addField("HistoryGrid",pas["WEBLib.Grids"].$rtti["TStringGrid"]);
@@ -42849,6 +43079,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addField("btnRefreshData",pas["WEBLib.Buttons"].$rtti["TSpeedButton"]);
     $r.addField("byType",pas["WEBLib.Menus"].$rtti["TMenuItem"]);
     $r.addField("wcbTypes",pas["WEBLib.StdCtrls"].$rtti["TComboBox"]);
+    $r.addField("WebSearchEdit",pas["WEBLib.ExtCtrls"].$rtti["TSearchEdit"]);
     $r.addMethod("ClearFilterLists",0,[]);
     $r.addMethod("SetNewCapturesFixedRow",0,[]);
     $r.addMethod("EPGGetCellClass",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint],["AField",pas.DB.$rtti["TField"]],["AValue",rtl.string],["AClassName",rtl.string,1]]);
@@ -42887,6 +43118,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addMethod("btnRefreshDataClick",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("wcbTypesChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("wcbTypesFocusOut",0,[["Sender",pas.System.$rtti["TObject"]]]);
+    $r.addMethod("WebSearchEditChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
+    $r.addMethod("WebSearchEditSearchClick",0,[["Sender",pas.System.$rtti["TObject"]]]);
   });
   this.CWRmainFrm = null;
   $mod.$implcode = function () {

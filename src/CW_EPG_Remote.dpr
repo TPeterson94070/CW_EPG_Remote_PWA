@@ -1,7 +1,7 @@
 program CW_EPG_Remote;
 
 {$R *.dres}
-{$Define idbdebug}
+{ $Define idbdebug}
 uses
   Vcl.Forms,
   WEBLib.Forms,

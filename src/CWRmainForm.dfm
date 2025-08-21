@@ -777,7 +777,7 @@ object CWRmainFrm: TCWRmainFrm
         0
         0)
     end
-    object pnlFilterComboBox: TWebPanel
+    object pnlFilterSelection: TWebPanel
       Left = 117
       Top = 153
       Width = 150
@@ -921,6 +921,23 @@ object CWRmainFrm: TCWRmainFrm
           'Rerun'
           'Movie'
           'Other')
+      end
+      object WebSearchEdit: TWebSearchEdit
+        Left = 0
+        Top = 28
+        Width = 150
+        Height = 47
+        Align = alClient
+        ChildOrder = 5
+        ElementClassName = 'form-control'
+        ElementFont = efCSS
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        Text = 'WebSearchEdit'
+        Visible = False
+        WidthPercent = 100.000000000000000000
+        OnChange = WebSearchEditChange
+        OnSearchClick = WebSearchEditSearchClick
       end
     end
     object btnRefreshData: TWebSpeedButton

@@ -1,4 +1,6 @@
 unit CWRmainForm;
+{$Define TitleSearch}
+
                        { TODO : Add search function to Listings (and History?) }
                        { TODO : Add item deletion to Scheduled list }
                        { DONE : Add one-off scheduling of Listing item }
@@ -13,7 +15,7 @@ uses
   System.StrUtils, WEBLib.DBCtrls, WEBLib.FlexControls, WEBLib.WebCtrls,
   WEBLib.REST, Types, WEBLib.Storage, WEBLib.CDS, WEBLib.Auth, WEBLib.JSON,
   WEBLib.WebTools, WEBLib.Google, WEBLib.DataGrid.Common, WEBLib.DataGrid,
-  WEBLib.Buttons;
+  WEBLib.Buttons, WEBLib.EditAutocomplete;
 
 type
   TGridDrawState = set of (gdSelected, gdFocused, gdFixed, gdRowSelected, gdHotTrack, gdPressed);
@@ -58,7 +60,7 @@ type
     WebHTMLDiv1: TWebHTMLDiv;
     WebHTMLDiv2: TWebHTMLDiv;
     WebHTMLDiv3: TWebHTMLDiv;
-    pnlFilterComboBox: TWebPanel;
+    pnlFilterSelection: TWebPanel;
     lblFilterSelect: TWebLabel;
     WebHTMLDiv4: TWebHTMLDiv;
     HistoryGrid: TWebStringGrid;
@@ -70,6 +72,7 @@ type
     btnRefreshData: TWebSpeedButton;
     byType: TMenuItem;
     wcbTypes: TWebComboBox;
+    WebSearchEdit: TWebSearchEdit;
   procedure ClearFilterLists;
   procedure SetNewCapturesFixedRow;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
@@ -117,6 +120,8 @@ type
   [async] procedure btnRefreshDataClick(Sender: TObject);
     procedure wcbTypesChange(Sender: TObject);
     procedure wcbTypesFocusOut(Sender: TObject);
+    procedure WebSearchEditChange(Sender: TObject);
+    procedure WebSearchEditSearchClick(Sender: TObject);
 private
   { Private declarations }
   [async] procedure LogDataRange;
@@ -210,7 +215,7 @@ end;
 
 procedure TCWRmainFrm.wcbGenresFocusOut(Sender: TObject);
 begin
-  pnlFilterComboBox.Hide;
+  pnlFilterSelection.Hide;
   wcbGenres.Hide;
 end;
                                { TODO : Add Title Search to menu }
@@ -224,7 +229,7 @@ end;
 
 procedure TCWRmainFrm.wcbTitlesFocusOut(Sender: TObject);
 begin
-  pnlFilterComboBox.Hide;
+  pnlFilterSelection.Hide;
   wcbTitles.Hide;
 end;
 
@@ -238,8 +243,27 @@ end;
 
 procedure TCWRmainFrm.wcbTypesFocusOut(Sender: TObject);
 begin
-  pnlFilterComboBox.Hide;
+  pnlFilterSelection.Hide;
   wcbTypes.Hide;
+end;
+
+procedure TCWRmainFrm.WebSearchEditChange(Sender: TObject);
+begin
+  EPG.Columns[2].Title := 'Programs w/Titles using ' + QuotedStr('*' + WebSearchEdit.Text + '*');
+//  if Length(WebSearchEdit.Text) < 2 then exit;
+  if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
+  WIDBCDS.Filtered := False;
+  WIDBCDS.Filter := BaseFilter + ' and Title like ' + QuotedStr('%' + WebSearchEdit.Text + '%');
+  WIDBCDS.Filtered := True;
+  if WIDBCDS.ControlsDisabled then WIDBCDS.EnableControls;
+end;
+
+procedure TCWRmainFrm.WebSearchEditSearchClick(Sender: TObject);
+begin
+  pnlFilterSelection.Hide;
+  WebSearchEdit.Hide;
+//  {$IfDef PAS2JS}await{$EndIf}
+  (SetFilters);
 end;
 
 procedure TCWRmainFrm.wcbChannelsChange(Sender: TObject);
@@ -252,7 +276,7 @@ end;
 
 procedure TCWRmainFrm.wcbChannelsFocusOut(Sender: TObject);
 begin
-  pnlFilterComboBox.Hide;
+  pnlFilterSelection.Hide;
   wcbChannels.Hide;
 end;
 
@@ -287,6 +311,7 @@ begin
   {$IfDef PAS2JS}await{$EndIf}(RefreshListings);
   Log('========== FormCreate is finished');
 end;
+
 
 procedure TCWRmainFrm.WIDBCDSIDBError(DataSet: TDataSet;
   opCode: TIndexedDbOpCode; errorName, errorMsg: string);
@@ -396,7 +421,7 @@ begin
   ByTitle.Checked := False;
   byType.Checked := False;
   ByChannel.Checked := False;
-  pnlFilterComboBox.Hide;
+  pnlFilterSelection.Hide;
   ByAll.Checked := True;
   VisiblePanelNum := 0;
   if WIDBCDS.Filter {> ''}<> BaseFilter then
@@ -440,12 +465,28 @@ begin
   if ByTitle.Checked then // Toggle off this filter
   begin
     ByTitle.Checked := False;
+  {$IfNDef TitleSearch}
     wcbTitles.ItemIndex := -1;
+  {$Else}
+    pnlFilterSelection.Hide;
+    WebSearchEdit.Hide;
+  {$EndIf}
     {$IfDef PAS2JS}await{$EndIf}(SetFilters);
   end else
+  begin
+  {$IfNDef TitleSearch}
     {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTitles, 'Title'));
-//  wcbTitles.ItemIndex := wcbTitles.Items.IndexOf(WIDBCDS.{FieldByName('Title')}Fields[3].AsString);
+  {$Else}
+    ByTitle.Checked := True;
+    lblFilterSelect.Caption := 'Search Titles for:';
+    pnlFilterSelection.BringToFront;
+    pnlFilterSelection.Show;
+    WebSearchEdit.Clear;
+    WebSearchEdit.Show;
+  {$EndIf}
+  end;
   ByTitle.OnClick := ByTitleClick;
+
 end;
 
 procedure TCWRmainFrm.byTypeClick(Sender: TObject);
@@ -642,10 +683,10 @@ begin
   WIDBCDS.Close;
   TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   try
-    if BufferGrid.RowCount < 2 then
-    begin
-      FillTable(BufferGrid, TLocalStorage.GetValue('cwr_epg.csv'));
-    end;
+//    if BufferGrid.RowCount < 2 then
+//    begin
+//      FillTable(BufferGrid, TLocalStorage.GetValue('cwr_epg.csv'));
+//    end;
 
     if WIDBCDS.Active and (BufferGrid.RowCount > 1) then
     begin
@@ -858,8 +899,12 @@ begin
             cb := wcbGenres;
           end;
       2:  begin
+            {$IfNdef TitleSearch}
             fn := 3;
             cb := wcbTitles;
+            {$Else}
+            Continue;
+            {$EndIf}
           end;
       3:  begin
             fn := 1;
@@ -923,12 +968,14 @@ begin
   wcbTitles.Hide;
   wcbChannels.Hide;
   wcbTypes.Hide;
+  WebSearchEdit.Hide;
   EPG.ClearSelection;
   if cb.Items.Count = 0 then Exit;  // Can happen??
 //    SetupFilterLists;
   Log('====== Showing ComboBox');
-  pnlFilterComboBox.BringToFront;
-  pnlFilterComboBox.Show;
+  pnlFilterSelection.BringToFront;
+  pnlFilterSelection.Show;
+  cb.BringToFront;
   cb.Show;
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   if VisiblePanelNum <> 0 then {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
@@ -966,7 +1013,11 @@ begin
   EPG.Columns[2].Title := IfThen(ByChannel.Checked, wcbChannels.Text + ' ')
     + IfThen(byType.Checked, wcbTypes.Text + ' ')
     + IfThen(ByGenre.Checked, wcbGenres.Text + ' ') + 'Programs'
+  {$IfNdef TitleSearch}
     + IfThen(ByTitle.Checked, ' Titled ' + QuotedStr(wcbTitles.Text));
+  {$Else}
+    + IfThen(ByTitle.Checked, ' w/Titles ' + QuotedStr('*' + WebSearchEdit.Text + '*'));
+  {$EndIf}
   EPG.ColWidths[0] := IfThen(ByChannel.Checked, 0, 75);
   WIDBCDS.DisableControls;
   WIDBCDS.Filtered := False;
@@ -974,7 +1025,11 @@ begin
   fltr := '';
   if ByGenre.Checked then fltr := fltr + ' and genres like '
     + QuotedStr('%"'+ReplaceStr(wcbGenres.Text, '/', '_')+'"%');
+  {$IfNdef TitleSearch}
   if ByTitle.Checked then fltr := fltr + ' and Title = ' + QuotedStr(wcbTitles.Text);
+  {$Else}
+  if ByTitle.Checked then fltr := fltr + ' and Title like ' + QuotedStr('%' + WebSearchEdit.Text + '%');
+  {$EndIf}
   if ByChannel.Checked then fltr := fltr + ' and PSIP = ' + QuotedStr(wcbChannels.Text);
   if ByType.Checked then fltr := fltr + ' and Class = '
     + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
@@ -1322,7 +1377,7 @@ begin
     CurrentID := EPG.Cells[3,ARow];
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   // Quit Combobox if still open
-  if pnlFilterComboBox.Visible then pnlFilterComboBox.Hide;
+  if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
   // Speed up form opening
   if not WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.DisableControls);
   Log('========== finished WIDBCDS.DisableControls ');
