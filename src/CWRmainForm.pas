@@ -72,7 +72,7 @@ type
     btnRefreshData: TWebSpeedButton;
     byType: TMenuItem;
     wcbTypes: TWebComboBox;
-    WebSearchEdit: TWebSearchEdit;
+    weTitleSearch: TWebEdit;
   procedure ClearFilterLists;
   procedure SetNewCapturesFixedRow;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
@@ -120,8 +120,7 @@ type
   [async] procedure btnRefreshDataClick(Sender: TObject);
     procedure wcbTypesChange(Sender: TObject);
     procedure wcbTypesFocusOut(Sender: TObject);
-    {[async]} procedure WebSearchEditChange(Sender: TObject);
-    procedure WebSearchEditSearchClick(Sender: TObject);
+    procedure weTitleSearchChange(Sender: TObject);
 private
   { Private declarations }
   [async] procedure LogDataRange;
@@ -244,26 +243,19 @@ begin
   wcbTypes.Hide;
 end;
 
-procedure TCWRmainFrm.WebSearchEditChange(Sender: TObject);
+procedure TCWRmainFrm.weTitleSearchChange(Sender: TObject);
 begin
-  WebSearchEdit.OnChange := nil;
-  Log('WebSearchEdit.Text: ' + WebSearchEdit.Text);
-  SearchFilter := WebSearchEdit.Text;
-  {await}(SetFilters);
-  WebSearchEdit.OnChange := WebSearchEditChange;
-end;
-
-procedure TCWRmainFrm.WebSearchEditSearchClick(Sender: TObject);
-begin
-  pnlFilterSelection.Hide;
-  WebSearchEdit.Hide;
+  weTitleSearch.OnChange := nil;
+  Log('weTitleSearch.Text: ' + weTitleSearch.Text);
+  SearchFilter := weTitleSearch.Text;
+  SetFilters;
+  weTitleSearch.OnChange := weTitleSearchChange;
 end;
 
 procedure TCWRmainFrm.wcbChannelsChange(Sender: TObject);
 begin
   Log('wcbChannels.Text: ' + wcbChannels.Text);
   ByChannel.Checked := wcbChannels.Text <> 'All';
-  if ByChannel.Checked then ByAll.Checked := False;
   SetFilters;
 end;
 
@@ -462,7 +454,7 @@ begin
     wcbTitles.ItemIndex := -1;
   {$Else}
     pnlFilterSelection.Hide;
-    WebSearchEdit.Hide;
+    weTitleSearch.Hide;
   {$EndIf}
     {$IfDef PAS2JS}await{$EndIf}(SetFilters);
   end else
@@ -474,9 +466,9 @@ begin
     lblFilterSelect.Caption := 'Show Titles with:';
     pnlFilterSelection.BringToFront;
     pnlFilterSelection.Show;
-    WebSearchEdit.Clear;
-    WebSearchEdit.BringToFront;
-    WebSearchEdit.Show;
+    weTitleSearch.Clear;
+    weTitleSearch.BringToFront;
+    weTitleSearch.Show;
   {$EndIf}
   end;
   ByTitle.OnClick := ByTitleClick;
@@ -962,7 +954,7 @@ begin
   wcbTitles.Hide;
   wcbChannels.Hide;
   wcbTypes.Hide;
-  WebSearchEdit.Hide;
+  weTitleSearch.Hide;
   EPG.ClearSelection;
   if cb.Items.Count = 0 then Exit;  // Can happen??
 //    SetupFilterLists;

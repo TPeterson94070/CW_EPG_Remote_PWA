@@ -922,22 +922,20 @@ object CWRmainFrm: TCWRmainFrm
           'Movie'
           'Other')
       end
-      object WebSearchEdit: TWebSearchEdit
+      object weTitleSearch: TWebEdit
         Left = 0
         Top = 28
         Width = 150
-        Height = 47
+        Height = 212
         Align = alClient
-        ChildOrder = 5
+        ChildOrder = 6
         ElementClassName = 'form-control'
         ElementFont = efCSS
         HeightStyle = ssAuto
         HeightPercent = 100.000000000000000000
-        Text = 'WebSearchEdit'
         Visible = False
         WidthPercent = 100.000000000000000000
-        OnChange = WebSearchEditChange
-        OnSearchClick = WebSearchEditSearchClick
+        OnChange = weTitleSearchChange
       end
     end
     object btnRefreshData: TWebSpeedButton

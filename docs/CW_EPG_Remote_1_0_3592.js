@@ -30784,7 +30784,6 @@ rtl.module("WEBLib.Imaging.pngImage",["System"],function () {
 rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Controls","WEBLib.StdCtrls","WEBLib.Graphics","Web","JS","WEBLib.WebTools","WEBLib.Menus","WEBLib.REST"],function () {
   "use strict";
   var $mod = this;
-  var $impl = $mod.$impl;
   rtl.createClass(this,"TCustomPanel",pas["WEBLib.Menus"].TWebCustomControl,function () {
     this.$init = function () {
       pas["WEBLib.Menus"].TWebCustomControl.$init.call(this);
@@ -31857,188 +31856,6 @@ rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Cont
     $r.addProperty("OnTouchEnd",0,pas["WEBLib.Controls"].$rtti["TTouchEvent"],"FOnTouchEnd","FOnTouchEnd");
     $r.addProperty("OnTouchCancel",0,pas["WEBLib.Controls"].$rtti["TTouchEvent"],"FOnTouchCancel","FOnTouchCancel");
   });
-  rtl.createClass(this,"TSearchEdit",pas["WEBLib.StdCtrls"].TCustomEdit,function () {
-    this.$init = function () {
-      pas["WEBLib.StdCtrls"].TCustomEdit.$init.call(this);
-      this.FSearchElement = null;
-      this.FClearElement = null;
-      this.FInputElement = null;
-      this.FClearPtr = null;
-      this.FSearchPtr = null;
-      this.FOnSearchClick = null;
-      this.FOnClearClick = null;
-      this.FClearImageURL = "";
-      this.FSearchImageURL = "";
-    };
-    this.$final = function () {
-      this.FSearchElement = undefined;
-      this.FClearElement = undefined;
-      this.FInputElement = undefined;
-      this.FOnSearchClick = undefined;
-      this.FOnClearClick = undefined;
-      pas["WEBLib.StdCtrls"].TCustomEdit.$final.call(this);
-    };
-    this.GetElementBindHandle = function () {
-      var Result = null;
-      Result = this.FInputElement;
-      return Result;
-    };
-    this.GetElementInputHandle = function () {
-      var Result = null;
-      Result = this.FInputElement;
-      return Result;
-    };
-    this.UpdateElementVisual = function () {
-      pas["WEBLib.StdCtrls"].TCustomInput.UpdateElementVisual.call(this);
-      if (this.FSearchElement != null) {
-        if (this.FSearchImageURL !== "") {
-          this.FSearchElement.setAttribute("src",this.FSearchImageURL)}
-         else this.FSearchElement.setAttribute("src",$impl.btnsearchres);
-      };
-      if (this.FClearElement != null) {
-        if (this.FClearImageURL !== "") {
-          this.FClearElement.setAttribute("src",this.FClearImageURL)}
-         else this.FClearElement.setAttribute("src",$impl.btnclearres);
-      };
-    };
-    this.CreateChildElements = function (AContainer) {
-      var FTable = null;
-      var FRow = null;
-      var FCell = null;
-      pas["WEBLib.Controls"].TControl.CreateChildElements.apply(this,arguments);
-      this.FSearchElement = document.createElement("IMG");
-      this.FClearElement = document.createElement("IMG");
-      this.FInputElement = document.createElement("INPUT");
-      FTable = document.createElement("TABLE");
-      FTable.style.setProperty("height","100%");
-      FRow = document.createElement("TR");
-      AContainer.appendChild(FTable);
-      FTable.appendChild(FRow);
-      FCell = document.createElement("TD");
-      FRow.appendChild(FCell);
-      FCell.appendChild(this.FSearchElement);
-      FCell = document.createElement("TD");
-      FRow.appendChild(FCell);
-      FCell.appendChild(this.FInputElement);
-      FCell = document.createElement("TD");
-      FRow.appendChild(FCell);
-      FCell.appendChild(this.FClearElement);
-      this.FSearchElement.setAttribute("src",$impl.btnsearchres);
-      this.FClearElement.setAttribute("src",$impl.btnclearres);
-    };
-    this.BindEvents = function () {
-      pas["WEBLib.StdCtrls"].TCustomEdit.BindEvents.call(this);
-      if (this.FClearElement != null) this.FClearElement.addEventListener("click",this.FClearPtr);
-      if (this.FSearchElement != null) this.FSearchElement.addEventListener("click",this.FSearchPtr);
-    };
-    this.HandleDoClear = function (Event) {
-      var Result = false;
-      if (this.FOnClearClick != null) this.FOnClearClick(this);
-      this.FInputElement.value = '';
-      this.FInputElement.focus();
-      Result = true;
-      return Result;
-    };
-    this.HandleDoSearch = function (Event) {
-      var Result = false;
-      if (this.FOnSearchClick != null) this.FOnSearchClick(this);
-      Result = true;
-      return Result;
-    };
-    this.CreateElement = function () {
-      var Result = null;
-      Result = document.createElement("DIV");
-      return Result;
-    };
-    this.UpdateElement = function () {
-      pas["WEBLib.Controls"].TControl.UpdateElement.call(this);
-      if ((this.GetElementHandle() != null) && (this.GetElementHandle() !== this.ContainerElement()) && !this.IsUpdating()) {
-        if ((this.FElementClassName === "") && (this.FBorderStyle === 1)) {
-          this.GetElementHandle().style.setProperty("border","1px solid gray");
-          this.GetElementHandle().style.setProperty("border-radius","4px");
-        };
-        this.FInputElement.style.setProperty("border","none");
-        this.FInputElement.style.setProperty("outline","none");
-        this.FInputElement.parentElement.style.setProperty("vertical-align","middle");
-        this.FInputElement.parentElement.style.setProperty("width","100%");
-        this.FSearchElement.parentElement.style.setProperty("vertical-align","middle");
-        this.FClearElement.parentElement.style.setProperty("vertical-align","middle");
-        if (this.FElementPosition === 0) {
-          this.FInputElement.style.setProperty("width","100%")}
-         else this.FInputElement.style.removeProperty("width");
-      };
-    };
-    this.SetEnabled = function (Value) {
-      pas["WEBLib.Controls"].TControl.SetEnabled.apply(this,arguments);
-      if (this.GetElementInputHandle() != null) {
-        if (Value) {
-          this.GetElementInputHandle().removeAttribute("disabled")}
-         else this.GetElementInputHandle().setAttribute("disabled","");
-      };
-    };
-    this.ClearMethodPointers = function () {
-      pas["WEBLib.StdCtrls"].TCustomEdit.ClearMethodPointers.call(this);
-      this.FClearPtr = null;
-      this.FSearchPtr = null;
-    };
-    this.GetMethodPointers = function () {
-      pas["WEBLib.StdCtrls"].TCustomEdit.GetMethodPointers.call(this);
-      if (this.FClearPtr === null) this.FClearPtr = rtl.createCallback(this,"HandleDoClear");
-      if (this.FSearchPtr === null) this.FSearchPtr = rtl.createCallback(this,"HandleDoSearch");
-    };
-    this.SetFocus = function () {
-      var eh = null;
-      if (this.GetElementInputHandle() != null) {
-        eh = this.GetElementInputHandle();
-        eh.focus();
-      };
-    };
-    rtl.addIntf(this,pas["WEBLib.Controls"].IControl);
-    rtl.addIntf(this,pas.System.IUnknown);
-    var $r = this.$rtti;
-    $r.addProperty("Alignment",2,pas.Classes.$rtti["TAlignment"],"FAlignment","SetAlignment");
-    $r.addProperty("AutoCompletion",2,pas["WEBLib.StdCtrls"].$rtti["TAutoCompletion"],"FAutoCompletion","SetAutoCompletion",{Default: pas["WEBLib.StdCtrls"].TAutoCompletion.acOff});
-    $r.addProperty("AutoSelect",2,rtl.boolean,"FAutoSelect","SetAutoSelect",{Default: true});
-    $r.addProperty("AutoFocus",2,rtl.boolean,"FAutoFocus","SetAutoFocus",{Default: false});
-    $r.addProperty("AutoSize",2,rtl.boolean,"FAutoSize","SetAutoSize",{Default: false});
-    $r.addProperty("BorderStyle",2,pas["WEBLib.Controls"].$rtti["TBorderStyle"],"FBorderStyle","SetBorderStyle",{Default: pas["WEBLib.Controls"].TBorderStyle.bsSingle});
-    $r.addProperty("CharCase",2,pas["WEBLib.StdCtrls"].$rtti["TEditCharCase"],"FCharCase","SetCharCase",{Default: pas["WEBLib.StdCtrls"].TEditCharCase.wecNormal});
-    $r.addProperty("Color",2,pas["WEBLib.Graphics"].$rtti["TColor"],"FColor","SetColor");
-    $r.addProperty("Font",2,pas["WEBLib.Graphics"].$rtti["TFont"],"FFont","SetFont");
-    $r.addProperty("HideSelection",2,rtl.boolean,"FHideSelection","SetHideSelection");
-    $r.addProperty("MaxLength",2,rtl.longint,"FMaxLength","SetMaxLength",{Default: 0});
-    $r.addProperty("PasswordChar",2,rtl.char,"FPasswordChar","SetPasswordChar",{Default: "\x00"});
-    $r.addProperty("Pattern",2,rtl.string,"FPattern","SetPattern");
-    $r.addProperty("ReadOnly",2,rtl.boolean,"FReadOnly","SetReadOnly",{Default: false});
-    $r.addProperty("Required",2,rtl.boolean,"FRequired","SetRequired",{Default: false});
-    $r.addProperty("RequiredText",0,rtl.string,"FRequiredText","FRequiredText");
-    $r.addProperty("TextHint",2,rtl.string,"FTextHint","SetTextHint");
-    $r.addMethod("SetFocus",0,[]);
-    $r.addProperty("Text",3,rtl.string,"GetText","SetText");
-    $r.addProperty("OnChange",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnChange","FOnChange");
-    $r.addProperty("OnClick",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnClick","FOnClick");
-    $r.addProperty("OnDblClick",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnDblClick","FOnDblClick");
-    $r.addProperty("OnKeyDown",0,pas["WEBLib.Controls"].$rtti["TKeyEvent"],"FOnKeyDown","FOnKeyDown");
-    $r.addProperty("OnKeyPress",0,pas["WEBLib.Controls"].$rtti["TKeyPressEvent"],"FOnKeyPress","FOnKeyPress");
-    $r.addProperty("OnKeyUp",0,pas["WEBLib.Controls"].$rtti["TKeyEvent"],"FOnKeyUp","FOnKeyUp");
-    $r.addProperty("OnMouseDown",0,pas["WEBLib.Controls"].$rtti["TMouseEvent"],"FOnMouseDown","FOnMouseDown");
-    $r.addProperty("OnMouseUp",0,pas["WEBLib.Controls"].$rtti["TMouseEvent"],"FOnMouseUp","FOnMouseUp");
-    $r.addProperty("OnMouseMove",0,pas["WEBLib.Controls"].$rtti["TMouseMoveEvent"],"FOnMouseMove","FOnMouseMove");
-    $r.addProperty("OnMouseLeave",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnMouseLeave","FOnMouseLeave");
-    $r.addProperty("OnMouseEnter",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnMouseEnter","FOnMouseEnter");
-    $r.addProperty("OnEnter",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnEnter","FOnEnter");
-    $r.addProperty("OnExit",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnExit","FOnExit");
-    $r.addProperty("OnDragDrop",0,pas["WEBLib.Controls"].$rtti["TDragDropEvent"],"FOnDragDrop","FOnDragDrop");
-    $r.addProperty("OnDragOver",0,pas["WEBLib.Controls"].$rtti["TDragOverEvent"],"FOnDragOver","FOnDragOver");
-    $r.addProperty("OnEndDrag",0,pas["WEBLib.Controls"].$rtti["TEndDragEvent"],"FonEndDrag","FonEndDrag");
-    $r.addProperty("OnStartDrag",0,pas["WEBLib.Controls"].$rtti["TStartDragEvent"],"FOnStartDrag","FOnStartDrag");
-    $r.addProperty("OnClearClick",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnClearClick","FOnClearClick");
-    $r.addProperty("OnSearchClick",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnSearchClick","FOnSearchClick");
-  });
-  $mod.$implcode = function () {
-    $impl.btnclearres = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA70lEQVQ4jbWSzQ2CQBCFl5OROgSKgAMmHExUDia2QUSswqg9GK1COfnTjCbagm/Cw2wQFw46yZcM+5jZ+Vml/mQ2iMEcpPTt" + "NoEWyMAdHMCaiH9jMssUvAcn0KvRHXAGu29JMgZ3DBWKdgGzqmCz7PLmAfA1PQAT+q4q2unqCcaq6LM0nz/1QcjkoabnYKgnWIBlpSq59QGeIKpoK1Vs6G0ZD9smkM2kphYClh21bUGGKD07/I4rATKTKX1P1QxRsSTZc9MaryCpE+VxyCORPbs1usfgrWp4jS" + "lLPIINyXmWmIJ1k/5GTJbS/+j5J/YC/YEx2smgMEoAAAAASUVORK5CYII=";
-    $impl.btnsearchres = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAABNUlEQVQ4jZWSPU7DQBCFU5ECiEBU/AgEcmXJtvxbuAo0pOAE1CAaAigViFNBOAMRFengBNCCwgH4XrQrBXntkJGePLsz782" + "Pt9WqMc/z2mma9sEITAzk9xWr400tiqJtEsdJkjzwPfR9f0WQD4bcvyqnqfIY3OpcFMU+hHMIazaH2L1EnJ0QvFJl45/iX8dxvOXIG4LLigCEFwLdLMsO8G/qxiR2pJ24OpiYeS/AZp1AWZarynUJfElgdmaXsZsOXXy7BPSruk3keSMM7BKbjLynyhLZ9h6X" + "bwIidw3k6W9k1KUKmW8vz/MNEt45P+rxhGG4LMw+JHaw4ySbc890MgDPWiz4sU/5T2Uudk3LJ2Y5x6quFzhvD1ZgZMm2sjr6F9kIfARBsC6RhclG4AzypzpZmIz9Aj6Qcv0OcR9YAAAAAElFTkSuQmCC";
-  };
 },["WEBLib.Utils","Math"]);
 rtl.module("WEBLib.CDS",["System","Classes","DB","JSONDataset","Web","JS","WEBLib.Controls","WEBLib.REST"],function () {
   "use strict";
@@ -40438,7 +40255,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.btnRefreshData = null;
       this.byType = null;
       this.wcbTypes = null;
-      this.WebSearchEdit = null;
+      this.weTitleSearch = null;
     };
     this.$final = function () {
       this.WebMemo2 = undefined;
@@ -40493,7 +40310,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.btnRefreshData = undefined;
       this.byType = undefined;
       this.wcbTypes = undefined;
-      this.WebSearchEdit = undefined;
+      this.weTitleSearch = undefined;
       pas["WEBLib.Forms"].TForm.$final.call(this);
     };
     this.ClearFilterLists = function () {
@@ -40982,16 +40799,16 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       if (this.ByTitle.FChecked) {
         this.ByTitle.SetChecked(false);
         this.pnlFilterSelection.Hide();
-        this.WebSearchEdit.Hide();
+        this.weTitleSearch.Hide();
         await this.SetFilters();
       } else {
         this.ByTitle.SetChecked(true);
         this.lblFilterSelect.SetCaption("Show Titles with:");
         this.pnlFilterSelection.BringToFront();
         this.pnlFilterSelection.Show();
-        this.WebSearchEdit.Clear();
-        this.WebSearchEdit.BringToFront();
-        this.WebSearchEdit.Show();
+        this.weTitleSearch.Clear();
+        this.weTitleSearch.BringToFront();
+        this.weTitleSearch.Show();
       };
       this.ByTitle.FOnClick = rtl.createCallback(this,"ByTitleClick");
     };
@@ -41038,7 +40855,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.wcbChannelsChange = async function (Sender) {
       $impl.Log("wcbChannels.Text: " + this.wcbChannels.GetText());
       this.ByChannel.SetChecked(this.wcbChannels.GetText() !== "All");
-      if (this.ByChannel.FChecked) this.ByAll.SetChecked(false);
       this.SetFilters();
     };
     this.cbNumDisplayDaysChange = async function (Sender) {
@@ -41144,16 +40960,12 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.pnlFilterSelection.Hide();
       this.wcbTypes.Hide();
     };
-    this.WebSearchEditChange = function (Sender) {
-      this.WebSearchEdit.FOnChange = null;
-      $impl.Log("WebSearchEdit.Text: " + this.WebSearchEdit.GetText());
-      $impl.SearchFilter = this.WebSearchEdit.GetText();
+    this.weTitleSearchChange = function (Sender) {
+      this.weTitleSearch.FOnChange = null;
+      $impl.Log("weTitleSearch.Text: " + this.weTitleSearch.GetText());
+      $impl.SearchFilter = this.weTitleSearch.GetText();
       this.SetFilters();
-      this.WebSearchEdit.FOnChange = rtl.createCallback(this,"WebSearchEditChange");
-    };
-    this.WebSearchEditSearchClick = function (Sender) {
-      this.pnlFilterSelection.Hide();
-      this.WebSearchEdit.Hide();
+      this.weTitleSearch.FOnChange = rtl.createCallback(this,"weTitleSearchChange");
     };
     this.LogDataRange = async function () {
       $impl.Log("WIDBCDS.RecordCount:  " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
@@ -41676,7 +41488,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.wcbTitles.Hide();
       this.wcbChannels.Hide();
       this.wcbTypes.Hide();
-      this.WebSearchEdit.Hide();
+      this.weTitleSearch.Hide();
       this.EPG.ClearSelection();
       if (cb.FItems.GetCount() === 0) return;
       $impl.Log("====== Showing ComboBox");
@@ -41832,7 +41644,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.wcbTitles = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
       this.wcbChannels = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
       this.wcbTypes = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
-      this.WebSearchEdit = pas["WEBLib.ExtCtrls"].TSearchEdit.$create("Create$1",[this]);
+      this.weTitleSearch = pas["WEBLib.StdCtrls"].TEdit.$create("Create$1",[this]);
       this.btnRefreshData = pas["WEBLib.Buttons"].TSpeedButton.$create("Create$1",[this]);
       this.WebMainMenu1 = pas["WEBLib.Menus"].TMainMenu.$create("Create$1",[this]);
       this.ByAll = pas["WEBLib.Menus"].TMenuItem.$create("Create$1",[this]);
@@ -41885,7 +41697,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.wcbTitles.BeforeLoadDFMValues();
       this.wcbChannels.BeforeLoadDFMValues();
       this.wcbTypes.BeforeLoadDFMValues();
-      this.WebSearchEdit.BeforeLoadDFMValues();
+      this.weTitleSearch.BeforeLoadDFMValues();
       this.btnRefreshData.BeforeLoadDFMValues();
       this.WebMainMenu1.BeforeLoadDFMValues();
       this.ByAll.BeforeLoadDFMValues();
@@ -42831,23 +42643,21 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         } finally {
           this.wcbTypes.FItems.EndUpdate();
         };
-        this.WebSearchEdit.SetParentComponent(this.pnlFilterSelection);
-        this.WebSearchEdit.SetName("WebSearchEdit");
-        this.WebSearchEdit.SetLeft(0);
-        this.WebSearchEdit.SetTop(28);
-        this.WebSearchEdit.SetWidth(150);
-        this.WebSearchEdit.SetHeight(47);
-        this.WebSearchEdit.SetAlign(5);
-        this.WebSearchEdit.SetChildOrderEx(5);
-        this.WebSearchEdit.SetElementClassName("form-control");
-        this.WebSearchEdit.SetElementFont(1);
-        this.WebSearchEdit.SetHeightStyle(2);
-        this.WebSearchEdit.SetHeightPercent(100.000000000000000000);
-        this.WebSearchEdit.SetText("WebSearchEdit");
-        this.WebSearchEdit.SetVisible(false);
-        this.WebSearchEdit.SetWidthPercent(100.000000000000000000);
-        this.SetEvent$1(this.WebSearchEdit,this,"OnChange","WebSearchEditChange");
-        this.SetEvent$1(this.WebSearchEdit,this,"OnSearchClick","WebSearchEditSearchClick");
+        this.weTitleSearch.SetParentComponent(this.pnlFilterSelection);
+        this.weTitleSearch.SetName("weTitleSearch");
+        this.weTitleSearch.SetLeft(0);
+        this.weTitleSearch.SetTop(28);
+        this.weTitleSearch.SetWidth(150);
+        this.weTitleSearch.SetHeight(212);
+        this.weTitleSearch.SetAlign(5);
+        this.weTitleSearch.SetChildOrderEx(6);
+        this.weTitleSearch.SetElementClassName("form-control");
+        this.weTitleSearch.SetElementFont(1);
+        this.weTitleSearch.SetHeightStyle(2);
+        this.weTitleSearch.SetHeightPercent(100.000000000000000000);
+        this.weTitleSearch.SetVisible(false);
+        this.weTitleSearch.SetWidthPercent(100.000000000000000000);
+        this.SetEvent$1(this.weTitleSearch,this,"OnChange","weTitleSearchChange");
         this.btnRefreshData.SetParentComponent(this.pnlListings);
         this.btnRefreshData.SetName("btnRefreshData");
         this.btnRefreshData.SetLeft(120);
@@ -43000,7 +42810,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.wcbTitles.AfterLoadDFMValues();
         this.wcbChannels.AfterLoadDFMValues();
         this.wcbTypes.AfterLoadDFMValues();
-        this.WebSearchEdit.AfterLoadDFMValues();
+        this.weTitleSearch.AfterLoadDFMValues();
         this.btnRefreshData.AfterLoadDFMValues();
         this.WebMainMenu1.AfterLoadDFMValues();
         this.ByAll.AfterLoadDFMValues();
@@ -43075,7 +42885,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addField("btnRefreshData",pas["WEBLib.Buttons"].$rtti["TSpeedButton"]);
     $r.addField("byType",pas["WEBLib.Menus"].$rtti["TMenuItem"]);
     $r.addField("wcbTypes",pas["WEBLib.StdCtrls"].$rtti["TComboBox"]);
-    $r.addField("WebSearchEdit",pas["WEBLib.ExtCtrls"].$rtti["TSearchEdit"]);
+    $r.addField("weTitleSearch",pas["WEBLib.StdCtrls"].$rtti["TEdit"]);
     $r.addMethod("ClearFilterLists",0,[]);
     $r.addMethod("SetNewCapturesFixedRow",0,[]);
     $r.addMethod("EPGGetCellClass",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint],["AField",pas.DB.$rtti["TField"]],["AValue",rtl.string],["AClassName",rtl.string,1]]);
@@ -43114,8 +42924,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addMethod("btnRefreshDataClick",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("wcbTypesChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("wcbTypesFocusOut",0,[["Sender",pas.System.$rtti["TObject"]]]);
-    $r.addMethod("WebSearchEditChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
-    $r.addMethod("WebSearchEditSearchClick",0,[["Sender",pas.System.$rtti["TObject"]]]);
+    $r.addMethod("weTitleSearchChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
   });
   this.CWRmainFrm = null;
   $mod.$implcode = function () {
