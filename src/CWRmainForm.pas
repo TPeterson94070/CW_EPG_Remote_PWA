@@ -209,7 +209,6 @@ procedure TCWRmainFrm.wcbGenresChange(Sender: TObject);
 begin
   Log('wcbGenres.Text: ' + wcbGenres.Text);
   ByGenre.Checked := wcbGenres.Text <> 'All';
-  if ByGenre.Checked then ByAll.Checked := False;
   SetFilters;
 end;
 
@@ -218,12 +217,11 @@ begin
   pnlFilterSelection.Hide;
   wcbGenres.Hide;
 end;
-                               { TODO : Add Title Search to menu }
+
 procedure TCWRmainFrm.wcbTitlesChange(Sender: TObject);
 begin
   Log('wcbTitles.Text: ' + wcbTitles.Text);
   ByTitle.Checked := wcbTitles.Text <> 'All';
-  if ByTitle.Checked then ByAll.Checked := False;
   SetFilters;
 end;
 
@@ -237,7 +235,6 @@ procedure TCWRmainFrm.wcbTypesChange(Sender: TObject);
 begin
   Log('wcbTypes.Text: ' + wcbTypes.Text);
   ByType.Checked := wcbTypes.Text <> 'All';
-  if byType.Checked then ByAll.Checked := False;
   SetFilters;
 end;
 
@@ -249,21 +246,14 @@ end;
 
 procedure TCWRmainFrm.WebSearchEditChange(Sender: TObject);
 begin
-  EPG.Columns[2].Title := 'Programs w/Titles using ' + QuotedStr('*' + WebSearchEdit.Text + '*');
-//  if Length(WebSearchEdit.Text) < 2 then exit;
-  if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
-  WIDBCDS.Filtered := False;
-  WIDBCDS.Filter := BaseFilter + ' and Title like ' + QuotedStr('%' + WebSearchEdit.Text + '%');
-  WIDBCDS.Filtered := True;
-  if WIDBCDS.ControlsDisabled then WIDBCDS.EnableControls;
+  Log('WebSearchEdit.Text: ' + WebSearchEdit.Text);
+  SetFilters;
 end;
 
 procedure TCWRmainFrm.WebSearchEditSearchClick(Sender: TObject);
 begin
   pnlFilterSelection.Hide;
   WebSearchEdit.Hide;
-//  {$IfDef PAS2JS}await{$EndIf}
-  (SetFilters);
 end;
 
 procedure TCWRmainFrm.wcbChannelsChange(Sender: TObject);
@@ -478,10 +468,11 @@ begin
     {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTitles, 'Title'));
   {$Else}
     ByTitle.Checked := True;
-    lblFilterSelect.Caption := 'Search Titles for:';
+    lblFilterSelect.Caption := 'Show Titles with:';
     pnlFilterSelection.BringToFront;
     pnlFilterSelection.Show;
     WebSearchEdit.Clear;
+    WebSearchEdit.BringToFront;
     WebSearchEdit.Show;
   {$EndIf}
   end;
@@ -1016,7 +1007,7 @@ begin
   {$IfNdef TitleSearch}
     + IfThen(ByTitle.Checked, ' Titled ' + QuotedStr(wcbTitles.Text));
   {$Else}
-    + IfThen(ByTitle.Checked, ' w/Titles ' + QuotedStr('*' + WebSearchEdit.Text + '*'));
+    + IfThen(ByTitle.Checked, ' w/Titles:' + QuotedStr('*' + WebSearchEdit.Text + '*'));
   {$EndIf}
   EPG.ColWidths[0] := IfThen(ByChannel.Checked, 0, 75);
   WIDBCDS.DisableControls;

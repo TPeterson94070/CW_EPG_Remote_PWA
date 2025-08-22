@@ -40974,7 +40974,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.wcbGenresChange = async function (Sender) {
       $impl.Log("wcbGenres.Text: " + this.wcbGenres.GetText());
       this.ByGenre.SetChecked(this.wcbGenres.GetText() !== "All");
-      if (this.ByGenre.FChecked) this.ByAll.SetChecked(false);
       this.SetFilters();
     };
     this.ByTitleClick = async function (Sender) {
@@ -40987,10 +40986,11 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         await this.SetFilters();
       } else {
         this.ByTitle.SetChecked(true);
-        this.lblFilterSelect.SetCaption("Search Titles for:");
+        this.lblFilterSelect.SetCaption("Show Titles with:");
         this.pnlFilterSelection.BringToFront();
         this.pnlFilterSelection.Show();
         this.WebSearchEdit.Clear();
+        this.WebSearchEdit.BringToFront();
         this.WebSearchEdit.Show();
       };
       this.ByTitle.FOnClick = rtl.createCallback(this,"ByTitleClick");
@@ -40998,7 +40998,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.wcbTitlesChange = async function (Sender) {
       $impl.Log("wcbTitles.Text: " + this.wcbTitles.GetText());
       this.ByTitle.SetChecked(this.wcbTitles.GetText() !== "All");
-      if (this.ByTitle.FChecked) this.ByAll.SetChecked(false);
       this.SetFilters();
     };
     this.byTypeClick = async function (Sender) {
@@ -41139,7 +41138,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.wcbTypesChange = function (Sender) {
       $impl.Log("wcbTypes.Text: " + this.wcbTypes.GetText());
       this.byType.SetChecked(this.wcbTypes.GetText() !== "All");
-      if (this.byType.FChecked) this.ByAll.SetChecked(false);
       this.SetFilters();
     };
     this.wcbTypesFocusOut = function (Sender) {
@@ -41147,17 +41145,12 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.wcbTypes.Hide();
     };
     this.WebSearchEditChange = function (Sender) {
-      this.EPG.FColumns.GetItem$1(2).SetTitle("Programs w/Titles using " + pas.SysUtils.QuotedStr("*" + this.WebSearchEdit.GetText() + "*","'"));
-      if (!this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.DisableControls();
-      this.WIDBCDS.SetFiltered(false);
-      this.WIDBCDS.SetFilterText($impl.BaseFilter + " and Title like " + pas.SysUtils.QuotedStr("%" + this.WebSearchEdit.GetText() + "%","'"));
-      this.WIDBCDS.SetFiltered(true);
-      if (this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.EnableControls();
+      $impl.Log("WebSearchEdit.Text: " + this.WebSearchEdit.GetText());
+      this.SetFilters();
     };
     this.WebSearchEditSearchClick = function (Sender) {
       this.pnlFilterSelection.Hide();
       this.WebSearchEdit.Hide();
-      this.SetFilters();
     };
     this.LogDataRange = async function () {
       $impl.Log("WIDBCDS.RecordCount:  " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
@@ -41699,7 +41692,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.EPG.BeginUpdate();
       this.EPG.Hide();
       this.EPG.SetDataSource(null);
-      this.EPG.FColumns.GetItem$1(2).SetTitle(pas.StrUtils.IfThen(this.ByChannel.FChecked,this.wcbChannels.GetText() + " ","") + pas.StrUtils.IfThen(this.byType.FChecked,this.wcbTypes.GetText() + " ","") + pas.StrUtils.IfThen(this.ByGenre.FChecked,this.wcbGenres.GetText() + " ","") + "Programs" + pas.StrUtils.IfThen(this.ByTitle.FChecked," w/Titles " + pas.SysUtils.QuotedStr("*" + this.WebSearchEdit.GetText() + "*","'"),""));
+      this.EPG.FColumns.GetItem$1(2).SetTitle(pas.StrUtils.IfThen(this.ByChannel.FChecked,this.wcbChannels.GetText() + " ","") + pas.StrUtils.IfThen(this.byType.FChecked,this.wcbTypes.GetText() + " ","") + pas.StrUtils.IfThen(this.ByGenre.FChecked,this.wcbGenres.GetText() + " ","") + "Programs" + pas.StrUtils.IfThen(this.ByTitle.FChecked," w/Titles:" + pas.SysUtils.QuotedStr("*" + this.WebSearchEdit.GetText() + "*","'"),""));
       this.EPG.SetColWidths(0,pas.Math.IfThen(this.ByChannel.FChecked,0,75));
       this.WIDBCDS.DisableControls();
       this.WIDBCDS.SetFiltered(false);
