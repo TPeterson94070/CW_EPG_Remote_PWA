@@ -120,7 +120,7 @@ type
   [async] procedure btnRefreshDataClick(Sender: TObject);
     procedure wcbTypesChange(Sender: TObject);
     procedure wcbTypesFocusOut(Sender: TObject);
-    [async] procedure WebSearchEditChange(Sender: TObject);
+    {[async]} procedure WebSearchEditChange(Sender: TObject);
     procedure WebSearchEditSearchClick(Sender: TObject);
 private
   { Private declarations }
@@ -175,6 +175,7 @@ var
   FirstEndDate,
   LastStartDate:    TDate;
   TotalAvailableDays: Integer;
+  SearchFilter,
   BaseFilter:       string;
 
 type ProgramTypes = (New,Rerun,Movie,Other);
@@ -247,7 +248,8 @@ procedure TCWRmainFrm.WebSearchEditChange(Sender: TObject);
 begin
   WebSearchEdit.OnChange := nil;
   Log('WebSearchEdit.Text: ' + WebSearchEdit.Text);
-  await(SetFilters);
+  SearchFilter := WebSearchEdit.Text;
+  {await}(SetFilters);
   WebSearchEdit.OnChange := WebSearchEditChange;
 end;
 
@@ -989,7 +991,7 @@ begin
   {$IfNdef TitleSearch}
     + IfThen(ByTitle.Checked, ' Titled ' + QuotedStr(wcbTitles.Text));
   {$Else}
-    + IfThen(ByTitle.Checked, ' w/Titles:' + QuotedStr('*' + WebSearchEdit.Text + '*'));
+    + IfThen(ByTitle.Checked, ' w/Titles:' + QuotedStr('*' + SearchFilter + '*'));
   {$EndIf}
   EPG.ColWidths[0] := IfThen(ByChannel.Checked, 0, 75);
   WIDBCDS.DisableControls;
@@ -1001,7 +1003,7 @@ begin
   {$IfNdef TitleSearch}
   if ByTitle.Checked then fltr := fltr + ' and Title = ' + QuotedStr(wcbTitles.Text);
   {$Else}
-  if ByTitle.Checked then fltr := fltr + ' and Title like ' + QuotedStr('%' + WebSearchEdit.Text + '%');
+  if ByTitle.Checked then fltr := fltr + ' and Title like ' + QuotedStr('%' + SearchFilter + '%');
   {$EndIf}
   if ByChannel.Checked then fltr := fltr + ' and PSIP = ' + QuotedStr(wcbChannels.Text);
   if ByType.Checked then fltr := fltr + ' and Class = '

@@ -41144,10 +41144,11 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.pnlFilterSelection.Hide();
       this.wcbTypes.Hide();
     };
-    this.WebSearchEditChange = async function (Sender) {
+    this.WebSearchEditChange = function (Sender) {
       this.WebSearchEdit.FOnChange = null;
       $impl.Log("WebSearchEdit.Text: " + this.WebSearchEdit.GetText());
-      await this.SetFilters();
+      $impl.SearchFilter = this.WebSearchEdit.GetText();
+      this.SetFilters();
       this.WebSearchEdit.FOnChange = rtl.createCallback(this,"WebSearchEditChange");
     };
     this.WebSearchEditSearchClick = function (Sender) {
@@ -41694,14 +41695,14 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.EPG.BeginUpdate();
       this.EPG.Hide();
       this.EPG.SetDataSource(null);
-      this.EPG.FColumns.GetItem$1(2).SetTitle(pas.StrUtils.IfThen(this.ByChannel.FChecked,this.wcbChannels.GetText() + " ","") + pas.StrUtils.IfThen(this.byType.FChecked,this.wcbTypes.GetText() + " ","") + pas.StrUtils.IfThen(this.ByGenre.FChecked,this.wcbGenres.GetText() + " ","") + "Programs" + pas.StrUtils.IfThen(this.ByTitle.FChecked," w/Titles:" + pas.SysUtils.QuotedStr("*" + this.WebSearchEdit.GetText() + "*","'"),""));
+      this.EPG.FColumns.GetItem$1(2).SetTitle(pas.StrUtils.IfThen(this.ByChannel.FChecked,this.wcbChannels.GetText() + " ","") + pas.StrUtils.IfThen(this.byType.FChecked,this.wcbTypes.GetText() + " ","") + pas.StrUtils.IfThen(this.ByGenre.FChecked,this.wcbGenres.GetText() + " ","") + "Programs" + pas.StrUtils.IfThen(this.ByTitle.FChecked," w/Titles:" + pas.SysUtils.QuotedStr("*" + $impl.SearchFilter + "*","'"),""));
       this.EPG.SetColWidths(0,pas.Math.IfThen(this.ByChannel.FChecked,0,75));
       this.WIDBCDS.DisableControls();
       this.WIDBCDS.SetFiltered(false);
       $impl.Log("BaseFilter: " + $impl.BaseFilter);
       fltr = "";
       if (this.ByGenre.FChecked) fltr = fltr + " and genres like " + pas.SysUtils.QuotedStr('%"' + pas.StrUtils.ReplaceStr(this.wcbGenres.GetText(),"/","_") + '"%',"'");
-      if (this.ByTitle.FChecked) fltr = fltr + " and Title like " + pas.SysUtils.QuotedStr("%" + this.WebSearchEdit.GetText() + "%","'");
+      if (this.ByTitle.FChecked) fltr = fltr + " and Title like " + pas.SysUtils.QuotedStr("%" + $impl.SearchFilter + "%","'");
       if (this.ByChannel.FChecked) fltr = fltr + " and PSIP = " + pas.SysUtils.QuotedStr(this.wcbChannels.GetText(),"'");
       if (this.byType.FChecked) fltr = fltr + " and Class = " + pas.SysUtils.QuotedStr($impl.TypeClass[pas.TypInfo.GetEnumValue($mod.$rtti["ProgramTypes"],this.wcbTypes.GetText())],"'");
       if (fltr > "") $impl.Log("Epg Filter: BaseFilter + " + fltr);
@@ -43113,7 +43114,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addMethod("btnRefreshDataClick",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("wcbTypesChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("wcbTypesFocusOut",0,[["Sender",pas.System.$rtti["TObject"]]]);
-    $r.addMethod("WebSearchEditChange",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
+    $r.addMethod("WebSearchEditChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("WebSearchEditSearchClick",0,[["Sender",pas.System.$rtti["TObject"]]]);
   });
   this.CWRmainFrm = null;
@@ -43123,6 +43124,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $impl.FirstEndDate = 0.0;
     $impl.LastStartDate = 0.0;
     $impl.TotalAvailableDays = 0;
+    $impl.SearchFilter = "";
     $impl.BaseFilter = "";
     $impl.ProgramTypes = {"0": "New", New: 0, "1": "Rerun", Rerun: 1, "2": "Movie", Movie: 2, "3": "Other", Other: 3};
     $mod.$rtti.$Enum("ProgramTypes",{minvalue: 0, maxvalue: 3, ordtype: 1, enumtype: $impl.ProgramTypes});
