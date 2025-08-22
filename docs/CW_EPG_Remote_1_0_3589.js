@@ -41144,9 +41144,11 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.pnlFilterSelection.Hide();
       this.wcbTypes.Hide();
     };
-    this.WebSearchEditChange = function (Sender) {
+    this.WebSearchEditChange = async function (Sender) {
+      this.WebSearchEdit.FOnChange = null;
       $impl.Log("WebSearchEdit.Text: " + this.WebSearchEdit.GetText());
-      this.SetFilters();
+      await this.SetFilters();
+      this.WebSearchEdit.FOnChange = rtl.createCallback(this,"WebSearchEditChange");
     };
     this.WebSearchEditSearchClick = function (Sender) {
       this.pnlFilterSelection.Hide();
@@ -41688,7 +41690,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.SetFilters = async function () {
       var fltr = "";
       this.ByAll.SetChecked(!(this.ByChannel.FChecked || this.ByGenre.FChecked || this.ByTitle.FChecked || this.byType.FChecked));
-      await this.ShowPlsWait("Preparing " + pas.StrUtils.IfThen(this.ByAll.FChecked,"(Un)","") + "Filtered List");
+      await this.ShowPlsWait("Preparing " + pas.StrUtils.IfThen(this.ByAll.FChecked,"Un","") + "Filtered List");
       this.EPG.BeginUpdate();
       this.EPG.Hide();
       this.EPG.SetDataSource(null);
@@ -43111,7 +43113,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addMethod("btnRefreshDataClick",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("wcbTypesChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("wcbTypesFocusOut",0,[["Sender",pas.System.$rtti["TObject"]]]);
-    $r.addMethod("WebSearchEditChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
+    $r.addMethod("WebSearchEditChange",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("WebSearchEditSearchClick",0,[["Sender",pas.System.$rtti["TObject"]]]);
   });
   this.CWRmainFrm = null;

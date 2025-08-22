@@ -120,7 +120,7 @@ type
   [async] procedure btnRefreshDataClick(Sender: TObject);
     procedure wcbTypesChange(Sender: TObject);
     procedure wcbTypesFocusOut(Sender: TObject);
-    procedure WebSearchEditChange(Sender: TObject);
+    [async] procedure WebSearchEditChange(Sender: TObject);
     procedure WebSearchEditSearchClick(Sender: TObject);
 private
   { Private declarations }
@@ -152,7 +152,6 @@ private
   [async] procedure SetupWIDBCDS;
   [async] procedure SetupEpg;
   [async] procedure PopupFilterList(cb: TWebComboBox; fn: string);
-  [async] procedure SetFilter(fltr: string);
   [async] procedure SetFilters;
   [async] procedure ShowPlsWait(PlsWaitCap: string);
   [async] procedure SetupFilterLists;
@@ -246,8 +245,10 @@ end;
 
 procedure TCWRmainFrm.WebSearchEditChange(Sender: TObject);
 begin
+  WebSearchEdit.OnChange := nil;
   Log('WebSearchEdit.Text: ' + WebSearchEdit.Text);
-  SetFilters;
+  await(SetFilters);
+  WebSearchEdit.OnChange := WebSearchEditChange;
 end;
 
 procedure TCWRmainFrm.WebSearchEditSearchClick(Sender: TObject);
@@ -973,31 +974,12 @@ begin
   Log('====== Exiting PopupFilterList');
 end;
 
-procedure TCWRmainFrm.SetFilter(fltr: string);
-begin
-  {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(fltr='','Un') + 'Filtered List'));
-  EPG.BeginUpdate;
-  EPG.Hide;
-  WIDBCDS.DisableControls;
-  WIDBCDS.Filtered := False;
-  Log('BaseFilter: ' + BaseFilter);
-  if fltr>'' then Log('Epg Filter: BaseFilter + ' + fltr);
-  WIDBCDS.Filter := BaseFilter + IfThen(fltr>'', ' and ' + fltr);
-  WIDBCDS.Filtered := True;
-  {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
-  EPG.EndUpdate;
-  EPG.Refresh;
-  {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
-  EPG.Show;
-  pnlWaitPls.Hide;
-end;
-
 procedure TCWRmainFrm.SetFilters;
 var
   fltr: string;
 begin
   ByAll.Checked := not (ByChannel.Checked or ByGenre.Checked or ByTitle.Checked or byType.Checked);
-  {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, '(Un)') + 'Filtered List'));
+  {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, 'Un') + 'Filtered List'));
   EPG.BeginUpdate;
   EPG.Hide;
   EPG.DataSource := nil;
@@ -1025,7 +1007,6 @@ begin
   if ByType.Checked then fltr := fltr + ' and Class = '
     + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
   if fltr>'' then Log('Epg Filter: BaseFilter + ' + fltr);
-//  if fltr>'' then ByAll.Checked := False;
   WIDBCDS.Filter := BaseFilter + fltr;
   WIDBCDS.Filtered := True;
   WIDBCDS.EnableControls;
