@@ -408,10 +408,10 @@ begin
   ByChannel.Checked := False;
   pnlFilterSelection.Hide;
   ByAll.Checked := True;
-  VisiblePanelNum := 0;
+//  VisiblePanelNum := 0;
+  {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
   if WIDBCDS.Filter {> ''}<> BaseFilter then
     {$IfDef PAS2JS}await{$EndIf}(SetFilters);
-  {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
   ByAll.OnClick := ByAllClick;
 end;
 
@@ -669,11 +669,6 @@ begin
   WIDBCDS.Close;
   TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   try
-//    if BufferGrid.RowCount < 2 then
-//    begin
-//      FillTable(BufferGrid, TLocalStorage.GetValue('cwr_epg.csv'));
-//    end;
-
     if WIDBCDS.Active and (BufferGrid.RowCount > 1) then
     begin
       Log('LoadWIDBCDS, WIDBCDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
@@ -727,14 +722,10 @@ begin
   finally
     Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
     {$IfDef PAS2JS}await{$EndIf}(LogDataRange);
-//    Log('calling WIDBCDS.EnableControls');
-//    WIDBCDS.EnableControls;
+    if WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
     Log('WIDBCDS Controls are ' + IfThen(WIDBCDS.ControlsDisabled,'NOT ') + 'Enabled');
-//    Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active,'NOT ') + 'Open');
     Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
     Log('========= Finished LoadWIDBCDS');
-//    pnlWaitPls.Hide;
-//    {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
 
   end;
 end;
@@ -851,15 +842,24 @@ begin
   Log('====== SetupEpg called');
   if WIDBCDS.RecordCount = 0 then Exit;
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing Stored Data'));
+  Log(' Finished posting "Please Wait" panel');
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
   LastStartTime := FirstEndTime + StrToIntDef(cbNumDisplayDays.Text,1);
   BaseFilter := 'EndTime >= ' + Double(FirstEndTime).ToString + ' and '
       + 'StartTime <= ' + Double(LastStartTime).ToString;
+  Log(' Finished calculating BaseFilter params');
+  Log(' WIDBCDS.Filtered is ' + IfThen(WIDBCDS.Filtered, 'True', 'False'));
+  if WIDBCDS.Filtered then WIDBCDS.Filtered := False;
+  Log(' WIDBCDS is not filtered');
   WIDBCDS.Filter := BaseFilter;
+  Log(' WIDBCDS BaseFilter assigned, but not active');
+
 //  WIDBCDS.Filtered := True;   // Don't take the time here
 
   WebDataSource1.DataSet := WIDBCDS;
+  Log(' WebDataSource1 DataSet assigned');
   EPG.DataSource := WebDataSource1;
+  Log(' WIDBCDS DataSet assigned');
   EPG.Columns[0].Alignment := taCenter;
   EPG.Columns[2].Alignment := taLeftJustify;
   {$IfDef PAS2JS}await{$EndIf}(SetupFilterLists);
@@ -961,6 +961,7 @@ begin
   Log('====== Showing ComboBox');
   pnlFilterSelection.BringToFront;
   pnlFilterSelection.Show;
+  cb.ItemIndex := -1;
   cb.BringToFront;
   cb.Show;
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
@@ -972,10 +973,11 @@ procedure TCWRmainFrm.SetFilters;
 var
   fltr: string;
 begin
+  Log('====== SetFilters called');
   ByAll.Checked := not (ByChannel.Checked or ByGenre.Checked or ByTitle.Checked or byType.Checked);
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, 'Un') + 'Filtered List'));
-  EPG.BeginUpdate;
   EPG.Hide;
+  EPG.BeginUpdate;
   EPG.DataSource := nil;
   EPG.Columns[2].Title := IfThen(ByChannel.Checked, wcbChannels.Text + ' ')
     + IfThen(byType.Checked, wcbTypes.Text + ' ')
@@ -1003,13 +1005,14 @@ begin
   if fltr>'' then Log('Epg Filter: BaseFilter + ' + fltr);
   WIDBCDS.Filter := BaseFilter + fltr;
   WIDBCDS.Filtered := True;
-  WIDBCDS.EnableControls;
+  {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
   EPG.DataSource := WebDataSource1;
   EPG.EndUpdate;
   EPG.Refresh;
   {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
   EPG.Show;
   pnlWaitPls.Hide;
+  Log('====== SetFilters finished');
 end;
 
 procedure TCWRmainFrm.ShowPlsWait(PlsWaitCap: string);
@@ -1028,7 +1031,7 @@ end;
 procedure TCWRmainFrm.ReFreshListings;
 begin
   Log(' ======== RefreshListings is called.');
-  EPG.Visible := False;
+  EPG.Hide;
   {$IfDef PAS2JS}await{$EndIf}(SetupEpg);
   Log('Days to Display, Available: ' + cbNumDisplayDays.Text + ', ' + TotalAvailableDays.ToString);
 
@@ -1040,7 +1043,7 @@ begin
   end
   else TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'
       + #13#13'To update, please use the Refresh Data button.',mtInformation, [mbOK]));
-  EPG.Visible := True;
+  if not EPG.Visible then EPG.Show;
   pnlListings.BringToFront;
   Log(' ======== RefreshListings finished');
 end;
