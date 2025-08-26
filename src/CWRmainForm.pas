@@ -856,10 +856,10 @@ begin
 
 //  WIDBCDS.Filtered := True;   // Don't take the time here
 
-  WebDataSource1.DataSet := WIDBCDS;
-  Log(' WebDataSource1 DataSet assigned');
-  EPG.DataSource := WebDataSource1;
-  Log(' WIDBCDS DataSet assigned');
+  if WebDataSource1.DataSet <> WIDBCDS then WebDataSource1.DataSet := WIDBCDS;
+  Log(' WebDataSource1 DataSet assignment confirmed');
+  if EPG.DataSource <> WebDataSource1 then EPG.DataSource := WebDataSource1;
+  Log(' EPG DataSet assignment confirmed');
   EPG.Columns[0].Alignment := taCenter;
   EPG.Columns[2].Alignment := taLeftJustify;
   {$IfDef PAS2JS}await{$EndIf}(SetupFilterLists);
