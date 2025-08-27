@@ -40662,9 +40662,12 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           ACol = v;
         }}));
       if (this.pnlFilterSelection.FVisible) this.pnlFilterSelection.Hide();
+      if (!this.WIDBCDS.ControlsDisabled()) await this.WIDBCDS.DisableControls();
+      $impl.Log("========== finished WIDBCDS.DisableControls ");
       try {
         $impl.Log("========== starting Locate " + CurrentID);
         if (this.WIDBCDS.Locate("id",CurrentID,{})) try {
+          this.WIDBCDS.EnableControls();
           $impl.Log("========== Located " + this.EPG.GetCells(3,ARow));
           DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[this]);
           $impl.Log("========== finished TDetailsFrm.Create(nil) ");
