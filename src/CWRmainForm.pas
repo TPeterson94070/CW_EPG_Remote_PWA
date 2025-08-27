@@ -184,9 +184,10 @@ const
   EMAILADDR = 'emailAddress';
   TypeClass: array[ProgramTypes] of string = ('green','rose','goldenRod','gray');
 
-procedure Log(const s: string);
+procedure Log(const s: string); // {$IFDEF PAS2JS} async; {$ENDIF}
 begin
   CWRmainFrm.WebMemo2.Lines.Add(DateTimeToStr(now) + '--' + s);
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   console.log(DateTimeToStr(now) + '--' + s);
 end;
 
@@ -1342,7 +1343,7 @@ var
 //  CurrentRow: Integer;
 
 begin
-  EPG.Hide;
+//  EPG.Hide;
     CurrentID := EPG.Cells[3,ARow];
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   // Quit Combobox if still open
@@ -1430,23 +1431,32 @@ begin
             {$IfDef PAS2JS}await{$EndIf} (UpdateNewCaptures(SchedFrm.tpStartTime.DateTime, SchedFrm.tpEndTime.DateTime));
           end;
         finally
-          Log('Finished with Schedule form');
+          Log('========== EPGClickCell() Finished with Schedule form');
           SchedFrm.Free;
         end;
       end;
     finally
-      Log('Finished with Details form');
+      Log('========== EPGClickCell() Finished with Details form');
       DetailsFrm.Free;
     end;
   except
     Log('Locate raised an improper Exception instead of "False"');
   end;
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing List'));
-  if WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
-  {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
-  {$IfDef PAS2JS}await{$EndIf}(EPG.Refresh);
-
+  Log('========== EPGClickCell() showing ''Refreshing List');
+  if WIDBCDS.ControlsDisabled then
+  begin
+    {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
+    {$IfDef PAS2JS}await{$EndIf}(EPG.Refresh);
+    {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
+  end
+  else
+  begin
+    Log('========== EPGClickCell() WIDBCDS enabled in Details');
+//    EPG.Show;
+  end;
   EPG.OnClickCell := EPGClickCell;
+  Log('========== EPGClickCell() finished');
   pnlWaitPls.Hide;
 end;
 
