@@ -40662,8 +40662,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           ACol = v;
         }}));
       if (this.pnlFilterSelection.FVisible) this.pnlFilterSelection.Hide();
-      if (!this.WIDBCDS.ControlsDisabled()) await this.WIDBCDS.DisableControls();
-      $impl.Log("========== finished WIDBCDS.DisableControls ");
       try {
         $impl.Log("========== starting Locate " + CurrentID);
         if (this.WIDBCDS.Locate("id",CurrentID,{})) try {
