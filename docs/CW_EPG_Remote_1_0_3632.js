@@ -39733,9 +39733,7 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
     };
     this.WebFormShow = function (Sender) {
       this.btnReturn.SetFocus();
-      if (pas.CWRmainForm.CWRmainFrm.WIDBCDS.ControlsDisabled()) {
-        pas.CWRmainForm.CWRmainFrm.WIDBCDS.EnableControls();
-      };
+      pas.CWRmainForm.CWRmainFrm.WIDBCDS.EnableControls();
     };
     this.LoadDFMValues = function () {
       pas["WEBLib.Forms"].TCustomForm.LoadDFMValues.call(this);
@@ -40651,7 +40649,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var SchedFrm = null;
       var x = [];
       var CurrentID = "";
-      this.EPG.Refresh();
+      await sleep(100);
       this.EPG.Hide();
       CurrentID = this.EPG.GetCells(3,ARow);
       $impl.Log("========== EPGClickCell() called from RC " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
@@ -40669,7 +40667,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       try {
         $impl.Log("========== starting Locate " + CurrentID);
         if (this.WIDBCDS.Locate("id",CurrentID,{})) try {
-          this.WIDBCDS.EnableControls();
           this.EPG.Show();
           $impl.Log("========== Located " + this.EPG.GetCells(3,ARow));
           DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[this]);
