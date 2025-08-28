@@ -750,6 +750,7 @@ object CWRmainFrm: TCWRmainFrm
           TitleElementClassName = 'h6'
           Width = 0
         end>
+      DataSource = WebDataSource1
       ElementFont = efCSS
       FixedFont.Charset = ANSI_CHARSET
       FixedFont.Color = clBlack

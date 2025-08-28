@@ -859,7 +859,7 @@ begin
 
   if WebDataSource1.DataSet <> WIDBCDS then WebDataSource1.DataSet := WIDBCDS;
   Log(' WebDataSource1 DataSet assignment confirmed');
-  if EPG.DataSource <> WebDataSource1 then EPG.DataSource := WebDataSource1;
+//  if EPG.DataSource <> WebDataSource1 then EPG.DataSource := WebDataSource1;
   Log(' EPG DataSet assignment confirmed');
   EPG.Columns[0].Alignment := taCenter;
   EPG.Columns[2].Alignment := taLeftJustify;
@@ -979,7 +979,7 @@ begin
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, 'Un') + 'Filtered List'));
   EPG.Hide;
   EPG.BeginUpdate;
-  EPG.DataSource := nil;
+//  EPG.DataSource := nil;
   EPG.Columns[2].Title := IfThen(ByChannel.Checked, wcbChannels.Text + ' ')
     + IfThen(byType.Checked, wcbTypes.Text + ' ')
     + IfThen(ByGenre.Checked, wcbGenres.Text + ' ') + 'Programs'
@@ -1007,7 +1007,7 @@ begin
   WIDBCDS.Filter := BaseFilter + fltr;
   WIDBCDS.Filtered := True;
   {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
-  EPG.DataSource := WebDataSource1;
+//  EPG.DataSource := WebDataSource1;
   EPG.EndUpdate;
   EPG.Refresh;
   {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
@@ -1357,7 +1357,7 @@ begin
     Log('========== starting Locate ' + CurrentID);
     if WIDBCDS.Locate('id', CurrentID,[]) then
     try
-//      WIDBCDS.EnableControls;
+      WIDBCDS.EnableControls;
 //      EPG.Show;                    Android FF form execute fails with this!
       Log('========== Located ' + EPG.Cells[3,ARow]);
       DetailsFrm := TDetailsFrm.Create(Self);
@@ -1448,11 +1448,12 @@ begin
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing List'));
   Log('========== EPGClickCell() showing ''Refreshing List');
   if WIDBCDS.ControlsDisabled then
-  begin
+//  begin
     {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
-//    {$IfDef PAS2JS}await{$EndIf}(EPG.Refresh);
-    {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
-  end;
+////    {$IfDef PAS2JS}await{$EndIf}(EPG.Refresh);
+//    {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
+//  end;
+  {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
   EPG.OnClickCell := EPGClickCell;
   Log('========== EPGClickCell() finished');
   pnlWaitPls.Hide;

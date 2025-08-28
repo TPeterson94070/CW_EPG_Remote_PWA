@@ -41480,7 +41480,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log(" WIDBCDS BaseFilter assigned, but not active");
       if (this.WebDataSource1.FDataSet !== this.WIDBCDS) this.WebDataSource1.SetDataSet(this.WIDBCDS);
       $impl.Log(" WebDataSource1 DataSet assignment confirmed");
-      if (this.EPG.GetDataSource() !== this.WebDataSource1) this.EPG.SetDataSource(this.WebDataSource1);
       $impl.Log(" EPG DataSet assignment confirmed");
       this.EPG.FColumns.GetItem$1(0).SetAlignment(2);
       this.EPG.FColumns.GetItem$1(2).SetAlignment(0);
@@ -41516,7 +41515,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       await this.ShowPlsWait("Preparing " + pas.StrUtils.IfThen(this.ByAll.FChecked,"Un","") + "Filtered List");
       this.EPG.Hide();
       this.EPG.BeginUpdate();
-      this.EPG.SetDataSource(null);
       this.EPG.FColumns.GetItem$1(2).SetTitle(pas.StrUtils.IfThen(this.ByChannel.FChecked,this.wcbChannels.GetText() + " ","") + pas.StrUtils.IfThen(this.byType.FChecked,this.wcbTypes.GetText() + " ","") + pas.StrUtils.IfThen(this.ByGenre.FChecked,this.wcbGenres.GetText() + " ","") + "Programs" + pas.StrUtils.IfThen(this.ByTitle.FChecked," w/Titles:" + pas.SysUtils.QuotedStr("*" + $impl.SearchFilter + "*","'"),""));
       this.EPG.SetColWidths(0,pas.Math.IfThen(this.ByChannel.FChecked,0,75));
       this.WIDBCDS.DisableControls();
@@ -41531,7 +41529,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WIDBCDS.SetFilterText($impl.BaseFilter + fltr);
       this.WIDBCDS.SetFiltered(true);
       await this.WIDBCDS.EnableControls();
-      this.EPG.SetDataSource(this.WebDataSource1);
       this.EPG.EndUpdate();
       this.EPG.Refresh();
       this.EPG.SetRow(1);
@@ -42478,6 +42475,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $with12.SetTitle("Class");
         $with12.FTitleClassName = "h6";
         $with12.SetWidth(0);
+        this.EPG.SetDataSource(this.WebDataSource1);
         this.EPG.SetElementFont(1);
         this.EPG.FFixedFont.FCharset = 0;
         this.EPG.FFixedFont.SetColor(0);
