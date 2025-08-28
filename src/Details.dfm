@@ -11,7 +11,6 @@ object DetailsFrm: TDetailsFrm
   Font.Style = []
   ParentFont = False
   ShowClose = False
-  OnShow = WebFormShow
   object lb02New: TWebLabel
     Left = 200
     Top = 331
@@ -351,7 +350,8 @@ object DetailsFrm: TDetailsFrm
     Cancel = True
     Caption = 'Return'
     ChildOrder = 10
-    ElementClassName = 'btn btn-outline-success'
+    Default = True
+    ElementClassName = 'btn btn-success'
     ElementFont = efCSS
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText

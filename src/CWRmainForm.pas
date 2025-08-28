@@ -1340,10 +1340,11 @@ var
   SchedFrm: TSchedForm;
   x: TArray<string>;
   CurrentID: string;
-//  CurrentRow: Integer;
+//  CurrentRec: Integer;
 
 begin
-//  EPG.Hide;
+  {$IFDEF PAS2JS} asm await sleep(200) end; {$ENDIF}
+  EPG.Hide;
     CurrentID := EPG.Cells[3,ARow];
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   // Quit Combobox if still open
@@ -1356,6 +1357,8 @@ begin
     Log('========== starting Locate ' + CurrentID);
     if WIDBCDS.Locate('id', CurrentID,[]) then
     try
+//      WIDBCDS.EnableControls;
+//      EPG.Show;                    Android FF form execute fails with this!
       Log('========== Located ' + EPG.Cells[3,ARow]);
       DetailsFrm := TDetailsFrm.Create(Self);
       Log('========== finished TDetailsFrm.Create(nil) ');
@@ -1447,13 +1450,8 @@ begin
   if WIDBCDS.ControlsDisabled then
   begin
     {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
-    {$IfDef PAS2JS}await{$EndIf}(EPG.Refresh);
+//    {$IfDef PAS2JS}await{$EndIf}(EPG.Refresh);
     {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
-  end
-  else
-  begin
-    Log('========== EPGClickCell() WIDBCDS enabled in Details');
-//    EPG.Show;
   end;
   EPG.OnClickCell := EPGClickCell;
   Log('========== EPGClickCell() finished');

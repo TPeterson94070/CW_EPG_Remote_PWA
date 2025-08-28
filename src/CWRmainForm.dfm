@@ -68,7 +68,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 699
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -90,7 +90,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 3
       Top = 3
       Width = 422
-      Height = 727
+      Height = 693
       Align = alClient
       Color = clBlack
       ElementClassName = 'white'
@@ -115,7 +115,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 699
     ElementClassName = 'container-fluid'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -136,7 +136,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 733
+      Height = 699
       WidthStyle = ssPercent
       Align = alClient
       ColumnCollection = <
@@ -176,9 +176,9 @@ object CWRmainFrm: TCWRmainFrm
         end>
       object WebLabel2: TWebLabel
         Left = 2
-        Top = 368
+        Top = 352
         Width = 424
-        Height = 179
+        Height = 171
         Align = alClient
         Alignment = taCenter
         Caption = 'Please Wait...'
@@ -201,9 +201,9 @@ object CWRmainFrm: TCWRmainFrm
       end
       object WebLabel1: TWebLabel
         Left = 2
-        Top = 185
+        Top = 177
         Width = 424
-        Height = 179
+        Height = 171
         Align = alClient
         Alignment = taCenter
         Caption = 'Preparing EPG Listings.'
@@ -229,7 +229,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 2
         Top = 2
         Width = 424
-        Height = 179
+        Height = 171
         Align = alClient
         Caption = '<i class="fa-solid fa-spinner fa-spin"></>'
         Color = clYellow
@@ -255,7 +255,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 699
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -340,7 +340,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 699
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -488,7 +488,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 699
     ElementClassName = 'greenBG'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -655,7 +655,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 733
+    Height = 699
     ElementClassName = 'greenBG'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -675,7 +675,7 @@ object CWRmainFrm: TCWRmainFrm
     TabOrder = 5
     DesignSize = (
       428
-      733)
+      699)
     object lblEmptyEPG: TWebLabel
       Left = 96
       Top = 58
@@ -706,7 +706,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 733
+      Height = 699
       Align = alClient
       BorderStyle = bsNone
       Color = clNavy
