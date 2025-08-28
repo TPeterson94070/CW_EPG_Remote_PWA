@@ -40644,6 +40644,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var SchedFrm = null;
       var x = [];
       var CurrentID = "";
+      await sleep(200);
       this.EPG.Hide();
       CurrentID = this.EPG.GetCells(3,ARow);
       $impl.Log("========== EPGClickCell() called from RC " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
@@ -40661,6 +40662,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       try {
         $impl.Log("========== starting Locate " + CurrentID);
         if (this.WIDBCDS.Locate("id",CurrentID,{})) try {
+          this.EPG.Show();
           $impl.Log("========== Located " + this.EPG.GetCells(3,ARow));
           DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[this]);
           $impl.Log("========== finished TDetailsFrm.Create(nil) ");
@@ -40759,7 +40761,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log("========== EPGClickCell() showing 'Refreshing List");
       if (this.WIDBCDS.ControlsDisabled()) {
         await this.WIDBCDS.EnableControls();
-        await this.EPG.Show();
       };
       this.EPG.FOnClickCell = rtl.createCallback(this,"EPGClickCell");
       $impl.Log("========== EPGClickCell() finished");
@@ -40966,9 +40967,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.SearchFilter = this.weTitleSearch.GetText();
       this.SetFilters();
       this.weTitleSearch.FOnChange = rtl.createCallback(this,"weTitleSearchChange");
-    };
-    this.EPGClick = function (Sender) {
-      this.EPG.Refresh();
     };
     this.LogDataRange = async function () {
       $impl.Log("WIDBCDS.RecordCount:  " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
@@ -42500,7 +42498,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.EPG.FStyleElements = {};
         this.EPG.SetWidthPercent(100.000000000000000000);
         this.SetEvent$1(this.EPG,this,"OnClickCell","EPGClickCell");
-        this.SetEvent$1(this.EPG,this,"OnClick","EPGClick");
         this.SetEvent$1(this.EPG,this,"OnGetCellClass","EPGGetCellClass");
         this.EPG.SetColWidths(0,75);
         this.EPG.SetColWidths(1,155);
@@ -42940,7 +42937,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addMethod("wcbTypesChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("wcbTypesFocusOut",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("weTitleSearchChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
-    $r.addMethod("EPGClick",0,[["Sender",pas.System.$rtti["TObject"]]]);
   });
   this.CWRmainFrm = null;
   $mod.$implcode = function () {
