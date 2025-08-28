@@ -411,8 +411,10 @@ begin
   ByAll.Checked := True;
 //  VisiblePanelNum := 0;
   {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
-//  if WIDBCDS.Filter {> ''}<> BaseFilter then
+  if WIDBCDS.Filter {> ''}<> BaseFilter then
     {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+  if not EPG.Visible then EPG.Show;
+  {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
   ByAll.OnClick := ByAllClick;
 end;
 

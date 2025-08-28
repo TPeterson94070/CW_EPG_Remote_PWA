@@ -40839,7 +40839,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.pnlFilterSelection.Hide();
       this.ByAll.SetChecked(true);
       await this.SetPage(0);
-      await this.SetFilters();
+      if (this.WIDBCDS.FFilterText !== $impl.BaseFilter) await this.SetFilters();
+      if (!this.EPG.FVisible) this.EPG.Show();
+      this.EPG.SetRow(1);
       this.ByAll.FOnClick = rtl.createCallback(this,"ByAllClick");
     };
     this.ByChannelClick = async function (Sender) {
