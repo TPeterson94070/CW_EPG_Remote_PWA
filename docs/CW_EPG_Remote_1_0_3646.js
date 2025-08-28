@@ -39731,10 +39731,6 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
       this.lb11Time = undefined;
       pas["WEBLib.Forms"].TForm.$final.call(this);
     };
-    this.WebFormShow = function (Sender) {
-      pas.CWRmainForm.CWRmainFrm.EPG.Show();
-      pas.CWRmainForm.CWRmainFrm.WIDBCDS.EnableControls();
-    };
     this.LoadDFMValues = function () {
       pas["WEBLib.Forms"].TCustomForm.LoadDFMValues.call(this);
       this.lb02New = pas["WEBLib.StdCtrls"].TLabel.$create("Create$1",[this]);
@@ -39785,7 +39781,6 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
         this.FFont.SetStyle({});
         this.SetParentFont(false);
         this.FShowClose = false;
-        this.SetEvent(this,"OnShow","WebFormShow");
         this.lb02New.SetParentComponent(this);
         this.lb02New.SetName("lb02New");
         this.lb02New.SetLeft(200);
@@ -40196,7 +40191,6 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
     $r.addField("lb09OrigDate",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
     $r.addField("lb10Channel",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
     $r.addField("lb11Time",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
-    $r.addMethod("WebFormShow",0,[["Sender",pas.System.$rtti["TObject"]]]);
   });
 },["CWRmainForm"]);
 rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Graphics","WEBLib.Forms","WEBLib.StdCtrls","WEBLib.StdCtrls","WEBLib.Controls","WEBLib.Dialogs","WEBLib.Imaging.pngImage","WEBLib.ExtCtrls","WEBLib.Controls","Web","JS","WEBLib.IndexedDb","WEBLib.Menus","WEBLib.Menus","WEBLib.Grids","DB","WEBLib.Grids","StrUtils","WEBLib.DBCtrls","WEBLib.WebCtrls","WEBLib.REST","Types","WEBLib.Storage","WEBLib.CDS","WEBLib.JSON","WEBLib.WebTools","WEBLib.Buttons"],function () {
