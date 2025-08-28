@@ -40666,7 +40666,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       try {
         $impl.Log("========== starting Locate " + CurrentID);
         if (this.WIDBCDS.Locate("id",CurrentID,{})) try {
-          this.EPG.Show();
           $impl.Log("========== Located " + this.EPG.GetCells(3,ARow));
           DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[this]);
           $impl.Log("========== finished TDetailsFrm.Create(nil) ");
@@ -40719,7 +40718,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           $impl.Log("========== starting DetailsFrm.Execute ");
           this.pnlWaitPls.Hide();
           await DetailsFrm.Execute();
-          this.WIDBCDS.EnableControls();
           $impl.Log("========== finished DetailsFrm.Execute ");
           if (DetailsFrm.FModalResult === 1) {
             SchedFrm = pas.SchedUnit2.TSchedForm.$create("Create$1",[this]);
@@ -40764,6 +40762,10 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       };
       await this.ShowPlsWait("Refreshing List");
       $impl.Log("========== EPGClickCell() showing 'Refreshing List");
+      if (this.WIDBCDS.ControlsDisabled()) {
+        await this.WIDBCDS.EnableControls();
+        await this.EPG.Show();
+      };
       this.EPG.FOnClickCell = rtl.createCallback(this,"EPGClickCell");
       $impl.Log("========== EPGClickCell() finished");
       this.pnlWaitPls.Hide();
