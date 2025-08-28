@@ -411,7 +411,7 @@ begin
   ByAll.Checked := True;
 //  VisiblePanelNum := 0;
   {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
-  if WIDBCDS.Filter {> ''}<> BaseFilter then
+//  if WIDBCDS.Filter {> ''}<> BaseFilter then
     {$IfDef PAS2JS}await{$EndIf}(SetFilters);
   ByAll.OnClick := ByAllClick;
 end;

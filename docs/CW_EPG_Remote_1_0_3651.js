@@ -40839,7 +40839,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.pnlFilterSelection.Hide();
       this.ByAll.SetChecked(true);
       await this.SetPage(0);
-      if (this.WIDBCDS.FFilterText !== $impl.BaseFilter) await this.SetFilters();
+      await this.SetFilters();
       this.ByAll.FOnClick = rtl.createCallback(this,"ByAllClick");
     };
     this.ByChannelClick = async function (Sender) {
