@@ -39733,7 +39733,6 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
     };
     this.WebFormShow = function (Sender) {
       this.btnReturn.SetFocus();
-      pas.CWRmainForm.CWRmainFrm.WIDBCDS.EnableControls();
     };
     this.LoadDFMValues = function () {
       pas["WEBLib.Forms"].TCustomForm.LoadDFMValues.call(this);
@@ -40720,6 +40719,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           $impl.Log("========== starting DetailsFrm.Execute ");
           this.pnlWaitPls.Hide();
           await DetailsFrm.Execute();
+          this.WIDBCDS.EnableControls();
           $impl.Log("========== finished DetailsFrm.Execute ");
           if (DetailsFrm.FModalResult === 1) {
             SchedFrm = pas.SchedUnit2.TSchedForm.$create("Create$1",[this]);
@@ -40764,13 +40764,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       };
       await this.ShowPlsWait("Refreshing List");
       $impl.Log("========== EPGClickCell() showing 'Refreshing List");
-      if (this.WIDBCDS.ControlsDisabled()) {
-        await this.WIDBCDS.EnableControls();
-        await this.EPG.Refresh();
-        await this.EPG.Show();
-      } else {
-        $impl.Log("========== EPGClickCell() WIDBCDS enabled in Details");
-      };
       this.EPG.FOnClickCell = rtl.createCallback(this,"EPGClickCell");
       $impl.Log("========== EPGClickCell() finished");
       this.pnlWaitPls.Hide();
