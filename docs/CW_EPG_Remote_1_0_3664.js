@@ -40645,7 +40645,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var x = [];
       var CurrentID = "";
       await sleep(200);
-      this.EPG.Hide();
       CurrentID = this.EPG.GetCells(3,ARow);
       $impl.Log("========== EPGClickCell() called from RC " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
           return ARow;
@@ -40663,6 +40662,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $impl.Log("========== starting Locate " + CurrentID);
         if (this.WIDBCDS.Locate("id",CurrentID,{})) try {
           this.WIDBCDS.EnableControls();
+          this.EPG.Hide();
           $impl.Log("========== Located " + this.EPG.GetCells(3,ARow));
           DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[this]);
           $impl.Log("========== finished TDetailsFrm.Create(nil) ");
@@ -40839,9 +40839,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.pnlFilterSelection.Hide();
       this.ByAll.SetChecked(true);
       await this.SetPage(0);
-      if (this.WIDBCDS.FFilterText !== $impl.BaseFilter) await this.SetFilters();
-      if (!this.EPG.FVisible) this.EPG.Show();
-      this.EPG.SetRow(1);
+      if (this.WIDBCDS.FFilterText !== $impl.BaseFilter) {
+        await this.SetFilters()}
+       else this.EPG.SetRow(1);
       this.ByAll.FOnClick = rtl.createCallback(this,"ByAllClick");
     };
     this.ByChannelClick = async function (Sender) {
@@ -41536,6 +41536,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.EPG.SetRow(1);
       this.EPG.Show();
       this.pnlWaitPls.Hide();
+      this.EPG.BringToFront();
+      if (fltr > "") this.pnlFilterSelection.BringToFront();
       $impl.Log("====== SetFilters finished");
     };
     this.ShowPlsWait = async function (PlsWaitCap) {

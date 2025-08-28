@@ -412,10 +412,10 @@ begin
 //  VisiblePanelNum := 0;
   {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
   if WIDBCDS.Filter {> ''}<> BaseFilter then
-    {$IfDef PAS2JS}await{$EndIf}(SetFilters);
-  if not EPG.Visible then EPG.Show;
-  {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
+    {$IfDef PAS2JS}await{$EndIf}(SetFilters)
+  else {$IfDef PAS2JS}EPG.Row := 1{$EndIf};
   ByAll.OnClick := ByAllClick;
+//  EPG.Enabled := True;
 end;
 
 procedure TCWRmainFrm.ByChannelClick(Sender: TObject);
@@ -1015,6 +1015,8 @@ begin
   {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
   EPG.Show;
   pnlWaitPls.Hide;
+  EPG.BringToFront;
+  if fltr>'' then pnlFilterSelection.BringToFront;
   Log('====== SetFilters finished');
 end;
 
@@ -1346,7 +1348,7 @@ var
 
 begin
   {$IFDEF PAS2JS} asm await sleep(200) end; {$ENDIF}
-  EPG.Hide;
+//  EPG.Hide;
     CurrentID := EPG.Cells[3,ARow];
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   // Quit Combobox if still open
@@ -1361,6 +1363,7 @@ begin
     try
       WIDBCDS.EnableControls;
 //      EPG.Show;                    Android FF form execute fails with this!
+      EPG.Hide;
       Log('========== Located ' + EPG.Cells[3,ARow]);
       DetailsFrm := TDetailsFrm.Create(Self);
       Log('========== finished TDetailsFrm.Create(nil) ');
