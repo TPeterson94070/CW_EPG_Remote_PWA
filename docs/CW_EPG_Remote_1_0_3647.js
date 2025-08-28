@@ -40657,7 +40657,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           ACol = v;
         }}));
       if (this.pnlFilterSelection.FVisible) this.pnlFilterSelection.Hide();
-      if (!this.WIDBCDS.ControlsDisabled()) await this.WIDBCDS.DisableControls();
       $impl.Log("========== finished WIDBCDS.DisableControls ");
       try {
         $impl.Log("========== starting Locate " + CurrentID);
@@ -40758,10 +40757,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       };
       await this.ShowPlsWait("Refreshing List");
       $impl.Log("========== EPGClickCell() showing 'Refreshing List");
-      if (this.WIDBCDS.ControlsDisabled()) {
-        await this.WIDBCDS.EnableControls();
-        await this.EPG.Show();
-      };
+      await this.EPG.Show();
       this.EPG.FOnClickCell = rtl.createCallback(this,"EPGClickCell");
       $impl.Log("========== EPGClickCell() finished");
       this.pnlWaitPls.Hide();
