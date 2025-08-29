@@ -40448,7 +40448,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $impl.Log("WIDBCDS is " + pas.StrUtils.IfThen(this.WIDBCDS.GetActive(),"NOT ","") + "closed");
         this.WebDataSource1.SetDataSet(this.WIDBCDS);
         await this.LogDataRange();
-        if (this.WIDBCDS.ControlsDisabled()) await this.WIDBCDS.EnableControls();
         $impl.Log("WIDBCDS Controls are " + pas.StrUtils.IfThen(this.WIDBCDS.ControlsDisabled(),"NOT ","") + "Enabled");
         $impl.Log("WIDBCDS RecordCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
             return this.p;
@@ -40868,6 +40867,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         if (this.WIDBCDS.FFilterText !== $impl.BaseFilter) {
           await this.SetFilters()}
          else {
+          await this.WIDBCDS.EnableControls();
           $impl.Log("++ ^Rec EPG.Row: " + this.EPG.GetCells(3,1));
           $impl.Log("++ WIDBCDS.RecNo: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecNo(), get: function () {
               return this.p;
@@ -41567,6 +41567,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WIDBCDS.SetFilterText($impl.BaseFilter + fltr);
       this.WIDBCDS.SetFiltered(true);
       this.EPG.SetRow(1);
+      await this.WIDBCDS.EnableControls();
       this.EPG.EndUpdate();
       this.EPG.Show();
       this.pnlWaitPls.Hide();
