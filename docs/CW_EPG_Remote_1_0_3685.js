@@ -40659,9 +40659,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var SchedFrm = null;
       var x = [];
       var CurrentID = "";
-      var CurrentRec = 0;
       await sleep(10);
-      this.EPG.Hide();
       CurrentID = this.EPG.GetCells(3,ARow);
       $impl.Log("========== EPGClickCell() called from RC " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
           return ARow;
@@ -40680,7 +40678,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         }, set: function (v) {
           CurrentID = v;
         }}));
-      CurrentRec = this.WIDBCDS.GetRecNo();
       try {
         $impl.Log("========== Set WIDBCDS RecNo: " + CurrentID);
         if (true) try {
@@ -40861,7 +40858,14 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       await this.SetPage(0);
       if (this.WIDBCDS.FFilterText !== $impl.BaseFilter) {
         await this.SetFilters()}
-       else this.EPG.SetRow(1);
+       else {
+        this.EPG.SetRow(1);
+        this.WIDBCDS.SetRecNo(pas.SysUtils.TStringHelper.ToInteger$1.call({p: this.EPG.GetCells(3,1), get: function () {
+            return this.p;
+          }, set: function (v) {
+            this.p = v;
+          }}));
+      };
       this.ByAll.FOnClick = rtl.createCallback(this,"ByAllClick");
     };
     this.ByChannelClick = async function (Sender) {
@@ -41550,10 +41554,15 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       if (fltr > "") $impl.Log("Epg Filter: BaseFilter + " + fltr);
       this.WIDBCDS.SetFilterText($impl.BaseFilter + fltr);
       this.WIDBCDS.SetFiltered(true);
+      this.EPG.SetRow(1);
+      this.WIDBCDS.SetRecNo(pas.SysUtils.TStringHelper.ToInteger$1.call({p: this.EPG.GetCells(3,1), get: function () {
+          return this.p;
+        }, set: function (v) {
+          this.p = v;
+        }}));
       await this.WIDBCDS.EnableControls();
       this.EPG.EndUpdate();
       this.EPG.Refresh();
-      this.EPG.SetRow(1);
       this.EPG.Show();
       this.pnlWaitPls.Hide();
       this.EPG.BringToFront();

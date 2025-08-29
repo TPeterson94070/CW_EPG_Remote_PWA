@@ -409,13 +409,16 @@ begin
   ByChannel.Checked := False;
   pnlFilterSelection.Hide;
   ByAll.Checked := True;
-//  VisiblePanelNum := 0;
   {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
-  if WIDBCDS.Filter {> ''}<> BaseFilter then
+  if WIDBCDS.Filter <> BaseFilter then
     {$IfDef PAS2JS}await{$EndIf}(SetFilters)
-  else {$IfDef PAS2JS}EPG.Row := 1{$EndIf};
+  else
+  begin
+    {$IfDef PAS2JS}EPG.Row := 1{$EndIf};
+    WIDBCDS.RecNo := EPG.Cells[3,1].ToInteger;
+  end;
   ByAll.OnClick := ByAllClick;
-//  EPG.Enabled := True;
+
 end;
 
 procedure TCWRmainFrm.ByChannelClick(Sender: TObject);
@@ -1008,11 +1011,12 @@ begin
   if fltr>'' then Log('Epg Filter: BaseFilter + ' + fltr);
   WIDBCDS.Filter := BaseFilter + fltr;
   WIDBCDS.Filtered := True;
+  {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
+  WIDBCDS.RecNo := EPG.Cells[3,1].ToInteger;
   {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
 //  EPG.DataSource := WebDataSource1;
   EPG.EndUpdate;
   EPG.Refresh;
-  {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
   EPG.Show;
   pnlWaitPls.Hide;
   EPG.BringToFront;
@@ -1344,11 +1348,11 @@ var
   SchedFrm: TSchedForm;
   x: TArray<string>;
   CurrentID: string;
-  CurrentRec: Integer;
+//  CurrentRec: Integer;
 
 begin
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  EPG.Hide;
+//  EPG.Hide;
   CurrentID := EPG.Cells[3,ARow];
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   // Quit Combobox if still open
@@ -1357,7 +1361,7 @@ begin
   if not WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.DisableControls);
   Log('========== finished WIDBCDS.DisableControls ');
   WIDBCDS.RecNo := CurrentID.ToInteger;
-  CurrentRec := WIDBCDS.RecNo;
+//  CurrentRec := WIDBCDS.RecNo;
   // Wrap in try-except-end because of Locate bug with filtered data
   try
 
