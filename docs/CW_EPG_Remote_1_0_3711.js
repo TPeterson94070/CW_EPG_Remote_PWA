@@ -40867,12 +40867,14 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         if (this.WIDBCDS.FFilterText !== $impl.BaseFilter) {
           await this.SetFilters()}
          else {
+          await this.WIDBCDS.EnableControls();
           this.EPG.SetRow(1);
           this.WIDBCDS.SetRecNo(pas.SysUtils.TStringHelper.ToInteger$1.call({p: this.EPG.GetCells(3,1), get: function () {
               return this.p;
             }, set: function (v) {
               this.p = v;
             }}));
+          await this.WIDBCDS.DisableControls();
         };
       } finally {
         this.ByAll.FOnClick = rtl.createCallback(this,"ByAllClick");
@@ -41570,7 +41572,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         }, set: function (v) {
           this.p = v;
         }}));
+      await this.WIDBCDS.EnableControls();
       this.EPG.EndUpdate();
+      await this.WIDBCDS.DisableControls();
       this.EPG.Show();
       this.pnlWaitPls.Hide();
       this.EPG.BringToFront();

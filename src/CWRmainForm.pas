@@ -403,98 +403,118 @@ procedure TCWRmainFrm.ByAllClick(Sender: TObject);
 begin
   Log('ByAllClick called');
   ByAll.OnClick := nil;
-  EPG.Columns[2].Title := 'Title';
-  ByGenre.Checked := False;
-  ByTitle.Checked := False;
-  byType.Checked := False;
-  ByChannel.Checked := False;
-  pnlFilterSelection.Hide;
-  ByAll.Checked := True;
-  {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
-  if WIDBCDS.Filter <> BaseFilter then
-    {$IfDef PAS2JS}await{$EndIf}(SetFilters)
-  else
-  begin
-    {$IfDef PAS2JS}EPG.Row := 1{$EndIf};
-    WIDBCDS.RecNo := EPG.Cells[3,1].ToInteger;
+  try
+    EPG.Columns[2].Title := 'Title';
+    ByGenre.Checked := False;
+    ByTitle.Checked := False;
+    byType.Checked := False;
+    ByChannel.Checked := False;
+    pnlFilterSelection.Hide;
+    ByAll.Checked := True;
+    {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
+    if WIDBCDS.Filter <> BaseFilter then
+      {$IfDef PAS2JS}await{$EndIf}(SetFilters)
+    else
+    begin
+      {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
+      {$IfDef PAS2JS}EPG.Row := 1{$EndIf};
+      WIDBCDS.RecNo := EPG.Cells[3,1].ToInteger;
+      {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.DisableControls);
+    end;
+//  EPG.Enabled := True;
+  finally
+    ByAll.OnClick := ByAllClick;
+    Log('ByAllClick finished');
   end;
-  EPG.Enabled := True;
-  ByAll.OnClick := ByAllClick;
-
 end;
 
 procedure TCWRmainFrm.ByChannelClick(Sender: TObject);
 begin
   Log('ByChannelClick called');
   ByChannel.OnClick := nil;
-  if ByChannel.Checked then // Toggle off this filter
-  begin
-    ByChannel.Checked := False;
-    wcbChannels.ItemIndex := -1;
-    {$IfDef PAS2JS}await{$EndIf}(SetFilters);
-  end else
-    {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbChannels, 'PSIP'));
-  ByChannel.OnClick := ByChannelClick;
+  try
+    if ByChannel.Checked then // Toggle off this filter
+    begin
+      ByChannel.Checked := False;
+      wcbChannels.ItemIndex := -1;
+      {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+    end else
+      {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbChannels, 'PSIP'));
+  finally
+    Log('ByChannelClick finished');
+    ByChannel.OnClick := ByChannelClick;
+  end;
 end;
 
 procedure TCWRmainFrm.ByGenreClick(Sender: TObject);
 begin
   Log('ByGenreClick called');
   ByGenre.OnClick := nil;
-  if ByGenre.Checked then // Toggle off this filter
-  begin
-    ByGenre.Checked := False;
-    wcbGenres.ItemIndex := -1;
-    {$IfDef PAS2JS}await{$EndIf}(SetFilters);
-  end else
-    {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbGenres, 'genres'));
-  ByGenre.OnClick := ByGenreClick;
+  try
+    if ByGenre.Checked then // Toggle off this filter
+    begin
+      ByGenre.Checked := False;
+      wcbGenres.ItemIndex := -1;
+      {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+    end else
+      {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbGenres, 'genres'));
+  finally
+    Log('ByGenreClick finished');
+    ByGenre.OnClick := ByGenreClick;
+  end;
 end;
 
 procedure TCWRmainFrm.ByTitleClick(Sender: TObject);
 begin
   Log('byTitleClick called');
   ByTitle.OnClick := nil;
-  if ByTitle.Checked then // Toggle off this filter
-  begin
-    ByTitle.Checked := False;
-  {$IfNDef TitleSearch}
-    wcbTitles.ItemIndex := -1;
-  {$Else}
-    pnlFilterSelection.Hide;
-    weTitleSearch.Hide;
-  {$EndIf}
-    {$IfDef PAS2JS}await{$EndIf}(SetFilters);
-  end else
-  begin
-  {$IfNDef TitleSearch}
-    {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTitles, 'Title'));
-  {$Else}
-    ByTitle.Checked := True;
-    lblFilterSelect.Caption := 'Show Titles with:';
-    pnlFilterSelection.BringToFront;
-    pnlFilterSelection.Show;
-    weTitleSearch.Clear;
-    weTitleSearch.BringToFront;
-    weTitleSearch.Show;
-  {$EndIf}
+  try
+    if ByTitle.Checked then // Toggle off this filter
+    begin
+      ByTitle.Checked := False;
+    {$IfNDef TitleSearch}
+      wcbTitles.ItemIndex := -1;
+    {$Else}
+      pnlFilterSelection.Hide;
+      weTitleSearch.Hide;
+    {$EndIf}
+      {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+    end else
+    begin
+    {$IfNDef TitleSearch}
+      {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTitles, 'Title'));
+    {$Else}
+      ByTitle.Checked := True;
+      lblFilterSelect.Caption := 'Show Titles with:';
+      pnlFilterSelection.BringToFront;
+      pnlFilterSelection.Show;
+      weTitleSearch.Clear;
+      weTitleSearch.BringToFront;
+      weTitleSearch.Show;
+    {$EndIf}
+    end;
+  finally
+    ByTitle.OnClick := ByTitleClick;
+    Log('byTitleClick finished');
   end;
-  ByTitle.OnClick := ByTitleClick;
-
 end;
 
 procedure TCWRmainFrm.byTypeClick(Sender: TObject);
 begin
   Log('byTypeClick called');
   byType.OnClick := nil;
-  if byType.Checked then // Toggle off this filter
-  begin
-    byType.Checked := False;
-    wcbTypes.ItemIndex := -1;
-    {$IfDef PAS2JS}await{$EndIf}(SetFilters);
-  end else
-    {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTypes, 'Type'));
-  byType.OnClick := byTypeClick;
+  try
+    if byType.Checked then // Toggle off this filter
+    begin
+      byType.Checked := False;
+      wcbTypes.ItemIndex := -1;
+      {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+    end else
+      {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTypes, 'Type'));
+  finally
+    byType.OnClick := byTypeClick;
+    Log('byTypeClick finished');
+  end;
 end;
 
 procedure TCWRmainFrm.cbNumDisplayDaysChange(Sender: TObject);
@@ -1009,9 +1029,10 @@ begin
   {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
   if StrToIntDef(EPG.Cells[3,1],0) > 0 then
     WIDBCDS.RecNo := EPG.Cells[3,1].ToInteger;
-//  {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
+  {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
   EPG.EndUpdate;
-  EPG.Refresh;
+  {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.DisableControls);
+//  EPG.Refresh;
   EPG.Show;
   pnlWaitPls.Hide;
   EPG.BringToFront;
@@ -1042,8 +1063,8 @@ begin
   if (WIDBCDS.RecordCount > 0) and (TotalAvailableDays >= 0) then
   begin
     {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + Min(StrToIntDef(cbNumDisplayDays.Text, 1), TotalAvailableDays).ToString + '-day Listing.'));
-    EPG.Refresh;
-    ByAllClick(Self);
+//    EPG.Refresh;
+    {$IfDef PAS2JS}await{$EndIf}(ByAllClick(Self));
     if not EPG.Visible then EPG.Show;
   end
   else TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'
@@ -1353,103 +1374,106 @@ var
 begin
   EPG.OnClickCell := nil;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  CurrentID := EPG.Cells[3,ARow];
-  Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
-  // Quit Combobox if still open
-  if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
-  // Speed up form opening
-  if not WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.DisableControls);
-  Log('========== finished WIDBCDS.DisableControls ');
-  WIDBCDS.RecNo := CurrentID.ToInteger;
-  Log('========== Set WIDBCDS RecNo: ' + CurrentID);
   try
-    EPG.Hide;
-    DetailsFrm := TDetailsFrm.Create(Self);
-    Log('========== finished TDetailsFrm.Create(nil) ');
-    DetailsFrm.Popup := True;
-    DetailsFrm.Border := fbSingle;
-    Log('========== starting DetailsFrm.Load ');
-    // load file HTML template + controls
+    CurrentID := EPG.Cells[3,ARow];
+    Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
+    // Quit Combobox if still open
+    if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
+    // Speed up form opening
+    if not WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.DisableControls);
+    Log('========== finished WIDBCDS.DisableControls ');
+    WIDBCDS.RecNo := CurrentID.ToInteger;
+    Log('========== Set WIDBCDS RecNo: ' + CurrentID);
     try
-      TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load);
-      Log('========== finished DetailsFrm.Load ');
-    except
-      on E:Exception do
-      Log('Exception from DetailsFrm.Load: ' + E.Message);
-    end;
-    // init controls after loading
-    DetailsFrm.mmTitle.Text := WIDBCDS.Fields[3].AsString;
-    DetailsFrm.mmSubTitle.Text := WIDBCDS.Fields[4].AsString;
-    DetailsFrm.lb11Time.Caption := WIDBCDS.Fields[2].AsString;
-    DetailsFrm.lb10Channel.Caption := WIDBCDS.Fields[1].AsString;
-    x := WIDBCDS.Fields[9].AsString.Split(['-']);                 // Parse 1st-air date
-    DetailsFrm.lb09OrigDate.Caption := IfThen(Length(x) = 3,      // Have 1st-air date
-      '1st Aired ' + x[1] + '/' + x[2] + '/' + RightStr(x[0],2),  // Use 1st-air date
-      IfThen(WIDBCDS.Fields[13].AsString > '',                    // Check Movie year
-      'Movie Yr ' + WIDBCDS.Fields[13].AsString,''));             // Use Movie year or nil
-    SetLabelStyle(DetailsFrm.lb02New, WIDBCDS.Fields[10].AsString <> '');
-    SetLabelStyle(DetailsFrm.lb08CC, WIDBCDS.Fields[11].AsString.Contains('cc'));
-    SetLabelStyle(DetailsFrm.lb03Stereo, WIDBCDS.Fields[11].AsString.Contains('stereo'));
-    SetLabelStyle(DetailsFrm.lb07Dolby, WIDBCDS.Fields[11].AsString.Contains('DD'));
-    DetailsFrm.lb04HD.Caption := 'SD';
-    if WIDBCDS.Fields[12].AsString > '' then
-      DetailsFrm.lb04HD.Caption := WIDBCDS.Fields[12].AsString.Split(['["HD ','"'])[1];
-    SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
-    DetailsFrm.mmDescription.Text := WIDBCDS.Fields[5].AsString;
-  // execute form and wait for close
-    Log('========== starting DetailsFrm.Execute ');
-    pnlWaitPls.Hide;
-    TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
-    Log('========== finished DetailsFrm.Execute ');
-    if DetailsFrm.ModalResult = mrOk then
-    begin
-      SchedFrm := TSchedForm.Create(Self);
-      Log('========== finished TSchedForm.Create(nil)');
-      SchedFrm.Caption := 'Schedule Capture Event';
-      SchedFrm.Popup := True;
-      SchedFrm.Border := fbSingle;
+      EPG.Hide;
+      DetailsFrm := TDetailsFrm.Create(Self);
+      Log('========== finished TDetailsFrm.Create(nil) ');
+      DetailsFrm.Popup := True;
+      DetailsFrm.Border := fbSingle;
+      Log('========== starting DetailsFrm.Load ');
+      // load file HTML template + controls
       try
-        // load file HTML template + controls
-        TAwait.ExecP<TSchedForm>(SchedFrm.Load());
-        Log('========== finished SchedFrm.Load() ');
-      // init controls after loading
-        SchedFrm.mmTitle.Text := DetailsFrm.mmTitle.Text;
-        SchedFrm.mmSubTitle.Text := DetailsFrm.mmSubTitle.Text;
-        SchedFrm.mmDescription.Text := DetailsFrm.mmDescription.Text;
-        SchedFrm.lblChannelValue.Caption := DetailsFrm.lb10Channel.Caption;
-        // N.B.:  WIDBCDS DateTimes are UTC, but we need to specify HTPC's TZ for capture!
-        // So we decode the times from the "Time" field (format: mm/yy HH:nn--HH:nn)
-        x := string(DetailsFrm.lb11Time.Caption).Split([' ','--']);
-        SchedFrm.lblStartDateValue.Caption := x[0];
-        SchedFrm.tpStartTime.DateTime := StrToDateTime(x[0] + ' ' + x[1]);
-        SchedFrm.tpEndTime.DateTime := StrToDateTime(x[0] + ' ' + x[2]);
-        if SchedFrm.tpEndTime.DateTime < SchedFrm.tpStartTime.DateTime then  // wrapped midnight
-          SchedFrm.tpEndTime.DateTime := SchedFrm.tpEndTime.DateTime + 1;
-        Log('Finished setting up new form');
-        // execute form and wait for close
-        TAwait.ExecP<TModalResult>(SchedFrm.Execute);
-        Log('========== finished SchedFrm.Execute ');
-        if SchedFrm.ModalResult = mrOk then
-        begin
-          {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Saving Capture Request.'));
-          {$IfDef PAS2JS}await{$EndIf} (UpdateNewCaptures(SchedFrm.tpStartTime.DateTime, SchedFrm.tpEndTime.DateTime));
-        end;
-      finally
-        Log('========== EPGClickCell() Finished with Schedule form');
-        SchedFrm.Free;
+        TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load);
+        Log('========== finished DetailsFrm.Load ');
+      except
+        on E:Exception do
+        Log('Exception from DetailsFrm.Load: ' + E.Message);
       end;
+      // init controls after loading
+      DetailsFrm.mmTitle.Text := WIDBCDS.Fields[3].AsString;
+      DetailsFrm.mmSubTitle.Text := WIDBCDS.Fields[4].AsString;
+      DetailsFrm.lb11Time.Caption := WIDBCDS.Fields[2].AsString;
+      DetailsFrm.lb10Channel.Caption := WIDBCDS.Fields[1].AsString;
+      x := WIDBCDS.Fields[9].AsString.Split(['-']);                 // Parse 1st-air date
+      DetailsFrm.lb09OrigDate.Caption := IfThen(Length(x) = 3,      // Have 1st-air date
+        '1st Aired ' + x[1] + '/' + x[2] + '/' + RightStr(x[0],2),  // Use 1st-air date
+        IfThen(WIDBCDS.Fields[13].AsString > '',                    // Check Movie year
+        'Movie Yr ' + WIDBCDS.Fields[13].AsString,''));             // Use Movie year or nil
+      SetLabelStyle(DetailsFrm.lb02New, WIDBCDS.Fields[10].AsString <> '');
+      SetLabelStyle(DetailsFrm.lb08CC, WIDBCDS.Fields[11].AsString.Contains('cc'));
+      SetLabelStyle(DetailsFrm.lb03Stereo, WIDBCDS.Fields[11].AsString.Contains('stereo'));
+      SetLabelStyle(DetailsFrm.lb07Dolby, WIDBCDS.Fields[11].AsString.Contains('DD'));
+      DetailsFrm.lb04HD.Caption := 'SD';
+      if WIDBCDS.Fields[12].AsString > '' then
+        DetailsFrm.lb04HD.Caption := WIDBCDS.Fields[12].AsString.Split(['["HD ','"'])[1];
+      SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
+      DetailsFrm.mmDescription.Text := WIDBCDS.Fields[5].AsString;
+    // execute form and wait for close
+      Log('========== starting DetailsFrm.Execute ');
+      pnlWaitPls.Hide;
+      TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
+      Log('========== finished DetailsFrm.Execute ');
+      if DetailsFrm.ModalResult = mrOk then
+      begin
+        SchedFrm := TSchedForm.Create(Self);
+        Log('========== finished TSchedForm.Create(nil)');
+        SchedFrm.Caption := 'Schedule Capture Event';
+        SchedFrm.Popup := True;
+        SchedFrm.Border := fbSingle;
+        try
+          // load file HTML template + controls
+          TAwait.ExecP<TSchedForm>(SchedFrm.Load());
+          Log('========== finished SchedFrm.Load() ');
+        // init controls after loading
+          SchedFrm.mmTitle.Text := DetailsFrm.mmTitle.Text;
+          SchedFrm.mmSubTitle.Text := DetailsFrm.mmSubTitle.Text;
+          SchedFrm.mmDescription.Text := DetailsFrm.mmDescription.Text;
+          SchedFrm.lblChannelValue.Caption := DetailsFrm.lb10Channel.Caption;
+          // N.B.:  WIDBCDS DateTimes are UTC, but we need to specify HTPC's TZ for capture!
+          // So we decode the times from the "Time" field (format: mm/yy HH:nn--HH:nn)
+          x := string(DetailsFrm.lb11Time.Caption).Split([' ','--']);
+          SchedFrm.lblStartDateValue.Caption := x[0];
+          SchedFrm.tpStartTime.DateTime := StrToDateTime(x[0] + ' ' + x[1]);
+          SchedFrm.tpEndTime.DateTime := StrToDateTime(x[0] + ' ' + x[2]);
+          if SchedFrm.tpEndTime.DateTime < SchedFrm.tpStartTime.DateTime then  // wrapped midnight
+            SchedFrm.tpEndTime.DateTime := SchedFrm.tpEndTime.DateTime + 1;
+          Log('Finished setting up new form');
+          // execute form and wait for close
+          TAwait.ExecP<TModalResult>(SchedFrm.Execute);
+          Log('========== finished SchedFrm.Execute ');
+          if SchedFrm.ModalResult = mrOk then
+          begin
+            {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Saving Capture Request.'));
+            {$IfDef PAS2JS}await{$EndIf} (UpdateNewCaptures(SchedFrm.tpStartTime.DateTime, SchedFrm.tpEndTime.DateTime));
+          end;
+        finally
+          Log('========== EPGClickCell() Finished with Schedule form');
+          SchedFrm.Free;
+        end;
+      end;
+    finally
+      Log('========== EPGClickCell() Finished with Details form');
+      DetailsFrm.Free;
     end;
+    {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing List'));
+    Log('========== EPGClickCell() showing ''Refreshing List');
+  //  {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
+  //  {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
   finally
-    Log('========== EPGClickCell() Finished with Details form');
-    DetailsFrm.Free;
+    EPG.OnClickCell := EPGClickCell;
+    Log('========== EPGClickCell() finished');
+    pnlWaitPls.Hide;
   end;
-  {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing List'));
-  Log('========== EPGClickCell() showing ''Refreshing List');
-//  {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
-//  {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
-  EPG.OnClickCell := EPGClickCell;
-  Log('========== EPGClickCell() finished');
-  pnlWaitPls.Hide;
 end;
 
 procedure SaveLocalStrings(SG: TWebStringGrid; LSName: string);
