@@ -40447,6 +40447,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         };
       } finally {
         $impl.Log("WIDBCDS is " + pas.StrUtils.IfThen(this.WIDBCDS.GetActive(),"NOT ","") + "closed");
+        this.WebDataSource1.SetDataSet(this.WIDBCDS);
         await this.LogDataRange();
         $impl.Log("WIDBCDS Controls are " + pas.StrUtils.IfThen(this.WIDBCDS.ControlsDisabled(),"NOT ","") + "Enabled");
         $impl.Log("WIDBCDS RecordCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
@@ -40655,19 +40656,19 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var SchedFrm = null;
       var x = [];
       var CurrentID = "";
+      var WIDBCDSID = "";
+      var CurrentRec = 0;
       this.EPG.FOnClickCell = null;
       await sleep(10);
       try {
         CurrentID = this.EPG.GetCells(3,ARow);
-        $impl.Log("========== EPGClickCell() called from RC " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
+        $impl.Log("========== EPGClickCell() called from Row " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
             return ARow;
           }, set: function (v) {
             ARow = v;
-          }}) + ", " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
-            return ACol;
-          }, set: function (v) {
-            ACol = v;
           }}));
+        WIDBCDSID = this.WIDBCDS.FFieldList.GetField(0).GetAsString();
+        CurrentRec = this.WIDBCDS.GetRecNo();
         if (this.pnlFilterSelection.FVisible) this.pnlFilterSelection.Hide();
         if (!this.WIDBCDS.ControlsDisabled()) await this.WIDBCDS.DisableControls();
         $impl.Log("========== finished WIDBCDS.DisableControls ");
@@ -40868,13 +40869,12 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           await this.SetFilters()}
          else {
           await this.WIDBCDS.EnableControls();
-          this.EPG.SetRow(1);
-          this.WIDBCDS.SetRecNo(pas.SysUtils.TStringHelper.ToInteger$1.call({p: this.EPG.GetCells(3,1), get: function () {
+          $impl.Log("++ ^Rec EPG.Row: " + this.EPG.GetCells(3,1));
+          $impl.Log("++ WIDBCDS.RecNo: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecNo(), get: function () {
               return this.p;
             }, set: function (v) {
               this.p = v;
             }}));
-          await this.WIDBCDS.DisableControls();
         };
       } finally {
         this.ByAll.FOnClick = rtl.createCallback(this,"ByAllClick");
@@ -41398,6 +41398,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           window.console.log("Performing OAuth");
           await $Self.ShowPlsWait("Select Login Credentials");
           await $Self.WebRESTClient1.Authenticate();
+          $Self.pnlWaitPls.Hide();
         };
         rq = await $Self.WebRESTClient1.HttpRequest("GET","https://www.googleapis.com/drive/v3/about/?fields=kind,user","","",null);
         if (rq.status === 200) {
@@ -41508,12 +41509,12 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           return FirstEndTime;
         }, set: function (v) {
           FirstEndTime = v;
-        }}) + " and " + "StartTime <= " + pas.SysUtils.TDoubleHelper.ToString$3.call({get: function () {
+        }}) + " and StartTime <= " + pas.SysUtils.TDoubleHelper.ToString$3.call({get: function () {
           return LastStartTime;
         }, set: function (v) {
           LastStartTime = v;
         }});
-      $impl.Log(" Finished calculating BaseFilter params");
+      $impl.Log("BaseFilter(UTC): EndTime >= " + pas.SysUtils.DateTimeToStr(FirstEndTime,false) + " and StartTime <= " + pas.SysUtils.DateTimeToStr(LastStartTime,false));
       $impl.Log(" WIDBCDS.Filtered is " + pas.StrUtils.IfThen(this.WIDBCDS.FFiltered,"True","False"));
       if (this.WIDBCDS.FFiltered) this.WIDBCDS.SetFiltered(false);
       $impl.Log(" WIDBCDS is not filtered");
@@ -41567,14 +41568,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WIDBCDS.SetFilterText($impl.BaseFilter + fltr);
       this.WIDBCDS.SetFiltered(true);
       this.EPG.SetRow(1);
-      if (pas.SysUtils.StrToIntDef(this.EPG.GetCells(3,1),0) > 0) this.WIDBCDS.SetRecNo(pas.SysUtils.TStringHelper.ToInteger$1.call({p: this.EPG.GetCells(3,1), get: function () {
-          return this.p;
-        }, set: function (v) {
-          this.p = v;
-        }}));
       await this.WIDBCDS.EnableControls();
       this.EPG.EndUpdate();
-      await this.WIDBCDS.DisableControls();
       this.EPG.Show();
       this.pnlWaitPls.Hide();
       this.EPG.BringToFront();
