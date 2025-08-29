@@ -633,7 +633,7 @@ begin
 
         if Reply <> '' then  // Got a response
         begin
-          Log(copy(Reply,1,500));
+          Log(TableFile + ' starts: ' + copy(Reply,1,50));
           FillTable(WSG, Reply);
         end
         else WSG.RowCount := 0;
@@ -1344,27 +1344,30 @@ var
   SchedFrm: TSchedForm;
   x: TArray<string>;
   CurrentID: string;
-//  CurrentRec: Integer;
+  CurrentRec: Integer;
 
 begin
-  {$IFDEF PAS2JS} asm await sleep(200) end; {$ENDIF}
-//  EPG.Hide;
-    CurrentID := EPG.Cells[3,ARow];
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  EPG.Hide;
+  CurrentID := EPG.Cells[3,ARow];
   Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
   // Quit Combobox if still open
   if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
   // Speed up form opening
   if not WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.DisableControls);
   Log('========== finished WIDBCDS.DisableControls ');
+  WIDBCDS.RecNo := CurrentID.ToInteger;
+  CurrentRec := WIDBCDS.RecNo;
   // Wrap in try-except-end because of Locate bug with filtered data
   try
-    Log('========== starting Locate ' + CurrentID);
-    if WIDBCDS.Locate('id', CurrentID,[]) then
+
+    Log('========== Set WIDBCDS RecNo: ' + CurrentID);
+    if {WIDBCDS.Locate('id', CurrentID,[])}True then
     try
       WIDBCDS.EnableControls;
 //      EPG.Show;                    Android FF form execute fails with this!
-      EPG.Hide;
-      Log('========== Located ' + EPG.Cells[3,ARow]);
+//      EPG.Hide;
+//      Log('========== Located ' + EPG.Cells[3,ARow]);
       DetailsFrm := TDetailsFrm.Create(Self);
       Log('========== finished TDetailsFrm.Create(nil) ');
       DetailsFrm.Popup := True;
@@ -1459,7 +1462,7 @@ begin
 //    {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
 //  end;
   {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
-  EPG.OnClickCell := EPGClickCell;
+//  EPG.OnClickCell := EPGClickCell;
   Log('========== EPGClickCell() finished');
   pnlWaitPls.Hide;
 end;

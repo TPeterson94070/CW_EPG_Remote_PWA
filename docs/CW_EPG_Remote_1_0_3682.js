@@ -4770,6 +4770,11 @@ rtl.module("SysUtils",["System","RTLConsts","JS"],function () {
       Result = pas.System.Copy(this.get(),AStartIndex + 1,ALen);
       return Result;
     };
+    this.ToInteger$1 = function () {
+      var Result = 0;
+      Result = $mod.StrToInt(this.get());
+      return Result;
+    };
     this.ToLower = function () {
       var Result = "";
       Result = $mod.TStringHelper.LowerCase(this.get());
@@ -22066,6 +22071,8 @@ rtl.module("DB",["System","Classes","SysUtils","JS","Types","DateUtils"],functio
       this.CheckBiDirectional();
       this.FOnFilterRecord = Value;
     };
+    this.SetRecNo = function (Value) {
+    };
     this.SetState = function (Value) {
       if (Value !== this.FState) {
         this.FState = Value;
@@ -26965,6 +26972,14 @@ rtl.module("JSONDataset",["System","Types","JS","DB","Classes","SysUtils","TypIn
         Result = this.FCurrentIndex.GetCount()}
        else Result = 0;
       return Result;
+    };
+    this.SetRecNo = function (Value) {
+      this.CheckBrowseMode();
+      this.DoBeforeScroll();
+      if ((Value < 1) || (Value > this.FCurrentIndex.GetCount())) throw $mod.EJSONDataset.$create("CreateFmt",["%s: SetRecNo: index %d out of range",pas.System.VarRecs(18,this.FName,0,Value)]);
+      this.FCurrent = Value - 1;
+      this.Resync({});
+      this.DoAfterScroll();
     };
     this.GetRecNo = function () {
       var Result = 0;
@@ -40644,7 +40659,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var SchedFrm = null;
       var x = [];
       var CurrentID = "";
-      await sleep(200);
+      var CurrentRec = 0;
+      await sleep(10);
+      this.EPG.Hide();
       CurrentID = this.EPG.GetCells(3,ARow);
       $impl.Log("========== EPGClickCell() called from RC " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
           return ARow;
@@ -40658,12 +40675,16 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       if (this.pnlFilterSelection.FVisible) this.pnlFilterSelection.Hide();
       if (!this.WIDBCDS.ControlsDisabled()) await this.WIDBCDS.DisableControls();
       $impl.Log("========== finished WIDBCDS.DisableControls ");
+      this.WIDBCDS.SetRecNo(pas.SysUtils.TStringHelper.ToInteger$1.call({get: function () {
+          return CurrentID;
+        }, set: function (v) {
+          CurrentID = v;
+        }}));
+      CurrentRec = this.WIDBCDS.GetRecNo();
       try {
-        $impl.Log("========== starting Locate " + CurrentID);
-        if (this.WIDBCDS.Locate("id",CurrentID,{})) try {
+        $impl.Log("========== Set WIDBCDS RecNo: " + CurrentID);
+        if (true) try {
           this.WIDBCDS.EnableControls();
-          this.EPG.Hide();
-          $impl.Log("========== Located " + this.EPG.GetCells(3,ARow));
           DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[this]);
           $impl.Log("========== finished TDetailsFrm.Create(nil) ");
           DetailsFrm.FPopup = true;
@@ -40761,7 +40782,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log("========== EPGClickCell() showing 'Refreshing List");
       if (this.WIDBCDS.ControlsDisabled()) await this.WIDBCDS.EnableControls();
       await this.EPG.Show();
-      this.EPG.FOnClickCell = rtl.createCallback(this,"EPGClickCell");
       $impl.Log("========== EPGClickCell() finished");
       this.pnlWaitPls.Hide();
     };
@@ -41116,7 +41136,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           try {
             Reply = await this.GetGoogleDriveFile(TableFile,id);
             if (Reply !== "") {
-              $impl.Log(pas.System.Copy(Reply,1,500));
+              $impl.Log(TableFile + " starts: " + pas.System.Copy(Reply,1,50));
               this.FillTable(WSG,Reply);
             } else WSG.SetRowCount(0);
           } catch ($e) {
