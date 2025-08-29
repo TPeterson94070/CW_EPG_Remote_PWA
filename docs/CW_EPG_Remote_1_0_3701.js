@@ -40343,9 +40343,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     };
     this.EPGGetCellClass = function (Sender, ACol, ARow, AField, AValue, AClassName) {
       if (ARow === 0) return;
-      if (this.EPG.GetCells(3,ARow) === this.WIDBCDS.FFieldList.GetField(0).GetAsString()) {
-        AClassName.set(this.EPG.GetCells(4,ARow))}
-       else AClassName.set("white");
+      AClassName.set(this.WIDBCDS.FFieldList.GetField(15).GetAsString());
     };
     this.SaveNewCapturesFile = async function (id) {
       var data = null;
@@ -40370,7 +40368,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var Text = "";
       $impl.Log("======= Starting LoadWIDBCDS, DB is " + pas.StrUtils.IfThen(!this.WIDBCDS.GetActive(),"not ","") + "Active");
       await this.ShowPlsWait("Loading EPG DB");
-      this.WIDBCDS.DisableControls();
+      if (!this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.DisableControls();
       this.WIDBCDS.SetFiltered(false);
       $impl.Log("WIDBCDS is " + pas.StrUtils.IfThen(!this.WIDBCDS.FFiltered,"UN","") + "filtered");
       this.WIDBCDS.Close();
@@ -40453,7 +40451,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       } finally {
         $impl.Log("WIDBCDS is " + pas.StrUtils.IfThen(this.WIDBCDS.GetActive(),"NOT ","") + "closed");
         await this.LogDataRange();
-        if (this.WIDBCDS.ControlsDisabled()) await this.WIDBCDS.EnableControls();
         $impl.Log("WIDBCDS Controls are " + pas.StrUtils.IfThen(this.WIDBCDS.ControlsDisabled(),"NOT ","") + "Enabled");
         $impl.Log("WIDBCDS RecordCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
             return this.p;
@@ -41020,7 +41017,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
             rtl.raiseE("EPropReadOnly");
           }}));
         $impl.TotalAvailableDays = pas.System.Trunc($impl.LastStartDate - pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false));
-        if (this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.EnableControls();
       } else $impl.TotalAvailableDays = 0;
     };
     this.ReloadSG = function (SG, LSName) {
@@ -41539,7 +41535,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.EPG.BeginUpdate();
       this.EPG.FColumns.GetItem$1(2).SetTitle(pas.StrUtils.IfThen(this.ByChannel.FChecked,this.wcbChannels.GetText() + " ","") + pas.StrUtils.IfThen(this.byType.FChecked,this.wcbTypes.GetText() + " ","") + pas.StrUtils.IfThen(this.ByGenre.FChecked,this.wcbGenres.GetText() + " ","") + "Programs" + pas.StrUtils.IfThen(this.ByTitle.FChecked," w/Titles:" + pas.SysUtils.QuotedStr("*" + $impl.SearchFilter + "*","'"),""));
       this.EPG.SetColWidths(0,pas.Math.IfThen(this.ByChannel.FChecked,0,75));
-      this.WIDBCDS.DisableControls();
+      if (!this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.DisableControls();
       this.WIDBCDS.SetFiltered(false);
       $impl.Log("BaseFilter: " + $impl.BaseFilter);
       fltr = "";
@@ -41551,12 +41547,11 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WIDBCDS.SetFilterText($impl.BaseFilter + fltr);
       this.WIDBCDS.SetFiltered(true);
       this.EPG.SetRow(1);
-      this.WIDBCDS.SetRecNo(pas.SysUtils.TStringHelper.ToInteger$1.call({p: this.EPG.GetCells(3,1), get: function () {
+      if (pas.SysUtils.StrToIntDef(this.EPG.GetCells(3,1),0) > 0) this.WIDBCDS.SetRecNo(pas.SysUtils.TStringHelper.ToInteger$1.call({p: this.EPG.GetCells(3,1), get: function () {
           return this.p;
         }, set: function (v) {
           this.p = v;
         }}));
-      await this.WIDBCDS.EnableControls();
       this.EPG.EndUpdate();
       this.EPG.Refresh();
       this.EPG.Show();
@@ -41641,7 +41636,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         pas["WEBLib.Storage"].TLocalStorage.SetValue(cb.FName + "Items",cb.FItems.GetTextStr());
       };
       sl = rtl.freeLoc(sl);
-      if (this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.EnableControls();
       $impl.Log("====== Exiting SetupFilterLists");
     };
     this.LoadDFMValues = function () {

@@ -672,7 +672,7 @@ var
 begin
   Log('======= Starting LoadWIDBCDS, DB is ' + IfThen(not WIDBCDS.Active, 'not ') + 'Active');
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Loading EPG DB'));
-  WIDBCDS.DisableControls;
+  if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
   WIDBCDS.Filtered := False;
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Filtered, 'UN') + 'filtered');
   WIDBCDS.Close;
@@ -731,7 +731,7 @@ begin
   finally
     Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
     {$IfDef PAS2JS}await{$EndIf}(LogDataRange);
-    if WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
+//    if WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
     Log('WIDBCDS Controls are ' + IfThen(WIDBCDS.ControlsDisabled,'NOT ') + 'Enabled');
     Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
     Log('========= Finished LoadWIDBCDS');
@@ -800,7 +800,7 @@ begin
     Log('LastStartDate - Now: ' + Double(LastStartDate - TTimeZone.Local.ToUniversalTime(Now)).ToString);
     TotalAvailableDays := Trunc(LastStartDate - TTimeZone.Local.ToUniversalTime(Now));
   //  Log('Avail days: ' + TotalAvailableDays.ToString);
-    if WIDBCDS.ControlsDisabled then WIDBCDS.EnableControls;
+//    if WIDBCDS.ControlsDisabled then WIDBCDS.EnableControls;
   end else TotalAvailableDays := 0;
 end;
 
@@ -940,7 +940,7 @@ begin
     TLocalStorage.SetValue(cb.Name + 'Items', cb.Items.Text);
   end;
   sl.Free;
-  if WIDBCDS.ControlsDisabled then WIDBCDS.EnableControls;
+//  if WIDBCDS.ControlsDisabled then WIDBCDS.EnableControls;
   Log('====== Exiting SetupFilterLists');
 end;
 
@@ -989,7 +989,7 @@ begin
     + IfThen(ByTitle.Checked, ' w/Titles:' + QuotedStr('*' + SearchFilter + '*'));
   {$EndIf}
   EPG.ColWidths[0] := IfThen(ByChannel.Checked, 0, 75);
-  WIDBCDS.DisableControls;
+  if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
   WIDBCDS.Filtered := False;
   Log('BaseFilter: ' + BaseFilter);
   fltr := '';
@@ -1007,8 +1007,9 @@ begin
   WIDBCDS.Filter := BaseFilter + fltr;
   WIDBCDS.Filtered := True;
   {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
-  WIDBCDS.RecNo := EPG.Cells[3,1].ToInteger;
-  {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
+  if StrToIntDef(EPG.Cells[3,1],0) > 0 then
+    WIDBCDS.RecNo := EPG.Cells[3,1].ToInteger;
+//  {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
   EPG.EndUpdate;
   EPG.Refresh;
   EPG.Show;
@@ -1335,9 +1336,10 @@ procedure TCWRmainFrm.EPGGetCellClass(Sender: TObject; ACol,
 { show listings row in color coded for type based on current IDB record }
 begin
   if ARow = 0 then exit;
-  if EPG.Cells[3,ARow] = WIDBCDS.Fields[0].AsString then  {ids=}
-    AClassName := EPG.Cells[4,ARow] // WIDBCDS.Fields[15].AsString
-  else AClassName := 'white'; // Should not occur!
+//  if EPG.Cells[3,ARow] = WIDBCDS.Fields[0].AsString then  {ids=}
+//    AClassName := EPG.Cells[4,ARow] // WIDBCDS.Fields[15].AsString
+//  else AClassName := 'white'; // Should not occur!
+    AClassName := {EPG.Cells[4,ARow] //} WIDBCDS.Fields[15].AsString
 end;
 
 procedure TCWRmainFrm.EPGClickCell(Sender: TObject; ACol, ARow: Integer);
