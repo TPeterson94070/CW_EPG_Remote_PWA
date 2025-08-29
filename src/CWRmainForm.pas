@@ -859,13 +859,7 @@ begin
   Log(' WIDBCDS is not filtered');
   WIDBCDS.Filter := BaseFilter;
   Log(' WIDBCDS BaseFilter assigned, but not active');
-
 //  WIDBCDS.Filtered := True;   // Don't take the time here
-
-  if WebDataSource1.DataSet <> WIDBCDS then WebDataSource1.DataSet := WIDBCDS;
-  Log(' WebDataSource1 DataSet assignment confirmed');
-//  if EPG.DataSource <> WebDataSource1 then EPG.DataSource := WebDataSource1;
-  Log(' EPG DataSet assignment confirmed');
   EPG.Columns[0].Alignment := taCenter;
   EPG.Columns[2].Alignment := taLeftJustify;
   {$IfDef PAS2JS}await{$EndIf}(SetupFilterLists);
@@ -984,7 +978,6 @@ begin
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, 'Un') + 'Filtered List'));
   EPG.Hide;
   EPG.BeginUpdate;
-//  EPG.DataSource := nil;
   EPG.Columns[2].Title := IfThen(ByChannel.Checked, wcbChannels.Text + ' ')
     + IfThen(byType.Checked, wcbTypes.Text + ' ')
     + IfThen(ByGenre.Checked, wcbGenres.Text + ' ') + 'Programs'
@@ -1014,7 +1007,6 @@ begin
   {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
   WIDBCDS.RecNo := EPG.Cells[3,1].ToInteger;
   {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
-//  EPG.DataSource := WebDataSource1;
   EPG.EndUpdate;
   EPG.Refresh;
   EPG.Show;
@@ -1368,9 +1360,9 @@ begin
     Log('========== Set WIDBCDS RecNo: ' + CurrentID);
     if {WIDBCDS.Locate('id', CurrentID,[])}True then
     try
-      WIDBCDS.EnableControls;
+//      WIDBCDS.EnableControls;
 //      EPG.Show;                    Android FF form execute fails with this!
-//      EPG.Hide;
+      EPG.Hide;
 //      Log('========== Located ' + EPG.Cells[3,ARow]);
       DetailsFrm := TDetailsFrm.Create(Self);
       Log('========== finished TDetailsFrm.Create(nil) ');
@@ -1459,7 +1451,7 @@ begin
   end;
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing List'));
   Log('========== EPGClickCell() showing ''Refreshing List');
-  if WIDBCDS.ControlsDisabled then
+//  if WIDBCDS.ControlsDisabled then
 //  begin
     {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
 ////    {$IfDef PAS2JS}await{$EndIf}(EPG.Refresh);

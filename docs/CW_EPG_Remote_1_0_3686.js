@@ -40681,7 +40681,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       try {
         $impl.Log("========== Set WIDBCDS RecNo: " + CurrentID);
         if (true) try {
-          this.WIDBCDS.EnableControls();
+          this.EPG.Hide();
           DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[this]);
           $impl.Log("========== finished TDetailsFrm.Create(nil) ");
           DetailsFrm.FPopup = true;
@@ -40777,7 +40777,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       };
       await this.ShowPlsWait("Refreshing List");
       $impl.Log("========== EPGClickCell() showing 'Refreshing List");
-      if (this.WIDBCDS.ControlsDisabled()) await this.WIDBCDS.EnableControls();
+      await this.WIDBCDS.EnableControls();
       await this.EPG.Show();
       $impl.Log("========== EPGClickCell() finished");
       this.pnlWaitPls.Hide();
@@ -41504,9 +41504,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log(" WIDBCDS is not filtered");
       this.WIDBCDS.SetFilterText($impl.BaseFilter);
       $impl.Log(" WIDBCDS BaseFilter assigned, but not active");
-      if (this.WebDataSource1.FDataSet !== this.WIDBCDS) this.WebDataSource1.SetDataSet(this.WIDBCDS);
-      $impl.Log(" WebDataSource1 DataSet assignment confirmed");
-      $impl.Log(" EPG DataSet assignment confirmed");
       this.EPG.FColumns.GetItem$1(0).SetAlignment(2);
       this.EPG.FColumns.GetItem$1(2).SetAlignment(0);
       await this.SetupFilterLists();
