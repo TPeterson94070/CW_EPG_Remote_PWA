@@ -18229,11 +18229,6 @@ rtl.module("DateUtils",["System","SysUtils","Math","dateutils.helper"],function 
       }});
     return Result;
   };
-  this.DaysBetween = function (ANow, AThen) {
-    var Result = 0;
-    Result = pas.System.Trunc(Math.abs($impl.DateTimeDiff(ANow,AThen)) + 5.7870370370370369E-9);
-    return Result;
-  };
   this.SecondsBetween = function (ANow, AThen) {
     var Result = 0;
     Result = pas.System.Trunc((Math.abs($impl.DateTimeDiff(ANow,AThen)) + 5.7870370370370369E-9) * 86400);
@@ -39746,6 +39741,10 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
       this.lb11Time = undefined;
       pas["WEBLib.Forms"].TForm.$final.call(this);
     };
+    this.WebFormShow = function (Sender) {
+      pas.CWRmainForm.CWRmainFrm.WIDBCDS.EnableControls();
+      pas.CWRmainForm.CWRmainFrm.EPG.Show();
+    };
     this.LoadDFMValues = function () {
       pas["WEBLib.Forms"].TCustomForm.LoadDFMValues.call(this);
       this.lb02New = pas["WEBLib.StdCtrls"].TLabel.$create("Create$1",[this]);
@@ -39796,6 +39795,7 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
         this.FFont.SetStyle({});
         this.SetParentFont(false);
         this.FShowClose = false;
+        this.SetEvent(this,"OnShow","WebFormShow");
         this.lb02New.SetParentComponent(this);
         this.lb02New.SetName("lb02New");
         this.lb02New.SetLeft(200);
@@ -40206,6 +40206,7 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
     $r.addField("lb09OrigDate",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
     $r.addField("lb10Channel",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
     $r.addField("lb11Time",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
+    $r.addMethod("WebFormShow",0,[["Sender",pas.System.$rtti["TObject"]]]);
   });
 },["CWRmainForm"]);
 rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Graphics","WEBLib.Forms","WEBLib.StdCtrls","WEBLib.StdCtrls","WEBLib.Controls","WEBLib.Dialogs","WEBLib.Imaging.pngImage","WEBLib.ExtCtrls","WEBLib.Controls","Web","JS","WEBLib.IndexedDb","WEBLib.Menus","WEBLib.Menus","WEBLib.Grids","DB","WEBLib.Grids","StrUtils","WEBLib.DBCtrls","WEBLib.WebCtrls","WEBLib.REST","Types","WEBLib.Storage","WEBLib.CDS","WEBLib.JSON","WEBLib.WebTools","WEBLib.Buttons"],function () {
@@ -40515,6 +40516,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       if (pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMDAYS) !== "") this.cbNumDisplayDays.SetItemIndex(this.cbNumDisplayDays.FItems.IndexOf(pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMDAYS)));
       if (pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMHIST) !== "") this.cbNumHistList.SetItemIndex(this.cbNumHistList.FItems.IndexOf(pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMHIST)));
       this.WebMainMenu1.FAppearance.FHamburgerMenu.SetCaption("[" + pas["WEBLib.Storage"].TWebLocalStorage.GetValue($impl.EMAILADDR) + "]");
+      this.EPG.Hide();
       await this.SetupWIDBCDS();
       await this.ReFreshListings();
       $impl.Log("========== FormCreate is finished");
@@ -40659,6 +40661,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var SchedFrm = null;
       var x = [];
       var CurrentID = "";
+      this.EPG.FOnClickCell = null;
       await sleep(10);
       CurrentID = this.EPG.GetCells(3,ARow);
       $impl.Log("========== EPGClickCell() called from RC " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
@@ -40678,107 +40681,102 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         }, set: function (v) {
           CurrentID = v;
         }}));
+      $impl.Log("========== Set WIDBCDS RecNo: " + CurrentID);
       try {
-        $impl.Log("========== Set WIDBCDS RecNo: " + CurrentID);
-        if (true) try {
-          this.EPG.Hide();
-          DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[this]);
-          $impl.Log("========== finished TDetailsFrm.Create(nil) ");
-          DetailsFrm.FPopup = true;
-          DetailsFrm.SetBorder(1);
-          $impl.Log("========== starting DetailsFrm.Load ");
-          try {
-            await DetailsFrm.Load();
-            $impl.Log("========== finished DetailsFrm.Load ");
-          } catch ($e) {
-            if (pas.SysUtils.Exception.isPrototypeOf($e)) {
-              var E = $e;
-              $impl.Log("Exception from DetailsFrm.Load: " + E.FMessage);
-            } else throw $e
-          };
-          DetailsFrm.mmTitle.SetText(this.WIDBCDS.FFieldList.GetField(3).GetAsString());
-          DetailsFrm.mmSubTitle.SetText(this.WIDBCDS.FFieldList.GetField(4).GetAsString());
-          DetailsFrm.lb11Time.SetCaption(this.WIDBCDS.FFieldList.GetField(2).GetAsString());
-          DetailsFrm.lb10Channel.SetCaption(this.WIDBCDS.FFieldList.GetField(1).GetAsString());
-          x = pas.SysUtils.TStringHelper.Split$1.call({p: this.WIDBCDS.FFieldList.GetField(9).GetAsString(), get: function () {
-              return this.p;
-            }, set: function (v) {
-              this.p = v;
-            }},["-"]);
-          DetailsFrm.lb09OrigDate.SetCaption(pas.StrUtils.IfThen(rtl.length(x) === 3,"1st Aired " + x[1] + "/" + x[2] + "/" + pas.StrUtils.RightStr(x[0],2),pas.StrUtils.IfThen(this.WIDBCDS.FFieldList.GetField(13).GetAsString() > "","Movie Yr " + this.WIDBCDS.FFieldList.GetField(13).GetAsString(),"")));
-          $impl.SetLabelStyle(DetailsFrm.lb02New,this.WIDBCDS.FFieldList.GetField(10).GetAsString() !== "");
-          $impl.SetLabelStyle(DetailsFrm.lb08CC,pas.SysUtils.TStringHelper.Contains.call({p: this.WIDBCDS.FFieldList.GetField(11).GetAsString(), get: function () {
-              return this.p;
-            }, set: function (v) {
-              this.p = v;
-            }},"cc"));
-          $impl.SetLabelStyle(DetailsFrm.lb03Stereo,pas.SysUtils.TStringHelper.Contains.call({p: this.WIDBCDS.FFieldList.GetField(11).GetAsString(), get: function () {
-              return this.p;
-            }, set: function (v) {
-              this.p = v;
-            }},"stereo"));
-          $impl.SetLabelStyle(DetailsFrm.lb07Dolby,pas.SysUtils.TStringHelper.Contains.call({p: this.WIDBCDS.FFieldList.GetField(11).GetAsString(), get: function () {
-              return this.p;
-            }, set: function (v) {
-              this.p = v;
-            }},"DD"));
-          DetailsFrm.lb04HD.SetCaption("SD");
-          if (this.WIDBCDS.FFieldList.GetField(12).GetAsString() > "") DetailsFrm.lb04HD.SetCaption(pas.SysUtils.TStringHelper.Split$8.call({p: this.WIDBCDS.FFieldList.GetField(12).GetAsString(), get: function () {
-              return this.p;
-            }, set: function (v) {
-              this.p = v;
-            }},['["HD ','"'])[1]);
-          $impl.SetLabelStyle(DetailsFrm.lb04HD,DetailsFrm.lb04HD.FCaption !== "SD");
-          DetailsFrm.mmDescription.SetText(this.WIDBCDS.FFieldList.GetField(5).GetAsString());
-          $impl.Log("========== starting DetailsFrm.Execute ");
-          this.pnlWaitPls.Hide();
-          await DetailsFrm.Execute();
-          $impl.Log("========== finished DetailsFrm.Execute ");
-          if (DetailsFrm.FModalResult === 1) {
-            SchedFrm = pas.SchedUnit2.TSchedForm.$create("Create$1",[this]);
-            $impl.Log("========== finished TSchedForm.Create(nil)");
-            SchedFrm.SetCaption("Schedule Capture Event");
-            SchedFrm.FPopup = true;
-            SchedFrm.SetBorder(1);
-            try {
-              await SchedFrm.Load();
-              $impl.Log("========== finished SchedFrm.Load() ");
-              SchedFrm.mmTitle.SetText(DetailsFrm.mmTitle.GetText());
-              SchedFrm.mmSubTitle.SetText(DetailsFrm.mmSubTitle.GetText());
-              SchedFrm.mmDescription.SetText(DetailsFrm.mmDescription.GetText());
-              SchedFrm.lblChannelValue.SetCaption(DetailsFrm.lb10Channel.FCaption);
-              x = pas.SysUtils.TStringHelper.Split$8.call({p: DetailsFrm.lb11Time, get: function () {
-                  return this.p.FCaption;
-                }, set: function (v) {
-                  this.p.FCaption = v;
-                }},[" ","--"]);
-              SchedFrm.lblStartDateValue.SetCaption(x[0]);
-              SchedFrm.tpStartTime.SetDateTime(pas.SysUtils.StrToDateTime(x[0] + " " + x[1]));
-              SchedFrm.tpEndTime.SetDateTime(pas.SysUtils.StrToDateTime(x[0] + " " + x[2]));
-              if (SchedFrm.tpEndTime.GetDateTime() < SchedFrm.tpStartTime.GetDateTime()) SchedFrm.tpEndTime.SetDateTime(SchedFrm.tpEndTime.GetDateTime() + 1);
-              $impl.Log("Finished setting up new form");
-              await SchedFrm.Execute();
-              $impl.Log("========== finished SchedFrm.Execute ");
-              if (SchedFrm.FModalResult === 1) {
-                await this.ShowPlsWait("Saving Capture Request.");
-                await this.UpdateNewCaptures(SchedFrm.tpStartTime.GetDateTime(),SchedFrm.tpEndTime.GetDateTime());
-              };
-            } finally {
-              $impl.Log("========== EPGClickCell() Finished with Schedule form");
-              SchedFrm = rtl.freeLoc(SchedFrm);
-            };
-          };
-        } finally {
-          $impl.Log("========== EPGClickCell() Finished with Details form");
-          DetailsFrm = rtl.freeLoc(DetailsFrm);
+        this.EPG.Hide();
+        DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[this]);
+        $impl.Log("========== finished TDetailsFrm.Create(nil) ");
+        DetailsFrm.FPopup = true;
+        DetailsFrm.SetBorder(1);
+        $impl.Log("========== starting DetailsFrm.Load ");
+        try {
+          await DetailsFrm.Load();
+          $impl.Log("========== finished DetailsFrm.Load ");
+        } catch ($e) {
+          if (pas.SysUtils.Exception.isPrototypeOf($e)) {
+            var E = $e;
+            $impl.Log("Exception from DetailsFrm.Load: " + E.FMessage);
+          } else throw $e
         };
-      } catch ($e) {
-        $impl.Log('Locate raised an improper Exception instead of "False"');
+        DetailsFrm.mmTitle.SetText(this.WIDBCDS.FFieldList.GetField(3).GetAsString());
+        DetailsFrm.mmSubTitle.SetText(this.WIDBCDS.FFieldList.GetField(4).GetAsString());
+        DetailsFrm.lb11Time.SetCaption(this.WIDBCDS.FFieldList.GetField(2).GetAsString());
+        DetailsFrm.lb10Channel.SetCaption(this.WIDBCDS.FFieldList.GetField(1).GetAsString());
+        x = pas.SysUtils.TStringHelper.Split$1.call({p: this.WIDBCDS.FFieldList.GetField(9).GetAsString(), get: function () {
+            return this.p;
+          }, set: function (v) {
+            this.p = v;
+          }},["-"]);
+        DetailsFrm.lb09OrigDate.SetCaption(pas.StrUtils.IfThen(rtl.length(x) === 3,"1st Aired " + x[1] + "/" + x[2] + "/" + pas.StrUtils.RightStr(x[0],2),pas.StrUtils.IfThen(this.WIDBCDS.FFieldList.GetField(13).GetAsString() > "","Movie Yr " + this.WIDBCDS.FFieldList.GetField(13).GetAsString(),"")));
+        $impl.SetLabelStyle(DetailsFrm.lb02New,this.WIDBCDS.FFieldList.GetField(10).GetAsString() !== "");
+        $impl.SetLabelStyle(DetailsFrm.lb08CC,pas.SysUtils.TStringHelper.Contains.call({p: this.WIDBCDS.FFieldList.GetField(11).GetAsString(), get: function () {
+            return this.p;
+          }, set: function (v) {
+            this.p = v;
+          }},"cc"));
+        $impl.SetLabelStyle(DetailsFrm.lb03Stereo,pas.SysUtils.TStringHelper.Contains.call({p: this.WIDBCDS.FFieldList.GetField(11).GetAsString(), get: function () {
+            return this.p;
+          }, set: function (v) {
+            this.p = v;
+          }},"stereo"));
+        $impl.SetLabelStyle(DetailsFrm.lb07Dolby,pas.SysUtils.TStringHelper.Contains.call({p: this.WIDBCDS.FFieldList.GetField(11).GetAsString(), get: function () {
+            return this.p;
+          }, set: function (v) {
+            this.p = v;
+          }},"DD"));
+        DetailsFrm.lb04HD.SetCaption("SD");
+        if (this.WIDBCDS.FFieldList.GetField(12).GetAsString() > "") DetailsFrm.lb04HD.SetCaption(pas.SysUtils.TStringHelper.Split$8.call({p: this.WIDBCDS.FFieldList.GetField(12).GetAsString(), get: function () {
+            return this.p;
+          }, set: function (v) {
+            this.p = v;
+          }},['["HD ','"'])[1]);
+        $impl.SetLabelStyle(DetailsFrm.lb04HD,DetailsFrm.lb04HD.FCaption !== "SD");
+        DetailsFrm.mmDescription.SetText(this.WIDBCDS.FFieldList.GetField(5).GetAsString());
+        $impl.Log("========== starting DetailsFrm.Execute ");
+        this.pnlWaitPls.Hide();
+        await DetailsFrm.Execute();
+        $impl.Log("========== finished DetailsFrm.Execute ");
+        if (DetailsFrm.FModalResult === 1) {
+          SchedFrm = pas.SchedUnit2.TSchedForm.$create("Create$1",[this]);
+          $impl.Log("========== finished TSchedForm.Create(nil)");
+          SchedFrm.SetCaption("Schedule Capture Event");
+          SchedFrm.FPopup = true;
+          SchedFrm.SetBorder(1);
+          try {
+            await SchedFrm.Load();
+            $impl.Log("========== finished SchedFrm.Load() ");
+            SchedFrm.mmTitle.SetText(DetailsFrm.mmTitle.GetText());
+            SchedFrm.mmSubTitle.SetText(DetailsFrm.mmSubTitle.GetText());
+            SchedFrm.mmDescription.SetText(DetailsFrm.mmDescription.GetText());
+            SchedFrm.lblChannelValue.SetCaption(DetailsFrm.lb10Channel.FCaption);
+            x = pas.SysUtils.TStringHelper.Split$8.call({p: DetailsFrm.lb11Time, get: function () {
+                return this.p.FCaption;
+              }, set: function (v) {
+                this.p.FCaption = v;
+              }},[" ","--"]);
+            SchedFrm.lblStartDateValue.SetCaption(x[0]);
+            SchedFrm.tpStartTime.SetDateTime(pas.SysUtils.StrToDateTime(x[0] + " " + x[1]));
+            SchedFrm.tpEndTime.SetDateTime(pas.SysUtils.StrToDateTime(x[0] + " " + x[2]));
+            if (SchedFrm.tpEndTime.GetDateTime() < SchedFrm.tpStartTime.GetDateTime()) SchedFrm.tpEndTime.SetDateTime(SchedFrm.tpEndTime.GetDateTime() + 1);
+            $impl.Log("Finished setting up new form");
+            await SchedFrm.Execute();
+            $impl.Log("========== finished SchedFrm.Execute ");
+            if (SchedFrm.FModalResult === 1) {
+              await this.ShowPlsWait("Saving Capture Request.");
+              await this.UpdateNewCaptures(SchedFrm.tpStartTime.GetDateTime(),SchedFrm.tpEndTime.GetDateTime());
+            };
+          } finally {
+            $impl.Log("========== EPGClickCell() Finished with Schedule form");
+            SchedFrm = rtl.freeLoc(SchedFrm);
+          };
+        };
+      } finally {
+        $impl.Log("========== EPGClickCell() Finished with Details form");
+        DetailsFrm = rtl.freeLoc(DetailsFrm);
       };
       await this.ShowPlsWait("Refreshing List");
       $impl.Log("========== EPGClickCell() showing 'Refreshing List");
-      await this.WIDBCDS.EnableControls();
-      await this.EPG.Show();
+      this.EPG.FOnClickCell = rtl.createCallback(this,"EPGClickCell");
       $impl.Log("========== EPGClickCell() finished");
       this.pnlWaitPls.Hide();
     };
@@ -40866,6 +40864,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
             this.p = v;
           }}));
       };
+      this.EPG.SetEnabled(true);
       this.ByAll.FOnClick = rtl.createCallback(this,"ByAllClick");
     };
     this.ByChannelClick = async function (Sender) {
@@ -40974,7 +40973,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     };
     this.btnRefreshDataClick = async function (Sender) {
       this.btnRefreshData.Hide();
-      if (await pas["WEBLib.Dialogs"].MessageDlgAsync("Do you want to switch to viewing the Log" + "\rduring the Data Refresh?",3,rtl.createSet(0,1)) === 6) await this.SetPage(3);
       this.RefreshData(this);
     };
     this.wcbTypesChange = function (Sender) {
@@ -41021,7 +41019,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           }, set: function (v) {
             rtl.raiseE("EPropReadOnly");
           }}));
-        $impl.TotalAvailableDays = pas.DateUtils.DaysBetween($impl.LastStartDate,pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false));
+        $impl.TotalAvailableDays = pas.System.Trunc($impl.LastStartDate - pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false));
         if (this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.EnableControls();
       } else $impl.TotalAvailableDays = 0;
     };
@@ -41222,7 +41220,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         }, set: function (v) {
           this.p.TotalAvailableDays = v;
         }}));
-      if (this.WIDBCDS.GetRecordCount() > 0) {
+      if ((this.WIDBCDS.GetRecordCount() > 0) && ($impl.TotalAvailableDays >= 0)) {
         await this.ShowPlsWait("Preparing " + pas.SysUtils.TIntegerHelper.ToString$1.call({a: Math.min(pas.SysUtils.StrToIntDef(this.cbNumDisplayDays.GetText(),1),$impl.TotalAvailableDays), get: function () {
             return this.a;
           }, set: function (v) {
@@ -41230,8 +41228,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           }}) + "-day Listing.");
         this.EPG.Refresh();
         this.ByAllClick(this);
-      } else await pas["WEBLib.Dialogs"].MessageDlgAsync("There are no current data!" + "\r\rTo update, please use the Refresh Data button.",2,rtl.createSet(2));
-      if (!this.EPG.FVisible) this.EPG.Show();
+        if (!this.EPG.FVisible) this.EPG.Show();
+      } else await pas["WEBLib.Dialogs"].MessageDlgAsync("There are no current data!" + "\r\rTo update, use the Refresh Data button." + "\r\rTo watch the Log, first switch to" + "\rView Log and then use Refresh Data." + "\r(Recommended _only_ in case of severe hang issue)",2,rtl.createSet(2));
       this.pnlListings.BringToFront();
       $impl.Log(" ======== RefreshListings finished");
     };
@@ -41382,6 +41380,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         window.console.log("WEBRESTClient1.App.CallBackURL: " + $Self.WebRESTClient1.FApp.FCallbackURL);
         if (($Self.WebRESTClient1.FAccessToken === "") || ($impl.ResetPrompt !== "none")) {
           window.console.log("Performing OAuth");
+          await $Self.ShowPlsWait("Select Login Credentials");
           await $Self.WebRESTClient1.Authenticate();
         };
         rq = await $Self.WebRESTClient1.HttpRequest("GET","https://www.googleapis.com/drive/v3/about/?fields=kind,user","","",null);
@@ -41484,7 +41483,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var FirstEndTime = 0.0;
       var LastStartTime = 0.0;
       $impl.Log("====== SetupEpg called");
-      if (this.WIDBCDS.GetRecordCount() === 0) return;
+      if ((this.WIDBCDS.GetRecordCount() === 0) || ($impl.TotalAvailableDays < 0)) return;
       await this.ShowPlsWait("Preparing Stored Data");
       $impl.Log(' Finished posting "Please Wait" panel');
       FirstEndTime = pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false);

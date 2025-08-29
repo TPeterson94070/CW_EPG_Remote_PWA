@@ -26,6 +26,7 @@ type
     lb09OrigDate: TWebLabel;
     lb10Channel: TWebLabel;
     lb11Time: TWebLabel;
+    procedure WebFormShow(Sender: TObject);
 //    procedure WebFormShow(Sender: TObject);
   private
     { Private declarations }
@@ -55,5 +56,12 @@ uses CWRmainForm;
 //  end
 ////  else console.log('WIDBCDS controls were enabled!');
 //end;
+
+procedure TDetailsFrm.WebFormShow(Sender: TObject);
+begin
+  CWRmainFrm.WIDBCDS.EnableControls;
+  CWRmainFrm.EPG.Show;
+
+end;
 
 end.
