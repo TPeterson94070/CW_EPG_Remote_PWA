@@ -59,7 +59,7 @@ uses CWRmainForm;
 
 procedure TDetailsFrm.WebFormShow(Sender: TObject);
 begin
-  CWRmainFrm.WIDBCDS.EnableControls;
+//  CWRmainFrm.WIDBCDS.EnableControls;
   CWRmainFrm.EPG.Show;
 
 end;

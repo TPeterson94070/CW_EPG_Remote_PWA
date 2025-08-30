@@ -30794,6 +30794,57 @@ rtl.module("WEBLib.Imaging.pngImage",["System"],function () {
 rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Controls","WEBLib.StdCtrls","WEBLib.Graphics","Web","JS","WEBLib.WebTools","WEBLib.Menus","WEBLib.REST"],function () {
   "use strict";
   var $mod = this;
+  rtl.createClass(this,"TTimer",pas.Classes.TComponent,function () {
+    this.$init = function () {
+      pas.Classes.TComponent.$init.call(this);
+      this.FInterval = 0;
+      this.FTimerID = 0;
+      this.FOnTimer = null;
+      this.FEnabled = false;
+    };
+    this.$final = function () {
+      this.FOnTimer = undefined;
+      pas.Classes.TComponent.$final.call(this);
+    };
+    this.SetEnabled = function (Value) {
+      this.FEnabled = Value;
+      this.DoUpdateTimer();
+    };
+    this.SetInterval = function (AValue) {
+      this.FInterval = AValue;
+      this.DoUpdateTimer();
+    };
+    this.DoTimer = function () {
+      if (this.FOnTimer != null) this.FOnTimer(this);
+    };
+    this.DoUpdateTimer = function () {
+      this.DoClearTimer();
+      if (this.FEnabled) this.FTimerID = window.setInterval(rtl.createSafeCallback(this,"DoTimer"),this.FInterval);
+    };
+    this.DoClearTimer = function () {
+      if (this.FTimerID !== -1) {
+        window.clearInterval(this.FTimerID);
+        this.FTimerID = -1;
+      };
+    };
+    this.Create$1 = function (AOwner) {
+      pas.Classes.TComponent.Create$1.apply(this,arguments);
+      this.FInterval = 1000;
+      this.FTimerID = -1;
+      this.SetEnabled(true);
+      return this;
+    };
+    this.Destroy = function () {
+      this.DoClearTimer();
+      pas.Classes.TComponent.Destroy.call(this);
+    };
+    rtl.addIntf(this,pas.System.IUnknown);
+    var $r = this.$rtti;
+    $r.addMethod("Create$1",2,[["AOwner",pas.Classes.$rtti["TComponent"]]]);
+    $r.addProperty("Enabled",2,rtl.boolean,"FEnabled","SetEnabled",{Default: true});
+    $r.addProperty("Interval",2,rtl.longint,"FInterval","SetInterval",{Default: 1000});
+    $r.addProperty("OnTimer",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnTimer","FOnTimer");
+  });
   rtl.createClass(this,"TCustomPanel",pas["WEBLib.Menus"].TWebCustomControl,function () {
     this.$init = function () {
       pas["WEBLib.Menus"].TWebCustomControl.$init.call(this);
@@ -40265,6 +40316,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.byType = null;
       this.wcbTypes = null;
       this.weTitleSearch = null;
+      this.WebTimer1 = null;
+      this.WebTimer2 = null;
     };
     this.$final = function () {
       this.WebMemo2 = undefined;
@@ -40320,6 +40373,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.byType = undefined;
       this.wcbTypes = undefined;
       this.weTitleSearch = undefined;
+      this.WebTimer1 = undefined;
+      this.WebTimer2 = undefined;
       pas["WEBLib.Forms"].TForm.$final.call(this);
     };
     this.ClearFilterLists = function () {
@@ -40868,6 +40923,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           await this.SetFilters()}
          else {
           await this.WIDBCDS.EnableControls();
+          this.WebTimer1.SetEnabled(true);
           $impl.Log("++ ^Rec EPG.Row: " + this.EPG.GetCells(3,1));
           $impl.Log("++ WIDBCDS.RecNo: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecNo(), get: function () {
               return this.p;
@@ -41002,11 +41058,24 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.wcbTypes.Hide();
     };
     this.weTitleSearchChange = function (Sender) {
-      this.weTitleSearch.FOnChange = null;
+      if (this.WebTimer2.FEnabled) {
+        this.WebTimer2.SetEnabled(false);
+        this.WebTimer2.SetEnabled(true);
+      };
+    };
+    this.WebTimer1Timer = function (Sender) {
+      this.WebTimer1.SetEnabled(false);
+      this.WIDBCDS.DisableControls();
+    };
+    this.WebTimer2Timer = function (Sender) {
+      this.WebTimer2.SetEnabled(false);
       $impl.Log("weTitleSearch.Text: " + this.weTitleSearch.GetText());
       $impl.SearchFilter = this.weTitleSearch.GetText();
       this.SetFilters();
-      this.weTitleSearch.FOnChange = rtl.createCallback(this,"weTitleSearchChange");
+      this.weTitleSearch.SetFocus();
+    };
+    this.weTitleSearchClick = function (Sender) {
+      this.WebTimer2.SetEnabled(true);
     };
     this.LogDataRange = async function () {
       $impl.Log("WIDBCDS.RecordCount:  " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
@@ -41568,6 +41637,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WIDBCDS.SetFiltered(true);
       this.EPG.SetRow(1);
       await this.WIDBCDS.EnableControls();
+      this.WebTimer1.SetEnabled(true);
       this.EPG.EndUpdate();
       this.EPG.Show();
       this.pnlWaitPls.Hide();
@@ -41708,6 +41778,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WebRESTClient1 = pas["WEBLib.REST"].TRESTClient.$create("Create$1",[this]);
       this.WebDataSource1 = pas.DB.TDataSource.$create("Create$1",[this]);
       this.WIDBCDS = pas["WEBLib.IndexedDb"].TIndexedDbClientDataset.$create("Create$1",[this]);
+      this.WebTimer1 = pas["WEBLib.ExtCtrls"].TTimer.$create("Create$1",[this]);
+      this.WebTimer2 = pas["WEBLib.ExtCtrls"].TTimer.$create("Create$1",[this]);
       this.BufferGrid.BeforeLoadDFMValues();
       this.pnlMenu.BeforeLoadDFMValues();
       this.pnlLog.BeforeLoadDFMValues();
@@ -41761,6 +41833,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WebRESTClient1.BeforeLoadDFMValues();
       this.WebDataSource1.BeforeLoadDFMValues();
       this.WIDBCDS.BeforeLoadDFMValues();
+      this.WebTimer1.BeforeLoadDFMValues();
+      this.WebTimer2.BeforeLoadDFMValues();
       try {
         this.SetName("CWRmainFrm");
         this.SetWidth(428);
@@ -42705,6 +42779,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.weTitleSearch.SetVisible(false);
         this.weTitleSearch.SetWidthPercent(100.000000000000000000);
         this.SetEvent$1(this.weTitleSearch,this,"OnChange","weTitleSearchChange");
+        this.SetEvent$1(this.weTitleSearch,this,"OnClick","weTitleSearchClick");
         this.btnRefreshData.SetParentComponent(this.pnlListings);
         this.btnRefreshData.SetName("btnRefreshData");
         this.btnRefreshData.SetLeft(120);
@@ -42821,6 +42896,20 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.SetEvent$1(this.WIDBCDS,this,"OnIDBError","WIDBCDSIDBError");
         this.WIDBCDS.SetLeft(216);
         this.WIDBCDS.SetTop(408);
+        this.WebTimer1.SetParentComponent(this);
+        this.WebTimer1.SetName("WebTimer1");
+        this.WebTimer1.SetEnabled(false);
+        this.WebTimer1.SetInterval(500);
+        this.SetEvent$1(this.WebTimer1,this,"OnTimer","WebTimer1Timer");
+        this.WebTimer1.SetLeft(200);
+        this.WebTimer1.SetTop(392);
+        this.WebTimer2.SetParentComponent(this);
+        this.WebTimer2.SetName("WebTimer2");
+        this.WebTimer2.SetEnabled(false);
+        this.WebTimer2.SetInterval(2500);
+        this.SetEvent$1(this.WebTimer2,this,"OnTimer","WebTimer2Timer");
+        this.WebTimer2.SetLeft(208);
+        this.WebTimer2.SetTop(400);
       } finally {
         this.BufferGrid.AfterLoadDFMValues();
         this.pnlMenu.AfterLoadDFMValues();
@@ -42875,6 +42964,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebRESTClient1.AfterLoadDFMValues();
         this.WebDataSource1.AfterLoadDFMValues();
         this.WIDBCDS.AfterLoadDFMValues();
+        this.WebTimer1.AfterLoadDFMValues();
+        this.WebTimer2.AfterLoadDFMValues();
       };
     };
     rtl.addIntf(this,pas["WEBLib.Controls"].IControl);
@@ -42933,6 +43024,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addField("byType",pas["WEBLib.Menus"].$rtti["TMenuItem"]);
     $r.addField("wcbTypes",pas["WEBLib.StdCtrls"].$rtti["TComboBox"]);
     $r.addField("weTitleSearch",pas["WEBLib.StdCtrls"].$rtti["TEdit"]);
+    $r.addField("WebTimer1",pas["WEBLib.ExtCtrls"].$rtti["TTimer"]);
+    $r.addField("WebTimer2",pas["WEBLib.ExtCtrls"].$rtti["TTimer"]);
     $r.addMethod("ClearFilterLists",0,[]);
     $r.addMethod("SetNewCapturesFixedRow",0,[]);
     $r.addMethod("EPGGetCellClass",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint],["AField",pas.DB.$rtti["TField"]],["AValue",rtl.string],["AClassName",rtl.string,1]]);
@@ -42972,6 +43065,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addMethod("wcbTypesChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("wcbTypesFocusOut",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("weTitleSearchChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
+    $r.addMethod("WebTimer1Timer",0,[["Sender",pas.System.$rtti["TObject"]]]);
+    $r.addMethod("WebTimer2Timer",0,[["Sender",pas.System.$rtti["TObject"]]]);
+    $r.addMethod("weTitleSearchClick",0,[["Sender",pas.System.$rtti["TObject"]]]);
   });
   this.CWRmainFrm = null;
   $mod.$implcode = function () {

@@ -73,6 +73,8 @@ type
     byType: TMenuItem;
     wcbTypes: TWebComboBox;
     weTitleSearch: TWebEdit;
+    WebTimer1: TWebTimer;
+    WebTimer2: TWebTimer;
   procedure ClearFilterLists;
   procedure SetNewCapturesFixedRow;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
@@ -121,6 +123,9 @@ type
     procedure wcbTypesChange(Sender: TObject);
     procedure wcbTypesFocusOut(Sender: TObject);
     procedure weTitleSearchChange(Sender: TObject);
+    procedure WebTimer1Timer(Sender: TObject);
+    procedure WebTimer2Timer(Sender: TObject);
+    procedure weTitleSearchClick(Sender: TObject);
 private
   { Private declarations }
   [async] procedure LogDataRange;
@@ -244,13 +249,27 @@ begin
   wcbTypes.Hide;
 end;
 
-procedure TCWRmainFrm.weTitleSearchChange(Sender: TObject);
+procedure TCWRmainFrm.WebTimer2Timer(Sender: TObject);
 begin
-  weTitleSearch.OnChange := nil;
+  WebTimer2.Enabled := False;
   Log('weTitleSearch.Text: ' + weTitleSearch.Text);
   SearchFilter := weTitleSearch.Text;
   SetFilters;
-  weTitleSearch.OnChange := weTitleSearchChange;
+  weTitleSearch.SetFocus;
+end;
+
+procedure TCWRmainFrm.weTitleSearchChange(Sender: TObject);
+begin
+  if WebTimer2.Enabled then
+  begin
+    WebTimer2.Enabled := False; // Restart timeout
+    WebTimer2.Enabled := True;
+  end;
+end;
+
+procedure TCWRmainFrm.weTitleSearchClick(Sender: TObject);
+begin
+  WebTimer2.Enabled := True;
 end;
 
 procedure TCWRmainFrm.wcbChannelsChange(Sender: TObject);
@@ -299,6 +318,14 @@ begin
   Log('========== FormCreate is finished');
 end;
 
+
+procedure TCWRmainFrm.WebTimer1Timer(Sender: TObject);
+// The point of this timer is to disable WIDBCDS controls before the EPG is clicked
+// This should defeat the long delay in Android FF in "seeing" those clicks
+begin
+  WebTimer1.Enabled := False;
+  WIDBCDS.DisableControls;
+end;
 
 procedure TCWRmainFrm.WIDBCDSIDBError(DataSet: TDataSet;
   opCode: TIndexedDbOpCode; errorName, errorMsg: string);
@@ -400,6 +427,7 @@ begin
 end;
 
 procedure TCWRmainFrm.ByAllClick(Sender: TObject);
+var x: string;
 begin
   Log('ByAllClick called');
   ByAll.OnClick := nil;
@@ -417,9 +445,12 @@ begin
     else
     begin
       {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
-      {$IfDef PAS2JS}EPG.Row := 1{$EndIf};
-      WIDBCDS.RecNo := EPG.Cells[3,1].ToInteger;
-      {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.DisableControls);
+      WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
+//      {$IfDef PAS2JS}EPG.Row := 1{$EndIf};
+//      x := EPG.Cells[3,1];
+      Log('++ ^Rec EPG.Row: ' + EPG.Cells[3,1]);
+      Log('++ WIDBCDS.RecNo: ' + WIDBCDS.RecNo.ToString);
+//      {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.DisableControls);
     end;
 //  EPG.Enabled := True;
   finally
@@ -558,6 +589,7 @@ var
       console.log('Performing OAuth');
       {$IFDef PAS2JS} await {$ENDIF}(ShowPlsWait('Select Login Credentials'));
       TAwait.ExecP<TJSPromiseResolver> (WebRESTClient1.Authenticate);
+      pnlWaitPls.Hide;
     end;
     rq := TAwait.ExecP<TJSXMLHttpRequest> (WebRESTClient1.httprequest('GET','https://www.googleapis.com/drive/v3/about/?fields=kind,user'));
     if rq.Status = 200 then
@@ -750,8 +782,10 @@ begin
     end;
   finally
     Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
+    WebDataSource1.DataSet := WIDBCDS;
     {$IfDef PAS2JS}await{$EndIf}(LogDataRange);
 //    if WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
+//      WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
     Log('WIDBCDS Controls are ' + IfThen(WIDBCDS.ControlsDisabled,'NOT ') + 'Enabled');
     Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
     Log('========= Finished LoadWIDBCDS');
@@ -821,6 +855,7 @@ begin
     TotalAvailableDays := Trunc(LastStartDate - TTimeZone.Local.ToUniversalTime(Now));
   //  Log('Avail days: ' + TotalAvailableDays.ToString);
 //    if WIDBCDS.ControlsDisabled then WIDBCDS.EnableControls;
+//      WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
   end else TotalAvailableDays := 0;
 end;
 
@@ -873,9 +908,11 @@ begin
   Log(' Finished posting "Please Wait" panel');
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
   LastStartTime := FirstEndTime + StrToIntDef(cbNumDisplayDays.Text,1);
-  BaseFilter := 'EndTime >= ' + Double(FirstEndTime).ToString + ' and '
-      + 'StartTime <= ' + Double(LastStartTime).ToString;
-  Log(' Finished calculating BaseFilter params');
+  BaseFilter := 'EndTime >= ' + Double(FirstEndTime).ToString
+      + ' and StartTime <= ' + Double(LastStartTime).ToString;
+  Log('BaseFilter(UTC): EndTime >= ' + DateTimeToStr(FirstEndTime)
+      + ' and StartTime <= ' + DateTimeToStr(LastStartTime));
+//  Log(' Finished calculating BaseFilter params');
   Log(' WIDBCDS.Filtered is ' + IfThen(WIDBCDS.Filtered, 'True', 'False'));
   if WIDBCDS.Filtered then WIDBCDS.Filtered := False;
   Log(' WIDBCDS is not filtered');
@@ -961,6 +998,7 @@ begin
   end;
   sl.Free;
 //  if WIDBCDS.ControlsDisabled then WIDBCDS.EnableControls;
+//      WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
   Log('====== Exiting SetupFilterLists');
 end;
 
@@ -1027,11 +1065,12 @@ begin
   WIDBCDS.Filter := BaseFilter + fltr;
   WIDBCDS.Filtered := True;
   {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
-  if StrToIntDef(EPG.Cells[3,1],0) > 0 then
-    WIDBCDS.RecNo := EPG.Cells[3,1].ToInteger;
+//  if StrToIntDef(EPG.Cells[3,1],0) > 0 then
+//    WIDBCDS.RecNo := EPG.Cells[3,1].ToInteger;
   {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
+  WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
   EPG.EndUpdate;
-  {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.DisableControls);
+//  {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.DisableControls);
 //  EPG.Refresh;
   EPG.Show;
   pnlWaitPls.Hide;
@@ -1368,15 +1407,19 @@ var
   DetailsFrm: TDetailsFrm;
   SchedFrm: TSchedForm;
   x: TArray<string>;
-  CurrentID: string;
-//  CurrentRec: Integer;
+  CurrentID, WIDBCDSID: string;
+  CurrentRec: Integer;
 
 begin
   EPG.OnClickCell := nil;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   try
     CurrentID := EPG.Cells[3,ARow];
-    Log('========== EPGClickCell() called from RC ' + ARow.ToString + ', ' + ACol.ToString);
+    Log('========== EPGClickCell() called from Row ' + ARow.ToString);
+    WIDBCDSID := WIDBCDS.Fields[0].AsString;
+    CurrentRec := WIDBCDS.RecNo;
+//    WIDBCDS.Locate('id',CurrentID,[]);
+//    CurrentRec := WIDBCDS.RecNo;
     // Quit Combobox if still open
     if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
     // Speed up form opening
@@ -1468,6 +1511,7 @@ begin
     {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing List'));
     Log('========== EPGClickCell() showing ''Refreshing List');
   //  {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
+//      WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
   //  {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
   finally
     EPG.OnClickCell := EPGClickCell;

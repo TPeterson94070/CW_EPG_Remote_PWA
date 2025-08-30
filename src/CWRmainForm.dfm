@@ -937,6 +937,7 @@ object CWRmainFrm: TCWRmainFrm
         Visible = False
         WidthPercent = 100.000000000000000000
         OnChange = weTitleSearchChange
+        OnClick = weTitleSearchClick
       end
     end
     object btnRefreshData: TWebSpeedButton
@@ -1056,5 +1057,19 @@ object CWRmainFrm: TCWRmainFrm
     OnIDBError = WIDBCDSIDBError
     Left = 216
     Top = 408
+  end
+  object WebTimer1: TWebTimer
+    Enabled = False
+    Interval = 500
+    OnTimer = WebTimer1Timer
+    Left = 200
+    Top = 392
+  end
+  object WebTimer2: TWebTimer
+    Enabled = False
+    Interval = 2500
+    OnTimer = WebTimer2Timer
+    Left = 208
+    Top = 400
   end
 end
