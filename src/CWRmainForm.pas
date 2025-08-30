@@ -495,6 +495,9 @@ begin
     end else
     begin
       ByTitle.Checked := True;
+      wcbGenres.Hide;
+      wcbChannels.Hide;
+      wcbTypes.Hide;
       lblFilterSelect.Caption := 'Show Titles with:';
       pnlFilterSelection.BringToFront;
       pnlFilterSelection.Show;

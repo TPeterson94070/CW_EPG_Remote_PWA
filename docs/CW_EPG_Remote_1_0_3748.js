@@ -40957,6 +40957,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           await this.SetFilters();
         } else {
           this.ByTitle.SetChecked(true);
+          this.wcbGenres.Hide();
+          this.wcbChannels.Hide();
+          this.wcbTypes.Hide();
           this.lblFilterSelect.SetCaption("Show Titles with:");
           this.pnlFilterSelection.BringToFront();
           this.pnlFilterSelection.Show();
