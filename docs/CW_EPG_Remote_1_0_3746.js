@@ -31917,6 +31917,85 @@ rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Cont
     $r.addProperty("OnTouchEnd",0,pas["WEBLib.Controls"].$rtti["TTouchEvent"],"FOnTouchEnd","FOnTouchEnd");
     $r.addProperty("OnTouchCancel",0,pas["WEBLib.Controls"].$rtti["TTouchEvent"],"FOnTouchCancel","FOnTouchCancel");
   });
+  rtl.createClass(this,"THTMLForm",pas["WEBLib.Controls"].TCustomControl,function () {
+    this.$init = function () {
+      pas["WEBLib.Controls"].TCustomControl.$init.call(this);
+      this.FOnSubmit = null;
+      this.FAction = "";
+    };
+    this.$final = function () {
+      this.FOnSubmit = undefined;
+      pas["WEBLib.Controls"].TCustomControl.$final.call(this);
+    };
+    this.SetAction = function (Value) {
+      var el = null;
+      this.FAction = Value;
+      if (!(4 in this.FComponentState)) {
+        if (this.GetIsLinked()) {
+          el = this.GetElementHandle()}
+         else el = this.GetChildContainer();
+        if (el != null) el.setAttribute("action",this.FAction);
+      };
+    };
+    this.UpdateElement = function () {
+      if (!(this.GetElementHandle() != null)) return;
+      pas["WEBLib.Controls"].TControl.UpdateElement.call(this);
+      if (4 in this.FComponentState) this.GetElementHandle().style.setProperty("background","repeating-linear-gradient(45deg,#EEEEEE 10px,#EEEEEE 10px, #ffffff 20px)");
+    };
+    this.CreateElement = function () {
+      var Result = null;
+      Result = document.createElement("DIV");
+      Result.appendChild(document.createElement("FORM"));
+      return Result;
+    };
+    this.DoHandleSubmit = function (Event) {
+      var Result = false;
+      this.FElementEvent = Event;
+      if (this.FOnSubmit != null) this.FOnSubmit(this);
+      Result = true;
+      return Result;
+    };
+    this.GetChildContainer = function () {
+      var Result = null;
+      if (4 in this.FComponentState) {
+        Result = this.GetElementHandle()}
+       else {
+        if (this.GetIsLinked()) {
+          Result = this.GetElementHandle()}
+         else Result = this.GetElementHandle().firstChild;
+      };
+      return Result;
+    };
+    this.BindEvents = function () {
+      pas["WEBLib.Controls"].TCustomControl.BindEvents.call(this);
+      this.GetChildContainer().addEventListener("submit",rtl.createSafeCallback(this,"DoHandleSubmit"));
+    };
+    this.CreateInitialize = function () {
+      pas["WEBLib.Controls"].TCustomControl.CreateInitialize.call(this);
+      this.FEnablePropagation = true;
+      this.FControlStyle = rtl.unionSet(this.FControlStyle,rtl.createSet(0));
+      if (4 in this.FComponentState) {
+        this.SetWidth(400);
+        this.SetHeight(300);
+      };
+    };
+    rtl.addIntf(this,pas["WEBLib.Controls"].IControl);
+    rtl.addIntf(this,pas.System.IUnknown);
+    var $r = this.$rtti;
+    $r.addProperty("Action",2,rtl.string,"FAction","SetAction");
+    $r.addProperty("Align",2,pas["WEBLib.Controls"].$rtti["TAlign"],"FAlign","SetAlign",{Default: pas["WEBLib.Controls"].TAlign.alNone});
+    $r.addProperty("Anchors",2,pas["WEBLib.Controls"].$rtti["TAnchors"],"FAnchors","SetAnchors",{Default: rtl.createSet(0,1)});
+    $r.addProperty("ElementPosition",2,pas["WEBLib.Controls"].$rtti["TElementPosition"],"FElementPosition","SetElementPosition",{Default: pas["WEBLib.Controls"].TElementPosition.epAbsolute});
+    $r.addProperty("ElementFont",2,pas["WEBLib.Controls"].$rtti["TElementFont"],"FElementFont","SetElementFont",{Default: pas["WEBLib.Controls"].TElementFont.efProperty});
+    $r.addProperty("ElementID",3,pas["WEBLib.Controls"].$rtti["TElementID"],"GetID","SetID");
+    $r.addProperty("Font",2,pas["WEBLib.Graphics"].$rtti["TFont"],"FFont","SetFont");
+    $r.addProperty("HeightPercent",2,rtl.double,"FHeightPercent","SetHeightPercent",{Default: 100});
+    $r.addProperty("HeightStyle",2,pas["WEBLib.Controls"].$rtti["TSizeStyle"],"FHeightStyle","SetHeightStyle",{Default: pas["WEBLib.Controls"].TSizeStyle.ssAbsolute});
+    $r.addProperty("Role",3,rtl.string,"GetRole","SetRole");
+    $r.addProperty("WidthPercent",2,rtl.double,"FWidthPercent","SetWidthPercent",{Default: 100});
+    $r.addProperty("WidthStyle",2,pas["WEBLib.Controls"].$rtti["TSizeStyle"],"FWidthStyle","SetWidthStyle",{Default: pas["WEBLib.Controls"].TSizeStyle.ssAbsolute});
+    $r.addProperty("OnSubmit",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnSubmit","FOnSubmit");
+  });
 },["WEBLib.Utils","Math"]);
 rtl.module("WEBLib.CDS",["System","Classes","DB","JSONDataset","Web","JS","WEBLib.Controls","WEBLib.REST"],function () {
   "use strict";
@@ -40293,7 +40372,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WebLabel1 = null;
       this.WebLabel2 = null;
       this.wcbGenres = null;
-      this.wcbTitles = null;
       this.lblEmptyEPG = null;
       this.ByAll = null;
       this.ByChannel = null;
@@ -40318,6 +40396,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.weTitleSearch = null;
       this.WebTimer1 = null;
       this.WebTimer2 = null;
+      this.WebHTMLForm1 = null;
     };
     this.$final = function () {
       this.WebMemo2 = undefined;
@@ -40350,7 +40429,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WebLabel1 = undefined;
       this.WebLabel2 = undefined;
       this.wcbGenres = undefined;
-      this.wcbTitles = undefined;
       this.lblEmptyEPG = undefined;
       this.ByAll = undefined;
       this.ByChannel = undefined;
@@ -40375,6 +40453,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.weTitleSearch = undefined;
       this.WebTimer1 = undefined;
       this.WebTimer2 = undefined;
+      this.WebHTMLForm1 = undefined;
       pas["WEBLib.Forms"].TForm.$final.call(this);
     };
     this.ClearFilterLists = function () {
@@ -40503,6 +40582,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $impl.Log("WIDBCDS is " + pas.StrUtils.IfThen(this.WIDBCDS.GetActive(),"NOT ","") + "closed");
         this.WebDataSource1.SetDataSet(this.WIDBCDS);
         await this.LogDataRange();
+        if (this.WIDBCDS.ControlsDisabled()) await this.WIDBCDS.EnableControls();
+        this.WebTimer1.SetEnabled(true);
         $impl.Log("WIDBCDS Controls are " + pas.StrUtils.IfThen(this.WIDBCDS.ControlsDisabled(),"NOT ","") + "Enabled");
         $impl.Log("WIDBCDS RecordCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
             return this.p;
@@ -40888,11 +40969,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $impl.Log("byTitleClick finished");
       };
     };
-    this.wcbTitlesChange = async function (Sender) {
-      $impl.Log("wcbTitles.Text: " + this.wcbTitles.GetText());
-      this.ByTitle.SetChecked(this.wcbTitles.GetText() !== "All");
-      this.SetFilters();
-    };
     this.byTypeClick = async function (Sender) {
       $impl.Log("byTypeClick called");
       this.byType.FOnClick = null;
@@ -40924,6 +41000,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
          else {
           await this.WIDBCDS.EnableControls();
           this.WebTimer1.SetEnabled(true);
+          this.EPG.SetRow(1);
           $impl.Log("++ ^Rec EPG.Row: " + this.EPG.GetCells(3,1));
           $impl.Log("++ WIDBCDS.RecNo: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecNo(), get: function () {
               return this.p;
@@ -41016,10 +41093,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.pnlFilterSelection.Hide();
       this.wcbGenres.Hide();
     };
-    this.wcbTitlesFocusOut = function (Sender) {
-      this.pnlFilterSelection.Hide();
-      this.wcbTitles.Hide();
-    };
     this.wcbChannelsFocusOut = function (Sender) {
       this.pnlFilterSelection.Hide();
       this.wcbChannels.Hide();
@@ -41032,7 +41105,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       if (pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMDAYS) !== this.cbNumDisplayDays.GetText()) {
         pas["WEBLib.Storage"].TLocalStorage.SetValue($impl.NUMDAYS,this.cbNumDisplayDays.GetText());
         $impl.Log("New number EPG Display Days: " + this.cbNumDisplayDays.GetText());
-        this.WIDBCDS.Close();
         this.ClearFilterLists();
         await this.SetupWIDBCDS();
         await this.ReFreshListings();
@@ -41058,23 +41130,27 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.wcbTypes.Hide();
     };
     this.weTitleSearchChange = function (Sender) {
-      if (this.WebTimer2.FEnabled) {
-        this.WebTimer2.SetEnabled(false);
-        this.WebTimer2.SetEnabled(true);
-      };
+      this.WebTimer2.SetInterval(1000);
+      this.WebTimer2.SetEnabled(false);
+      this.WebTimer2.SetEnabled(true);
     };
     this.WebTimer1Timer = function (Sender) {
       this.WebTimer1.SetEnabled(false);
       this.WIDBCDS.DisableControls();
     };
-    this.WebTimer2Timer = function (Sender) {
+    this.WebTimer2Timer = async function (Sender) {
       this.WebTimer2.SetEnabled(false);
-      $impl.Log("weTitleSearch.Text: " + this.weTitleSearch.GetText());
-      $impl.SearchFilter = this.weTitleSearch.GetText();
-      this.SetFilters();
+      if (!this.ByTitle.FChecked) return;
+      this.ByTitle.SetChecked(this.weTitleSearch.GetText() > "");
+      if (this.ByTitle.FChecked) {
+        $impl.Log("weTitleSearch.Text: " + this.weTitleSearch.GetText());
+        $impl.SearchFilter = this.weTitleSearch.GetText();
+      };
+      await this.SetFilters();
       this.weTitleSearch.SetFocus();
     };
     this.weTitleSearchClick = function (Sender) {
+      this.WebTimer2.SetInterval(10000);
       this.WebTimer2.SetEnabled(true);
     };
     this.LogDataRange = async function () {
@@ -41223,6 +41299,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           try {
             Reply = await this.GetGoogleDriveFile(TableFile,id);
             if (Reply !== "") {
+              await this.ShowPlsWait("Refreshing " + Title);
               $impl.Log(TableFile + " starts: " + pas.System.Copy(Reply,1,50));
               this.FillTable(WSG,Reply);
             } else WSG.SetRowCount(0);
@@ -41466,7 +41543,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           window.console.log("Performing OAuth");
           await $Self.ShowPlsWait("Select Login Credentials");
           await $Self.WebRESTClient1.Authenticate();
-          $Self.pnlWaitPls.Hide();
         };
         rq = await $Self.WebRESTClient1.HttpRequest("GET","https://www.googleapis.com/drive/v3/about/?fields=kind,user","","",null);
         if (rq.status === 200) {
@@ -41599,7 +41675,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.lblFilterSelect.SetCaption("Choose " + pas.StrUtils.IfThen(fn === "genres","Genre",pas.StrUtils.IfThen(fn === "PSIP","Channel",pas.StrUtils.IfThen(fn === "Title","Title","Type"))));
       this.ByAll.SetChecked(false);
       this.wcbGenres.Hide();
-      this.wcbTitles.Hide();
       this.wcbChannels.Hide();
       this.wcbTypes.Hide();
       this.weTitleSearch.Hide();
@@ -41662,14 +41737,12 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var cb = null;
       $impl.Log("====== SetupFilterLists started");
       sl = pas.Classes.TStringList.$create("Create$1");
-      for (i = 1; i <= 3; i++) {
+      for (i = 1; i <= 2; i++) {
         var $tmp = i;
         if ($tmp === 1) {
           fn = 14;
           cb = this.wcbGenres;
         } else if ($tmp === 2) {
-          continue;
-        } else if ($tmp === 3) {
           fn = 1;
           cb = this.wcbChannels;
         };
@@ -41757,9 +41830,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.pnlFilterSelection = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
       this.lblFilterSelect = pas["WEBLib.StdCtrls"].TLabel.$create("Create$1",[this]);
       this.wcbGenres = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
-      this.wcbTitles = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
       this.wcbChannels = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
       this.wcbTypes = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
+      this.WebHTMLForm1 = pas["WEBLib.ExtCtrls"].THTMLForm.$create("Create$1",[this]);
       this.weTitleSearch = pas["WEBLib.StdCtrls"].TEdit.$create("Create$1",[this]);
       this.btnRefreshData = pas["WEBLib.Buttons"].TSpeedButton.$create("Create$1",[this]);
       this.WebMainMenu1 = pas["WEBLib.Menus"].TMainMenu.$create("Create$1",[this]);
@@ -41812,9 +41885,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.pnlFilterSelection.BeforeLoadDFMValues();
       this.lblFilterSelect.BeforeLoadDFMValues();
       this.wcbGenres.BeforeLoadDFMValues();
-      this.wcbTitles.BeforeLoadDFMValues();
       this.wcbChannels.BeforeLoadDFMValues();
       this.wcbTypes.BeforeLoadDFMValues();
+      this.WebHTMLForm1.BeforeLoadDFMValues();
       this.weTitleSearch.BeforeLoadDFMValues();
       this.btnRefreshData.BeforeLoadDFMValues();
       this.WebMainMenu1.BeforeLoadDFMValues();
@@ -42679,31 +42752,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.SetEvent$1(this.wcbGenres,this,"OnChange","wcbGenresChange");
         this.SetEvent$1(this.wcbGenres,this,"OnFocusOut","wcbGenresFocusOut");
         this.wcbGenres.SetItemIndex(-1);
-        this.wcbTitles.SetParentComponent(this.pnlFilterSelection);
-        this.wcbTitles.SetName("wcbTitles");
-        this.wcbTitles.SetAlignWithMargins(true);
-        this.wcbTitles.SetLeft(3);
-        this.wcbTitles.SetTop(31);
-        this.wcbTitles.SetWidth(144);
-        this.wcbTitles.SetHeight(30);
-        this.wcbTitles.SetAlign(5);
-        this.wcbTitles.SetElementClassName("form-select");
-        this.wcbTitles.SetElementFont(1);
-        this.wcbTitles.FFont.FCharset = 0;
-        this.wcbTitles.FFont.SetColor(0);
-        this.wcbTitles.FFont.SetHeight(-19);
-        this.wcbTitles.FFont.SetName("Arial");
-        this.wcbTitles.FFont.SetStyle({});
-        this.wcbTitles.SetHeightStyle(2);
-        this.wcbTitles.SetHeightPercent(100.000000000000000000);
-        this.wcbTitles.SetParentFont(false);
-        this.wcbTitles.SetRole("combobox");
-        this.wcbTitles.SetVisible(false);
-        this.wcbTitles.SetWidthStyle(0);
-        this.wcbTitles.SetWidthPercent(100.000000000000000000);
-        this.SetEvent$1(this.wcbTitles,this,"OnChange","wcbTitlesChange");
-        this.SetEvent$1(this.wcbTitles,this,"OnFocusOut","wcbTitlesFocusOut");
-        this.wcbTitles.SetItemIndex(-1);
         this.wcbChannels.SetParentComponent(this.pnlFilterSelection);
         this.wcbChannels.SetName("wcbChannels");
         this.wcbChannels.SetAlignWithMargins(true);
@@ -42764,18 +42812,32 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         } finally {
           this.wcbTypes.FItems.EndUpdate();
         };
-        this.weTitleSearch.SetParentComponent(this.pnlFilterSelection);
+        this.WebHTMLForm1.SetParentComponent(this.pnlFilterSelection);
+        this.WebHTMLForm1.SetName("WebHTMLForm1");
+        this.WebHTMLForm1.SetLeft(0);
+        this.WebHTMLForm1.SetTop(28);
+        this.WebHTMLForm1.SetWidth(150);
+        this.WebHTMLForm1.SetHeight(47);
+        this.WebHTMLForm1.SetAction("");
+        this.WebHTMLForm1.SetAlign(5);
+        this.WebHTMLForm1.SetElementFont(1);
+        this.weTitleSearch.SetParentComponent(this.WebHTMLForm1);
         this.weTitleSearch.SetName("weTitleSearch");
         this.weTitleSearch.SetLeft(0);
-        this.weTitleSearch.SetTop(28);
+        this.weTitleSearch.SetTop(0);
         this.weTitleSearch.SetWidth(150);
         this.weTitleSearch.SetHeight(47);
         this.weTitleSearch.SetAlign(5);
+        this.weTitleSearch.SetAutoCompletion(51);
+        this.weTitleSearch.SetAutoFocus(true);
+        this.weTitleSearch.SetAutoSelect(false);
         this.weTitleSearch.SetChildOrderEx(6);
+        this.weTitleSearch.SetEditType(6);
         this.weTitleSearch.SetElementClassName("form-control");
         this.weTitleSearch.SetElementFont(1);
         this.weTitleSearch.SetHeightStyle(2);
         this.weTitleSearch.SetHeightPercent(100.000000000000000000);
+        this.weTitleSearch.SetHideSelection(false);
         this.weTitleSearch.SetVisible(false);
         this.weTitleSearch.SetWidthPercent(100.000000000000000000);
         this.SetEvent$1(this.weTitleSearch,this,"OnChange","weTitleSearchChange");
@@ -42943,9 +43005,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlFilterSelection.AfterLoadDFMValues();
         this.lblFilterSelect.AfterLoadDFMValues();
         this.wcbGenres.AfterLoadDFMValues();
-        this.wcbTitles.AfterLoadDFMValues();
         this.wcbChannels.AfterLoadDFMValues();
         this.wcbTypes.AfterLoadDFMValues();
+        this.WebHTMLForm1.AfterLoadDFMValues();
         this.weTitleSearch.AfterLoadDFMValues();
         this.btnRefreshData.AfterLoadDFMValues();
         this.WebMainMenu1.AfterLoadDFMValues();
@@ -43001,7 +43063,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addField("WebLabel1",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
     $r.addField("WebLabel2",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
     $r.addField("wcbGenres",pas["WEBLib.StdCtrls"].$rtti["TComboBox"]);
-    $r.addField("wcbTitles",pas["WEBLib.StdCtrls"].$rtti["TComboBox"]);
     $r.addField("lblEmptyEPG",pas["WEBLib.StdCtrls"].$rtti["TLabel"]);
     $r.addField("ByAll",pas["WEBLib.Menus"].$rtti["TMenuItem"]);
     $r.addField("ByChannel",pas["WEBLib.Menus"].$rtti["TMenuItem"]);
@@ -43026,6 +43087,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addField("weTitleSearch",pas["WEBLib.StdCtrls"].$rtti["TEdit"]);
     $r.addField("WebTimer1",pas["WEBLib.ExtCtrls"].$rtti["TTimer"]);
     $r.addField("WebTimer2",pas["WEBLib.ExtCtrls"].$rtti["TTimer"]);
+    $r.addField("WebHTMLForm1",pas["WEBLib.ExtCtrls"].$rtti["THTMLForm"]);
     $r.addMethod("ClearFilterLists",0,[]);
     $r.addMethod("SetNewCapturesFixedRow",0,[]);
     $r.addMethod("EPGGetCellClass",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint],["AField",pas.DB.$rtti["TField"]],["AValue",rtl.string],["AClassName",rtl.string,1]]);
@@ -43047,7 +43109,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addMethod("ByGenreClick",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("wcbGenresChange",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("ByTitleClick",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
-    $r.addMethod("wcbTitlesChange",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("byTypeClick",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("ByAllClick",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("ByChannelClick",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
@@ -43057,7 +43118,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addMethod("WIDBCDSIDBError",0,[["DataSet",pas.DB.$rtti["TDataSet"]],["opCode",pas["WEBLib.IndexedDb"].$rtti["TIndexedDbOpCode"]],["errorName",rtl.string],["errorMsg",rtl.string]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("NewCapturesGetCellData",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint],["AField",pas.DB.$rtti["TField"]],["AValue",rtl.string,1]]);
     $r.addMethod("wcbGenresFocusOut",0,[["Sender",pas.System.$rtti["TObject"]]]);
-    $r.addMethod("wcbTitlesFocusOut",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("wcbChannelsFocusOut",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("btnOptOKClick",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("btnSchdRefrshClick",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
@@ -43066,7 +43126,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addMethod("wcbTypesFocusOut",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("weTitleSearchChange",0,[["Sender",pas.System.$rtti["TObject"]]]);
     $r.addMethod("WebTimer1Timer",0,[["Sender",pas.System.$rtti["TObject"]]]);
-    $r.addMethod("WebTimer2Timer",0,[["Sender",pas.System.$rtti["TObject"]]]);
+    $r.addMethod("WebTimer2Timer",0,[["Sender",pas.System.$rtti["TObject"]]],null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("weTitleSearchClick",0,[["Sender",pas.System.$rtti["TObject"]]]);
   });
   this.CWRmainFrm = null;

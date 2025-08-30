@@ -843,31 +843,6 @@ object CWRmainFrm: TCWRmainFrm
         OnFocusOut = wcbGenresFocusOut
         ItemIndex = -1
       end
-      object wcbTitles: TWebComboBox
-        AlignWithMargins = True
-        Left = 3
-        Top = 31
-        Width = 144
-        Height = 30
-        Align = alClient
-        ElementClassName = 'form-select'
-        ElementFont = efCSS
-        Font.Charset = ANSI_CHARSET
-        Font.Color = clBlack
-        Font.Height = -19
-        Font.Name = 'Arial'
-        Font.Style = []
-        HeightStyle = ssAuto
-        HeightPercent = 100.000000000000000000
-        ParentFont = False
-        Role = 'combobox'
-        Visible = False
-        WidthStyle = ssPercent
-        WidthPercent = 100.000000000000000000
-        OnChange = wcbTitlesChange
-        OnFocusOut = wcbTitlesFocusOut
-        ItemIndex = -1
-      end
       object wcbChannels: TWebComboBox
         AlignWithMargins = True
         Left = 3
@@ -923,21 +898,35 @@ object CWRmainFrm: TCWRmainFrm
           'Movie'
           'Other')
       end
-      object weTitleSearch: TWebEdit
+      object WebHTMLForm1: TWebHTMLForm
         Left = 0
         Top = 28
         Width = 150
         Height = 47
+        Action = ''
         Align = alClient
-        ChildOrder = 6
-        ElementClassName = 'form-control'
         ElementFont = efCSS
-        HeightStyle = ssAuto
-        HeightPercent = 100.000000000000000000
-        Visible = False
-        WidthPercent = 100.000000000000000000
-        OnChange = weTitleSearchChange
-        OnClick = weTitleSearchClick
+        object weTitleSearch: TWebEdit
+          Left = 0
+          Top = 0
+          Width = 150
+          Height = 47
+          Align = alClient
+          AutoCompletion = acNone
+          AutoFocus = True
+          AutoSelect = False
+          ChildOrder = 6
+          EditType = weSearch
+          ElementClassName = 'form-control'
+          ElementFont = efCSS
+          HeightStyle = ssAuto
+          HeightPercent = 100.000000000000000000
+          HideSelection = False
+          Visible = False
+          WidthPercent = 100.000000000000000000
+          OnChange = weTitleSearchChange
+          OnClick = weTitleSearchClick
+        end
       end
     end
     object btnRefreshData: TWebSpeedButton

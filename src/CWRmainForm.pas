@@ -1,5 +1,4 @@
 unit CWRmainForm;
-{$Define TitleSearch}
 
                        { TODO : Add search function to Listings (and History?) }
                        { TODO : Add item deletion to Scheduled list }
@@ -50,7 +49,6 @@ type
   WebLabel1: TWebLabel;
   WebLabel2: TWebLabel;
   wcbGenres: TWebComboBox;
-  wcbTitles: TWebComboBox;
   lblEmptyEPG: TWebLabel;
   ByAll: TMenuItem;
   ByChannel: TMenuItem;
@@ -75,6 +73,7 @@ type
     weTitleSearch: TWebEdit;
     WebTimer1: TWebTimer;
     WebTimer2: TWebTimer;
+    WebHTMLForm1: TWebHTMLForm;
   procedure ClearFilterLists;
   procedure SetNewCapturesFixedRow;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
@@ -103,7 +102,6 @@ type
   [async] procedure ByGenreClick(Sender: TObject);
   [async] procedure wcbGenresChange(Sender: TObject);
   [async] procedure ByTitleClick(Sender: TObject);
-  [async] procedure wcbTitlesChange(Sender: TObject);
   [async] procedure byTypeClick(Sender: TObject);
   [async] procedure ByAllClick(Sender: TObject);
   [async] procedure ByChannelClick(Sender: TObject);
@@ -115,7 +113,6 @@ type
     procedure NewCapturesGetCellData(Sender: TObject; ACol, ARow: Integer;
       AField: TField; var AValue: string);
     procedure wcbGenresFocusOut(Sender: TObject);
-    procedure wcbTitlesFocusOut(Sender: TObject);
     procedure wcbChannelsFocusOut(Sender: TObject);
   [async] procedure btnOptOKClick(Sender: TObject);
   [async] procedure btnSchdRefrshClick(Sender: TObject);
@@ -124,7 +121,7 @@ type
     procedure wcbTypesFocusOut(Sender: TObject);
     procedure weTitleSearchChange(Sender: TObject);
     procedure WebTimer1Timer(Sender: TObject);
-    procedure WebTimer2Timer(Sender: TObject);
+    [async] procedure WebTimer2Timer(Sender: TObject);
     procedure weTitleSearchClick(Sender: TObject);
 private
   { Private declarations }
@@ -223,19 +220,6 @@ begin
   wcbGenres.Hide;
 end;
 
-procedure TCWRmainFrm.wcbTitlesChange(Sender: TObject);
-begin
-  Log('wcbTitles.Text: ' + wcbTitles.Text);
-  ByTitle.Checked := wcbTitles.Text <> 'All';
-  SetFilters;
-end;
-
-procedure TCWRmainFrm.wcbTitlesFocusOut(Sender: TObject);
-begin
-  pnlFilterSelection.Hide;
-  wcbTitles.Hide;
-end;
-
 procedure TCWRmainFrm.wcbTypesChange(Sender: TObject);
 begin
   Log('wcbTypes.Text: ' + wcbTypes.Text);
@@ -252,23 +236,27 @@ end;
 procedure TCWRmainFrm.WebTimer2Timer(Sender: TObject);
 begin
   WebTimer2.Enabled := False;
-  Log('weTitleSearch.Text: ' + weTitleSearch.Text);
-  SearchFilter := weTitleSearch.Text;
-  SetFilters;
+  if not ByTitle.Checked then Exit;
+  ByTitle.Checked := weTitleSearch.Text > '';
+  if ByTitle.Checked then
+  begin
+    Log('weTitleSearch.Text: ' + weTitleSearch.Text);
+    SearchFilter := weTitleSearch.Text;
+  end;
+  {$IfDef PAS2JS}await{$EndIf}(SetFilters);
   weTitleSearch.SetFocus;
 end;
 
 procedure TCWRmainFrm.weTitleSearchChange(Sender: TObject);
 begin
-  if WebTimer2.Enabled then
-  begin
-    WebTimer2.Enabled := False; // Restart timeout
-    WebTimer2.Enabled := True;
-  end;
+  WebTimer2.Interval := 1000;
+  WebTimer2.Enabled := False; // Restart timeout
+  WebTimer2.Enabled := True;
 end;
 
 procedure TCWRmainFrm.weTitleSearchClick(Sender: TObject);
 begin
+  WebTimer2.Interval := 10000;
   WebTimer2.Enabled := True;
 end;
 
@@ -501,18 +489,11 @@ begin
     if ByTitle.Checked then // Toggle off this filter
     begin
       ByTitle.Checked := False;
-    {$IfNDef TitleSearch}
-      wcbTitles.ItemIndex := -1;
-    {$Else}
       pnlFilterSelection.Hide;
       weTitleSearch.Hide;
-    {$EndIf}
       {$IfDef PAS2JS}await{$EndIf}(SetFilters);
     end else
     begin
-    {$IfNDef TitleSearch}
-      {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTitles, 'Title'));
-    {$Else}
       ByTitle.Checked := True;
       lblFilterSelect.Caption := 'Show Titles with:';
       pnlFilterSelection.BringToFront;
@@ -520,7 +501,6 @@ begin
       weTitleSearch.Clear;
       weTitleSearch.BringToFront;
       weTitleSearch.Show;
-    {$EndIf}
     end;
   finally
     ByTitle.OnClick := ByTitleClick;
@@ -936,7 +916,7 @@ var
 begin
   Log('====== SetupFilterLists started');
   sl := TStringList.Create;
-  for i := 1 to 3 do
+  for i := 1 to 2 do
   begin
     case i of
       1:  begin
@@ -944,14 +924,6 @@ begin
             cb := wcbGenres;
           end;
       2:  begin
-            {$IfNdef TitleSearch}
-            fn := 3;
-            cb := wcbTitles;
-            {$Else}
-            Continue;
-            {$EndIf}
-          end;
-      3:  begin
             fn := 1;
             cb := wcbChannels;
           end;
@@ -1011,7 +983,6 @@ begin
       IfThen(fn='Title', 'Title', 'Type')));
   ByAll.Checked := False;
   wcbGenres.Hide;
-  wcbTitles.Hide;
   wcbChannels.Hide;
   wcbTypes.Hide;
   weTitleSearch.Hide;
@@ -1041,11 +1012,7 @@ begin
   EPG.Columns[2].Title := IfThen(ByChannel.Checked, wcbChannels.Text + ' ')
     + IfThen(byType.Checked, wcbTypes.Text + ' ')
     + IfThen(ByGenre.Checked, wcbGenres.Text + ' ') + 'Programs'
-  {$IfNdef TitleSearch}
-    + IfThen(ByTitle.Checked, ' Titled ' + QuotedStr(wcbTitles.Text));
-  {$Else}
     + IfThen(ByTitle.Checked, ' w/Titles:' + QuotedStr('*' + SearchFilter + '*'));
-  {$EndIf}
   EPG.ColWidths[0] := IfThen(ByChannel.Checked, 0, 75);
   if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
   WIDBCDS.Filtered := False;
@@ -1053,11 +1020,7 @@ begin
   fltr := '';
   if ByGenre.Checked then fltr := fltr + ' and genres like '
     + QuotedStr('%"'+ReplaceStr(wcbGenres.Text, '/', '_')+'"%');
-  {$IfNdef TitleSearch}
-  if ByTitle.Checked then fltr := fltr + ' and Title = ' + QuotedStr(wcbTitles.Text);
-  {$Else}
   if ByTitle.Checked then fltr := fltr + ' and Title like ' + QuotedStr('%' + SearchFilter + '%');
-  {$EndIf}
   if ByChannel.Checked then fltr := fltr + ' and PSIP = ' + QuotedStr(wcbChannels.Text);
   if ByType.Checked then fltr := fltr + ' and Class = '
     + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
