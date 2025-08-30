@@ -400,7 +400,7 @@ begin
   begin
     TWebLocalStorage.SetValue(NUMDAYS, cbNumDisplayDays.Text);
     Log('New number EPG Display Days: ' + cbNumDisplayDays.Text);
-    WIDBCDS.Close;
+//    WIDBCDS.Close; // Needed???
     ClearFilterLists;
     {$IfDef PAS2JS}await{$EndIf}(SetupWIDBCDS);
     {$IfDef PAS2JS}await{$EndIf}(ReFreshListings);
@@ -427,7 +427,7 @@ begin
 end;
 
 procedure TCWRmainFrm.ByAllClick(Sender: TObject);
-var x: string;
+//var x: string;
 begin
   Log('ByAllClick called');
   ByAll.OnClick := nil;
@@ -446,13 +446,11 @@ begin
     begin
       {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
       WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
-//      {$IfDef PAS2JS}EPG.Row := 1{$EndIf};
+      {$IfDef PAS2JS}EPG.Row := 1{$EndIf};
 //      x := EPG.Cells[3,1];
       Log('++ ^Rec EPG.Row: ' + EPG.Cells[3,1]);
       Log('++ WIDBCDS.RecNo: ' + WIDBCDS.RecNo.ToString);
-//      {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.DisableControls);
     end;
-//  EPG.Enabled := True;
   finally
     ByAll.OnClick := ByAllClick;
     Log('ByAllClick finished');
@@ -589,7 +587,7 @@ var
       console.log('Performing OAuth');
       {$IFDef PAS2JS} await {$ENDIF}(ShowPlsWait('Select Login Credentials'));
       TAwait.ExecP<TJSPromiseResolver> (WebRESTClient1.Authenticate);
-      pnlWaitPls.Hide;
+//      pnlWaitPls.Hide;
     end;
     rq := TAwait.ExecP<TJSXMLHttpRequest> (WebRESTClient1.httprequest('GET','https://www.googleapis.com/drive/v3/about/?fields=kind,user'));
     if rq.Status = 200 then
@@ -691,6 +689,8 @@ begin
 
         if Reply <> '' then  // Got a response
         begin
+          // Reshow message in case lost during OAuth
+          {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing ' + Title));
           Log(TableFile + ' starts: ' + copy(Reply,1,50));
           FillTable(WSG, Reply);
         end
@@ -784,8 +784,8 @@ begin
     Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
     WebDataSource1.DataSet := WIDBCDS;
     {$IfDef PAS2JS}await{$EndIf}(LogDataRange);
-//    if WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
-//      WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
+    if WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
+      WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
     Log('WIDBCDS Controls are ' + IfThen(WIDBCDS.ControlsDisabled,'NOT ') + 'Enabled');
     Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
     Log('========= Finished LoadWIDBCDS');
@@ -1070,8 +1070,6 @@ begin
   {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
   WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
   EPG.EndUpdate;
-//  {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.DisableControls);
-//  EPG.Refresh;
   EPG.Show;
   pnlWaitPls.Hide;
   EPG.BringToFront;
@@ -1102,7 +1100,6 @@ begin
   if (WIDBCDS.RecordCount > 0) and (TotalAvailableDays >= 0) then
   begin
     {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + Min(StrToIntDef(cbNumDisplayDays.Text, 1), TotalAvailableDays).ToString + '-day Listing.'));
-//    EPG.Refresh;
     {$IfDef PAS2JS}await{$EndIf}(ByAllClick(Self));
     if not EPG.Visible then EPG.Show;
   end
@@ -1111,7 +1108,6 @@ begin
       + #13#13'To watch the Log, first switch to'
       + #13'View Log and then use Refresh Data.'
       + #13'(Recommended _only_ in case of severe hang issue)',mtInformation, [mbOK]));
-//  if not EPG.Visible then EPG.Show;
   pnlListings.BringToFront;
   Log(' ======== RefreshListings finished');
 end;
