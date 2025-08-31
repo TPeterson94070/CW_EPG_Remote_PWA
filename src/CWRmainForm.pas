@@ -122,7 +122,6 @@ type
     procedure weTitleSearchChange(Sender: TObject);
     procedure WebTimer1Timer(Sender: TObject);
     [async] procedure WebTimer2Timer(Sender: TObject);
-    procedure weTitleSearchClick(Sender: TObject);
 private
   { Private declarations }
   [async] procedure LogDataRange;
@@ -236,27 +235,18 @@ end;
 procedure TCWRmainFrm.WebTimer2Timer(Sender: TObject);
 begin
   WebTimer2.Enabled := False;
+  if not (weTitleSearch.Text > '') then Exit;
   if not ByTitle.Checked then Exit;
-  ByTitle.Checked := weTitleSearch.Text > '';
-  if ByTitle.Checked then
-  begin
-    Log('weTitleSearch.Text: ' + weTitleSearch.Text);
-    SearchFilter := weTitleSearch.Text;
-  end;
+  Log('weTitleSearch.Text: ' + weTitleSearch.Text);
+  SearchFilter := weTitleSearch.Text;
   {$IfDef PAS2JS}await{$EndIf}(SetFilters);
   weTitleSearch.SetFocus;
 end;
 
 procedure TCWRmainFrm.weTitleSearchChange(Sender: TObject);
 begin
-  WebTimer2.Interval := 1000;
+  WebTimer2.Interval := 2000;
   WebTimer2.Enabled := False; // Restart timeout
-  WebTimer2.Enabled := True;
-end;
-
-procedure TCWRmainFrm.weTitleSearchClick(Sender: TObject);
-begin
-  WebTimer2.Interval := 10000;
   WebTimer2.Enabled := True;
 end;
 

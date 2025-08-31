@@ -925,7 +925,6 @@ object CWRmainFrm: TCWRmainFrm
           Visible = False
           WidthPercent = 100.000000000000000000
           OnChange = weTitleSearchChange
-          OnClick = weTitleSearchClick
         end
       end
     end
