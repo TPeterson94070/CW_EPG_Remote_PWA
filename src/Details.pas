@@ -43,25 +43,9 @@ uses CWRmainForm;
 
 {$R *.dfm}
 
-//procedure TDetailsFrm.WebFormShow(Sender: TObject);
-//begin
-//  btnReturn.SetFocus;
-////  if CWRmainFrm.WIDBCDS.ControlsDisabled then
-//  begin
-////    console.log('Background enabling EPG');
-////    CWRmainFrm.WIDBCDS.EnableControls;
-////    CWRmainFrm.EPG.Refresh;
-////    CWRmainFrm.EPG.Show;
-////    console.log('Finished eanbling EPG');
-//  end
-////  else console.log('WIDBCDS controls were enabled!');
-//end;
-
 procedure TDetailsFrm.WebFormShow(Sender: TObject);
 begin
-//  CWRmainFrm.WIDBCDS.EnableControls;
-  CWRmainFrm.EPG.Show;
-
+  btnReturn.SetFocus;
 end;
 
 end.

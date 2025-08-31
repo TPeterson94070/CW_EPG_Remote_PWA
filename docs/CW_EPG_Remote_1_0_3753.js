@@ -39961,7 +39961,7 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
       pas["WEBLib.Forms"].TForm.$final.call(this);
     };
     this.WebFormShow = function (Sender) {
-      pas.CWRmainForm.CWRmainFrm.EPG.Show();
+      this.btnReturn.SetFocus();
     };
     this.LoadDFMValues = function () {
       pas["WEBLib.Forms"].TCustomForm.LoadDFMValues.call(this);
