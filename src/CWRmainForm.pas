@@ -1370,8 +1370,6 @@ begin
     Log('========== EPGClickCell() called from Row ' + ARow.ToString);
     WIDBCDSID := WIDBCDS.Fields[0].AsString;
     CurrentRec := WIDBCDS.RecNo;
-//    WIDBCDS.Locate('id',CurrentID,[]);
-//    CurrentRec := WIDBCDS.RecNo;
     // Quit Combobox if still open
     if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
     // Speed up form opening
@@ -1380,7 +1378,7 @@ begin
     WIDBCDS.RecNo := CurrentID.ToInteger;
     Log('========== Set WIDBCDS RecNo: ' + CurrentID);
     try
-      EPG.Hide;
+//      EPG.Hide;
       DetailsFrm := TDetailsFrm.Create(Self);
       Log('========== finished TDetailsFrm.Create(nil) ');
       DetailsFrm.Popup := True;
@@ -1415,7 +1413,7 @@ begin
       DetailsFrm.mmDescription.Text := WIDBCDS.Fields[5].AsString;
     // execute form and wait for close
       Log('========== starting DetailsFrm.Execute ');
-      pnlWaitPls.Hide;
+//      pnlWaitPls.Hide;
       TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
       Log('========== finished DetailsFrm.Execute ');
       if DetailsFrm.ModalResult = mrOk then
@@ -1460,8 +1458,8 @@ begin
       Log('========== EPGClickCell() Finished with Details form');
       DetailsFrm.Free;
     end;
-    {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing List'));
-    Log('========== EPGClickCell() showing ''Refreshing List');
+//    {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing List'));
+//    Log('========== EPGClickCell() showing ''Refreshing List');
   //  {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
 //      WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
   //  {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
