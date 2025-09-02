@@ -760,8 +760,8 @@ begin
   finally
     Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
     {$IfDef PAS2JS}await{$EndIf}(LogDataRange);
-    if WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
-      WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
+//    if WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
+//      WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
     Log('WIDBCDS Controls are ' + IfThen(WIDBCDS.ControlsDisabled,'NOT ') + 'Enabled');
     Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
     Log('========= Finished LoadWIDBCDS');

@@ -40677,8 +40677,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       } finally {
         $impl.Log("WIDBCDS is " + pas.StrUtils.IfThen(this.WIDBCDS.GetActive(),"NOT ","") + "closed");
         await this.LogDataRange();
-        if (this.WIDBCDS.ControlsDisabled()) await this.WIDBCDS.EnableControls();
-        this.WebTimer1.SetEnabled(true);
         $impl.Log("WIDBCDS Controls are " + pas.StrUtils.IfThen(this.WIDBCDS.ControlsDisabled(),"NOT ","") + "Enabled");
         $impl.Log("WIDBCDS RecordCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
             return this.p;
