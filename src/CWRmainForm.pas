@@ -560,7 +560,7 @@ var
       console.log('Performing OAuth');
       {$IFDef PAS2JS} await {$ENDIF}(ShowPlsWait('Select Login Credentials'));
       TAwait.ExecP<TJSPromiseResolver> (WebRESTClient1.Authenticate);
-//      pnlWaitPls.Hide;
+      {$IFDef PAS2JS} await {$ENDIF}(ShowPlsWait('Refreshing Selected DB'));
     end;
     rq := TAwait.ExecP<TJSXMLHttpRequest> (WebRESTClient1.httprequest('GET','https://www.googleapis.com/drive/v3/about/?fields=kind,user'));
     if rq.Status = 200 then
@@ -707,9 +707,14 @@ begin
     begin
       Log('LoadWIDBCDS, WIDBCDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
       Log('LoadWIDBCDS, Buffer Row Count: ' + BufferGrid.RowCount.ToString);
-      WIDBCDS.Edit;
-      {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EmptyDataSet);
-      Log('LoadWIDBCDS, After EmptyDataSet CDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
+      if WIDBCDS.RecordCount > 0 then
+      begin
+        WIDBCDS.Edit;
+        {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EmptyDataSet);
+        Log('LoadWIDBCDS, After EmptyDataSet CDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
+        WebDataSource1.DataSet := WIDBCDS;
+        Log('LoadWIDBCDS, Reconnected DataSource');
+      end;
       for j := 1 to BufferGrid.RowCount - 1 do
       try
         // Lose superfluous <">
@@ -735,7 +740,6 @@ begin
             {'rose'}TypeClass[Rerun]);  // Otherwise "rerun"
         WIDBCDS.Fields[15].Value := AColor;
         TAwait.ExecP<Boolean>(WIDBCDS.PostAsync);
-//        if t > Now + StrToInt(cbNumDisplayDays.Text) + 1 then Break;
       except
         on E:Exception do
         begin
@@ -755,7 +759,6 @@ begin
     end;
   finally
     Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
-    WebDataSource1.DataSet := WIDBCDS;
     {$IfDef PAS2JS}await{$EndIf}(LogDataRange);
     if WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
       WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly

@@ -40607,13 +40607,17 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
             }, set: function (v) {
               this.p.FRowCount = v;
             }}));
-          this.WIDBCDS.Edit();
-          await this.WIDBCDS.EmptyDataSet();
-          $impl.Log("LoadWIDBCDS, After EmptyDataSet CDS.RecordCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
-              return this.p;
-            }, set: function (v) {
-              this.p = v;
-            }}));
+          if (this.WIDBCDS.GetRecordCount() > 0) {
+            this.WIDBCDS.Edit();
+            await this.WIDBCDS.EmptyDataSet();
+            $impl.Log("LoadWIDBCDS, After EmptyDataSet CDS.RecordCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
+                return this.p;
+              }, set: function (v) {
+                this.p = v;
+              }}));
+            this.WebDataSource1.SetDataSet(this.WIDBCDS);
+            $impl.Log("LoadWIDBCDS, Reconnected DataSource");
+          };
           for (var $l = 1, $end = this.BufferGrid.FRowCount - 1; $l <= $end; $l++) {
             j = $l;
             try {
@@ -40672,7 +40676,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         };
       } finally {
         $impl.Log("WIDBCDS is " + pas.StrUtils.IfThen(this.WIDBCDS.GetActive(),"NOT ","") + "closed");
-        this.WebDataSource1.SetDataSet(this.WIDBCDS);
         await this.LogDataRange();
         if (this.WIDBCDS.ControlsDisabled()) await this.WIDBCDS.EnableControls();
         this.WebTimer1.SetEnabled(true);
@@ -41628,6 +41631,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           window.console.log("Performing OAuth");
           await $Self.ShowPlsWait("Select Login Credentials");
           await $Self.WebRESTClient1.Authenticate();
+          await $Self.ShowPlsWait("Refreshing Selected DB");
         };
         rq = await $Self.WebRESTClient1.HttpRequest("GET","https://www.googleapis.com/drive/v3/about/?fields=kind,user","","",null);
         if (rq.status === 200) {
