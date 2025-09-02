@@ -41045,11 +41045,11 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           this.weTitleSearch.Hide();
           await this.SetFilters();
         } else {
-          this.ByTitle.SetChecked(true);
           this.wcbGenres.Hide();
           this.wcbChannels.Hide();
           this.wcbTypes.Hide();
           this.lblFilterSelect.SetCaption("Show Titles with:");
+          if ($impl.VisiblePanelNum !== 0) await this.SetPage(0);
           this.pnlFilterSelection.BringToFront();
           this.pnlFilterSelection.Show();
           this.weTitleSearch.Clear();
@@ -41222,6 +41222,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.wcbTypes.Hide();
     };
     this.weTitleSearchChange = function (Sender) {
+      this.ByTitle.SetChecked(true);
       this.WebTimer2.SetInterval(2000);
       this.WebTimer2.SetEnabled(false);
       this.WebTimer2.SetEnabled(true);
@@ -41232,7 +41233,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     };
     this.WebTimer2Timer = async function (Sender) {
       this.WebTimer2.SetEnabled(false);
-      if (!(this.weTitleSearch.GetText() > "")) return;
+      if (this.weTitleSearch.GetText() === "") return;
       if (!this.ByTitle.FChecked) return;
       $impl.Log("weTitleSearch.Text: " + this.weTitleSearch.GetText());
       $impl.SearchFilter = this.weTitleSearch.GetText();

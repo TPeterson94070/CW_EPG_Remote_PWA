@@ -235,7 +235,7 @@ end;
 procedure TCWRmainFrm.WebTimer2Timer(Sender: TObject);
 begin
   WebTimer2.Enabled := False;
-  if not (weTitleSearch.Text > '') then Exit;
+  if weTitleSearch.Text = '' then Exit;
   if not ByTitle.Checked then Exit;
   Log('weTitleSearch.Text: ' + weTitleSearch.Text);
   SearchFilter := weTitleSearch.Text;
@@ -245,6 +245,7 @@ end;
 
 procedure TCWRmainFrm.weTitleSearchChange(Sender: TObject);
 begin
+  ByTitle.Checked := True;
   WebTimer2.Interval := 2000;
   WebTimer2.Enabled := False; // Restart timeout
   WebTimer2.Enabled := True;
@@ -484,11 +485,12 @@ begin
       {$IfDef PAS2JS}await{$EndIf}(SetFilters);
     end else
     begin
-      ByTitle.Checked := True;
+//      ByTitle.Checked := True;
       wcbGenres.Hide;
       wcbChannels.Hide;
       wcbTypes.Hide;
       lblFilterSelect.Caption := 'Show Titles with:';
+      if VisiblePanelNum <> 0 then {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
       pnlFilterSelection.BringToFront;
       pnlFilterSelection.Show;
       weTitleSearch.Clear;
