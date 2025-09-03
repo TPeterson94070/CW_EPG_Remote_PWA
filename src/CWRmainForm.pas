@@ -1585,7 +1585,7 @@ begin
   NewCaptures.Cells[0,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('PSIP').AsString;
   NewCaptures.Cells[1,NewCaptures.RowCount-1] := FormatDateTime('mm/dd hh:nn',RecordStart);
   NewCaptures.Cells[2,NewCaptures.RowCount-1] := FormatDateTime('mm/dd hh:nn',RecordEnd);
-  NewCaptures.Cells[3,NewCaptures.RowCount-1] := ReplaceStr(WIDBCDS.FieldByName('Title').AsString, '&', '&&');
+  NewCaptures.Cells[3,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('Title').AsString;
   NewCaptures.Cells[4,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('SubTitle').AsString;
   NewCaptures.Cells[5,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('Time').AsString.Split(['--'])[0]; // EPG StartTime (HTPC TZ)
   NewCaptures.Cells[6,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('ProgramID').AsString; // Episode No.
