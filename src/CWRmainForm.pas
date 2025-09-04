@@ -122,6 +122,9 @@ type
     procedure weTitleSearchChange(Sender: TObject);
     procedure WebTimer1Timer(Sender: TObject);
     [async] procedure WebTimer2Timer(Sender: TObject);
+    procedure CapturesGetCellData(Sender: TObject; ACol, ARow: Integer;
+      AField: TField; var AValue: string);
+    [async] procedure CapturesClickCell(Sender: TObject; ACol, ARow: Integer);
 private
   { Private declarations }
   [async] procedure LogDataRange;
@@ -155,6 +158,7 @@ private
   [async] procedure SetFilters;
   [async] procedure ShowPlsWait(PlsWaitCap: string);
   [async] procedure SetupFilterLists;
+  [async] procedure ShowItemDetails(ItemNo: Integer; DoCapture: Boolean = True);
 public
   { Public declarations }
 end;
@@ -165,7 +169,7 @@ var
 implementation
 
 uses
-  TypInfo, System.Math, DateUtils, SchedUnit2, Details;
+  TypInfo, System.Math, System.Variants, DateUtils, SchedUnit2, Details;
 
 {$R *.dfm}
 
@@ -519,6 +523,46 @@ begin
     byType.OnClick := byTypeClick;
     Log('byTypeClick finished');
   end;
+end;
+
+procedure TCWRmainFrm.CapturesClickCell(Sender: TObject; ACol, ARow: Integer);
+var
+  st: TDateTime;
+  SaveFilter: string;
+  SaveFilterState: Boolean;
+
+begin
+  Captures.OnClickCell := nil;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  SaveFilter := WIDBCDS.Filter;
+  SaveFilterState := WIDBCDS.Filtered;
+  try
+    Log('========== CapturesClickCell() called from Row ' + ARow.ToString);
+    // Find Capture Item in EPG
+    st := TTimeZone.Local.ToUniversalTime(StrToDateTime(Captures.Cells[3,ARow] + ' ' + Captures.Cells[4,ARow]));
+//    WIDBCDS.Locate('StartTime;Title',VarArrayOf([st, Captures.Cells[8,ARow]]),[]);
+    WIDBCDS.Filtered := False;
+    WIDBCDS.Filter := 'Title like ' + QuotedStr(Captures.Cells[8,ARow])
+      + ' and StartTime > ' + Double(st-OneMinute).ToString
+      + ' and StartTime < ' + Double(st+OneMinute).ToString;
+    WIDBCDS.Filtered := True;
+    WIDBCDS.FindFirst;
+    {$IFDEF PAS2JS} await {$ENDIF}(ShowItemDetails(WIDBCDS.RecNo, False)); // Call w/invisible Add Capture button
+  finally
+    WIDBCDS.Filtered := False;
+    WIDBCDS.Filter := SaveFilter;
+    WIDBCDS.Filtered := SaveFilterState;
+    Captures.OnClickCell := CapturesClickCell;
+    Log('========== EPGClickCell() finished');
+  end;
+end;
+
+procedure TCWRmainFrm.CapturesGetCellData(Sender: TObject; ACol, ARow: Integer;
+  AField: TField; var AValue: string);
+begin
+  if ARow = 0 then Exit;
+  if ACol = 2 then AValue := Copy(AValue,4,10);
+  if ACol = 3 then AValue := FormatDateTime('mm/dd', StrToDate(AValue));
 end;
 
 procedure TCWRmainFrm.cbNumDisplayDaysChange(Sender: TObject);
@@ -1083,7 +1127,8 @@ end;
 
 procedure TCWRmainFrm.ReloadSG(SG: TWebStringGrid; LSName: string);
 var i: Integer;
-  sl: TStringList;
+    sl: TStringList;
+    st, et: TDateTime;
 begin
   SG.RowCount := 1;
   if TWebLocalStorage.GetValue(LSName + '1') > '' then  // have stored value(s)
@@ -1099,6 +1144,30 @@ begin
     sl.Free;
   end;
   Log(SG.Name + ' Row Count: ' + SG.RowCount.ToString);
+  if SG.RowCount > 1 then  // have stored value(s)
+  begin
+    // Discard stale entries (End DateTime < now)
+    for i := SG.RowCount-1 downto 1 do
+      if SG.Cells[3,i] > '' then // not null row
+      begin
+        if SG = Captures then
+        begin
+          st := StrToDateTime(SG.Cells[3,i] + ' ' + SG.Cells[4,i]);
+          et := StrToDateTime(SG.Cells[3,i] + ' ' + SG.Cells[5,i]);
+        end
+        else
+        begin
+          st := StrToDateTime(SG.Cells[1,i]);
+          et := StrToDateTime(SG.Cells[2,i]);
+        end;
+        if et < st then et := et + 1;     // wraps midnight
+        if et < now then
+        begin
+          Log('Removing stale entry, endtime: ' + DateTimeToStr(et));
+          SG.RemoveRow(i);
+        end;
+      end;
+  end;
 end;
 
 procedure TCWRmainFrm.SetNewCapturesFixedRow;
@@ -1117,46 +1186,13 @@ end;
 procedure TCWRmainFrm.tbCapturesShow;
 var
   i: Integer;
-  st, et: TDateTime;
   UserMsg: string;
 
 begin
-//  btnSchdRefrsh.BringToFront;
   btnSchdRefrsh.Show;
   ReloadSG(Captures, 'sl');
-  if Captures.RowCount > 1 then  // have stored value(s)
-  begin
-    // Discard stale entries (End DateTime < now)
-    for i := Captures.RowCount-1 downto 1 do
-      if Captures.Cells[3,i] > '' then // not null row
-      begin
-        st := StrToDateTime(Captures.Cells[3,i] + ' ' + Captures.Cells[4,i]);
-        et := StrToDateTime(Captures.Cells[3,i] + ' ' + Captures.Cells[5,i]);
-        if et < st then et := et + 1;     // wraps midnight
-        if et < now then
-        begin
-          console.log('Removing stale entry, endtime: ' + DateTimeToStr(et));
-          Captures.RemoveRow(i);
-        end;
-      end;
-  end;
   ReloadSG(NewCaptures, 'nc');
   SetNewCapturesFixedRow;
-  if NewCaptures.RowCount > 1 then  // have stored value(s)
-  begin
-    // Discard stale entries (End DateTime < now)
-    for i := NewCaptures.RowCount-1 downto 1 do
-      if NewCaptures.Cells[0,i] > '' then // not null row
-      begin
-        st := StrToDateTime(NewCaptures.Cells[1,i]);
-        et := StrToDateTime(NewCaptures.Cells[2,i]);
-        if et < now then
-        begin
-          console.log('Removing stale entry, endtime: ' + DateTimeToStr(et));
-          NewCaptures.RemoveRow(i);
-        end;
-      end;
-  end;
   for i := 0 to Captures.ColCount-1 do Captures.ColWidths[i] := 0;
   Captures.ColWidths[1] := 80;  // Computer
   Captures.ColWidths[2] := 100; // Tuner
@@ -1166,9 +1202,9 @@ begin
   Captures.ColWidths[6] := 70; // Channel
   Captures.ColWidths[8] := Captures.ClientWidth; // Title
   for i := 1 to 6 do Captures.ColAlignments[i] := taCenter;
-  Log('AllCapsGrid.RowCount after stale check: ' + Captures.RowCount.ToString);
+  Log('Captures.RowCount after stale check: ' + Captures.RowCount.ToString);
 
-  if (Captures.RowCount = 2) and (Captures.Cells[25,1] = '-1') then  // Valid list, no captures, reload??
+  if (Captures.RowCount = 2) and (Captures.Cells[25,1] = '-1') then  // Valid list w/no captures, reload??
   begin
     Log('No captures listed, prompting for refresh');
     UserMsg := 'There were no scheduled items at last fetch.';
@@ -1353,125 +1389,116 @@ procedure TCWRmainFrm.EPGGetCellClass(Sender: TObject; ACol,
 { show listings row in color coded for type based on current IDB record }
 begin
   if ARow = 0 then exit;
-//  if EPG.Cells[3,ARow] = WIDBCDS.Fields[0].AsString then  {ids=}
-//    AClassName := EPG.Cells[4,ARow] // WIDBCDS.Fields[15].AsString
-//  else AClassName := 'white'; // Should not occur!
-    AClassName := {EPG.Cells[4,ARow] //} WIDBCDS.Fields[15].AsString
+  AClassName := WIDBCDS.Fields[15].AsString
 end;
 
-procedure TCWRmainFrm.EPGClickCell(Sender: TObject; ACol, ARow: Integer);
+procedure TCWRmainFrm.ShowItemDetails(ItemNo: Integer; DoCapture: Boolean = True);
 var
   DetailsFrm: TDetailsFrm;
   SchedFrm: TSchedForm;
   x: TArray<string>;
-  CurrentID, WIDBCDSID: string;
-  CurrentRec: Integer;
+begin
+  // Speed up form opening
+  if not WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.DisableControls);
+  Log('========== finished WIDBCDS.DisableControls ');
+  WIDBCDS.RecNo := ItemNo;
+  Log('========== Set WIDBCDS RecNo: ' + ItemNo.ToString);
+  try
+    DetailsFrm := TDetailsFrm.Create(Self);
+    Log('========== finished TDetailsFrm.Create(Self) ');
+    DetailsFrm.Popup := True;
+    DetailsFrm.Border := fbSingle;
+    Log('========== starting DetailsFrm.Load ');
+    // load file HTML template + controls
+    try
+      TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load);
+      Log('========== finished DetailsFrm.Load ');
+    except
+      on E:Exception do
+      Log('Exception from DetailsFrm.Load: ' + E.Message);
+    end;
+    // init controls after loading
+    DetailsFrm.mmTitle.Text := WIDBCDS.Fields[3].AsString;
+    DetailsFrm.mmSubTitle.Text := WIDBCDS.Fields[4].AsString;
+    DetailsFrm.lb11Time.Caption := WIDBCDS.Fields[2].AsString;
+    DetailsFrm.lb10Channel.Caption := WIDBCDS.Fields[1].AsString;
+    x := WIDBCDS.Fields[9].AsString.Split(['-']);                 // Parse 1st-air date
+    DetailsFrm.lb09OrigDate.Caption := IfThen(Length(x) = 3,      // Have 1st-air date
+      '1st Aired ' + x[1] + '/' + x[2] + '/' + RightStr(x[0],2),  // Use 1st-air date
+      IfThen(WIDBCDS.Fields[13].AsString > '',                    // Check Movie year
+      'Movie Yr ' + WIDBCDS.Fields[13].AsString,''));             // Use Movie year or nil
+    SetLabelStyle(DetailsFrm.lb02New, WIDBCDS.Fields[10].AsString <> '');
+    SetLabelStyle(DetailsFrm.lb08CC, WIDBCDS.Fields[11].AsString.Contains('cc'));
+    SetLabelStyle(DetailsFrm.lb03Stereo, WIDBCDS.Fields[11].AsString.Contains('stereo'));
+    SetLabelStyle(DetailsFrm.lb07Dolby, WIDBCDS.Fields[11].AsString.Contains('DD'));
+    DetailsFrm.lb04HD.Caption := 'SD';
+    if WIDBCDS.Fields[12].AsString > '' then
+      DetailsFrm.lb04HD.Caption := WIDBCDS.Fields[12].AsString.Split(['["HD ','"'])[1];
+    SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
+    DetailsFrm.mmDescription.Text := WIDBCDS.Fields[5].AsString;
+    // Allow capture request only for EPG
+    DetailsFrm.btnAddCap.Visible := DoCapture;
+    // execute form and wait for close
+    Log('========== starting DetailsFrm.Execute ');
+    TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
+    Log('========== finished DetailsFrm.Execute ');
+    if DetailsFrm.ModalResult = mrOk then  // Only poss if DoCapture=True
+    begin
+      SchedFrm := TSchedForm.Create(Self);
+      Log('========== finished TSchedForm.Create(nil)');
+      SchedFrm.Caption := 'Schedule Capture Event';
+      SchedFrm.Popup := True;
+      SchedFrm.Border := fbSingle;
+      try
+        // load file HTML template + controls
+        TAwait.ExecP<TSchedForm>(SchedFrm.Load());
+        Log('========== finished SchedFrm.Load() ');
+      // init controls after loading
+        SchedFrm.mmTitle.Text := DetailsFrm.mmTitle.Text;
+        SchedFrm.mmSubTitle.Text := DetailsFrm.mmSubTitle.Text;
+        SchedFrm.mmDescription.Text := DetailsFrm.mmDescription.Text;
+        SchedFrm.lblChannelValue.Caption := DetailsFrm.lb10Channel.Caption;
+        // N.B.:  WIDBCDS DateTimes are UTC, but we need to specify HTPC's TZ for capture!
+        // So we decode the times from the "Time" field (format: mm/yy HH:nn--HH:nn)
+        x := string(DetailsFrm.lb11Time.Caption).Split([' ','--']);
+        SchedFrm.lblStartDateValue.Caption := x[0];
+        SchedFrm.tpStartTime.DateTime := StrToDateTime(x[0] + ' ' + x[1]);
+        SchedFrm.tpEndTime.DateTime := StrToDateTime(x[0] + ' ' + x[2]);
+        if SchedFrm.tpEndTime.DateTime < SchedFrm.tpStartTime.DateTime then  // wrapped midnight
+          SchedFrm.tpEndTime.DateTime := SchedFrm.tpEndTime.DateTime + 1;
+        Log('Finished setting up new form');
+        // execute form and wait for close
+        TAwait.ExecP<TModalResult>(SchedFrm.Execute);
+        Log('========== finished SchedFrm.Execute ');
+        if SchedFrm.ModalResult = mrOk then
+        begin
+          {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Saving Capture Request.'));
+          {$IfDef PAS2JS}await{$EndIf} (UpdateNewCaptures(SchedFrm.tpStartTime.DateTime, SchedFrm.tpEndTime.DateTime));
+        end;
+      finally
+        Log('========== EPGClickCell() Finished with Schedule form');
+        SchedFrm.Free;
+      end;
+    end;
+  finally
+    Log('========== EPGClickCell() Finished with Details form');
+    DetailsFrm.Free;
+  end;
+end;
+
+procedure TCWRmainFrm.EPGClickCell(Sender: TObject; ACol, ARow: Integer);
 
 begin
   EPG.OnClickCell := nil;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   try
-    CurrentID := EPG.Cells[3,ARow];
     Log('========== EPGClickCell() called from Row ' + ARow.ToString);
-    WIDBCDSID := WIDBCDS.Fields[0].AsString;
-    CurrentRec := WIDBCDS.RecNo;
     // Quit Combobox if still open
     if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
-    // Speed up form opening
-    if not WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.DisableControls);
-    Log('========== finished WIDBCDS.DisableControls ');
-    WIDBCDS.RecNo := CurrentID.ToInteger;
-    Log('========== Set WIDBCDS RecNo: ' + CurrentID);
-    try
-//      EPG.Hide;
-      DetailsFrm := TDetailsFrm.Create(Self);
-      Log('========== finished TDetailsFrm.Create(nil) ');
-      DetailsFrm.Popup := True;
-      DetailsFrm.Border := fbSingle;
-      Log('========== starting DetailsFrm.Load ');
-      // load file HTML template + controls
-      try
-        TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load);
-        Log('========== finished DetailsFrm.Load ');
-      except
-        on E:Exception do
-        Log('Exception from DetailsFrm.Load: ' + E.Message);
-      end;
-      // init controls after loading
-      DetailsFrm.mmTitle.Text := WIDBCDS.Fields[3].AsString;
-      DetailsFrm.mmSubTitle.Text := WIDBCDS.Fields[4].AsString;
-      DetailsFrm.lb11Time.Caption := WIDBCDS.Fields[2].AsString;
-      DetailsFrm.lb10Channel.Caption := WIDBCDS.Fields[1].AsString;
-      x := WIDBCDS.Fields[9].AsString.Split(['-']);                 // Parse 1st-air date
-      DetailsFrm.lb09OrigDate.Caption := IfThen(Length(x) = 3,      // Have 1st-air date
-        '1st Aired ' + x[1] + '/' + x[2] + '/' + RightStr(x[0],2),  // Use 1st-air date
-        IfThen(WIDBCDS.Fields[13].AsString > '',                    // Check Movie year
-        'Movie Yr ' + WIDBCDS.Fields[13].AsString,''));             // Use Movie year or nil
-      SetLabelStyle(DetailsFrm.lb02New, WIDBCDS.Fields[10].AsString <> '');
-      SetLabelStyle(DetailsFrm.lb08CC, WIDBCDS.Fields[11].AsString.Contains('cc'));
-      SetLabelStyle(DetailsFrm.lb03Stereo, WIDBCDS.Fields[11].AsString.Contains('stereo'));
-      SetLabelStyle(DetailsFrm.lb07Dolby, WIDBCDS.Fields[11].AsString.Contains('DD'));
-      DetailsFrm.lb04HD.Caption := 'SD';
-      if WIDBCDS.Fields[12].AsString > '' then
-        DetailsFrm.lb04HD.Caption := WIDBCDS.Fields[12].AsString.Split(['["HD ','"'])[1];
-      SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
-      DetailsFrm.mmDescription.Text := WIDBCDS.Fields[5].AsString;
-    // execute form and wait for close
-      Log('========== starting DetailsFrm.Execute ');
-//      pnlWaitPls.Hide;
-      TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
-      Log('========== finished DetailsFrm.Execute ');
-      if DetailsFrm.ModalResult = mrOk then
-      begin
-        SchedFrm := TSchedForm.Create(Self);
-        Log('========== finished TSchedForm.Create(nil)');
-        SchedFrm.Caption := 'Schedule Capture Event';
-        SchedFrm.Popup := True;
-        SchedFrm.Border := fbSingle;
-        try
-          // load file HTML template + controls
-          TAwait.ExecP<TSchedForm>(SchedFrm.Load());
-          Log('========== finished SchedFrm.Load() ');
-        // init controls after loading
-          SchedFrm.mmTitle.Text := DetailsFrm.mmTitle.Text;
-          SchedFrm.mmSubTitle.Text := DetailsFrm.mmSubTitle.Text;
-          SchedFrm.mmDescription.Text := DetailsFrm.mmDescription.Text;
-          SchedFrm.lblChannelValue.Caption := DetailsFrm.lb10Channel.Caption;
-          // N.B.:  WIDBCDS DateTimes are UTC, but we need to specify HTPC's TZ for capture!
-          // So we decode the times from the "Time" field (format: mm/yy HH:nn--HH:nn)
-          x := string(DetailsFrm.lb11Time.Caption).Split([' ','--']);
-          SchedFrm.lblStartDateValue.Caption := x[0];
-          SchedFrm.tpStartTime.DateTime := StrToDateTime(x[0] + ' ' + x[1]);
-          SchedFrm.tpEndTime.DateTime := StrToDateTime(x[0] + ' ' + x[2]);
-          if SchedFrm.tpEndTime.DateTime < SchedFrm.tpStartTime.DateTime then  // wrapped midnight
-            SchedFrm.tpEndTime.DateTime := SchedFrm.tpEndTime.DateTime + 1;
-          Log('Finished setting up new form');
-          // execute form and wait for close
-          TAwait.ExecP<TModalResult>(SchedFrm.Execute);
-          Log('========== finished SchedFrm.Execute ');
-          if SchedFrm.ModalResult = mrOk then
-          begin
-            {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Saving Capture Request.'));
-            {$IfDef PAS2JS}await{$EndIf} (UpdateNewCaptures(SchedFrm.tpStartTime.DateTime, SchedFrm.tpEndTime.DateTime));
-          end;
-        finally
-          Log('========== EPGClickCell() Finished with Schedule form');
-          SchedFrm.Free;
-        end;
-      end;
-    finally
-      Log('========== EPGClickCell() Finished with Details form');
-      DetailsFrm.Free;
-    end;
-//    {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing List'));
-//    Log('========== EPGClickCell() showing ''Refreshing List');
-  //  {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
-//      WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
-  //  {$IfDef PAS2JS}await{$EndIf}(EPG.Show);
+    {$IFDEF PAS2JS} await {$ENDIF}(ShowItemDetails(EPG.Cells[3,ARow].ToInteger));
   finally
     EPG.OnClickCell := EPGClickCell;
     Log('========== EPGClickCell() finished');
-    pnlWaitPls.Hide;
   end;
 end;
 
