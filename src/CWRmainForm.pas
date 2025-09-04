@@ -543,7 +543,7 @@ begin
 //    WIDBCDS.Locate('StartTime;Title',VarArrayOf([st, Captures.Cells[8,ARow]]),[]);
     WIDBCDS.Filtered := False;
     WIDBCDS.Filter := 'Title like ' + QuotedStr(Captures.Cells[8,ARow])
-      + ' and StartTime > ' + Double(st-OneMinute).ToString
+      + ' and StartTime > ' + Double(st-15*OneMinute).ToString   // Allow for generous padding
       + ' and StartTime < ' + Double(st+OneMinute).ToString;
     WIDBCDS.Filtered := True;
     WIDBCDS.FindFirst;

@@ -41135,7 +41135,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           }}));
         st = pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.StrToDateTime(this.Captures.GetCells(3,ARow) + " " + this.Captures.GetCells(4,ARow)),false);
         this.WIDBCDS.SetFiltered(false);
-        this.WIDBCDS.SetFilterText("Title like " + pas.SysUtils.QuotedStr(this.Captures.GetCells(8,ARow),"'") + " and StartTime > " + pas.SysUtils.TDoubleHelper.ToString$3.call({a: st - 6.9444444444444447E-4, get: function () {
+        this.WIDBCDS.SetFilterText("Title like " + pas.SysUtils.QuotedStr(this.Captures.GetCells(8,ARow),"'") + " and StartTime > " + pas.SysUtils.TDoubleHelper.ToString$3.call({a: st - (15 * 6.9444444444444447E-4), get: function () {
             return this.a;
           }, set: function (v) {
             rtl.raiseE("EPropReadOnly");
