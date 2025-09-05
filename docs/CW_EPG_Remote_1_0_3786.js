@@ -40754,8 +40754,16 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var i = 0;
       var UserMsg = "";
       this.btnSchdRefrsh.Show();
-      this.ReloadSG(this.Captures,"sl");
-      this.ReloadSG(this.NewCaptures,"nc");
+      this.ReloadSG({p: this, get: function () {
+          return this.p.Captures;
+        }, set: function (v) {
+          this.p.Captures = v;
+        }},"sl");
+      this.ReloadSG({p: this, get: function () {
+          return this.p.NewCaptures;
+        }, set: function (v) {
+          this.p.NewCaptures = v;
+        }},"nc");
       this.SetNewCapturesFixedRow();
       for (var $l = 0, $end = this.Captures.FColCount - 1; $l <= $end; $l++) {
         i = $l;
@@ -41080,6 +41088,16 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.btnSchdRefrshClick = async function (Sender) {
       await this.FetchCapReservations();
       await this.FetchNewCapRequests();
+      this.ReloadSG({p: this, get: function () {
+          return this.p.Captures;
+        }, set: function (v) {
+          this.p.Captures = v;
+        }},"sl");
+      this.ReloadSG({p: this, get: function () {
+          return this.p.NewCaptures;
+        }, set: function (v) {
+          this.p.NewCaptures = v;
+        }},"nc");
       this.pnlWaitPls.Hide();
     };
     this.btnRefreshDataClick = async function (Sender) {
@@ -41191,7 +41209,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var sl = null;
       var st = 0.0;
       var et = 0.0;
-      SG.SetRowCount(1);
+      SG.get().SetRowCount(1);
       if (pas["WEBLib.Storage"].TLocalStorage.GetValue(LSName + "1") > "") {
         sl = pas.Classes.TStringList.$create("Create$1");
         i = 0;
@@ -41207,29 +41225,29 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
             }})));
           i += 1;
         };
-        SG.LoadFromStrings(sl,",",true);
+        SG.get().LoadFromStrings(sl,",",true);
         sl = rtl.freeLoc(sl);
       };
-      $impl.Log(SG.FName + " Row Count: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: SG, get: function () {
+      $impl.Log(SG.get().FName + " Row Count: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: SG.get(), get: function () {
           return this.p.FRowCount;
         }, set: function (v) {
           this.p.FRowCount = v;
         }}));
-      if (SG.FRowCount > 1) {
-        for (var $l = SG.FRowCount - 1; $l >= 1; $l--) {
+      if (SG.get().FRowCount > 1) {
+        for (var $l = SG.get().FRowCount - 1; $l >= 1; $l--) {
           i = $l;
-          if (SG.GetCells(3,i) > "") {
-            if (SG === this.Captures) {
-              st = pas.SysUtils.StrToDateTime(SG.GetCells(3,i) + " " + SG.GetCells(4,i));
-              et = pas.SysUtils.StrToDateTime(SG.GetCells(3,i) + " " + SG.GetCells(5,i));
+          if (SG.get().GetCells(3,i) > "") {
+            if (SG.get() === this.Captures) {
+              st = pas.SysUtils.StrToDateTime(SG.get().GetCells(3,i) + " " + SG.get().GetCells(4,i));
+              et = pas.SysUtils.StrToDateTime(SG.get().GetCells(3,i) + " " + SG.get().GetCells(5,i));
             } else {
-              st = pas.SysUtils.StrToDateTime(SG.GetCells(1,i));
-              et = pas.SysUtils.StrToDateTime(SG.GetCells(2,i));
+              st = pas.SysUtils.StrToDateTime(SG.get().GetCells(1,i));
+              et = pas.SysUtils.StrToDateTime(SG.get().GetCells(2,i));
             };
             if (et < st) et = et + 1;
             if (et < pas.SysUtils.Now()) {
               $impl.Log("Removing stale entry, endtime: " + pas.SysUtils.DateTimeToStr(et,false));
-              SG.RemoveRow(i);
+              SG.get().RemoveRow(i);
             };
           };
         };
@@ -41263,27 +41281,33 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var id = "";
       $impl.Log(" ====== FetchCapReservations called =========");
       this.Captures.FOnGetCellData = null;
-      await this.RefreshCSV(this.Captures,"cwr_captures.csv","Scheduled",{get: function () {
-          return id;
-        }, set: function (v) {
-          id = v;
-        }});
-      $impl.SaveLocalStrings(this.Captures,"sl");
-      this.Captures.FOnGetCellData = rtl.createCallback(this,"AllCapsGridGetCellData");
-      $impl.Log(" ====== FetchCapReservations finished =========");
+      try {
+        await this.RefreshCSV(this.Captures,"cwr_captures.csv","Scheduled",{get: function () {
+            return id;
+          }, set: function (v) {
+            id = v;
+          }});
+        $impl.SaveLocalStrings(this.Captures,"sl");
+      } finally {
+        this.Captures.FOnGetCellData = rtl.createCallback(this,"AllCapsGridGetCellData");
+        $impl.Log(" ====== FetchCapReservations finished =========");
+      };
     };
     this.FetchNewCapRequests = async function () {
       var id = "";
       $impl.Log(" ====== FetchNewCapRequests called =========");
       this.NewCaptures.FOnGetCellData = null;
-      await this.RefreshCSV(this.NewCaptures,"cwr_newcaptures.csv","New Captures",{get: function () {
-          return id;
-        }, set: function (v) {
-          id = v;
-        }});
-      $impl.SaveLocalStrings(this.NewCaptures,"nc");
-      this.NewCaptures.FOnGetCellData = rtl.createCallback(this,"NewCapturesGetCellData");
-      $impl.Log(" ====== FetchNewCapRequests finished =========");
+      try {
+        await this.RefreshCSV(this.NewCaptures,"cwr_newcaptures.csv","New Captures",{get: function () {
+            return id;
+          }, set: function (v) {
+            id = v;
+          }});
+        $impl.SaveLocalStrings(this.NewCaptures,"nc");
+      } finally {
+        this.NewCaptures.FOnGetCellData = rtl.createCallback(this,"NewCapturesGetCellData");
+        $impl.Log(" ====== FetchNewCapRequests finished =========");
+      };
     };
     this.FillTable = async function (WSG, rs) {
       var Line = "";
@@ -42108,7 +42132,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlLog.SetLeft(0);
         this.pnlLog.SetTop(50);
         this.pnlLog.SetWidth(428);
-        this.pnlLog.SetHeight(699);
+        this.pnlLog.SetHeight(733);
         this.pnlLog.SetElementClassName("card");
         this.pnlLog.SetHeightStyle(0);
         this.pnlLog.SetWidthStyle(0);
@@ -42131,7 +42155,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebMemo2.SetLeft(3);
         this.WebMemo2.SetTop(3);
         this.WebMemo2.SetWidth(422);
-        this.WebMemo2.SetHeight(693);
+        this.WebMemo2.SetHeight(761);
         this.WebMemo2.SetAlign(5);
         this.WebMemo2.SetColor(0);
         this.WebMemo2.SetElementClassName("white");
@@ -42154,7 +42178,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlWaitPls.SetLeft(0);
         this.pnlWaitPls.SetTop(50);
         this.pnlWaitPls.SetWidth(428);
-        this.pnlWaitPls.SetHeight(699);
+        this.pnlWaitPls.SetHeight(733);
         this.pnlWaitPls.SetElementClassName("container-fluid");
         this.pnlWaitPls.SetHeightStyle(0);
         this.pnlWaitPls.SetWidthStyle(0);
@@ -42176,7 +42200,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebGridPanel1.SetLeft(0);
         this.WebGridPanel1.SetTop(0);
         this.WebGridPanel1.SetWidth(428);
-        this.WebGridPanel1.SetHeight(699);
+        this.WebGridPanel1.SetHeight(767);
         this.WebGridPanel1.SetWidthStyle(0);
         this.WebGridPanel1.SetAlign(5);
         this.WebGridPanel1.FColumnCollection.Clear();
@@ -42209,9 +42233,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebLabel2.SetParentComponent(this.WebGridPanel1);
         this.WebLabel2.SetName("WebLabel2");
         this.WebLabel2.SetLeft(2);
-        this.WebLabel2.SetTop(352);
+        this.WebLabel2.SetTop(386);
         this.WebLabel2.SetWidth(424);
-        this.WebLabel2.SetHeight(171);
+        this.WebLabel2.SetHeight(188);
         this.WebLabel2.SetAlign(5);
         this.WebLabel2.SetAlignment(2);
         this.WebLabel2.SetCaption("Please Wait...");
@@ -42234,9 +42258,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebLabel1.SetParentComponent(this.WebGridPanel1);
         this.WebLabel1.SetName("WebLabel1");
         this.WebLabel1.SetLeft(2);
-        this.WebLabel1.SetTop(177);
+        this.WebLabel1.SetTop(194);
         this.WebLabel1.SetWidth(424);
-        this.WebLabel1.SetHeight(171);
+        this.WebLabel1.SetHeight(188);
         this.WebLabel1.SetAlign(5);
         this.WebLabel1.SetAlignment(2);
         this.WebLabel1.SetCaption("Preparing EPG Listings.");
@@ -42262,7 +42286,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebButton1.SetLeft(2);
         this.WebButton1.SetTop(2);
         this.WebButton1.SetWidth(424);
-        this.WebButton1.SetHeight(171);
+        this.WebButton1.SetHeight(188);
         this.WebButton1.SetAlign(5);
         this.WebButton1.SetCaption('<i class="fa-solid fa-spinner fa-spin"></>');
         this.WebButton1.SetColor(65535);
@@ -42286,7 +42310,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlHistory.SetLeft(0);
         this.pnlHistory.SetTop(50);
         this.pnlHistory.SetWidth(428);
-        this.pnlHistory.SetHeight(699);
+        this.pnlHistory.SetHeight(733);
         this.pnlHistory.SetElementClassName("card");
         this.pnlHistory.SetHeightStyle(0);
         this.pnlHistory.SetWidthStyle(0);
@@ -42371,7 +42395,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlOptions.SetLeft(0);
         this.pnlOptions.SetTop(50);
         this.pnlOptions.SetWidth(428);
-        this.pnlOptions.SetHeight(699);
+        this.pnlOptions.SetHeight(733);
         this.pnlOptions.SetElementClassName("card");
         this.pnlOptions.SetHeightStyle(0);
         this.pnlOptions.SetWidthStyle(0);
@@ -42529,7 +42553,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlCaptures.SetLeft(0);
         this.pnlCaptures.SetTop(50);
         this.pnlCaptures.SetWidth(428);
-        this.pnlCaptures.SetHeight(699);
+        this.pnlCaptures.SetHeight(733);
         this.pnlCaptures.SetElementClassName("greenBG");
         this.pnlCaptures.SetHeightStyle(0);
         this.pnlCaptures.SetWidthStyle(0);
@@ -42704,7 +42728,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlListings.SetLeft(0);
         this.pnlListings.SetTop(50);
         this.pnlListings.SetWidth(428);
-        this.pnlListings.SetHeight(699);
+        this.pnlListings.SetHeight(733);
         this.pnlListings.SetElementClassName("greenBG");
         this.pnlListings.SetHeightStyle(0);
         this.pnlListings.SetWidthStyle(0);
@@ -42751,7 +42775,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.EPG.SetLeft(0);
         this.EPG.SetTop(0);
         this.EPG.SetWidth(428);
-        this.EPG.SetHeight(699);
+        this.EPG.SetHeight(733);
         this.EPG.SetAlign(5);
         this.EPG.SetBorderStyle(0);
         this.EPG.SetColor(8388608);
@@ -42863,7 +42887,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.wcbGenres.SetLeft(3);
         this.wcbGenres.SetTop(31);
         this.wcbGenres.SetWidth(144);
-        this.wcbGenres.SetHeight(30);
+        this.wcbGenres.SetHeight(41);
         this.wcbGenres.SetAlign(5);
         this.wcbGenres.SetElementClassName("form-select");
         this.wcbGenres.SetElementFont(1);
@@ -42888,7 +42912,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.wcbChannels.SetLeft(3);
         this.wcbChannels.SetTop(31);
         this.wcbChannels.SetWidth(144);
-        this.wcbChannels.SetHeight(30);
+        this.wcbChannels.SetHeight(41);
         this.wcbChannels.SetAlign(5);
         this.wcbChannels.SetElementClassName("form-select");
         this.wcbChannels.SetElementFont(1);
@@ -42913,7 +42937,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.wcbTypes.SetLeft(3);
         this.wcbTypes.SetTop(31);
         this.wcbTypes.SetWidth(144);
-        this.wcbTypes.SetHeight(30);
+        this.wcbTypes.SetHeight(41);
         this.wcbTypes.SetAlign(5);
         this.wcbTypes.SetElementClassName("form-select");
         this.wcbTypes.SetElementFont(1);

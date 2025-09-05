@@ -128,7 +128,7 @@ type
 private
   { Private declarations }
   [async] procedure LogDataRange;
-  procedure ReloadSG(SG: TWebStringGrid; LSName: string);  [async]
+  procedure ReloadSG(var SG: TWebStringGrid; LSName: string);  [async]
   [async] procedure SetPage(PageNum: Integer);
   [async]
   procedure FetchCapReservations;
@@ -406,6 +406,9 @@ procedure TCWRmainFrm.btnSchdRefrshClick(Sender: TObject);
 begin
   {$IfDef PAS2JS}await{$EndIf}(FetchCapReservations);
   {$IfDef PAS2JS}await{$EndIf}(FetchNewCapRequests);
+  // Call Reload to strip stale entries
+  ReloadSG(Captures, 'sl');
+  ReloadSG(NewCaptures, 'nc');
   pnlWaitPls.Hide;
 end;
 
@@ -540,7 +543,6 @@ begin
     Log('========== CapturesClickCell() called from Row ' + ARow.ToString);
     // Find Capture Item in EPG
     st := TTimeZone.Local.ToUniversalTime(StrToDateTime(Captures.Cells[3,ARow] + ' ' + Captures.Cells[4,ARow]));
-//    WIDBCDS.Locate('StartTime;Title',VarArrayOf([st, Captures.Cells[8,ARow]]),[]);
     WIDBCDS.Filtered := False;
     WIDBCDS.Filter := 'Title like ' + QuotedStr(Captures.Cells[8,ARow])
       + ' and StartTime > ' + Double(st-15*OneMinute).ToString   // Allow for generous padding
@@ -1125,7 +1127,7 @@ begin
 end;
 
 
-procedure TCWRmainFrm.ReloadSG(SG: TWebStringGrid; LSName: string);
+procedure TCWRmainFrm.ReloadSG(var SG: TWebStringGrid; LSName: string);
 var i: Integer;
     sl: TStringList;
     st, et: TDateTime;
@@ -1528,12 +1530,15 @@ begin
   Log(' ====== FetchCapReservations called =========');
   // Turn off GetCellData (modifies Cols 1, 2 for display)
   Captures.OnGetCellData := nil;
-  {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(Captures, 'cwr_captures.csv', 'Scheduled', id));
-  // Save unmodified capture data to Local Storage
-  SaveLocalStrings(Captures, 'sl');
-  // Turn GetCellData formatting back on
-  Captures.OnGetCellData := AllCapsGridGetCellData;
-  Log(' ====== FetchCapReservations finished =========');
+  try
+    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(Captures, 'cwr_captures.csv', 'Scheduled', id));
+    // Save unmodified capture data to Local Storage
+    SaveLocalStrings(Captures, 'sl');
+  finally
+    // Turn GetCellData formatting back on
+    Captures.OnGetCellData := AllCapsGridGetCellData;
+    Log(' ====== FetchCapReservations finished =========');
+  end;
 end;
 
 procedure TCWRmainFrm.FetchNewCapRequests;  // Fetch CW_EPG-saved file
@@ -1544,12 +1549,15 @@ begin
   Log(' ====== FetchNewCapRequests called =========');
   // Turn off GetCellData (modifies Cols 1, 2 for display)
   NewCaptures.OnGetCellData := nil;
-  {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(NewCaptures, 'cwr_newcaptures.csv', 'New Captures', id));
-  // Save unmodified request data to Local Storage
-  SaveLocalStrings(NewCaptures, 'nc');
-  // Turn GetCellData formatting back on
-  NewCaptures.OnGetCellData := NewCapturesGetCellData;
-  Log(' ====== FetchNewCapRequests finished =========');
+  try
+    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(NewCaptures, 'cwr_newcaptures.csv', 'New Captures', id));
+    // Save unmodified request data to Local Storage
+    SaveLocalStrings(NewCaptures, 'nc');
+  finally
+    // Turn GetCellData formatting back on
+    NewCaptures.OnGetCellData := NewCapturesGetCellData;
+    Log(' ====== FetchNewCapRequests finished =========');
+  end;
 end;
 
 procedure TCWRmainFrm.FetchHistory;
