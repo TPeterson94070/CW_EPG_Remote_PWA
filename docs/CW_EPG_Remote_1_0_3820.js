@@ -37852,46 +37852,6 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
       this.UpdateGridSize();
       this.UpdateGridAlignment();
     };
-    this.RemoveColumn = function (Index) {
-      var i = 0;
-      var fc = 0;
-      fc = this.FFixedCols;
-      var tr;
-      var td;
-      if (Index < this.FFixedCols) {
-        if (this.FFixedRows > 0) {
-          for (var $l = 0, $end = this.FFixedRows - 1; $l <= $end; $l++) {
-            i = $l;
-            tr = this.FFixedColRow.rows[i];
-            td = tr.deleteCell(Index);
-          };
-        };
-        for (var $l1 = 0, $end1 = this.FRowCount - 1 - this.FFixedRows; $l1 <= $end1; $l1++) {
-          i = $l1;
-          tr = this.FFixedCol.rows[i];
-          td = tr.deleteCell(Index);
-        };
-        this.FFixedCols = this.FFixedCols - 1;
-      } else {
-        if (this.FFixedRows > 0) {
-          for (var $l2 = 0, $end2 = this.FFixedRows - 1; $l2 <= $end2; $l2++) {
-            i = $l2;
-            tr = this.FFixedRow.rows[i];
-            td = tr.deleteCell(Index - fc);
-          };
-        };
-        for (var $l3 = 0, $end3 = this.FRowCount - 1 - this.FFixedRows; $l3 <= $end3; $l3++) {
-          i = $l3;
-          tr = this.FNormalCells.rows[i];
-          td = tr.deleteCell(Index - fc);
-        };
-      };
-      this.FColCount = this.FColCount - 1;
-      for (var $l4 = Index, $end4 = this.FColCount - 1; $l4 <= $end4; $l4++) {
-        i = $l4;
-        this.SetColWidths(i,this.GetColWidths(i + 1));
-      };
-    };
     this.RemoveCheckBox = function (ACol, ARow) {
       var el = null;
       if ((ACol < this.FColCount) && (ARow < this.FRowCount)) {
@@ -40561,12 +40521,26 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     };
     var HEADINGS = ["Ch Name","RecordStart","RecordEnd","Title","SubTitle","StartTime","ProgramID"];
     var WIDTHS = [75,95,95,150,400,0,0];
-    this.SetNewCapturesFixedRow = function () {
+    this.SetCapturesFormats = function () {
       var i = 0;
       for (var $l = 0, $end = this.NewCaptures.FColCount - 1; $l <= $end; $l++) {
         i = $l;
         this.NewCaptures.SetCells(i,0,HEADINGS[i]);
         this.NewCaptures.SetColWidths(i,WIDTHS[i]);
+      };
+      for (var $l1 = 0, $end1 = this.Captures.FColCount - 1; $l1 <= $end1; $l1++) {
+        i = $l1;
+        this.Captures.SetColWidths(i,0);
+      };
+      if (this.Captures.FColCount >= 9) {
+        this.Captures.SetColWidths(1,80);
+        this.Captures.SetColWidths(2,100);
+        this.Captures.SetColWidths(3,65);
+        this.Captures.SetColWidths(4,45);
+        this.Captures.SetColWidths(5,45);
+        this.Captures.SetColWidths(6,70);
+        this.Captures.SetColWidths(8,this.Captures.GetClientWidth());
+        for (i = 1; i <= 6; i++) this.Captures.SetColAlignments(i,2);
       };
     };
     this.EPGGetCellClass = function (Sender, ACol, ARow, AField, AValue, AClassName) {
@@ -40576,7 +40550,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.SaveNewCapturesFile = async function (id) {
       var data = null;
       var res = null;
-      $impl.SaveLocalStrings(this.NewCaptures,"nc");
       data = pas.Classes.TStringList.$create("Create$1");
       data.SetLineBreak("\r\n");
       this.NewCaptures.SaveToStrings(data,",",true);
@@ -40698,11 +40671,16 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log('======== "Refresh Data" clicked');
       this.WIDBCDS.Close();
       this.ClearFilterLists();
-      await this.RefreshCSV(this.BufferGrid,"cwr_epg.csv","EPG",{get: function () {
+      await this.RefreshCSV($impl.CSV_EPG,"EPG",{get: function () {
           return id;
         }, set: function (v) {
           id = v;
         }});
+      this.FillTable({p: this, get: function () {
+          return this.p.BufferGrid;
+        }, set: function (v) {
+          this.p.BufferGrid = v;
+        }},$impl.CSV_EPG);
       if (this.BufferGrid.FRowCount > 0) {
         $impl.Log("********* Starting timer");
         StartT = pas.SysUtils.Now();
@@ -40751,32 +40729,19 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log("========== FormCreate is finished");
     };
     this.tbCapturesShow = async function () {
-      var i = 0;
       var UserMsg = "";
       this.btnSchdRefrsh.Show();
-      this.ReloadSG({p: this, get: function () {
+      await this.LoadSG({p: this, get: function () {
           return this.p.Captures;
         }, set: function (v) {
           this.p.Captures = v;
-        }},"sl");
-      this.ReloadSG({p: this, get: function () {
+        }},$impl.CSV_CAPTURES);
+      await this.LoadSG({p: this, get: function () {
           return this.p.NewCaptures;
         }, set: function (v) {
           this.p.NewCaptures = v;
-        }},"nc");
-      this.SetNewCapturesFixedRow();
-      for (var $l = 0, $end = this.Captures.FColCount - 1; $l <= $end; $l++) {
-        i = $l;
-        this.Captures.SetColWidths(i,0);
-      };
-      this.Captures.SetColWidths(1,80);
-      this.Captures.SetColWidths(2,100);
-      this.Captures.SetColWidths(3,65);
-      this.Captures.SetColWidths(4,45);
-      this.Captures.SetColWidths(5,45);
-      this.Captures.SetColWidths(6,70);
-      this.Captures.SetColWidths(8,this.Captures.GetClientWidth());
-      for (i = 1; i <= 6; i++) this.Captures.SetColAlignments(i,2);
+        }},$impl.CSV_NEWCAPTURES);
+      this.SetCapturesFormats();
       $impl.Log("Captures.RowCount after stale check: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.Captures, get: function () {
           return this.p.FRowCount;
         }, set: function (v) {
@@ -40814,7 +40779,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         }, set: function (v) {
           this.p.FRowCount = v;
         }}));
-      i = pas.Math.IfThen(ACol === 0,4,ACol);
+      i = pas.Math.IfThen(ACol === 8,0,ACol);
       this.HistoryTable.BeginUpdate();
       this.HistoryTable.Sort(i,SortDir);
       this.HistoryTable.EndUpdate();
@@ -40885,8 +40850,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       };
     };
     this.HistoryTableGetCellClass = function (Sender, ACol, ARow, AField, AValue, AClassName) {
-      if ((ARow > 0) && (this.HistoryTable.GetCells(0,ARow) > "")) {
-        var $tmp = this.HistoryTable.GetCells(1,ARow).charAt(0);
+      if (ARow > 0) {
+        var $tmp = this.HistoryTable.GetCells(10,ARow).charAt(0);
         if ($tmp === "E") {
           AClassName.set("green")}
          else if ($tmp === "S") {
@@ -40975,12 +40940,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           await this.WIDBCDS.EnableControls();
           this.WebTimer1.SetEnabled(true);
           this.EPG.SetRow(1);
-          $impl.Log("++ ^Rec EPG.Row: " + this.EPG.GetCells(3,1));
-          $impl.Log("++ WIDBCDS.RecNo: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecNo(), get: function () {
-              return this.p;
-            }, set: function (v) {
-              this.p = v;
-            }}));
         };
       } finally {
         this.ByAll.FOnClick = rtl.createCallback(this,"ByAllClick");
@@ -41032,11 +40991,16 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         Title = this.NewCaptures.GetCells(3,ARow);
         ProgID = this.NewCaptures.GetCells(6,ARow);
         this.NewCaptures.BeginUpdate();
-        await this.RefreshCSV(this.NewCaptures,"cwr_newcaptures.csv","New Captures",{get: function () {
+        await this.RefreshCSV($impl.CSV_NEWCAPTURES,"New Captures",{get: function () {
             return id;
           }, set: function (v) {
             id = v;
           }});
+        this.FillTable({p: this, get: function () {
+            return this.p.NewCaptures;
+          }, set: function (v) {
+            this.p.NewCaptures = v;
+          }},$impl.CSV_NEWCAPTURES);
         $impl.Log("NewCaptures Rows: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.NewCaptures, get: function () {
             return this.p.FRowCount;
           }, set: function (v) {
@@ -41088,16 +41052,17 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.btnSchdRefrshClick = async function (Sender) {
       await this.FetchCapReservations();
       await this.FetchNewCapRequests();
-      this.ReloadSG({p: this, get: function () {
+      await this.LoadSG({p: this, get: function () {
           return this.p.Captures;
         }, set: function (v) {
           this.p.Captures = v;
-        }},"sl");
-      this.ReloadSG({p: this, get: function () {
+        }},$impl.CSV_CAPTURES);
+      await this.LoadSG({p: this, get: function () {
           return this.p.NewCaptures;
         }, set: function (v) {
           this.p.NewCaptures = v;
-        }},"nc");
+        }},$impl.CSV_NEWCAPTURES);
+      this.SetCapturesFormats();
       this.pnlWaitPls.Hide();
     };
     this.btnRefreshDataClick = async function (Sender) {
@@ -41135,7 +41100,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.CapturesGetCellData = function (Sender, ACol, ARow, AField, AValue) {
       if (ARow === 0) return;
       if (ACol === 2) AValue.set(pas.System.Copy(AValue.get(),4,10));
-      if (ACol === 3) AValue.set(pas.SysUtils.FormatDateTime("mm/dd",pas.SysUtils.StrToDate(AValue.get())));
+      if (ACol === 3) AValue.set(pas.StrUtils.IfThen(AValue.get() > "",pas.SysUtils.FormatDateTime("mm/dd",pas.SysUtils.StrToDateDef(AValue.get(),0)),""));
     };
     this.CapturesClickCell = async function (Sender, ACol, ARow) {
       var st = 0.0;
@@ -41204,36 +41169,12 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $impl.TotalAvailableDays = pas.System.Trunc($impl.LastStartDate - pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false));
       } else $impl.TotalAvailableDays = 0;
     };
-    this.ReloadSG = function (SG, LSName) {
+    this.LoadSG = async function (SG, LSName) {
       var i = 0;
-      var sl = null;
       var st = 0.0;
       var et = 0.0;
-      SG.get().SetRowCount(1);
-      if (pas["WEBLib.Storage"].TLocalStorage.GetValue(LSName + "1") > "") {
-        sl = pas.Classes.TStringList.$create("Create$1");
-        i = 0;
-        while (pas.StrUtils.ReplaceStr(pas.StrUtils.ReplaceStr(pas["WEBLib.Storage"].TLocalStorage.GetValue(LSName + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
-            return i;
-          }, set: function (v) {
-            i = v;
-          }})),'"',""),",","") > "") {
-          sl.Add(pas["WEBLib.Storage"].TLocalStorage.GetValue(LSName + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
-              return i;
-            }, set: function (v) {
-              i = v;
-            }})));
-          i += 1;
-        };
-        SG.get().LoadFromStrings(sl,",",true);
-        sl = rtl.freeLoc(sl);
-      };
-      $impl.Log(SG.get().FName + " Row Count: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: SG.get(), get: function () {
-          return this.p.FRowCount;
-        }, set: function (v) {
-          this.p.FRowCount = v;
-        }}));
-      if (SG.get().FRowCount > 1) {
+      await this.FillTable(SG,LSName);
+      if ((SG.get().FRowCount > 1) && (SG.get() !== this.HistoryTable)) {
         for (var $l = SG.get().FRowCount - 1; $l >= 1; $l--) {
           i = $l;
           if (SG.get().GetCells(3,i) > "") {
@@ -41280,67 +41221,60 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.FetchCapReservations = async function () {
       var id = "";
       $impl.Log(" ====== FetchCapReservations called =========");
-      this.Captures.FOnGetCellData = null;
-      try {
-        await this.RefreshCSV(this.Captures,"cwr_captures.csv","Scheduled",{get: function () {
-            return id;
-          }, set: function (v) {
-            id = v;
-          }});
-        $impl.SaveLocalStrings(this.Captures,"sl");
-      } finally {
-        this.Captures.FOnGetCellData = rtl.createCallback(this,"AllCapsGridGetCellData");
-        $impl.Log(" ====== FetchCapReservations finished =========");
-      };
+      await this.RefreshCSV($impl.CSV_CAPTURES,"Scheduled",{get: function () {
+          return id;
+        }, set: function (v) {
+          id = v;
+        }});
+      $impl.Log(" ====== FetchCapReservations finished =========");
     };
     this.FetchNewCapRequests = async function () {
       var id = "";
       $impl.Log(" ====== FetchNewCapRequests called =========");
-      this.NewCaptures.FOnGetCellData = null;
-      try {
-        await this.RefreshCSV(this.NewCaptures,"cwr_newcaptures.csv","New Captures",{get: function () {
-            return id;
-          }, set: function (v) {
-            id = v;
-          }});
-        $impl.SaveLocalStrings(this.NewCaptures,"nc");
-      } finally {
-        this.NewCaptures.FOnGetCellData = rtl.createCallback(this,"NewCapturesGetCellData");
-        $impl.Log(" ====== FetchNewCapRequests finished =========");
-      };
+      await this.RefreshCSV($impl.CSV_NEWCAPTURES,"New Captures",{get: function () {
+          return id;
+        }, set: function (v) {
+          id = v;
+        }});
+      $impl.Log(" ====== FetchNewCapRequests finished =========");
     };
     this.FillTable = async function (WSG, rs) {
       var Line = "";
       var sl = null;
       var ReplyArray = [];
-      sl = pas.Classes.TStringList.$create("Create$1");
-      rs = pas.StrUtils.ReplaceStr(rs,"\n","");
-      rs = pas.StrUtils.ReplaceStr(rs," ","");
-      ReplyArray = pas.SysUtils.TStringHelper.Split$5.call({get: function () {
-          return rs;
-        }, set: function (v) {
-          rs = v;
-        }},["\r"],1);
-      $impl.Log("Begin extract " + pas.SysUtils.IntToStr(rtl.length(ReplyArray)) + " strings");
-      for (var $in = ReplyArray, $l = 0, $end = rtl.length($in) - 1; $l <= $end; $l++) {
-        Line = $in[$l];
-        sl.Add(Line);
-      };
-      WSG.LoadFromStrings(sl,",",true);
-      $impl.Log(WSG.FName + ".RowCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: WSG, get: function () {
+      rs = pas["WEBLib.Storage"].TLocalStorage.GetValue(rs);
+      if (rs > "") {
+        sl = pas.Classes.TStringList.$create("Create$1");
+        rs = pas.StrUtils.ReplaceStr(rs,"\n","");
+        rs = pas.StrUtils.ReplaceStr(rs," ","");
+        ReplyArray = pas.SysUtils.TStringHelper.Split$5.call({get: function () {
+            return rs;
+          }, set: function (v) {
+            rs = v;
+          }},["\r"],1);
+        $impl.Log("Begin extract " + pas.SysUtils.IntToStr(rtl.length(ReplyArray)) + " strings");
+        for (var $in = ReplyArray, $l = 0, $end = rtl.length($in) - 1; $l <= $end; $l++) {
+          Line = $in[$l];
+          sl.Add(Line);
+        };
+        WSG.get().BeginUpdate();
+        WSG.get().LoadFromStrings(sl,",",true);
+        while (WSG.get().GetCells(0,WSG.get().FRowCount - 1) === "") WSG.get().SetRowCount(WSG.get().FRowCount - 1);
+        WSG.get().EndUpdate();
+      } else WSG.get().SetRowCount(0);
+      $impl.Log(WSG.get().FName + ".RowCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: WSG.get(), get: function () {
           return this.p.FRowCount;
         }, set: function (v) {
           this.p.FRowCount = v;
         }}));
-      $impl.Log("Done loading " + WSG.FName);
+      $impl.Log("Done loading " + WSG.get().FName);
       sl = rtl.freeLoc(sl);
     };
-    this.RefreshCSV = async function (WSG, TableFile, Title, id) {
+    this.RefreshCSV = async function (TableFile, Title, id) {
       var Reply = "";
       $impl.Log("ReFreshCSV called for " + TableFile);
       await this.ShowPlsWait("Refreshing " + Title);
       if (pas["WEBLib.Forms"].Application.GetIsOnline()) {
-        WSG.BeginUpdate();
         try {
           $impl.Log("Requesting: " + TableFile);
           try {
@@ -41348,8 +41282,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
             if (Reply !== "") {
               await this.ShowPlsWait("Refreshing " + Title);
               $impl.Log(TableFile + " starts: " + pas.System.Copy(Reply,1,50));
-              this.FillTable(WSG,Reply);
-            } else WSG.SetRowCount(0);
+            };
+            pas["WEBLib.Storage"].TLocalStorage.SetValue(TableFile,Reply);
           } catch ($e) {
             if (pas.SysUtils.Exception.isPrototypeOf($e)) {
               var E = $e;
@@ -41359,65 +41293,21 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           };
         } finally {
           $impl.Log("ReFreshCSV in finally section");
-          WSG.EndUpdate();
         };
       } else {
         await pas["WEBLib.Dialogs"].MessageDlgAsync("Cannot refresh EPG data while CW_EPG_Remote is offline",2,rtl.createSet(2));
         $impl.Log("No LAN connection");
       };
-      $impl.Log("ReFreshCSV, " + WSG.FName + " RowCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: WSG, get: function () {
-          return this.p.FRowCount;
-        }, set: function (v) {
-          this.p.FRowCount = v;
-        }}));
+      $impl.Log("ReFreshCSV, " + TableFile + " Length: " + pas.SysUtils.IntToStr(Reply.length));
     };
     this.FetchHistory = async function () {
-      var i = 0;
       var id = "";
-      var sl = null;
       $impl.Log(" ====== FetchHistory called =========");
-      this.HistoryGrid.BeginUpdate();
-      this.HistoryGrid.SetColCount(32);
-      await this.RefreshCSV(this.HistoryGrid,"cwr_history.csv","History",{get: function () {
+      await this.RefreshCSV($impl.CSV_HISTORY,"History",{get: function () {
           return id;
         }, set: function (v) {
           id = v;
         }});
-      $impl.Log("History Rows: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.HistoryGrid, get: function () {
-          return this.p.FRowCount;
-        }, set: function (v) {
-          this.p.FRowCount = v;
-        }}));
-      for (var $l = this.HistoryGrid.FRowCount - 1; $l >= 1; $l--) {
-        i = $l;
-        if (this.HistoryGrid.GetCells(0,i) === "") {
-          this.HistoryGrid.RemoveRow(i)}
-         else this.HistoryGrid.SetCells(0,i,pas.StrUtils.RightStr("000000" + this.HistoryGrid.GetCells(0,i),6));
-      };
-      this.HistoryGrid.Sort(0,1);
-      $impl.Log("History Rows: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.HistoryGrid, get: function () {
-          return this.p.FRowCount;
-        }, set: function (v) {
-          this.p.FRowCount = v;
-        }}));
-      sl = pas.Classes.TStringList.$create("Create$1");
-      this.HistoryGrid.SaveToStrings(sl,",",true);
-      $impl.Log("sl Count: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: sl.GetCount(), get: function () {
-          return this.p;
-        }, set: function (v) {
-          this.p = v;
-        }}));
-      pas["WEBLib.Storage"].TLocalStorage.SetValue("hl0",sl.Get(0));
-      for (var $l1 = 1, $end = sl.GetCount() - 1; $l1 <= $end; $l1++) {
-        i = $l1;
-        pas["WEBLib.Storage"].TLocalStorage.SetValue("hl" + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
-            return i;
-          }, set: function (v) {
-            i = v;
-          }}),sl.Get(sl.GetCount() - i));
-      };
-      sl = rtl.freeLoc(sl);
-      this.HistoryGrid.EndUpdate();
       $impl.Log(" ====== FetchHistory finished =========");
     };
     this.ReFreshListings = async function () {
@@ -41443,94 +41333,81 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     };
     this.tbHistoryShow = async function () {
       this.HistoryTable.SetVisible(false);
-      await this.FillHistoryDisplay();
       $impl.Log("HistoryTable.RowCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.HistoryTable, get: function () {
           return this.p.FRowCount;
         }, set: function (v) {
           this.p.FRowCount = v;
         }}));
       if (this.HistoryTable.FRowCount !== pas.SysUtils.StrToInt(this.cbNumHistList.GetText())) {
-        $impl.Log("The History list is empty/incomplete. Prompt for refresh");
-        if (await pas["WEBLib.Dialogs"].MessageDlgAsync("The History list " + pas.StrUtils.IfThen(this.HistoryTable.FRowCount < 2,"is empty","may be incomplete") + "\r\rDo you want to refresh it now?",3,rtl.createSet(0,1)) === 6) await this.UpdateHistory(this);
+        await this.FillHistoryDisplay();
+        if (this.HistoryTable.FRowCount !== pas.SysUtils.StrToInt(this.cbNumHistList.GetText())) {
+          $impl.Log("The History list is empty/incomplete. Prompt for refresh");
+          if (await pas["WEBLib.Dialogs"].MessageDlgAsync("The History list " + pas.StrUtils.IfThen(this.HistoryTable.FRowCount < 2,"is empty","may be incomplete") + "\r\rDo you want to refresh it now?",3,rtl.createSet(0,1)) === 6) await this.UpdateHistory(this);
+        };
       };
       this.HistoryTable.SetVisible(true);
     };
     this.FillHistoryDisplay = async function () {
-      var sl = null;
       var i = 0;
       $impl.Log("FillHistoryDisplay called");
-      this.HistoryTable.FOnGetCellClass = null;
-      sl = pas.Classes.TStringList.$create("Create$1");
-      for (var $l = 0, $end = pas.SysUtils.StrToIntDef(this.cbNumHistList.GetText(),0) - 1; $l <= $end; $l++) {
-        i = $l;
-        if (pas["WEBLib.Storage"].TLocalStorage.GetValue("hl" + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
-            return i;
+      try {
+        $impl.Log("historyTable.BeginUpdate");
+        this.HistoryTable.BeginUpdate();
+        this.LoadSG({p: this, get: function () {
+            return this.p.HistoryTable;
           }, set: function (v) {
-            i = v;
-          }})) > "") sl.Add(pas["WEBLib.Storage"].TLocalStorage.GetValue("hl" + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
-            return i;
+            this.p.HistoryTable = v;
+          }},$impl.CSV_HISTORY);
+        this.HistoryTable.SetAlign(5);
+        $impl.Log("historyTable.ColCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.HistoryTable, get: function () {
+            return this.p.FColCount;
           }, set: function (v) {
-            i = v;
-          }})));
-      };
-      $impl.Log("sl.Count: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: sl.GetCount(), get: function () {
-          return this.p;
-        }, set: function (v) {
-          this.p = v;
-        }}));
-      $impl.Log("historyTable.BeginUpdate");
-      this.HistoryTable.BeginUpdate();
-      this.HistoryTable.SetRowCount(sl.GetCount());
-      if (sl.GetCount() > 1) {
-        $impl.Log("historyTable.LoadFromStrings");
-        this.HistoryTable.LoadFromStrings(sl,",",true);
+            this.p.FColCount = v;
+          }}));
         $impl.Log("historyTable.RowCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.HistoryTable, get: function () {
             return this.p.FRowCount;
           }, set: function (v) {
             this.p.FRowCount = v;
           }}));
+        for (var $l = 0, $end = this.HistoryTable.FColCount - 1; $l <= $end; $l++) {
+          i = $l;
+          this.HistoryTable.SetColWidths(i,0);
+        };
+        if (this.HistoryTable.FColCount >= 14) {
+          this.HistoryTable.SetColWidths(8,120);
+          this.HistoryTable.SetColWidths(10,150);
+          this.HistoryTable.SetColWidths(12,250);
+          this.HistoryTable.SetColWidths(13,300);
+          this.HistoryTable.SetColAlignments(8,2);
+          this.HistoryTable.SetColAlignments(10,2);
+        };
+        for (var $l1 = 1, $end1 = this.HistoryTable.FRowCount - 1; $l1 <= $end1; $l1++) {
+          i = $l1;
+          this.HistoryTable.SetCells(0,i,pas.SysUtils.Format("%10.3f",pas.System.VarRecs(3,pas.SysUtils.StrToDateTime(this.HistoryTable.GetCells(8,i)))));
+          this.HistoryTable.SetCells(8,i,pas.SysUtils.FormatDateTime("mm/dd/yy h:nna/p",pas.SysUtils.StrToDateTime(this.HistoryTable.GetCells(8,i))));
+        };
+        this.HistoryTable.SetCells(8,0,this.HistoryTable.GetCells(8,0) + " ^");
+        this.HistoryTableFixedCellClick(this,8,0);
+        while (this.HistoryTable.FRowCount > pas.SysUtils.StrToInt(this.cbNumHistList.GetText())) this.HistoryTable.RemoveRow(this.HistoryTable.FRowCount - 1);
+      } finally {
         this.HistoryTable.EndUpdate();
+        $impl.Log("FillHistoryDisplay finished");
       };
-      $impl.Log("historyTable.ColCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.HistoryTable, get: function () {
-          return this.p.FColCount;
-        }, set: function (v) {
-          this.p.FColCount = v;
-        }}));
-      this.HistoryTable.BeginUpdate();
-      for (var $l1 = this.HistoryTable.FColCount - 1; $l1 >= 0; $l1--) {
-        i = $l1;
-        if (i in rtl.createSet(8,10,12,13,14)) continue;
-        this.HistoryTable.RemoveColumn(i);
-      };
-      $impl.Log("historyTable.ColCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.HistoryTable, get: function () {
-          return this.p.FColCount;
-        }, set: function (v) {
-          this.p.FColCount = v;
-        }}));
-      sl.Clear();
-      this.HistoryTable.SaveToStrings(sl,",",true);
-      this.HistoryTable.FOnGetCellClass = rtl.createCallback(this,"HistoryTableGetCellClass");
-      this.HistoryTable.LoadFromStrings(sl,",",true);
-      sl = rtl.freeLoc(sl);
-      $impl.SetTableDefaults(this.HistoryTable,120,150,250,300);
-      for (var $l2 = 1, $end1 = this.HistoryTable.FRowCount - 1; $l2 <= $end1; $l2++) {
-        i = $l2;
-        this.HistoryTable.SetCells(4,i,pas.SysUtils.Format("%10.3f",pas.System.VarRecs(3,pas.SysUtils.StrToDateTime(this.HistoryTable.GetCells(0,i)))));
-        this.HistoryTable.SetCells(0,i,pas.SysUtils.FormatDateTime("mm/dd/yy h:nna/p",pas.SysUtils.StrToDateTime(this.HistoryTable.GetCells(0,i))));
-      };
-      this.HistoryTable.SetCells(0,0,this.HistoryTable.GetCells(0,0) + " v");
-      this.HistoryTable.EndUpdate();
-      $impl.Log("FillHistoryDisplay finished");
     };
     this.UpdateNewCaptures = async function (RecordStart, RecordEnd) {
       var i = 0;
       var id = "";
       $impl.Log(" ====== UpdateNewCaptures called =========");
-      await this.RefreshCSV(this.NewCaptures,"cwr_newcaptures.csv","New Captures",{get: function () {
+      await this.RefreshCSV($impl.CSV_NEWCAPTURES,"New Captures",{get: function () {
           return id;
         }, set: function (v) {
           id = v;
         }});
+      this.FillTable({p: this, get: function () {
+          return this.p.NewCaptures;
+        }, set: function (v) {
+          this.p.NewCaptures = v;
+        }},$impl.CSV_NEWCAPTURES);
       $impl.Log("NewCaptures Rows: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.NewCaptures, get: function () {
           return this.p.FRowCount;
         }, set: function (v) {
@@ -41539,7 +41416,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       if (this.NewCaptures.FRowCount === 0) {
         this.NewCaptures.SetRowCount(1);
         this.NewCaptures.SetColCount(7);
-        await this.CreateGoogleFile("cwr_newcaptures.csv",{get: function () {
+        await this.CreateGoogleFile($impl.CSV_NEWCAPTURES,{get: function () {
             return id;
           }, set: function (v) {
             id = v;
@@ -41548,7 +41425,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         i = $l;
         if (this.NewCaptures.GetCells(0,i) === "") this.NewCaptures.RemoveRow(i);
       };
-      this.SetNewCapturesFixedRow();
+      this.SetCapturesFormats();
       this.NewCaptures.SetRowCount(this.NewCaptures.FRowCount + 1);
       this.NewCaptures.SetCells(0,this.NewCaptures.FRowCount - 1,this.WIDBCDS.FieldByName("PSIP").GetAsString());
       this.NewCaptures.SetCells(1,this.NewCaptures.FRowCount - 1,pas.SysUtils.FormatDateTime("mm/dd hh:nn",RecordStart));
@@ -41582,7 +41459,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         var Result = null;
         window.console.log("AccessToken: " + $Self.WebRESTClient1.FAccessToken);
         if ($Self.WebRESTClient1.FAccessToken === "") $impl.ResetPrompt = "select_account";
-        $Self.WebRESTClient1.FApp.FKey = "654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com";
+        $Self.WebRESTClient1.FApp.FKey = $impl.CLIENT_APP_KEY;
         $Self.WebRESTClient1.FApp.FCallbackURL = window.location.href;
         $Self.WebRESTClient1.FApp.FAuthURL = "https://accounts.google.com/o/oauth2/v2/auth" + "?client_id=" + $Self.WebRESTClient1.FApp.FKey + "&include_granted_scopes" + "&scope=https://www.googleapis.com/auth/drive" + "&state=bf" + "&response_type=token" + "&redirect_uri=" + $Self.WebRESTClient1.FApp.FCallbackURL + "&prompt=" + $impl.ResetPrompt;
         window.console.log("WEBRESTClient1.App.CallBackURL: " + $Self.WebRESTClient1.FApp.FCallbackURL);
@@ -42132,7 +42009,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlLog.SetLeft(0);
         this.pnlLog.SetTop(50);
         this.pnlLog.SetWidth(428);
-        this.pnlLog.SetHeight(733);
+        this.pnlLog.SetHeight(699);
         this.pnlLog.SetElementClassName("card");
         this.pnlLog.SetHeightStyle(0);
         this.pnlLog.SetWidthStyle(0);
@@ -42155,7 +42032,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebMemo2.SetLeft(3);
         this.WebMemo2.SetTop(3);
         this.WebMemo2.SetWidth(422);
-        this.WebMemo2.SetHeight(761);
+        this.WebMemo2.SetHeight(693);
         this.WebMemo2.SetAlign(5);
         this.WebMemo2.SetColor(0);
         this.WebMemo2.SetElementClassName("white");
@@ -42178,7 +42055,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlWaitPls.SetLeft(0);
         this.pnlWaitPls.SetTop(50);
         this.pnlWaitPls.SetWidth(428);
-        this.pnlWaitPls.SetHeight(733);
+        this.pnlWaitPls.SetHeight(699);
         this.pnlWaitPls.SetElementClassName("container-fluid");
         this.pnlWaitPls.SetHeightStyle(0);
         this.pnlWaitPls.SetWidthStyle(0);
@@ -42200,7 +42077,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebGridPanel1.SetLeft(0);
         this.WebGridPanel1.SetTop(0);
         this.WebGridPanel1.SetWidth(428);
-        this.WebGridPanel1.SetHeight(767);
+        this.WebGridPanel1.SetHeight(699);
         this.WebGridPanel1.SetWidthStyle(0);
         this.WebGridPanel1.SetAlign(5);
         this.WebGridPanel1.FColumnCollection.Clear();
@@ -42233,9 +42110,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebLabel2.SetParentComponent(this.WebGridPanel1);
         this.WebLabel2.SetName("WebLabel2");
         this.WebLabel2.SetLeft(2);
-        this.WebLabel2.SetTop(386);
+        this.WebLabel2.SetTop(352);
         this.WebLabel2.SetWidth(424);
-        this.WebLabel2.SetHeight(188);
+        this.WebLabel2.SetHeight(171);
         this.WebLabel2.SetAlign(5);
         this.WebLabel2.SetAlignment(2);
         this.WebLabel2.SetCaption("Please Wait...");
@@ -42258,9 +42135,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebLabel1.SetParentComponent(this.WebGridPanel1);
         this.WebLabel1.SetName("WebLabel1");
         this.WebLabel1.SetLeft(2);
-        this.WebLabel1.SetTop(194);
+        this.WebLabel1.SetTop(177);
         this.WebLabel1.SetWidth(424);
-        this.WebLabel1.SetHeight(188);
+        this.WebLabel1.SetHeight(171);
         this.WebLabel1.SetAlign(5);
         this.WebLabel1.SetAlignment(2);
         this.WebLabel1.SetCaption("Preparing EPG Listings.");
@@ -42286,7 +42163,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebButton1.SetLeft(2);
         this.WebButton1.SetTop(2);
         this.WebButton1.SetWidth(424);
-        this.WebButton1.SetHeight(188);
+        this.WebButton1.SetHeight(171);
         this.WebButton1.SetAlign(5);
         this.WebButton1.SetCaption('<i class="fa-solid fa-spinner fa-spin"></>');
         this.WebButton1.SetColor(65535);
@@ -42310,7 +42187,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlHistory.SetLeft(0);
         this.pnlHistory.SetTop(50);
         this.pnlHistory.SetWidth(428);
-        this.pnlHistory.SetHeight(733);
+        this.pnlHistory.SetHeight(699);
         this.pnlHistory.SetElementClassName("card");
         this.pnlHistory.SetHeightStyle(0);
         this.pnlHistory.SetWidthStyle(0);
@@ -42395,7 +42272,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlOptions.SetLeft(0);
         this.pnlOptions.SetTop(50);
         this.pnlOptions.SetWidth(428);
-        this.pnlOptions.SetHeight(733);
+        this.pnlOptions.SetHeight(699);
         this.pnlOptions.SetElementClassName("card");
         this.pnlOptions.SetHeightStyle(0);
         this.pnlOptions.SetWidthStyle(0);
@@ -42553,7 +42430,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlCaptures.SetLeft(0);
         this.pnlCaptures.SetTop(50);
         this.pnlCaptures.SetWidth(428);
-        this.pnlCaptures.SetHeight(733);
+        this.pnlCaptures.SetHeight(699);
         this.pnlCaptures.SetElementClassName("greenBG");
         this.pnlCaptures.SetHeightStyle(0);
         this.pnlCaptures.SetWidthStyle(0);
@@ -42728,7 +42605,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlListings.SetLeft(0);
         this.pnlListings.SetTop(50);
         this.pnlListings.SetWidth(428);
-        this.pnlListings.SetHeight(733);
+        this.pnlListings.SetHeight(699);
         this.pnlListings.SetElementClassName("greenBG");
         this.pnlListings.SetHeightStyle(0);
         this.pnlListings.SetWidthStyle(0);
@@ -42775,7 +42652,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.EPG.SetLeft(0);
         this.EPG.SetTop(0);
         this.EPG.SetWidth(428);
-        this.EPG.SetHeight(733);
+        this.EPG.SetHeight(699);
         this.EPG.SetAlign(5);
         this.EPG.SetBorderStyle(0);
         this.EPG.SetColor(8388608);
@@ -42887,7 +42764,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.wcbGenres.SetLeft(3);
         this.wcbGenres.SetTop(31);
         this.wcbGenres.SetWidth(144);
-        this.wcbGenres.SetHeight(41);
+        this.wcbGenres.SetHeight(30);
         this.wcbGenres.SetAlign(5);
         this.wcbGenres.SetElementClassName("form-select");
         this.wcbGenres.SetElementFont(1);
@@ -42912,7 +42789,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.wcbChannels.SetLeft(3);
         this.wcbChannels.SetTop(31);
         this.wcbChannels.SetWidth(144);
-        this.wcbChannels.SetHeight(41);
+        this.wcbChannels.SetHeight(30);
         this.wcbChannels.SetAlign(5);
         this.wcbChannels.SetElementClassName("form-select");
         this.wcbChannels.SetElementFont(1);
@@ -42937,7 +42814,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.wcbTypes.SetLeft(3);
         this.wcbTypes.SetTop(31);
         this.wcbTypes.SetWidth(144);
-        this.wcbTypes.SetHeight(41);
+        this.wcbTypes.SetHeight(30);
         this.wcbTypes.SetAlign(5);
         this.wcbTypes.SetElementClassName("form-select");
         this.wcbTypes.SetElementFont(1);
@@ -43242,7 +43119,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addField("WebTimer2",pas["WEBLib.ExtCtrls"].$rtti["TTimer"],4);
     $r.addField("WebHTMLForm1",pas["WEBLib.ExtCtrls"].$rtti["THTMLForm"],4);
     $r.addMethod("ClearFilterLists",0,[],4);
-    $r.addMethod("SetNewCapturesFixedRow",0,[],4);
+    $r.addMethod("SetCapturesFormats",0,[],4);
     $r.addMethod("EPGGetCellClass",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint],["AField",pas.DB.$rtti["TField"]],["AValue",rtl.string],["AClassName",rtl.string,1]],4);
     $r.addMethod("SaveNewCapturesFile",0,[["id",rtl.string]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("LoadWIDBCDS",0,[],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
@@ -43285,6 +43162,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
   });
   this.CWRmainFrm = null;
   $mod.$implcode = function () {
+    $impl.CLIENT_APP_KEY = "654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com";
     $impl.ResetPrompt = "none";
     $impl.VisiblePanelNum = 0;
     $impl.FirstEndDate = 0.0;
@@ -43297,54 +43175,17 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $impl.NUMDAYS = "NumDisplayDays";
     $impl.NUMHIST = "NumHistoryItems";
     $impl.EMAILADDR = "emailAddress";
+    $impl.CSV_EPG = "cwr_epg.csv";
+    $impl.CSV_CAPTURES = "cwr_captures.csv";
+    $impl.CSV_NEWCAPTURES = "cwr_newcaptures.csv";
+    $impl.CSV_HISTORY = "cwr_history.csv";
     $impl.TypeClass = ["green","rose","goldenRod","gray"];
     $impl.Log = function (s) {
       $mod.CWRmainFrm.WebMemo2.FLines.Add(pas.SysUtils.DateTimeToStr(pas.SysUtils.Now(),false) + "--" + s);
       window.console.log(pas.SysUtils.DateTimeToStr(pas.SysUtils.Now(),false) + "--" + s);
     };
-    $impl.SetTableDefaults = function (WSG, C0, C1, C2, C3) {
-      var i = 0;
-      WSG.SetColWidths(0,C0);
-      WSG.SetColWidths(1,C1);
-      WSG.SetColWidths(2,C2);
-      WSG.SetColWidths(3,C3);
-      for (var $l = 4, $end = WSG.FColCount - 1; $l <= $end; $l++) {
-        i = $l;
-        WSG.SetColWidths(i,0);
-      };
-      WSG.SetColAlignments(0,2);
-      WSG.SetColAlignments(1,2);
-    };
     $impl.SetLabelStyle = function (lbl, State) {
       lbl.FFont.SetColor(pas.Math.IfThen(State,255,12698049));
-    };
-    $impl.SaveLocalStrings = function (SG, LSName) {
-      var sl = null;
-      var i = 0;
-      sl = pas.Classes.TStringList.$create("Create$1");
-      SG.SaveToStrings(sl,",",true);
-      for (var $l = 0, $end = sl.GetCount() - 1; $l <= $end; $l++) {
-        i = $l;
-        pas["WEBLib.Storage"].TLocalStorage.SetValue(LSName + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
-            return i;
-          }, set: function (v) {
-            i = v;
-          }}),sl.Get(i));
-      };
-      i = sl.GetCount();
-      while (pas["WEBLib.Storage"].TLocalStorage.GetValue(LSName + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
-          return i;
-        }, set: function (v) {
-          i = v;
-        }})) > "") {
-        pas["WEBLib.Storage"].TLocalStorage.RemoveKey(LSName + pas.SysUtils.TIntegerHelper.ToString$1.call({p: sl.GetCount(), get: function () {
-            return this.p;
-          }, set: function (v) {
-            this.p = v;
-          }}));
-        i += 1;
-      };
-      sl = rtl.freeLoc(sl);
     };
   };
 },["TypInfo","Math","DateUtils","SchedUnit2","Details"]);

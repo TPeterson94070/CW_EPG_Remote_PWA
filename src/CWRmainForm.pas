@@ -75,7 +75,7 @@ type
     WebTimer2: TWebTimer;
     WebHTMLForm1: TWebHTMLForm;
   procedure ClearFilterLists;
-  procedure SetNewCapturesFixedRow;
+  procedure SetCapturesFormats;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
   [async] procedure SaveNewCapturesFile(id: string);
@@ -90,7 +90,6 @@ type
   procedure UpdateHistory(Sender: TObject);
   [async]
   procedure ChangeTargetHTPC(Sender: TObject);
-//  procedure ListingClick(Sender: TObject);
   [async] procedure HistoryClick(Sender: TObject);
   [async] procedure ScheduledClick(Sender: TObject);
   [async] procedure ViewLog1Click(Sender: TObject);
@@ -128,16 +127,16 @@ type
 private
   { Private declarations }
   [async] procedure LogDataRange;
-  procedure ReloadSG(var SG: TWebStringGrid; LSName: string);  [async]
+  [async] procedure LoadSG(var SG: TWebStringGrid; LSName: string);
   [async] procedure SetPage(PageNum: Integer);
   [async]
   procedure FetchCapReservations;
   [async]
   procedure FetchNewCapRequests;
   [async]
-  procedure FillTable(WSG: TWebStringGrid; rs: string);
+  procedure FillTable(var WSG: TWebStringGrid; rs: string);
   [async]
-  procedure RefreshCSV(WSG: TWebStringGrid; TableFile, Title: string; var id: string);
+  procedure RefreshCSV(TableFile, Title: string; var id: string);
   [async]
   procedure FetchHistory;
   [async]
@@ -172,7 +171,7 @@ uses
   TypInfo, System.Math, System.Variants, DateUtils, SchedUnit2, Details;
 
 {$R *.dfm}
-
+{$I AppKey.inc}
 var
   ResetPrompt:      string = 'none' ;
   VisiblePanelNum:  Integer = 0;
@@ -187,6 +186,10 @@ const
   NUMDAYS = 'NumDisplayDays';
   NUMHIST = 'NumHistoryItems';
   EMAILADDR = 'emailAddress';
+  CSV_EPG = 'cwr_epg.csv';
+  CSV_CAPTURES = 'cwr_captures.csv';
+  CSV_NEWCAPTURES = 'cwr_newcaptures.csv';
+  CSV_HISTORY = 'cwr_history.csv';
   TypeClass: array[ProgramTypes] of string = ('green','rose','goldenRod','gray');
 
 procedure Log(const s: string); // {$IFDEF PAS2JS} async; {$ENDIF}
@@ -196,19 +199,19 @@ begin
   console.log(DateTimeToStr(now) + '--' + s);
 end;
 
-procedure SetTableDefaults(WSG: TWebStringGrid; C0, C1, C2, C3: Integer);
-var
-  i: Integer;
-begin
-  WSG.ColWidths[0] := C0;
-  WSG.ColWidths[1] := C1;
-  WSG.ColWidths[2] := C2;
-  WSG.ColWidths[3] := C3;
-  for i := 4 to WSG.ColCount-1 do WSG.ColWidths[i] := 0;
-  WSG.ColAlignments[0] := taCenter;
-  WSG.ColAlignments[1] := taCenter;
-
-end;
+//procedure SetTableDefaults(WSG: TWebStringGrid; C0, C1, C2, C3: Integer);
+//var
+//  i: Integer;
+//begin
+//  WSG.ColWidths[0] := C0;
+//  WSG.ColWidths[1] := C1;
+//  WSG.ColWidths[2] := C2;
+//  WSG.ColWidths[3] := C3;
+//  for i := 4 to WSG.ColCount-1 do WSG.ColWidths[i] := 0;
+//  WSG.ColAlignments[0] := taCenter;
+//  WSG.ColAlignments[1] := taCenter;
+//
+//end;
 
 procedure TCWRmainFrm.wcbGenresChange(Sender: TObject);
 begin
@@ -332,7 +335,8 @@ begin
   Log('======== "Refresh Data" clicked');
   WIDBCDS.Close;
   ClearFilterLists;
-  {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(BufferGrid, 'cwr_epg.csv','EPG', id));
+  {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_EPG,'EPG', id));
+  FillTable(BufferGrid, CSV_EPG);
   if BufferGrid.RowCount > 0 then
   begin
     Log('********* Starting timer');
@@ -383,7 +387,6 @@ begin
   begin
     TWebLocalStorage.SetValue(NUMDAYS, cbNumDisplayDays.Text);
     Log('New number EPG Display Days: ' + cbNumDisplayDays.Text);
-//    WIDBCDS.Close; // Needed???
     ClearFilterLists;
     {$IfDef PAS2JS}await{$EndIf}(SetupWIDBCDS);
     {$IfDef PAS2JS}await{$EndIf}(ReFreshListings);
@@ -406,9 +409,9 @@ procedure TCWRmainFrm.btnSchdRefrshClick(Sender: TObject);
 begin
   {$IfDef PAS2JS}await{$EndIf}(FetchCapReservations);
   {$IfDef PAS2JS}await{$EndIf}(FetchNewCapRequests);
-  // Call Reload to strip stale entries
-  ReloadSG(Captures, 'sl');
-  ReloadSG(NewCaptures, 'nc');
+  {$IfDef PAS2JS}await{$EndIf}(LoadSG(Captures, CSV_CAPTURES));
+  {$IfDef PAS2JS}await{$EndIf}(LoadSG(NewCaptures, CSV_NEWCAPTURES));
+  SetCapturesFormats;
   pnlWaitPls.Hide;
 end;
 
@@ -434,8 +437,8 @@ begin
       WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
       {$IfDef PAS2JS}EPG.Row := 1{$EndIf};
 //      x := EPG.Cells[3,1];
-      Log('++ ^Rec EPG.Row: ' + EPG.Cells[3,1]);
-      Log('++ WIDBCDS.RecNo: ' + WIDBCDS.RecNo.ToString);
+//      Log('++ ^Rec EPG.Row: ' + EPG.Cells[3,1]);
+//      Log('++ WIDBCDS.RecNo: ' + WIDBCDS.RecNo.ToString);
     end;
   finally
     ByAll.OnClick := ByAllClick;
@@ -492,7 +495,6 @@ begin
       {$IfDef PAS2JS}await{$EndIf}(SetFilters);
     end else
     begin
-//      ByTitle.Checked := True;
       wcbGenres.Hide;
       wcbChannels.Hide;
       wcbTypes.Hide;
@@ -564,7 +566,7 @@ procedure TCWRmainFrm.CapturesGetCellData(Sender: TObject; ACol, ARow: Integer;
 begin
   if ARow = 0 then Exit;
   if ACol = 2 then AValue := Copy(AValue,4,10);
-  if ACol = 3 then AValue := FormatDateTime('mm/dd', StrToDate(AValue));
+  if ACol = 3 then AValue := IfThen(AValue > '', FormatDateTime('mm/dd', StrToDateDef(AValue, 0)));
 end;
 
 procedure TCWRmainFrm.cbNumDisplayDaysChange(Sender: TObject);
@@ -592,7 +594,7 @@ var
   begin
     console.log('AccessToken: ' + WebRESTClient1.AccessToken);
     if WebRESTClient1.AccessToken = '' then ResetPrompt := 'select_account';
-    WebRESTClient1.App.Key := '654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com';
+    WebRESTClient1.App.Key := CLIENT_APP_KEY;
     WEBRESTClient1.App.CallBackURL := window.location.href;
     WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth'
       + '?client_id=' + WebRESTCLient1.App.Key
@@ -675,26 +677,35 @@ begin
   end;
 end;
 
-procedure TCWRmainFrm.FillTable(WSG: TWebStringGrid; rs: string);
+procedure TCWRmainFrm.FillTable(var WSG: TWebStringGrid; rs: string);
 var
   Line: string;
   sl: TStrings;
   ReplyArray: TArray<string>;
 begin
-  sl := TStringList.Create;
-  rs := ReplaceStr(rs, #10, ''); // dump linefeeds
-  rs := ReplaceStr(rs, #160, ''); // dump &nbsp too
-  ReplyArray := rs.Split([#13],TStringSplitOptions.ExcludeEmpty);
-  Log('Begin extract ' + IntToStr(Length(ReplyArray)) + ' strings');
-  for Line in ReplyArray do sl.Add(Line);
-  WSG.LoadFromStrings(sl, ',', True);
+  rs := TLocalStorage.GetValue(rs);
+  if rs > '' then
+  begin
+    sl := TStringList.Create;
+    rs := ReplaceStr(rs, #10, ''); // dump linefeeds
+    rs := ReplaceStr(rs, #160, ''); // dump &nbsp too
+    ReplyArray := rs.Split([#13],TStringSplitOptions.ExcludeEmpty);
+    Log('Begin extract ' + IntToStr(Length(ReplyArray)) + ' strings');
+    for Line in ReplyArray do sl.Add(Line);
+    WSG.BeginUpdate;
+    WSG.LoadFromStrings(sl, ',', True);
+    // dump empty rows
+    while WSG.Cells[0,Pred(WSG.RowCount)] = '' do WSG.RowCount := Pred(WSG.RowCount);
+    WSG.EndUpdate;
+  end
+  else WSG.RowCount := 0;
   Log(WSG.Name+'.RowCount: ' + WSG.RowCount.ToString);
   Log('Done loading '+WSG.Name);
   sl.Free; // := nil;
 
 end;
 
-procedure TCWRmainFrm.RefreshCSV(WSG: TWebStringGrid; TableFile, Title: string; var id: string);
+procedure TCWRmainFrm.RefreshCSV(TableFile, Title: string; var id: string);
 var
   Reply: string;
 begin
@@ -702,7 +713,6 @@ begin
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing ' + Title));
   if application.IsOnline then
   begin
-    WSG.BeginUpdate;
     try
       Log('Requesting: ' + TableFile);
       try
@@ -713,9 +723,8 @@ begin
           // Reshow message in case lost during OAuth
           {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing ' + Title));
           Log(TableFile + ' starts: ' + copy(Reply,1,50));
-          FillTable(WSG, Reply);
-        end
-        else WSG.RowCount := 0;
+        end;
+        TLocalStorage.SetValue(TableFile, Reply);
       except
         on E:Exception do
         begin
@@ -725,7 +734,6 @@ begin
       end;
     finally
       Log('ReFreshCSV in finally section');
-      WSG.EndUpdate;
     end;
   end
   else
@@ -733,7 +741,7 @@ begin
     TAwait.ExecP<TModalResult> (MessageDlgAsync('Cannot refresh EPG data while CW_EPG_Remote is offline', mtInformation, [mbOK]));
     Log('No LAN connection');
   end;
-  Log('ReFreshCSV, '+WSG.Name+' RowCount: ' + WSG.RowCount.ToString);
+  Log('ReFreshCSV, '+TableFile+' Length: ' + IntToStr(Length(Reply)));
 end;
 
 procedure TCWRmainFrm.LoadWIDBCDS;
@@ -835,7 +843,8 @@ begin
     Title := NewCaptures.Cells[3,ARow];
     ProgID := NewCaptures.Cells[6,ARow];
     NewCaptures.BeginUpdate;
-    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(NewCaptures, 'cwr_newcaptures.csv','New Captures', id));
+    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES,'New Captures', id));
+    FillTable(NewCaptures, CSV_NEWCAPTURES);
     Log('NewCaptures Rows: '+NewCaptures.RowCount.ToString);
     if NewCaptures.RowCount > 1 then // file exists, find matching row
       for i := 1 to Pred(NewCaptures.RowCount) do
@@ -877,9 +886,6 @@ begin
     Log('LastStartDate (UTC) (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(LastStartDate));
     Log('LastStartDate - Now: ' + Double(LastStartDate - TTimeZone.Local.ToUniversalTime(Now)).ToString);
     TotalAvailableDays := Trunc(LastStartDate - TTimeZone.Local.ToUniversalTime(Now));
-  //  Log('Avail days: ' + TotalAvailableDays.ToString);
-//    if WIDBCDS.ControlsDisabled then WIDBCDS.EnableControls;
-//      WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
   end else TotalAvailableDays := 0;
 end;
 
@@ -936,13 +942,11 @@ begin
       + ' and StartTime <= ' + Double(LastStartTime).ToString;
   Log('BaseFilter(UTC): EndTime >= ' + DateTimeToStr(FirstEndTime)
       + ' and StartTime <= ' + DateTimeToStr(LastStartTime));
-//  Log(' Finished calculating BaseFilter params');
   Log(' WIDBCDS.Filtered is ' + IfThen(WIDBCDS.Filtered, 'True', 'False'));
   if WIDBCDS.Filtered then WIDBCDS.Filtered := False;
   Log(' WIDBCDS is not filtered');
   WIDBCDS.Filter := BaseFilter;
   Log(' WIDBCDS BaseFilter assigned, but not active');
-//  WIDBCDS.Filtered := True;   // Don't take the time here
   EPG.Columns[0].Alignment := taCenter;
   EPG.Columns[2].Alignment := taLeftJustify;
   {$IfDef PAS2JS}await{$EndIf}(SetupFilterLists);
@@ -1013,8 +1017,6 @@ begin
     TLocalStorage.SetValue(cb.Name + 'Items', cb.Items.Text);
   end;
   sl.Free;
-//  if WIDBCDS.ControlsDisabled then WIDBCDS.EnableControls;
-//      WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
   Log('====== Exiting SetupFilterLists');
 end;
 
@@ -1072,8 +1074,6 @@ begin
   WIDBCDS.Filter := BaseFilter + fltr;
   WIDBCDS.Filtered := True;
   {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
-//  if StrToIntDef(EPG.Cells[3,1],0) > 0 then
-//    WIDBCDS.RecNo := EPG.Cells[3,1].ToInteger;
   {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
   WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
   EPG.EndUpdate;
@@ -1127,26 +1127,12 @@ begin
 end;
 
 
-procedure TCWRmainFrm.ReloadSG(var SG: TWebStringGrid; LSName: string);
+procedure TCWRmainFrm.LoadSG(var SG: TWebStringGrid; LSName: string);
 var i: Integer;
-    sl: TStringList;
     st, et: TDateTime;
 begin
-  SG.RowCount := 1;
-  if TWebLocalStorage.GetValue(LSName + '1') > '' then  // have stored value(s)
-  begin
-    sl := TStringList.Create;
-    i := 0;
-    while ReplaceStr(ReplaceStr(TWebLocalStorage.GetValue(LSName + i.ToString),'"',''),',','') > '' do
-    begin
-      sl.Add(TWebLocalStorage.GetValue(LSName + i.ToString));
-      Inc(i);
-    end;
-    SG.LoadFromStrings(sl, ',', True);
-    sl.Free;
-  end;
-  Log(SG.Name + ' Row Count: ' + SG.RowCount.ToString);
-  if SG.RowCount > 1 then  // have stored value(s)
+  {$IfDef PAS2JS}await{$EndIf}(FillTable(SG, LSName));
+  if (SG.RowCount > 1) and (SG <> HistoryTable) then  // have stored value(s)
   begin
     // Discard stale entries (End DateTime < now)
     for i := SG.RowCount-1 downto 1 do
@@ -1172,7 +1158,7 @@ begin
   end;
 end;
 
-procedure TCWRmainFrm.SetNewCapturesFixedRow;
+procedure TCWRmainFrm.SetCapturesFormats;
 const
   HEADINGS: array [0..6] of string = ('Ch Name','RecordStart','RecordEnd','Title','SubTitle','StartTime','ProgramID');
   WIDTHS: array [0..6] of Integer =  (       75,           95,         95,    150,       400,          0,         0 );
@@ -1183,27 +1169,29 @@ begin
     NewCaptures.Cells[i,0] := HEADINGS[i];
     NewCaptures.ColWidths[i] := WIDTHS[i];
   end;
+  for i := 0 to Captures.ColCount-1 do Captures.ColWidths[i] := 0;
+  if Captures.ColCount >= 9 then  // I.e., skip if FNF
+  begin
+    Captures.ColWidths[1] := 80;  // Computer
+    Captures.ColWidths[2] := 100; // Tuner
+    Captures.ColWidths[3] := 65; // Date
+    Captures.ColWidths[4] := 45; // Start
+    Captures.ColWidths[5] := 45; // End
+    Captures.ColWidths[6] := 70; // Channel
+    Captures.ColWidths[8] := Captures.ClientWidth; // Title
+    for i := 1 to 6 do Captures.ColAlignments[i] := taCenter;
+  end;
 end;
 
 procedure TCWRmainFrm.tbCapturesShow;
 var
-  i: Integer;
   UserMsg: string;
 
 begin
   btnSchdRefrsh.Show;
-  ReloadSG(Captures, 'sl');
-  ReloadSG(NewCaptures, 'nc');
-  SetNewCapturesFixedRow;
-  for i := 0 to Captures.ColCount-1 do Captures.ColWidths[i] := 0;
-  Captures.ColWidths[1] := 80;  // Computer
-  Captures.ColWidths[2] := 100; // Tuner
-  Captures.ColWidths[3] := 65; // Date
-  Captures.ColWidths[4] := 45; // Start
-  Captures.ColWidths[5] := 45; // End
-  Captures.ColWidths[6] := 70; // Channel
-  Captures.ColWidths[8] := Captures.ClientWidth; // Title
-  for i := 1 to 6 do Captures.ColAlignments[i] := taCenter;
+  {$IfDef PAS2JS}await{$EndIf}(LoadSG(Captures, CSV_CAPTURES));
+  {$IfDef PAS2JS}await{$EndIf}(LoadSG(NewCaptures, CSV_NEWCAPTURES));
+  SetCapturesFormats;
   Log('Captures.RowCount after stale check: ' + Captures.RowCount.ToString);
 
   if (Captures.RowCount = 2) and (Captures.Cells[25,1] = '-1') then  // Valid list w/no captures, reload??
@@ -1223,49 +1211,41 @@ end;
 
 procedure TCWRmainFrm.FillHistoryDisplay;
 var
-  sl: TStrings;
   i: Integer;
 
 begin
   Log('FillHistoryDisplay called');
-  HistoryTable.OnGetCellClass := nil;
-  sl := TStringList.Create;
-  for i := 0 to Pred(StrToIntDef(cbNumHistList.Text,0)) do
-    if TWebLocalStorage.GetValue('hl'+i.ToString) > '' then
-      sl.Add(TWebLocalStorage.GetValue('hl'+i.ToString));
-  Log('sl.Count: ' + sl.Count.ToString);
-  Log('historyTable.BeginUpdate');
-
-  historyTable.BeginUpdate;
-  historyTable.RowCount := sl.Count;
-  if sl.Count > 1 then begin
-    Log('historyTable.LoadFromStrings');
-    historyTable.LoadFromStrings(sl,',',True);
+  try
+    Log('historyTable.BeginUpdate');
+    HistoryTable.BeginUpdate;
+    LoadSG(HistoryTable, CSV_HISTORY);
+    HistoryTable.Align := alClient;
+//    HistoryTable.EndUpdate;
+    Log('historyTable.ColCount: ' + historyTable.ColCount.ToString);
     Log('historyTable.RowCount: ' + historyTable.RowCount.ToString);
+//    HistoryTable.BeginUpdate;
+    for i := 0 to Pred(HistoryTable.ColCount) do HistoryTable.ColWidths[i] := 0;
+    if HistoryTable.ColCount >= 14 then
+    begin
+      HistoryTable.ColWidths[8] := 120;
+      HistoryTable.ColWidths[10] := 150;
+      HistoryTable.ColWidths[12] := 250;
+      HistoryTable.ColWidths[13] := 300;
+      HistoryTable.ColAlignments[8] := taCenter;
+      HistoryTable.ColAlignments[10] := taCenter;
+    end;
+    for i := 1 to Pred(HistoryTable.RowCount) do
+    begin
+      HistoryTable.Cells[0,i] := Format('%10.3f',[StrToDateTime(HistoryTable.Cells[8,i])]);
+      HistoryTable.Cells[8,i] := FormatDateTime('mm/dd/yy h:nna/p', StrToDateTime(HistoryTable.Cells[8,i]))
+    end;
+    HistoryTable.Cells[8,0] := HistoryTable.Cells[8,0] + ' ^'; // Show ascending time sort
+    HistoryTableFixedCellClick(Self, 8, 0);  // Change to descending
+    while HistoryTable.RowCount > StrToInt(cbNumHistList.Text) do HistoryTable.RemoveRow(Pred(HistoryTable.RowCount));
+  finally
     HistoryTable.EndUpdate;
+    Log('FillHistoryDisplay finished');
   end;
-  Log('historyTable.ColCount: ' + historyTable.ColCount.ToString);
-  HistoryTable.BeginUpdate;
-  for i := historyTable.ColCount-1 downto 0 do
-  begin
-    if i in [8,10,12,13,14] then continue;
-    historyTable.RemoveColumn(i);
-  end;
-  Log('historyTable.ColCount: ' + historyTable.ColCount.ToString);
-  sl.Clear;
-  HistoryTable.SaveToStrings(sl,',',True);
-  HistoryTable.OnGetCellClass := HistoryTableGetCellClass;
-  HistoryTable.LoadFromStrings(sl,',',True);
-  sl.Free;
-  SetTableDefaults(HistoryTable, 120, 150, 250, 300);
-  for i := 1 to HistoryTable.RowCount - 1 do
-  begin
-    HistoryTable.Cells[4,i] := Format('%10.3f',[StrToDateTime(HistoryTable.Cells[0,i])]);
-    HistoryTable.Cells[0,i] := FormatDateTime('mm/dd/yy h:nna/p', StrToDateTime(HistoryTable.Cells[0,i]))
-  end;
-  HistoryTable.Cells[0,0] := HistoryTable.Cells[0,0] + ' v'; // Show descending time sort
-  HistoryTable.EndUpdate;
-  Log('FillHistoryDisplay finished');
 end;
 
 procedure TCWRmainFrm.HistoryClick(Sender: TObject);
@@ -1284,7 +1264,7 @@ begin
   if RightStr(HistoryTable.Cells[ACol,0],1) = '^' then SortDir := siDescending
   else SortDir := siAscending;
   Log('HistoryTableFixedCellClick, ACol: '+ACol.ToString+', RowCount: '+HistoryTable.RowCount.ToString);
-  i := IfThen(ACol=0, 4, ACol);
+  i := IfThen(ACol=8, 0, ACol);
   HistoryTable.BeginUpdate;
   HistoryTable.Sort(i,SortDir);
   HistoryTable.EndUpdate;
@@ -1300,9 +1280,9 @@ end;
 procedure TCWRmainFrm.HistoryTableGetCellClass(Sender: TObject; ACol,
   ARow: Integer; AField: TField; AValue: string; var AClassName: string);
 begin
-  if (ARow > 0) and (HistoryTable.Cells[0,ARow] > '') then
+  if (ARow > 0) {and (HistoryTable.Cells[8,ARow] > '')} then
   begin
-    case HistoryTable.Cells[1,ARow][1] of
+    case HistoryTable.Cells[10,ARow][1] of
       'E': AClassName := 'green';         // Regular Episode
       'S': AClassName := 'gray';          // Generic Show
       'M': AClassName := 'goldenRod';     // Movie
@@ -1315,15 +1295,18 @@ end;
 procedure TCWRmainFrm.tbHistoryShow;
 begin
   HistoryTable.Visible := False;
-  {$IfDef PAS2JS}await{$EndIf}(FillHistoryDisplay);
   Log('HistoryTable.RowCount: ' + HistoryTable.RowCount.ToString);
-  if HistoryTable.RowCount <> StrToInt(cbNumHistList.Text) {+ 1} then  // may need History data
+  if HistoryTable.RowCount <> StrToInt(cbNumHistList.Text) then  // need History data
   begin
-    Log('The History list is empty/incomplete. Prompt for refresh');
-    if TAwait.ExecP<TModalResult> (MessageDlgAsync('The History list '
-     + IfThen(HistoryTable.RowCount < 2,'is empty','may be incomplete')
-      + #13#13'Do you want to refresh it now?',mtConfirmation, [mbYes,mbNo]))
-      = mrYes then {$IfDef PAS2JS}await{$EndIf}(UpdateHistory(Self));
+    {$IfDef PAS2JS}await{$EndIf}(FillHistoryDisplay);
+    if {still} HistoryTable.RowCount <> StrToInt(cbNumHistList.Text) then  // may need History refresh
+    begin
+      Log('The History list is empty/incomplete. Prompt for refresh');
+      if TAwait.ExecP<TModalResult> (MessageDlgAsync('The History list '
+       + IfThen(HistoryTable.RowCount < 2,'is empty','may be incomplete')
+        + #13#13'Do you want to refresh it now?',mtConfirmation, [mbYes,mbNo]))
+        = mrYes then {$IfDef PAS2JS}await{$EndIf}(UpdateHistory(Self));
+    end;
   end;
   HistoryTable.Visible := True;
 end;
@@ -1504,41 +1487,14 @@ begin
   end;
 end;
 
-procedure SaveLocalStrings(SG: TWebStringGrid; LSName: string);
-var
-  sl: TStringList;
-  i: Integer;
-begin
-  sl := TStringList.Create;
-  SG.SaveToStrings(sl, ',', True);
-  for i := 0 to sl.Count - 1 do
-    TWebLocalStorage.SetValue(LSName + i.ToString, sl[i]);
-  i := sl.Count;
-  while TWebLocalStorage.GetValue(LSName + i.ToString) > '' do
-  begin
-    TWebLocalStorage.RemoveKey(LSName + sl.Count.ToString);  // dump old value
-    Inc(i);
-  end;
-  sl.Free;
-end;
-
 procedure TCWRmainFrm.FetchCapReservations;  // Fetch CW_EPG-saved file
 
 var
   id: string;
 begin
   Log(' ====== FetchCapReservations called =========');
-  // Turn off GetCellData (modifies Cols 1, 2 for display)
-  Captures.OnGetCellData := nil;
-  try
-    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(Captures, 'cwr_captures.csv', 'Scheduled', id));
-    // Save unmodified capture data to Local Storage
-    SaveLocalStrings(Captures, 'sl');
-  finally
-    // Turn GetCellData formatting back on
-    Captures.OnGetCellData := AllCapsGridGetCellData;
+    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_CAPTURES, 'Scheduled', id));
     Log(' ====== FetchCapReservations finished =========');
-  end;
 end;
 
 procedure TCWRmainFrm.FetchNewCapRequests;  // Fetch CW_EPG-saved file
@@ -1547,52 +1503,17 @@ var
   id: string;
 begin
   Log(' ====== FetchNewCapRequests called =========');
-  // Turn off GetCellData (modifies Cols 1, 2 for display)
-  NewCaptures.OnGetCellData := nil;
-  try
-    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(NewCaptures, 'cwr_newcaptures.csv', 'New Captures', id));
-    // Save unmodified request data to Local Storage
-    SaveLocalStrings(NewCaptures, 'nc');
-  finally
-    // Turn GetCellData formatting back on
-    NewCaptures.OnGetCellData := NewCapturesGetCellData;
+    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES, 'New Captures', id));
     Log(' ====== FetchNewCapRequests finished =========');
-  end;
 end;
 
 procedure TCWRmainFrm.FetchHistory;
 
 var
-  i: Integer;
   id: string;
-  sl: TStrings;
 begin
   Log(' ====== FetchHistory called =========');
-  HistoryGrid.BeginUpdate;
-  HistoryGrid.ColCount := 32;
-  {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(HistoryGrid, 'cwr_history.csv','History', id));
-  Log('History Rows: '+HistoryGrid.RowCount.ToString);
-  for i := HistoryGrid.RowCount-1 downto 1 do // Remove blanks, add leading zeroes
-  begin
-    if HistoryGrid.Cells[0,i] = '' then HistoryGrid.RemoveRow(i)
-    else HistoryGrid.Cells[0,i] := RightStr('000000' + HistoryGrid.Cells[0,i],6);
-  end;
-  // Sort Table by ID (field 0)
-  HistoryGrid.Sort(0,siAscending);
-  Log('History Rows: '+HistoryGrid.RowCount.ToString);
-  // Save history data to Local Storage
-  sl := TStringList.Create;
-  HistoryGrid.SaveToStrings(sl, ',', True);
-//  HistoryGrid.RowCount := 1;  // Free memory??
-  Log('sl Count: '+sl.Count.ToString);
-  // Save Headings in Fixed Row
-  TWebLocalStorage.SetValue('hl0', sl[0]);
-  // Save Num History Events in reverse order
-  for i := 1 to sl.Count-1 do
-    TWebLocalStorage.SetValue('hl' + i.ToString, sl[sl.Count - i]);
-  sl.Free;
-//  {$IfDef PAS2JS}await{$EndIf}(FillHistoryDisplay);
-  HistoryGrid.EndUpdate;
+    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_HISTORY,'History', id));
   Log(' ====== FetchHistory finished =========');
 end;
 
@@ -1603,18 +1524,19 @@ var
   id: string;
 begin
   Log(' ====== UpdateNewCaptures called =========');
-  {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(NewCaptures, 'cwr_newcaptures.csv','New Captures', id));
+  {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES,'New Captures', id));
+  FillTable(NewCaptures, CSV_NEWCAPTURES);
   Log('NewCaptures Rows: '+NewCaptures.RowCount.ToString);
   if NewCaptures.RowCount = 0 then // fnf, create new one
   begin
     NewCaptures.RowCount := 1;
     NewCaptures.ColCount := 7;
-    {$IfDef PAS2JS}await{$EndIf}(CreateGoogleFile('cwr_newcaptures.csv', id));
+    {$IfDef PAS2JS}await{$EndIf}(CreateGoogleFile(CSV_NEWCAPTURES, id));
   end
   else
     for i := Pred(NewCaptures.RowCount) downto 1 do // Remove blank rows
       if NewCaptures.Cells[0,i] = '' then NewCaptures.RemoveRow(i);
-  SetNewCapturesFixedRow;
+  SetCapturesFormats;
 // Add the new capture to the list
   NewCaptures.RowCount := NewCaptures.RowCount + 1;
   NewCaptures.Cells[0,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('PSIP').AsString;
@@ -1635,8 +1557,6 @@ procedure TCWRmainFrm.SaveNewCapturesFile(id: string);
 var data: TStrings;
   res: TJSXMLHttpRequest;
 begin
-  // Update the local strings
-  SaveLocalStrings(NewCaptures, 'nc');
   // Update the file
   data := TStringList.Create;
   data.LineBreak := #13#10;
