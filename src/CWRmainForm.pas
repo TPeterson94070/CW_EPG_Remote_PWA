@@ -61,7 +61,6 @@ type
     pnlFilterSelection: TWebPanel;
     lblFilterSelect: TWebLabel;
     WebHTMLDiv4: TWebHTMLDiv;
-    HistoryGrid: TWebStringGrid;
     cbNumDisplayDays: TWebComboBox;
     cbNumHistList: TWebComboBox;
     btnOptOK: TWebButton;
@@ -124,6 +123,7 @@ type
     procedure CapturesGetCellData(Sender: TObject; ACol, ARow: Integer;
       AField: TField; var AValue: string);
     [async] procedure CapturesClickCell(Sender: TObject; ACol, ARow: Integer);
+    procedure HistoryTableClickCell(Sender: TObject; ACol, ARow: Integer);
 private
   { Private declarations }
   [async] procedure LogDataRange;
@@ -158,6 +158,7 @@ private
   [async] procedure ShowPlsWait(PlsWaitCap: string);
   [async] procedure SetupFilterLists;
   [async] procedure ShowItemDetails(ItemNo: Integer; DoCapture: Boolean = True);
+  [async] procedure ShowHistoryDetails(ItemNo: Integer);
 public
   { Public declarations }
 end;
@@ -1215,15 +1216,13 @@ var
 
 begin
   Log('FillHistoryDisplay called');
+  Log('historyTable.BeginUpdate');
+  HistoryTable.BeginUpdate;
   try
-    Log('historyTable.BeginUpdate');
-    HistoryTable.BeginUpdate;
     LoadSG(HistoryTable, CSV_HISTORY);
     HistoryTable.Align := alClient;
-//    HistoryTable.EndUpdate;
     Log('historyTable.ColCount: ' + historyTable.ColCount.ToString);
     Log('historyTable.RowCount: ' + historyTable.RowCount.ToString);
-//    HistoryTable.BeginUpdate;
     for i := 0 to Pred(HistoryTable.ColCount) do HistoryTable.ColWidths[i] := 0;
     if HistoryTable.ColCount >= 14 then
     begin
@@ -1253,6 +1252,12 @@ begin
   Log('History called');
   {$IfDef PAS2JS}await{$EndIf}(SetPage(2));
   Log('History visible');
+end;
+
+procedure TCWRmainFrm.HistoryTableClickCell(Sender: TObject; ACol,
+  ARow: Integer);
+begin
+  ShowHistoryDetails(ARow);
 end;
 
 procedure TCWRmainFrm.HistoryTableFixedCellClick(Sender: TObject; ACol,
@@ -1377,6 +1382,68 @@ begin
   AClassName := WIDBCDS.Fields[15].AsString
 end;
 
+procedure TCWRmainFrm.ShowHistoryDetails(ItemNo: Integer);
+var
+  DetailsFrm: TDetailsFrm;
+  x: TArray<string>;
+begin
+  try
+    DetailsFrm := TDetailsFrm.Create(Self);
+    Log('========== finished TDetailsFrm.Create(Self) ');
+    DetailsFrm.Popup := True;
+    DetailsFrm.Border := fbSingle;
+    Log('========== starting DetailsFrm.Load ');
+    // load file HTML template + controls
+    try
+      TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load);
+      Log('========== finished DetailsFrm.Load ');
+    except
+      on E:Exception do
+      Log('Exception from DetailsFrm.Load: ' + E.Message);
+    end;
+    {$IfDef PAS2JS}DetailsFrm.Color := clWheat;
+    DetailsFrm.mmTitle.Color := clChocolate;
+    DetailsFrm.mmSubTitle.Color := clChocolate;
+    DetailsFrm.mmDescription.Color := clChocolate;
+    DetailsFrm.lblTitle.Color := clWheat;
+    DetailsFrm.lblSubTitle.Color := clWheat;
+    DetailsFrm.lblDescription.Color := clWheat;
+    {$EndIf}
+    // init controls after loading
+    DetailsFrm.mmTitle.Text := HistoryTable.Cells[12,ItemNo];
+    DetailsFrm.mmSubTitle.Text := HistoryTable.Cells[13,ItemNo];
+    DetailsFrm.lb11Time.Caption := HistoryTable.Cells[8,ItemNo]
+       +  FormatDateTime(' -- h:nna/p',StrToDateTime(HistoryTable.Cells[9,ItemNo]));
+    DetailsFrm.lb10Channel.Caption := HistoryTable.Cells[7,ItemNo];
+    x := HistoryTable.Cells[15,ItemNo].Split(['/']);              // Parse 1st-air date
+    DetailsFrm.lb09OrigDate.Caption := IfThen(Length(x) = 3,      // Have mm/dd/yyyy
+      '1st Aired ' + x[1] + '/' + x[2] + '/' + RightStr(x[0],2),
+      IfThen((Length(x) = 1) and (x[0] > ''),                                       // Have yyyymmdd format
+      '1st Aired ' + copy(x[0],5,2) + '/' + copy(x[0],7,2) + '/' + copy(x[0],3,2),
+      IfThen(HistoryTable.Cells[22,ItemNo] > '',                  // Check Movie year
+      'Movie Yr ' + HistoryTable.Cells[22,ItemNo],'')));          // Use Movie year or nil
+    DetailsFrm.lb02New.Caption := HistoryTable.Cells[19,ItemNo];
+    SetLabelStyle(DetailsFrm.lb08CC, HistoryTable.Cells[18,ItemNo].Contains('T'));
+    SetLabelStyle(DetailsFrm.lb03Stereo, HistoryTable.Cells[17,ItemNo].Contains('T'));
+    SetLabelStyle(DetailsFrm.lb07Dolby, HistoryTable.Cells[20,ItemNo].Contains('T'));
+    DetailsFrm.lb04HD.Caption := IfThen(HistoryTable.Cells[16,ItemNo].Contains('T'), 'HD', 'SD');
+    SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
+    DetailsFrm.mmDescription.Text := HistoryTable.Cells[14,ItemNo]
+      + IfThen(HistoryTable.Cells[28,ItemNo] > '', #13#13'Actors:  ' + ReplaceStr(
+        Copy(HistoryTable.Cells[28,ItemNo],1,Length(HistoryTable.Cells[28,ItemNo])-1)
+        ,';',', '));
+    // No capture requests
+    DetailsFrm.btnAddCap.Visible := False;
+    // execute form and wait for close
+    Log('========== starting DetailsFrm.Execute ');
+    TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
+    Log('========== finished DetailsFrm.Execute ');
+  finally
+    Log('========== EPGClickCell() Finished with Details form');
+    DetailsFrm.Free;
+  end;
+end;
+
 procedure TCWRmainFrm.ShowItemDetails(ItemNo: Integer; DoCapture: Boolean = True);
 var
   DetailsFrm: TDetailsFrm;
@@ -1412,6 +1479,7 @@ begin
       '1st Aired ' + x[1] + '/' + x[2] + '/' + RightStr(x[0],2),  // Use 1st-air date
       IfThen(WIDBCDS.Fields[13].AsString > '',                    // Check Movie year
       'Movie Yr ' + WIDBCDS.Fields[13].AsString,''));             // Use Movie year or nil
+    DetailsFrm.lb02New.Show;
     SetLabelStyle(DetailsFrm.lb02New, WIDBCDS.Fields[10].AsString <> '');
     SetLabelStyle(DetailsFrm.lb08CC, WIDBCDS.Fields[11].AsString.Contains('cc'));
     SetLabelStyle(DetailsFrm.lb03Stereo, WIDBCDS.Fields[11].AsString.Contains('stereo'));

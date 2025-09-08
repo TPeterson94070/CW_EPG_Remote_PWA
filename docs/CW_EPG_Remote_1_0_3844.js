@@ -13788,12 +13788,14 @@ rtl.module("WEBLib.Graphics",["System","Classes","Types","UITypes","Web","JS"],f
   this.clHighlightText = 0x30303;
   this.clBlueviolet = 0xE22B8A;
   this.clBurlywood = 0x87B8DE;
+  this.clChocolate = 0x1E69D2;
   this.clDarkgreen = 0x6400;
   this.clDarkolivegreen = 0x2F6B55;
   this.clDarkorange = 0x8CFF;
   this.clDarkseagreen = 0x8FBC8F;
   this.clDarkslategray = 0x4F4F2F;
   this.clHoneydew = 0xF0FFF0;
+  this.clWheat = 0xB3DEF5;
   this.ANSI_CHARSET = 0;
   this.DEFAULT_CHARSET = 1;
   this.$rtti.$inherited("TColor",rtl.nativeint,{});
@@ -40184,7 +40186,7 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
         this.lblTitle.SetHeight(10);
         this.lblTitle.SetAlign(1);
         this.lblTitle.SetCaption("Program Title");
-        this.lblTitle.SetColorEx(-1);
+        this.lblTitle.SetColorEx(15794160);
         this.lblTitle.FFont.FCharset = 0;
         this.lblTitle.FFont.SetColor(0);
         this.lblTitle.FFont.SetHeight(-8);
@@ -40193,6 +40195,7 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
         this.lblTitle.SetHeightStyle(2);
         this.lblTitle.SetHeightPercent(100.000000000000000000);
         this.lblTitle.SetParentFont(false);
+        this.lblTitle.SetTransparent(false);
         this.lblTitle.SetWidthPercent(100.000000000000000000);
         this.lblSubTitle.SetParentComponent(this.pnlDetails);
         this.lblSubTitle.SetName("lblSubTitle");
@@ -40202,7 +40205,7 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
         this.lblSubTitle.SetHeight(10);
         this.lblSubTitle.SetAlign(1);
         this.lblSubTitle.SetCaption("Program SubTitle");
-        this.lblSubTitle.SetColorEx(-1);
+        this.lblSubTitle.SetColorEx(15794160);
         this.lblSubTitle.FFont.FCharset = 0;
         this.lblSubTitle.FFont.SetColor(0);
         this.lblSubTitle.FFont.SetHeight(-8);
@@ -40211,6 +40214,7 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
         this.lblSubTitle.SetHeightStyle(2);
         this.lblSubTitle.SetHeightPercent(100.000000000000000000);
         this.lblSubTitle.SetParentFont(false);
+        this.lblSubTitle.SetTransparent(false);
         this.lblSubTitle.SetWidthPercent(100.000000000000000000);
         this.lblDescription.SetParentComponent(this.pnlDetails);
         this.lblDescription.SetName("lblDescription");
@@ -40220,7 +40224,7 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
         this.lblDescription.SetHeight(10);
         this.lblDescription.SetAlign(1);
         this.lblDescription.SetCaption("Program Description");
-        this.lblDescription.SetColorEx(-1);
+        this.lblDescription.SetColorEx(15794160);
         this.lblDescription.FFont.FCharset = 0;
         this.lblDescription.FFont.SetColor(0);
         this.lblDescription.FFont.SetHeight(-8);
@@ -40229,6 +40233,7 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
         this.lblDescription.SetHeightStyle(2);
         this.lblDescription.SetHeightPercent(100.000000000000000000);
         this.lblDescription.SetParentFont(false);
+        this.lblDescription.SetTransparent(false);
         this.lblDescription.SetWidthPercent(100.000000000000000000);
         this.mmTitle.SetParentComponent(this.pnlDetails);
         this.mmTitle.SetName("mmTitle");
@@ -40442,7 +40447,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.pnlFilterSelection = null;
       this.lblFilterSelect = null;
       this.WebHTMLDiv4 = null;
-      this.HistoryGrid = null;
       this.cbNumDisplayDays = null;
       this.cbNumHistList = null;
       this.btnOptOK = null;
@@ -40499,7 +40503,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.pnlFilterSelection = undefined;
       this.lblFilterSelect = undefined;
       this.WebHTMLDiv4 = undefined;
-      this.HistoryGrid = undefined;
       this.cbNumDisplayDays = undefined;
       this.cbNumHistList = undefined;
       this.btnOptOK = undefined;
@@ -41138,6 +41141,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $impl.Log("========== EPGClickCell() finished");
       };
     };
+    this.HistoryTableClickCell = function (Sender, ACol, ARow) {
+      this.ShowHistoryDetails(ARow);
+    };
     this.LogDataRange = async function () {
       $impl.Log("WIDBCDS.RecordCount:  " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
           return this.p;
@@ -41350,9 +41356,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.FillHistoryDisplay = async function () {
       var i = 0;
       $impl.Log("FillHistoryDisplay called");
+      $impl.Log("historyTable.BeginUpdate");
+      this.HistoryTable.BeginUpdate();
       try {
-        $impl.Log("historyTable.BeginUpdate");
-        this.HistoryTable.BeginUpdate();
         this.LoadSG({p: this, get: function () {
             return this.p.HistoryTable;
           }, set: function (v) {
@@ -41758,6 +41764,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
             this.p = v;
           }},["-"]);
         DetailsFrm.lb09OrigDate.SetCaption(pas.StrUtils.IfThen(rtl.length(x) === 3,"1st Aired " + x[1] + "/" + x[2] + "/" + pas.StrUtils.RightStr(x[0],2),pas.StrUtils.IfThen(this.WIDBCDS.FFieldList.GetField(13).GetAsString() > "","Movie Yr " + this.WIDBCDS.FFieldList.GetField(13).GetAsString(),"")));
+        DetailsFrm.lb02New.Show();
         $impl.SetLabelStyle(DetailsFrm.lb02New,this.WIDBCDS.FFieldList.GetField(10).GetAsString() !== "");
         $impl.SetLabelStyle(DetailsFrm.lb08CC,pas.SysUtils.TStringHelper.Contains.call({p: this.WIDBCDS.FFieldList.GetField(11).GetAsString(), get: function () {
             return this.p;
@@ -41825,6 +41832,73 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         DetailsFrm = rtl.freeLoc(DetailsFrm);
       };
     };
+    this.ShowHistoryDetails = async function (ItemNo) {
+      var DetailsFrm = null;
+      var x = [];
+      try {
+        DetailsFrm = pas.Details.TDetailsFrm.$create("Create$1",[this]);
+        $impl.Log("========== finished TDetailsFrm.Create(Self) ");
+        DetailsFrm.FPopup = true;
+        DetailsFrm.SetBorder(1);
+        $impl.Log("========== starting DetailsFrm.Load ");
+        try {
+          await DetailsFrm.Load();
+          $impl.Log("========== finished DetailsFrm.Load ");
+        } catch ($e) {
+          if (pas.SysUtils.Exception.isPrototypeOf($e)) {
+            var E = $e;
+            $impl.Log("Exception from DetailsFrm.Load: " + E.FMessage);
+          } else throw $e
+        };
+        DetailsFrm.SetColor(11788021);
+        DetailsFrm.mmTitle.SetColor(1993170);
+        DetailsFrm.mmSubTitle.SetColor(1993170);
+        DetailsFrm.mmDescription.SetColor(1993170);
+        DetailsFrm.lblTitle.SetColorEx(11788021);
+        DetailsFrm.lblSubTitle.SetColorEx(11788021);
+        DetailsFrm.lblDescription.SetColorEx(11788021);
+        DetailsFrm.mmTitle.SetText(this.HistoryTable.GetCells(12,ItemNo));
+        DetailsFrm.mmSubTitle.SetText(this.HistoryTable.GetCells(13,ItemNo));
+        DetailsFrm.lb11Time.SetCaption(this.HistoryTable.GetCells(8,ItemNo) + pas.SysUtils.FormatDateTime(" -- h:nna/p",pas.SysUtils.StrToDateTime(this.HistoryTable.GetCells(9,ItemNo))));
+        DetailsFrm.lb10Channel.SetCaption(this.HistoryTable.GetCells(7,ItemNo));
+        x = pas.SysUtils.TStringHelper.Split$1.call({p: this.HistoryTable.GetCells(15,ItemNo), get: function () {
+            return this.p;
+          }, set: function (v) {
+            this.p = v;
+          }},["/"]);
+        DetailsFrm.lb09OrigDate.SetCaption(pas.StrUtils.IfThen(rtl.length(x) === 3,"1st Aired " + x[1] + "/" + x[2] + "/" + pas.StrUtils.RightStr(x[0],2),pas.StrUtils.IfThen((rtl.length(x) === 1) && (x[0] > ""),"1st Aired " + pas.System.Copy(x[0],5,2) + "/" + pas.System.Copy(x[0],7,2) + "/" + pas.System.Copy(x[0],3,2),pas.StrUtils.IfThen(this.HistoryTable.GetCells(22,ItemNo) > "","Movie Yr " + this.HistoryTable.GetCells(22,ItemNo),""))));
+        DetailsFrm.lb02New.SetCaption(this.HistoryTable.GetCells(19,ItemNo));
+        $impl.SetLabelStyle(DetailsFrm.lb08CC,pas.SysUtils.TStringHelper.Contains.call({p: this.HistoryTable.GetCells(18,ItemNo), get: function () {
+            return this.p;
+          }, set: function (v) {
+            this.p = v;
+          }},"T"));
+        $impl.SetLabelStyle(DetailsFrm.lb03Stereo,pas.SysUtils.TStringHelper.Contains.call({p: this.HistoryTable.GetCells(17,ItemNo), get: function () {
+            return this.p;
+          }, set: function (v) {
+            this.p = v;
+          }},"T"));
+        $impl.SetLabelStyle(DetailsFrm.lb07Dolby,pas.SysUtils.TStringHelper.Contains.call({p: this.HistoryTable.GetCells(20,ItemNo), get: function () {
+            return this.p;
+          }, set: function (v) {
+            this.p = v;
+          }},"T"));
+        DetailsFrm.lb04HD.SetCaption(pas.StrUtils.IfThen(pas.SysUtils.TStringHelper.Contains.call({p: this.HistoryTable.GetCells(16,ItemNo), get: function () {
+            return this.p;
+          }, set: function (v) {
+            this.p = v;
+          }},"T"),"HD","SD"));
+        $impl.SetLabelStyle(DetailsFrm.lb04HD,DetailsFrm.lb04HD.FCaption !== "SD");
+        DetailsFrm.mmDescription.SetText(this.HistoryTable.GetCells(14,ItemNo) + pas.StrUtils.IfThen(this.HistoryTable.GetCells(28,ItemNo) > "","\r\rActors:  " + pas.StrUtils.ReplaceStr(pas.System.Copy(this.HistoryTable.GetCells(28,ItemNo),1,this.HistoryTable.GetCells(28,ItemNo).length - 1),";",", "),""));
+        DetailsFrm.btnAddCap.SetVisible(false);
+        $impl.Log("========== starting DetailsFrm.Execute ");
+        await DetailsFrm.Execute();
+        $impl.Log("========== finished DetailsFrm.Execute ");
+      } finally {
+        $impl.Log("========== EPGClickCell() Finished with Details form");
+        DetailsFrm = rtl.freeLoc(DetailsFrm);
+      };
+    };
     this.LoadDFMValues = function () {
       pas["WEBLib.Forms"].TCustomForm.LoadDFMValues.call(this);
       this.BufferGrid = pas["WEBLib.Grids"].TStringGrid.$create("Create$1",[this]);
@@ -41838,7 +41912,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WebButton1 = pas["WEBLib.StdCtrls"].TButton.$create("Create$1",[this]);
       this.pnlHistory = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
       this.HistoryTable = pas["WEBLib.Grids"].TStringGrid.$create("Create$1",[this]);
-      this.HistoryGrid = pas["WEBLib.Grids"].TStringGrid.$create("Create$1",[this]);
       this.pnlOptions = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
       this.WebGroupBox3 = pas["WEBLib.ExtCtrls"].TGroupBox.$create("Create$1",[this]);
       this.cbNumHistList = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
@@ -41893,7 +41966,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WebButton1.BeforeLoadDFMValues();
       this.pnlHistory.BeforeLoadDFMValues();
       this.HistoryTable.BeforeLoadDFMValues();
-      this.HistoryGrid.BeforeLoadDFMValues();
       this.pnlOptions.BeforeLoadDFMValues();
       this.WebGroupBox3.BeforeLoadDFMValues();
       this.cbNumHistList.BeforeLoadDFMValues();
@@ -41972,7 +42044,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.BufferGrid.FFont.SetStyle({});
         this.BufferGrid.FOptions = {};
         this.BufferGrid.SetParentFont(false);
-        this.BufferGrid.SetTabOrder(8);
+        this.BufferGrid.SetTabOrder(7);
         this.BufferGrid.SetVisible(false);
         this.BufferGrid.FStyleElements = {};
         this.BufferGrid.FFixedFont.FCharset = 1;
@@ -42237,36 +42309,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.HistoryTable.SetHeightStyle(0);
         this.HistoryTable.SetHeightPercent(100.000000000000000000);
         this.HistoryTable.SetWidthPercent(100.000000000000000000);
+        this.SetEvent$1(this.HistoryTable,this,"OnClickCell","HistoryTableClickCell");
         this.SetEvent$1(this.HistoryTable,this,"OnGetCellClass","HistoryTableGetCellClass");
-        this.HistoryGrid.SetParentComponent(this);
-        this.HistoryGrid.SetName("HistoryGrid");
-        this.HistoryGrid.SetLeft(56);
-        this.HistoryGrid.SetTop(352);
-        this.HistoryGrid.SetWidth(320);
-        this.HistoryGrid.SetHeight(120);
-        this.HistoryGrid.SetColCount(32);
-        this.HistoryGrid.SetDefaultRowHeight(22);
-        this.HistoryGrid.SetFixedCols(0);
-        this.HistoryGrid.FFont.FCharset = 0;
-        this.HistoryGrid.FFont.SetColor(0);
-        this.HistoryGrid.FFont.SetHeight(-19);
-        this.HistoryGrid.FFont.SetName("Arial");
-        this.HistoryGrid.FFont.SetStyle({});
-        this.HistoryGrid.FOptions = rtl.createSet(2,3,4);
-        this.HistoryGrid.SetParentFont(false);
-        this.HistoryGrid.SetTabOrder(7);
-        this.HistoryGrid.SetVisible(false);
-        this.HistoryGrid.FStyleElements = {};
-        this.HistoryGrid.SetElementFont(1);
-        this.HistoryGrid.FFixedFont.FCharset = 1;
-        this.HistoryGrid.FFixedFont.SetColor(65793);
-        this.HistoryGrid.FFixedFont.SetHeight(-37);
-        this.HistoryGrid.FFixedFont.SetName("Segoe UI");
-        this.HistoryGrid.FFixedFont.SetStyle({});
-        this.HistoryGrid.FRange.FMax = 100.000000000000000000;
-        this.HistoryGrid.FRange.FStep = 1.000000000000000000;
-        this.HistoryGrid.SetHeightPercent(100.000000000000000000);
-        this.HistoryGrid.SetWidthPercent(100.000000000000000000);
         this.pnlOptions.SetParentComponent(this);
         this.pnlOptions.SetName("pnlOptions");
         this.pnlOptions.SetLeft(0);
@@ -43014,7 +43058,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebButton1.AfterLoadDFMValues();
         this.pnlHistory.AfterLoadDFMValues();
         this.HistoryTable.AfterLoadDFMValues();
-        this.HistoryGrid.AfterLoadDFMValues();
         this.pnlOptions.AfterLoadDFMValues();
         this.WebGroupBox3.AfterLoadDFMValues();
         this.cbNumHistList.AfterLoadDFMValues();
@@ -43105,7 +43148,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addField("pnlFilterSelection",pas["WEBLib.ExtCtrls"].$rtti["TPanel"],4);
     $r.addField("lblFilterSelect",pas["WEBLib.StdCtrls"].$rtti["TLabel"],4);
     $r.addField("WebHTMLDiv4",pas["WEBLib.WebCtrls"].$rtti["THTMLDiv"],4);
-    $r.addField("HistoryGrid",pas["WEBLib.Grids"].$rtti["TStringGrid"],4);
     $r.addField("cbNumDisplayDays",pas["WEBLib.StdCtrls"].$rtti["TComboBox"],4);
     $r.addField("cbNumHistList",pas["WEBLib.StdCtrls"].$rtti["TComboBox"],4);
     $r.addField("btnOptOK",pas["WEBLib.StdCtrls"].$rtti["TButton"],4);
@@ -43159,6 +43201,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addMethod("WebTimer2Timer",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("CapturesGetCellData",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint],["AField",pas.DB.$rtti["TField"]],["AValue",rtl.string,1]],4);
     $r.addMethod("CapturesClickCell",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
+    $r.addMethod("HistoryTableClickCell",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint]],4);
   });
   this.CWRmainFrm = null;
   $mod.$implcode = function () {

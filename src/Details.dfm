@@ -214,7 +214,7 @@ object DetailsFrm: TDetailsFrm
       Height = 10
       Align = alTop
       Caption = 'Program Title'
-      Color = clNone
+      Color = clHoneydew
       Font.Charset = ANSI_CHARSET
       Font.Color = clBlack
       Font.Height = -8
@@ -223,6 +223,7 @@ object DetailsFrm: TDetailsFrm
       HeightStyle = ssAuto
       HeightPercent = 100.000000000000000000
       ParentFont = False
+      Transparent = False
       WidthPercent = 100.000000000000000000
     end
     object lblSubTitle: TWebLabel
@@ -232,7 +233,7 @@ object DetailsFrm: TDetailsFrm
       Height = 10
       Align = alTop
       Caption = 'Program SubTitle'
-      Color = clNone
+      Color = clHoneydew
       Font.Charset = ANSI_CHARSET
       Font.Color = clBlack
       Font.Height = -8
@@ -241,6 +242,7 @@ object DetailsFrm: TDetailsFrm
       HeightStyle = ssAuto
       HeightPercent = 100.000000000000000000
       ParentFont = False
+      Transparent = False
       WidthPercent = 100.000000000000000000
     end
     object lblDescription: TWebLabel
@@ -250,7 +252,7 @@ object DetailsFrm: TDetailsFrm
       Height = 10
       Align = alTop
       Caption = 'Program Description'
-      Color = clNone
+      Color = clHoneydew
       Font.Charset = ANSI_CHARSET
       Font.Color = clBlack
       Font.Height = -8
@@ -259,6 +261,7 @@ object DetailsFrm: TDetailsFrm
       HeightStyle = ssAuto
       HeightPercent = 100.000000000000000000
       ParentFont = False
+      Transparent = False
       WidthPercent = 100.000000000000000000
     end
     object mmTitle: TWebMemo
