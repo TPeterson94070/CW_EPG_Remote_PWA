@@ -1527,6 +1527,7 @@ begin
         begin
           {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Saving Capture Request.'));
           {$IfDef PAS2JS}await{$EndIf} (UpdateNewCaptures(SchedFrm.tpStartTime.DateTime, SchedFrm.tpEndTime.DateTime));
+          pnlWaitPls.Hide;
         end;
       finally
         Log('========== EPGClickCell() Finished with Schedule form');
@@ -1634,8 +1635,11 @@ begin
   res := TAwait.ExecP<TJSXMLHttpRequest>(WEBRESTClient1.HttpRequest('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data.Text));
   console.log(res);
   if res.Status = 200 then
+  begin
     TAwait.ExecP<TModalResult> (MessageDlgAsync('Request successfully updated.'
-      + #13#13'N.B.:  NOT scheduled until CW_EPG''s next run.', mtInformation, [mbOK]))
+      + #13#13'N.B.:  NOT scheduled until CW_EPG''s next run.', mtInformation, [mbOK]));
+    TLocalStorage.SetValue(CSV_NEWCAPTURES, data.Text);
+  end
   else
     TAwait.ExecP<TModalResult> (MessageDlgAsync('Request submission FAILED.'
       + #13#13'If this is the first failure, please retry.', mtInformation, [mbOK]));

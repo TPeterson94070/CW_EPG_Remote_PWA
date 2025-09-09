@@ -40561,8 +40561,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       res = await this.WebRESTClient1.HttpRequest("PATCH","https://www.googleapis.com/upload/drive/v3/files/" + id,data.GetTextStr(),"",null);
       window.console.log(res);
       if (res.status === 200) {
-        await pas["WEBLib.Dialogs"].MessageDlgAsync("Request successfully updated." + "\r\rN.B.:  NOT scheduled until CW_EPG's next run.",2,rtl.createSet(2))}
-       else await pas["WEBLib.Dialogs"].MessageDlgAsync("Request submission FAILED." + "\r\rIf this is the first failure, please retry.",2,rtl.createSet(2));
+        await pas["WEBLib.Dialogs"].MessageDlgAsync("Request successfully updated." + "\r\rN.B.:  NOT scheduled until CW_EPG's next run.",2,rtl.createSet(2));
+        pas["WEBLib.Storage"].TLocalStorage.SetValue($impl.CSV_NEWCAPTURES,data.GetTextStr());
+      } else await pas["WEBLib.Dialogs"].MessageDlgAsync("Request submission FAILED." + "\r\rIf this is the first failure, please retry.",2,rtl.createSet(2));
     };
     this.LoadWIDBCDS = async function () {
       var i = 0;
@@ -41821,6 +41822,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
             if (SchedFrm.FModalResult === 1) {
               await this.ShowPlsWait("Saving Capture Request.");
               await this.UpdateNewCaptures(SchedFrm.tpStartTime.GetDateTime(),SchedFrm.tpEndTime.GetDateTime());
+              this.pnlWaitPls.Hide();
             };
           } finally {
             $impl.Log("========== EPGClickCell() Finished with Schedule form");
