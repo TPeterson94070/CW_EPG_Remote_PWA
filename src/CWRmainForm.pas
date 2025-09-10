@@ -434,9 +434,16 @@ begin
       {$IfDef PAS2JS}await{$EndIf}(SetFilters)
     else
     begin
-      {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
-      WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
-      {$IfDef PAS2JS}EPG.Row := 1{$EndIf};
+      if WIDBCDS.ControlsDisabled then
+      begin
+        Log('Resyncing -- EPG update & WIDBCDS controls enable');
+        EPG.BeginUpdate;
+        {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
+        WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
+        {$IfDef PAS2JS}EPG.Row := 1{$EndIf};
+        EPG.EndUpdate;
+        Log('Done resyncing');
+      end;
 //      x := EPG.Cells[3,1];
 //      Log('++ ^Rec EPG.Row: ' + EPG.Cells[3,1]);
 //      Log('++ WIDBCDS.RecNo: ' + WIDBCDS.RecNo.ToString);
@@ -774,8 +781,8 @@ begin
       end;
       for j := 1 to BufferGrid.RowCount - 1 do
       try
-        // Lose superfluous <">
-        BufferGrid.Cells[0,j] := ReplaceStr(BufferGrid.Cells[0,j],'"','');
+        // Lose superfluous <"> -- not needed!
+//        BufferGrid.Cells[0,j] := ReplaceStr(BufferGrid.Cells[0,j],'"','');
         WIDBCDS.Append;
         WIDBCDS.Fields[0].Value := j;
         for i := 1 to BufferGrid.ColCount do

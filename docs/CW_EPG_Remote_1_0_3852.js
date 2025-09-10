@@ -40604,7 +40604,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           for (var $l = 1, $end = this.BufferGrid.FRowCount - 1; $l <= $end; $l++) {
             j = $l;
             try {
-              this.BufferGrid.SetCells(0,j,pas.StrUtils.ReplaceStr(this.BufferGrid.GetCells(0,j),'"',""));
               this.WIDBCDS.Append();
               this.WIDBCDS.FFieldList.GetField(0).SetAsJSValue(j);
               for (var $l1 = 1, $end1 = this.BufferGrid.FColCount; $l1 <= $end1; $l1++) {
@@ -40941,9 +40940,15 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         if (this.WIDBCDS.FFilterText !== $impl.BaseFilter) {
           await this.SetFilters()}
          else {
-          await this.WIDBCDS.EnableControls();
-          this.WebTimer1.SetEnabled(true);
-          this.EPG.SetRow(1);
+          if (this.WIDBCDS.ControlsDisabled()) {
+            $impl.Log("Resyncing -- EPG update & WIDBCDS controls enable");
+            this.EPG.BeginUpdate();
+            await this.WIDBCDS.EnableControls();
+            this.WebTimer1.SetEnabled(true);
+            this.EPG.SetRow(1);
+            this.EPG.EndUpdate();
+            $impl.Log("Done resyncing");
+          };
         };
       } finally {
         this.ByAll.FOnClick = rtl.createCallback(this,"ByAllClick");
