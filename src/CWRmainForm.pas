@@ -1,4 +1,4 @@
-unit CWRmainForm;
+﻿unit CWRmainForm;
 
                        { TODO : Add search function to Listings (and History?) }
                        { TODO : Add item deletion to Scheduled list }
@@ -428,26 +428,32 @@ begin
     byType.Checked := False;
     ByChannel.Checked := False;
     pnlFilterSelection.Hide;
-    ByAll.Checked := True;
+//    ByAll.Checked := True;
     {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
-    if WIDBCDS.Filter <> BaseFilter then
+//    if WIDBCDS.Filter <> BaseFilter then
       {$IfDef PAS2JS}await{$EndIf}(SetFilters)
-    else
-    begin
-      if WIDBCDS.ControlsDisabled then
-      begin
-        Log('Resyncing -- EPG update & WIDBCDS controls enable');
-        EPG.BeginUpdate;
-        {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
-        WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
-        {$IfDef PAS2JS}EPG.Row := 1{$EndIf};
-        EPG.EndUpdate;
-        Log('Done resyncing');
-      end;
+//    else
+//    begin
+//      if WIDBCDS.ControlsDisabled then
+//      begin
+//        Log('Resyncing -- EPG update & WIDBCDS controls enable');
+//        EPG.BeginUpdate;
+//        {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
+//        WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
+//        {$IfDef PAS2JS}EPG.Row := 1{$EndIf};
+//        EPG.EndUpdate;
+//        Log('Done resyncing');
+//      end;
 //      x := EPG.Cells[3,1];
 //      Log('++ ^Rec EPG.Row: ' + EPG.Cells[3,1]);
 //      Log('++ WIDBCDS.RecNo: ' + WIDBCDS.RecNo.ToString);
-    end;
+//      if EPG.IsUpdating then
+//      begin
+//        EPG.EndUpdate;
+//      end;
+//        EPG.Show;
+//      end;
+//    end;
   finally
     ByAll.OnClick := ByAllClick;
     Log('ByAllClick finished');
@@ -695,9 +701,9 @@ begin
   if rs > '' then
   begin
     sl := TStringList.Create;
-    rs := ReplaceStr(rs, #10, ''); // dump linefeeds
-    rs := ReplaceStr(rs, #160, ''); // dump &nbsp too
-    ReplyArray := rs.Split([#13],TStringSplitOptions.ExcludeEmpty);
+//    rs := ReplaceStr(rs, #10, ''); // dump linefeeds
+//    rs := ReplaceStr(rs, #160, ''); // dump &nbsp too
+    ReplyArray := rs.Split([#13#10],TStringSplitOptions.ExcludeEmpty);
     Log('Begin extract ' + IntToStr(Length(ReplyArray)) + ' strings');
     for Line in ReplyArray do sl.Add(Line);
     WSG.BeginUpdate;
@@ -1060,7 +1066,8 @@ var
 begin
   Log('====== SetFilters called');
   ByAll.Checked := not (ByChannel.Checked or ByGenre.Checked or ByTitle.Checked or byType.Checked);
-  {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, 'Un') + 'Filtered List'));
+  if not pnlWaitPls.Visible then
+    {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, 'Un') + 'Filtered List'));
   EPG.Hide;
   EPG.BeginUpdate;
   EPG.Columns[2].Title := IfThen(ByChannel.Checked, wcbChannels.Text + ' ')
