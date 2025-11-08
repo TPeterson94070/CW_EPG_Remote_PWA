@@ -10,6 +10,8 @@ object SchedForm: TSchedForm
   Font.Name = 'Arial'
   Font.Style = []
   ParentFont = False
+  OnEnter = WebFormEnter
+  OnExit = WebFormExit
   OnShow = WebFormShow
   object lblChannel: TWebLabel
     Left = 83

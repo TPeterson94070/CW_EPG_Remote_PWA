@@ -39508,7 +39508,6 @@ rtl.module("WEBLib.WebCtrls",["System","Classes","WEBLib.Controls","WEBLib.Graph
 rtl.module("SchedUnit2",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics","WEBLib.Controls","WEBLib.Forms","WEBLib.Dialogs","WEBLib.StdCtrls","WEBLib.StdCtrls","WEBLib.Controls","WEBLib.ExtCtrls"],function () {
   "use strict";
   var $mod = this;
-  var $impl = $mod.$impl;
   rtl.createClass(this,"TSchedForm",pas["WEBLib.Forms"].TForm,function () {
     this.$init = function () {
       pas["WEBLib.Forms"].TForm.$init.call(this);
@@ -39551,10 +39550,10 @@ rtl.module("SchedUnit2",["System","SysUtils","Classes","JS","Web","WEBLib.Graphi
       pas["WEBLib.Forms"].TForm.$final.call(this);
     };
     this.WebFormEnter = function (Sender) {
-      $impl.SwipeDownRefresh(false);
+      pas.CWRmainForm.CWRmainFrm.SwipeDownRefresh(false);
     };
     this.WebFormExit = function (Sender) {
-      $impl.SwipeDownRefresh(true);
+      pas.CWRmainForm.CWRmainFrm.SwipeDownRefresh(true);
     };
     this.WebFormShow = function (Sender) {
       this.btnCancel.SetFocus();
@@ -39608,6 +39607,8 @@ rtl.module("SchedUnit2",["System","SysUtils","Classes","JS","Web","WEBLib.Graphi
         this.FFont.SetName("Arial");
         this.FFont.SetStyle({});
         this.SetParentFont(false);
+        this.SetEvent(this,"OnEnter","WebFormEnter");
+        this.SetEvent(this,"OnExit","WebFormExit");
         this.SetEvent(this,"OnShow","WebFormShow");
         this.lblChannel.SetParentComponent(this);
         this.lblChannel.SetName("lblChannel");
@@ -39990,22 +39991,10 @@ rtl.module("SchedUnit2",["System","SysUtils","Classes","JS","Web","WEBLib.Graphi
     $r.addMethod("WebFormExit",0,[["Sender",pas.System.$rtti["TObject"]]],4);
     $r.addMethod("WebFormShow",0,[["Sender",pas.System.$rtti["TObject"]]],4);
   });
-  $mod.$implcode = function () {
-    $impl.SwipeDownRefresh = function (Enabled) {
-      if (Enabled) {
-        document.body.style.removeProperty("overscroll-behavior-y");
-        document.body.parentElement.style.removeProperty("overscroll-behavior-y");
-      } else {
-        document.body.style.setProperty("overscroll-behavior-y","contain");
-        document.body.parentElement.style.setProperty("overscroll-behavior-y","contain");
-      };
-    };
-  };
-},[]);
+},["CWRmainForm"]);
 rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics","WEBLib.Controls","WEBLib.Forms","WEBLib.Dialogs","WEBLib.Controls","WEBLib.StdCtrls","WEBLib.StdCtrls","WEBLib.ExtCtrls"],function () {
   "use strict";
   var $mod = this;
-  var $impl = $mod.$impl;
   rtl.createClass(this,"TDetailsFrm",pas["WEBLib.Forms"].TForm,function () {
     this.$init = function () {
       pas["WEBLib.Forms"].TForm.$init.call(this);
@@ -40048,10 +40037,10 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
       pas["WEBLib.Forms"].TForm.$final.call(this);
     };
     this.WebFormEnter = function (Sender) {
-      $impl.SwipeDownRefresh(false);
+      pas.CWRmainForm.CWRmainFrm.SwipeDownRefresh(false);
     };
     this.WebFormExit = function (Sender) {
-      $impl.SwipeDownRefresh(true);
+      pas.CWRmainForm.CWRmainFrm.SwipeDownRefresh(true);
     };
     this.WebFormShow = function (Sender) {
       this.btnReturn.SetFocus();
@@ -40106,6 +40095,8 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
         this.FFont.SetStyle({});
         this.SetParentFont(false);
         this.FShowClose = false;
+        this.SetEvent(this,"OnEnter","WebFormEnter");
+        this.SetEvent(this,"OnExit","WebFormExit");
         this.SetEvent(this,"OnShow","WebFormShow");
         this.lb02New.SetParentComponent(this);
         this.lb02New.SetName("lb02New");
@@ -40524,17 +40515,6 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
     $r.addMethod("WebFormExit",0,[["Sender",pas.System.$rtti["TObject"]]],4);
     $r.addMethod("WebFormShow",0,[["Sender",pas.System.$rtti["TObject"]]],4);
   });
-  $mod.$implcode = function () {
-    $impl.SwipeDownRefresh = function (Enabled) {
-      if (Enabled) {
-        document.body.style.removeProperty("overscroll-behavior-y");
-        document.body.parentElement.style.removeProperty("overscroll-behavior-y");
-      } else {
-        document.body.style.setProperty("overscroll-behavior-y","contain");
-        document.body.parentElement.style.setProperty("overscroll-behavior-y","contain");
-      };
-    };
-  };
 },["CWRmainForm"]);
 rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Graphics","WEBLib.Forms","WEBLib.StdCtrls","WEBLib.StdCtrls","WEBLib.Controls","WEBLib.Dialogs","WEBLib.Imaging.pngImage","WEBLib.ExtCtrls","WEBLib.Controls","Web","JS","WEBLib.IndexedDb","WEBLib.Menus","WEBLib.Menus","WEBLib.Grids","DB","WEBLib.Grids","StrUtils","WEBLib.DBCtrls","WEBLib.WebCtrls","WEBLib.REST","Types","WEBLib.Storage","WEBLib.CDS","WEBLib.JSON","WEBLib.WebTools","WEBLib.Buttons"],function () {
   "use strict";
@@ -41274,6 +41254,15 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     };
     this.HistoryTableClickCell = function (Sender, ACol, ARow) {
       this.ShowHistoryDetails(ARow);
+    };
+    this.SwipeDownRefresh = function (Enabled) {
+      if (Enabled) {
+        document.body.style.removeProperty("overscroll-behavior-y");
+        document.body.parentElement.style.removeProperty("overscroll-behavior-y");
+      } else {
+        document.body.style.setProperty("overscroll-behavior-y","contain");
+        document.body.parentElement.style.setProperty("overscroll-behavior-y","contain");
+      };
     };
     this.LogDataRange = async function () {
       $impl.Log("WIDBCDS.RecordCount:  " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
@@ -43332,6 +43321,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addMethod("CapturesGetCellData",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint],["AField",pas.DB.$rtti["TField"]],["AValue",rtl.string,1]],4);
     $r.addMethod("CapturesClickCell",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("HistoryTableClickCell",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint]],4);
+    $r.addMethod("SwipeDownRefresh",0,[["Enabled",rtl.boolean]],4);
   });
   this.CWRmainFrm = null;
   $mod.$implcode = function () {

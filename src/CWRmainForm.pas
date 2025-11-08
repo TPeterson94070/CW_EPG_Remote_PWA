@@ -124,6 +124,7 @@ type
       AField: TField; var AValue: string);
     [async] procedure CapturesClickCell(Sender: TObject; ACol, ARow: Integer);
     procedure HistoryTableClickCell(Sender: TObject; ACol, ARow: Integer);
+    procedure SwipeDownRefresh(Enabled: Boolean);
 private
   { Private declarations }
   [async] procedure LogDataRange;
@@ -1688,6 +1689,25 @@ begin
     rq := TAwait.ExecP<TJSXMLHttpRequest>(WEBRestClient1.HttpRequest('PATCH','https://www.googleapis.com/drive/v3/files/'+id,
       '{"name":"'+ FName + '", "description":"New Captures CSV list"}'));
 
+  end;
+end;
+
+(*
+Source - https://stackoverflow.com/a/78210803
+Posted by Shaun Roselt
+Retrieved 2025-11-08, License - CC BY-SA 4.0
+*)
+
+procedure TCWRmainFrm.SwipeDownRefresh(Enabled: Boolean);
+begin
+  if Enabled then
+  begin
+    TJSHTMLElement(document.body).style.removeProperty('overscroll-behavior-y');
+    TJSHTMLElement(document.body.parentElement).style.removeProperty('overscroll-behavior-y');
+  end else
+  begin
+    TJSHTMLElement(document.body).style.setProperty('overscroll-behavior-y','contain');
+    TJSHTMLElement(document.body.parentElement).style.setProperty('overscroll-behavior-y','contain');
   end;
 end;
 

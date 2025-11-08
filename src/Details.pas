@@ -44,34 +44,34 @@ implementation
 uses CWRmainForm;
 
 {$R *.dfm}
-
-(*
-Source - https://stackoverflow.com/a/78210803
-Posted by Shaun Roselt
-Retrieved 2025-11-08, License - CC BY-SA 4.0
-*)
-
-procedure SwipeDownRefresh(Enabled: Boolean);
-begin
-  if Enabled then
-  begin
-    TJSHTMLElement(document.body).style.removeProperty('overscroll-behavior-y');
-    TJSHTMLElement(document.body.parentElement).style.removeProperty('overscroll-behavior-y');
-  end else
-  begin
-    TJSHTMLElement(document.body).style.setProperty('overscroll-behavior-y','contain');
-    TJSHTMLElement(document.body.parentElement).style.setProperty('overscroll-behavior-y','contain');
-  end;
-end;
+//
+//(*
+//Source - https://stackoverflow.com/a/78210803
+//Posted by Shaun Roselt
+//Retrieved 2025-11-08, License - CC BY-SA 4.0
+//*)
+//
+//procedure SwipeDownRefresh(Enabled: Boolean);
+//begin
+//  if Enabled then
+//  begin
+//    TJSHTMLElement(document.body).style.removeProperty('overscroll-behavior-y');
+//    TJSHTMLElement(document.body.parentElement).style.removeProperty('overscroll-behavior-y');
+//  end else
+//  begin
+//    TJSHTMLElement(document.body).style.setProperty('overscroll-behavior-y','contain');
+//    TJSHTMLElement(document.body.parentElement).style.setProperty('overscroll-behavior-y','contain');
+//  end;
+//end;
 
 procedure TDetailsFrm.WebFormEnter(Sender: TObject);
 begin
-  SwipeDownRefresh(False);
+  CWRmainFrm.SwipeDownRefresh(False);
 end;
 
 procedure TDetailsFrm.WebFormExit(Sender: TObject);
 begin
-  SwipeDownRefresh(True);
+  CWRmainFrm.SwipeDownRefresh(True);
 end;
 
 procedure TDetailsFrm.WebFormShow(Sender: TObject);
