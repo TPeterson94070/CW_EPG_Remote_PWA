@@ -39550,11 +39550,7 @@ rtl.module("SchedUnit2",["System","SysUtils","Classes","JS","Web","WEBLib.Graphi
       pas["WEBLib.Forms"].TForm.$final.call(this);
     };
     this.WebFormShow = function (Sender) {
-      pas.CWRmainForm.CWRmainFrm.SwipeDownRefresh(false);
       this.btnCancel.SetFocus();
-    };
-    this.WebFormUnload = function (Sender) {
-      pas.CWRmainForm.CWRmainFrm.SwipeDownRefresh(true);
     };
     this.LoadDFMValues = function () {
       pas["WEBLib.Forms"].TCustomForm.LoadDFMValues.call(this);
@@ -39606,7 +39602,6 @@ rtl.module("SchedUnit2",["System","SysUtils","Classes","JS","Web","WEBLib.Graphi
         this.FFont.SetStyle({});
         this.SetParentFont(false);
         this.SetEvent(this,"OnShow","WebFormShow");
-        this.SetEvent(this,"OnUnload","WebFormUnload");
         this.lblChannel.SetParentComponent(this);
         this.lblChannel.SetName("lblChannel");
         this.lblChannel.SetLeft(83);
@@ -39985,7 +39980,6 @@ rtl.module("SchedUnit2",["System","SysUtils","Classes","JS","Web","WEBLib.Graphi
     $r.addField("tpStartTime",pas["WEBLib.StdCtrls"].$rtti["TDateTimePicker"],4);
     $r.addField("tpEndTime",pas["WEBLib.StdCtrls"].$rtti["TDateTimePicker"],4);
     $r.addMethod("WebFormShow",0,[["Sender",pas.System.$rtti["TObject"]]],4);
-    $r.addMethod("WebFormUnload",0,[["Sender",pas.System.$rtti["TObject"]]],4);
   });
 },["CWRmainForm"]);
 rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics","WEBLib.Controls","WEBLib.Forms","WEBLib.Dialogs","WEBLib.Controls","WEBLib.StdCtrls","WEBLib.StdCtrls","WEBLib.ExtCtrls"],function () {
@@ -40033,11 +40027,7 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
       pas["WEBLib.Forms"].TForm.$final.call(this);
     };
     this.WebFormShow = function (Sender) {
-      pas.CWRmainForm.CWRmainFrm.SwipeDownRefresh(false);
       this.btnReturn.SetFocus();
-    };
-    this.WebFormUnload = function (Sender) {
-      pas.CWRmainForm.CWRmainFrm.SwipeDownRefresh(true);
     };
     this.LoadDFMValues = function () {
       pas["WEBLib.Forms"].TCustomForm.LoadDFMValues.call(this);
@@ -40090,7 +40080,6 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
         this.SetParentFont(false);
         this.FShowClose = false;
         this.SetEvent(this,"OnShow","WebFormShow");
-        this.SetEvent(this,"OnUnload","WebFormUnload");
         this.lb02New.SetParentComponent(this);
         this.lb02New.SetName("lb02New");
         this.lb02New.SetLeft(200);
@@ -40505,7 +40494,6 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
     $r.addField("lb10Channel",pas["WEBLib.StdCtrls"].$rtti["TLabel"],4);
     $r.addField("lb11Time",pas["WEBLib.StdCtrls"].$rtti["TLabel"],4);
     $r.addMethod("WebFormShow",0,[["Sender",pas.System.$rtti["TObject"]]],4);
-    $r.addMethod("WebFormUnload",0,[["Sender",pas.System.$rtti["TObject"]]],4);
   });
 },["CWRmainForm"]);
 rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Graphics","WEBLib.Forms","WEBLib.StdCtrls","WEBLib.StdCtrls","WEBLib.Controls","WEBLib.Dialogs","WEBLib.Imaging.pngImage","WEBLib.ExtCtrls","WEBLib.Controls","Web","JS","WEBLib.IndexedDb","WEBLib.Menus","WEBLib.Menus","WEBLib.Grids","DB","WEBLib.Grids","StrUtils","WEBLib.DBCtrls","WEBLib.WebCtrls","WEBLib.REST","Types","WEBLib.Storage","WEBLib.CDS","WEBLib.JSON","WEBLib.WebTools","WEBLib.Buttons"],function () {
