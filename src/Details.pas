@@ -26,9 +26,10 @@ type
     lb09OrigDate: TWebLabel;
     lb10Channel: TWebLabel;
     lb11Time: TWebLabel;
-    procedure WebFormEnter(Sender: TObject);
-    procedure WebFormExit(Sender: TObject);
+//    procedure WebFormEnter(Sender: TObject);
+//    procedure WebFormExit(Sender: TObject);
     procedure WebFormShow(Sender: TObject);
+    procedure WebFormUnload(Sender: TObject);
 //    procedure WebFormShow(Sender: TObject);
   private
     { Private declarations }
@@ -64,19 +65,25 @@ uses CWRmainForm;
 //  end;
 //end;
 
-procedure TDetailsFrm.WebFormEnter(Sender: TObject);
-begin
-  CWRmainFrm.SwipeDownRefresh(False);
-end;
-
-procedure TDetailsFrm.WebFormExit(Sender: TObject);
-begin
-  CWRmainFrm.SwipeDownRefresh(True);
-end;
+//procedure TDetailsFrm.WebFormEnter(Sender: TObject);
+//begin
+//  CWRmainFrm.SwipeDownRefresh(False);
+//end;
+//
+//procedure TDetailsFrm.WebFormExit(Sender: TObject);
+//begin
+//  CWRmainFrm.SwipeDownRefresh(True);
+//end;
 
 procedure TDetailsFrm.WebFormShow(Sender: TObject);
 begin
+  CWRmainFrm.SwipeDownRefresh(False);
   btnReturn.SetFocus;
+end;
+
+procedure TDetailsFrm.WebFormUnload(Sender: TObject);
+begin
+  CWRmainFrm.SwipeDownRefresh(True);
 end;
 
 end.

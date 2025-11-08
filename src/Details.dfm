@@ -11,9 +11,8 @@ object DetailsFrm: TDetailsFrm
   Font.Style = []
   ParentFont = False
   ShowClose = False
-  OnEnter = WebFormEnter
-  OnExit = WebFormExit
   OnShow = WebFormShow
+  OnUnload = WebFormUnload
   object lb02New: TWebLabel
     Left = 200
     Top = 331
