@@ -455,7 +455,7 @@ var rtl = {
     // ancestor must be null or a helper,
     var lHelper = parent[name];
     if (lHelper) {
-      initfn.call(c);
+      initfn.call(lHelper);
       return lHelper; 
     }
 
@@ -620,7 +620,7 @@ var rtl = {
     var lInterface = module[name];
     if (lInterface) {
       if (rtl.isFunction(initfn)) {
-        initfn.call(i);
+        initfn.call(lInterface);
       }
       return lInterface; 
     }
@@ -9315,7 +9315,7 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
   this.$rtti.$Enum("TElementFont",{minvalue: 0, maxvalue: 1, ordtype: 1, enumtype: this.TElementFont});
   this.TElementPosition = {"0": "epAbsolute", epAbsolute: 0, "1": "epRelative", epRelative: 1, "2": "epIgnore", epIgnore: 2};
   this.$rtti.$Enum("TElementPosition",{minvalue: 0, maxvalue: 2, ordtype: 1, enumtype: this.TElementPosition});
-  this.TElementEvent = {"0": "eeClick", eeClick: 0, "1": "eeMouseDown", eeMouseDown: 1, "2": "eeMouseUp", eeMouseUp: 2, "3": "eeMouseMove", eeMouseMove: 3, "4": "eeDblClick", eeDblClick: 4, "5": "eeKeyPress", eeKeyPress: 5, "6": "eeKeyDown", eeKeyDown: 6, "7": "eeKeyUp", eeKeyUp: 7};
+  this.TElementEvent = {"0": "eeClick", eeClick: 0, "1": "eeMouseDown", eeMouseDown: 1, "2": "eeMouseUp", eeMouseUp: 2, "3": "eeMouseMove", eeMouseMove: 3, "4": "eeDblClick", eeDblClick: 4, "5": "eeKeyPress", eeKeyPress: 5, "6": "eeKeyDown", eeKeyDown: 6, "7": "eeKeyUp", eeKeyUp: 7, "8": "eeTouchStart", eeTouchStart: 8, "9": "eeTouchMove", eeTouchMove: 9, "10": "eeTouchEnd", eeTouchEnd: 10};
   this.TTextDirection = {"0": "tdDefault", tdDefault: 0, "1": "tdLeftToRight", tdLeftToRight: 1, "2": "tdRightToLeft", tdRightToLeft: 2, "3": "tdInherit", tdInherit: 3};
   this.$rtti.$Enum("TTextDirection",{minvalue: 0, maxvalue: 3, ordtype: 1, enumtype: this.TTextDirection});
   this.TMaterialGlyphType = {"0": "mgNormal", mgNormal: 0, "1": "mgOutlined", mgOutlined: 1, "2": "mgTwoTone", mgTwoTone: 2, "3": "mgRound", mgRound: 3, "4": "mgSharp", mgSharp: 4};
@@ -10665,7 +10665,7 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
       var ss = {};
       this.FElementEvent = Event;
       this.FLastElementEvent = Event;
-      this.StopPropagation();
+      if (8 in this.FEventStopPropagation) this.StopPropagation();
       if (!this.FAllowTouch) this.PreventDefault();
       if (Event.touches.length > 0) {
         touch = Event.touches.item(0);
@@ -10696,7 +10696,7 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
       var ss = {};
       this.FElementEvent = Event;
       this.FLastElementEvent = Event;
-      this.StopPropagation();
+      if (9 in this.FEventStopPropagation) this.StopPropagation();
       if (!this.FAllowTouch) this.PreventDefault();
       if (this.Captured()) this.PreventDefault();
       if (Event.touches.length > 0) {
@@ -10727,7 +10727,7 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
       this.FElementEvent = Event;
       if (!this.FAllowTouch) this.PreventDefault();
       this.ReleaseCapture();
-      this.StopPropagation();
+      if (10 in this.FEventStopPropagation) this.StopPropagation();
       if ((this.FLastElementEvent != null) && (this.FLastElementEvent.touches.length > 0)) {
         touch = this.FLastElementEvent.touches.item(0);
         this.XYToClient(touch.clientX,touch.clientY,{get: function () {
@@ -12398,7 +12398,7 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
       this.FNoUserSelect = true;
       this.ClearMethodPointers();
       pas.Classes.TComponent.Create$1.call(this,AOwner);
-      this.FEventStopPropagation = rtl.createSet(0,4,2,3,1,5,6,7);
+      this.FEventStopPropagation = rtl.createSet(0,4,2,3,1,5,6,7,9,8,10);
       this.FScriptLoaded = false;
       this.FElementFont = 0;
       this.FElementPosition = 0;
@@ -14821,7 +14821,7 @@ rtl.module("WEBLib.Menus",["System","Classes","SysUtils","WEBLib.Controls","WEBL
       if (this.FOnClick != null) this.FOnClick(this);
       pm = this.GetParentMenu();
       if (pm.FIsPopupMenu) {
-        if (pm.FLayer$1 != null) {
+        if ((pm.FLayer$1 != null) && !(pm.FContainer$1 != null)) {
           pm.FLayer$1.parentElement.removeChild(pm.FLayer$1);
           pm.FLayer$1 = null;
         };
@@ -15423,6 +15423,8 @@ rtl.module("WEBLib.Menus",["System","Classes","SysUtils","WEBLib.Controls","WEBL
     };
     this.Popup = function (X, Y) {
       var frm = null;
+      var el = null;
+      var LDidAppend = false;
       if (this.FOnPopup != null) this.FOnPopup(this);
       this.SetTop(Y);
       this.SetLeft(X);
@@ -15430,7 +15432,17 @@ rtl.module("WEBLib.Menus",["System","Classes","SysUtils","WEBLib.Controls","WEBL
       if (frm != null) {
         this.FLayer$1 = frm.CreateLayer();
         if (!frm.FPopup) {
-          document.body.appendChild(this.FLayer$1);
+          LDidAppend = false;
+          if (frm.FFormContainer !== "") {
+            el = document.getElementById(frm.FFormContainer);
+            if (el != null) {
+              el.appendChild(this.FLayer$1);
+              LDidAppend = true;
+            };
+          };
+          if (!LDidAppend && !(this.FContainer$1 != null)) {
+            document.body.appendChild(this.FLayer$1);
+          };
         } else {
           frm.GetElementHandle().appendChild(this.FLayer$1);
         };
@@ -15794,6 +15806,9 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
       this.FDocMouseUpPtr = null;
       this.FDocMouseMovePtr = null;
       this.FTitleDownPtr = null;
+      this.FTitleTouchStartPtr = null;
+      this.FDocTouchMovePtr = null;
+      this.FDocTouchEndPtr = null;
       this.FDoClickPtr = null;
       this.FKeyDownPtr$1 = null;
       this.FOrientationChangePtr = null;
@@ -16102,6 +16117,77 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
       Result = true;
       return Result;
     };
+    this.HandleTouchStart = function (Event) {
+      var Result = false;
+      var r = null;
+      if (Event.touches.length === 0) return Result;
+      Event.stopPropagation();
+      Event.preventDefault();
+      this.FPopupClose = 1;
+      this.FMdx = Math.round(Event.touches.item(0).clientX);
+      this.FMdy = Math.round(Event.touches.item(0).clientY);
+      if (this.FHasCaption && (this.FFormFileName !== "")) {
+        r = this.GetContainer().parentNode.getBoundingClientRect()}
+       else r = this.GetContainer().getBoundingClientRect();
+      this.FDlgX = Math.round(pas.System.Int(r.left));
+      this.FDlgY = Math.round(pas.System.Int(r.top));
+      this.FDown = true;
+      if (!this.FCaptured$1) {
+        this.FCaptured$1 = true;
+        this.FMoveSpan = document.createElement("SPAN");
+        this.FMoveSpan.style.setProperty("top","0");
+        this.FMoveSpan.style.setProperty("left","0");
+        this.FMoveSpan.style.setProperty("right","0");
+        this.FMoveSpan.style.setProperty("bottom","0");
+        this.FMoveSpan.style.setProperty("position","absolute");
+        document.body.appendChild(this.FMoveSpan);
+        this.FEventStopPropagation = rtl.diffSet(this.FEventStopPropagation,rtl.createSet(9,10));
+        document.body.addEventListener("touchmove",this.FDocTouchMovePtr);
+        document.body.addEventListener("touchend",this.FDocTouchEndPtr);
+      };
+      Result = true;
+      return Result;
+    };
+    this.HandleDocTouchMove = function (Event) {
+      var Result = false;
+      var deltax = 0.0;
+      var deltay = 0.0;
+      var el = null;
+      var l = 0;
+      var t = 0;
+      if (this.FDown && (this.GetContainer() != null)) {
+        if (Event.touches.length === 0) return Result;
+        deltax = Event.touches.item(0).clientX - this.FMdx;
+        deltay = Event.touches.item(0).clientY - this.FMdy;
+        if (this.FHasCaption && (this.FFormFileName !== "")) {
+          el = this.GetContainer().parentNode}
+         else el = this.GetContainer();
+        el.style.setProperty("transform","");
+        el.style.setProperty("position","absolute");
+        l = Math.round(this.FDlgX + deltax);
+        t = Math.round(this.FDlgY + deltay);
+        el.style.setProperty("left",pas.SysUtils.IntToStr(l) + "px");
+        el.style.setProperty("top",pas.SysUtils.IntToStr(t) + "px");
+        this.FLeft = l;
+        this.FTop = t;
+      };
+      Result = true;
+      return Result;
+    };
+    this.HandleDocTouchEnd = function (Event) {
+      var Result = false;
+      if (this.FDown) {
+        this.FCaptured$1 = false;
+        this.FDown = false;
+        document.body.removeEventListener("touchmove",this.FDocTouchMovePtr);
+        document.body.removeEventListener("touchend",this.FDocTouchEndPtr);
+        if (this.FMoveSpan != null) document.body.removeChild(this.FMoveSpan);
+        this.FEventStopPropagation = rtl.unionSet(this.FEventStopPropagation,rtl.createSet(9,10));
+        this.FMoveSpan = null;
+      };
+      Result = true;
+      return Result;
+    };
     this.HandleCloseClick = function (Event) {
       var Result = false;
       var CanClose = false;
@@ -16142,6 +16228,9 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
       this.FDocMouseUpPtr = null;
       this.FDocMouseMovePtr = null;
       this.FTitleDownPtr = null;
+      this.FDocTouchMovePtr = null;
+      this.FDocTouchEndPtr = null;
+      this.FTitleTouchStartPtr = null;
       this.FDoClickPtr = null;
       this.FKeyDownPtr$1 = null;
       this.FOrientationChangePtr = null;
@@ -16163,6 +16252,9 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
         this.FKeyDownPtr$1 = rtl.createCallback(this,"HandleKeyDown");
         this.FOrientationChangePtr = rtl.createCallback(this,"HandleOrientationChange");
         this.FHashChangePtr = rtl.createCallback(this,"HandleHashChange");
+        this.FTitleTouchStartPtr = rtl.createCallback(this,"HandleTouchStart");
+        this.FDocTouchMovePtr = rtl.createCallback(this,"HandleDocTouchMove");
+        this.FDocTouchEndPtr = rtl.createCallback(this,"HandleDocTouchEnd");
       };
     };
     this.VisibleChanged = function () {
@@ -16586,6 +16678,7 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
                 this.FCaptionCloseElement.innerHTML = "&#x2716;";
                 this.FCaptionElement.appendChild(this.FCaptionCloseElement);
                 this.FCaptionCloseElement.addEventListener("click",rtl.createSafeCallback(this,"HandleCloseClick"));
+                this.FCaptionCloseElement.addEventListener("touchstart",rtl.createSafeCallback(this,"HandleCloseClick"));
               };
               pas["WEBLib.Controls"].SetHTMLElementFont(this.FCaptionElement,this.FFont,!((this.FElementCaptionClassName === "") && (this.FElementFont === 0)));
             };
@@ -16726,6 +16819,7 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
       if (!(this.FTitleDownPtr != null)) this.GetMethodPointers();
       this.FCaptionElement.innerHTML = this.FCaption;
       this.FCaptionElement.addEventListener("mousedown",this.FTitleDownPtr);
+      this.FCaptionElement.addEventListener("touchstart",this.FTitleTouchStartPtr);
       this.FHasCaption = true;
       Result = this.FCaptionElement;
       return Result;
@@ -36299,9 +36393,7 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
       };
       this.FSortDirection = ASortIndicator;
       if (this.FOnSortClick != null) this.FOnSortClick(this,ACol,ARow,ASortIndicator);
-      window.console.log("do sort click",ACol);
       this.Sort(ACol,ASortIndicator);
-      window.console.log("sort done",ACol);
     };
     this.GetEditText = function (ACol, ARow) {
       var Result = "";
@@ -38932,6 +39024,7 @@ rtl.module("WEBLib.DBCtrls",["System","Classes","DB","SysUtils","WEBLib.Controls
           c = $l;
           this.SetCells(c + this.FFixedCols,0,this.FColumns.GetItem$1(c).FTitle);
           this.SetColWidths(c + this.FFixedCols,this.FColumns.GetItem$1(c).FWidth);
+          this.SetColAlignments(c + this.FFixedCols,this.FColumns.GetItem$1(c).FAlignment);
         };
       };
     };
@@ -39415,6 +39508,7 @@ rtl.module("WEBLib.WebCtrls",["System","Classes","WEBLib.Controls","WEBLib.Graph
 rtl.module("SchedUnit2",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics","WEBLib.Controls","WEBLib.Forms","WEBLib.Dialogs","WEBLib.StdCtrls","WEBLib.StdCtrls","WEBLib.Controls","WEBLib.ExtCtrls"],function () {
   "use strict";
   var $mod = this;
+  var $impl = $mod.$impl;
   rtl.createClass(this,"TSchedForm",pas["WEBLib.Forms"].TForm,function () {
     this.$init = function () {
       pas["WEBLib.Forms"].TForm.$init.call(this);
@@ -39455,6 +39549,12 @@ rtl.module("SchedUnit2",["System","SysUtils","Classes","JS","Web","WEBLib.Graphi
       this.tpStartTime = undefined;
       this.tpEndTime = undefined;
       pas["WEBLib.Forms"].TForm.$final.call(this);
+    };
+    this.WebFormEnter = function (Sender) {
+      $impl.SwipeDownRefresh(false);
+    };
+    this.WebFormExit = function (Sender) {
+      $impl.SwipeDownRefresh(true);
     };
     this.WebFormShow = function (Sender) {
       this.btnCancel.SetFocus();
@@ -39508,6 +39608,8 @@ rtl.module("SchedUnit2",["System","SysUtils","Classes","JS","Web","WEBLib.Graphi
         this.FFont.SetName("Arial");
         this.FFont.SetStyle({});
         this.SetParentFont(false);
+        this.SetEvent(this,"OnEnter","WebFormEnter");
+        this.SetEvent(this,"OnExit","WebFormExit");
         this.SetEvent(this,"OnShow","WebFormShow");
         this.lblChannel.SetParentComponent(this);
         this.lblChannel.SetName("lblChannel");
@@ -39886,12 +39988,26 @@ rtl.module("SchedUnit2",["System","SysUtils","Classes","JS","Web","WEBLib.Graphi
     $r.addField("btnOK",pas["WEBLib.StdCtrls"].$rtti["TButton"],4);
     $r.addField("tpStartTime",pas["WEBLib.StdCtrls"].$rtti["TDateTimePicker"],4);
     $r.addField("tpEndTime",pas["WEBLib.StdCtrls"].$rtti["TDateTimePicker"],4);
+    $r.addMethod("WebFormEnter",0,[["Sender",pas.System.$rtti["TObject"]]],4);
+    $r.addMethod("WebFormExit",0,[["Sender",pas.System.$rtti["TObject"]]],4);
     $r.addMethod("WebFormShow",0,[["Sender",pas.System.$rtti["TObject"]]],4);
   });
-});
+  $mod.$implcode = function () {
+    $impl.SwipeDownRefresh = function (Enabled) {
+      if (Enabled) {
+        document.body.style.removeProperty("overscroll-behavior-y");
+        document.body.parentElement.style.removeProperty("overscroll-behavior-y");
+      } else {
+        document.body.style.setProperty("overscroll-behavior-y","contain");
+        document.body.parentElement.style.setProperty("overscroll-behavior-y","contain");
+      };
+    };
+  };
+},[]);
 rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics","WEBLib.Controls","WEBLib.Forms","WEBLib.Dialogs","WEBLib.Controls","WEBLib.StdCtrls","WEBLib.StdCtrls","WEBLib.ExtCtrls"],function () {
   "use strict";
   var $mod = this;
+  var $impl = $mod.$impl;
   rtl.createClass(this,"TDetailsFrm",pas["WEBLib.Forms"].TForm,function () {
     this.$init = function () {
       pas["WEBLib.Forms"].TForm.$init.call(this);
@@ -39932,6 +40048,12 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
       this.lb10Channel = undefined;
       this.lb11Time = undefined;
       pas["WEBLib.Forms"].TForm.$final.call(this);
+    };
+    this.WebFormEnter = function (Sender) {
+      $impl.SwipeDownRefresh(false);
+    };
+    this.WebFormExit = function (Sender) {
+      $impl.SwipeDownRefresh(true);
     };
     this.WebFormShow = function (Sender) {
       this.btnReturn.SetFocus();
@@ -39986,6 +40108,8 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
         this.FFont.SetStyle({});
         this.SetParentFont(false);
         this.FShowClose = false;
+        this.SetEvent(this,"OnEnter","WebFormEnter");
+        this.SetEvent(this,"OnExit","WebFormExit");
         this.SetEvent(this,"OnShow","WebFormShow");
         this.lb02New.SetParentComponent(this);
         this.lb02New.SetName("lb02New");
@@ -40400,8 +40524,21 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
     $r.addField("lb09OrigDate",pas["WEBLib.StdCtrls"].$rtti["TLabel"],4);
     $r.addField("lb10Channel",pas["WEBLib.StdCtrls"].$rtti["TLabel"],4);
     $r.addField("lb11Time",pas["WEBLib.StdCtrls"].$rtti["TLabel"],4);
+    $r.addMethod("WebFormEnter",0,[["Sender",pas.System.$rtti["TObject"]]],4);
+    $r.addMethod("WebFormExit",0,[["Sender",pas.System.$rtti["TObject"]]],4);
     $r.addMethod("WebFormShow",0,[["Sender",pas.System.$rtti["TObject"]]],4);
   });
+  $mod.$implcode = function () {
+    $impl.SwipeDownRefresh = function (Enabled) {
+      if (Enabled) {
+        document.body.style.removeProperty("overscroll-behavior-y");
+        document.body.parentElement.style.removeProperty("overscroll-behavior-y");
+      } else {
+        document.body.style.setProperty("overscroll-behavior-y","contain");
+        document.body.parentElement.style.setProperty("overscroll-behavior-y","contain");
+      };
+    };
+  };
 },["CWRmainForm"]);
 rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Graphics","WEBLib.Forms","WEBLib.StdCtrls","WEBLib.StdCtrls","WEBLib.Controls","WEBLib.Dialogs","WEBLib.Imaging.pngImage","WEBLib.ExtCtrls","WEBLib.Controls","Web","JS","WEBLib.IndexedDb","WEBLib.Menus","WEBLib.Menus","WEBLib.Grids","DB","WEBLib.Grids","StrUtils","WEBLib.DBCtrls","WEBLib.WebCtrls","WEBLib.REST","Types","WEBLib.Storage","WEBLib.CDS","WEBLib.JSON","WEBLib.WebTools","WEBLib.Buttons"],function () {
   "use strict";
@@ -42078,7 +42215,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlLog.SetLeft(0);
         this.pnlLog.SetTop(50);
         this.pnlLog.SetWidth(428);
-        this.pnlLog.SetHeight(733);
+        this.pnlLog.SetHeight(767);
         this.pnlLog.SetElementClassName("card");
         this.pnlLog.SetHeightStyle(0);
         this.pnlLog.SetWidthStyle(0);
@@ -42124,7 +42261,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlWaitPls.SetLeft(0);
         this.pnlWaitPls.SetTop(50);
         this.pnlWaitPls.SetWidth(428);
-        this.pnlWaitPls.SetHeight(733);
+        this.pnlWaitPls.SetHeight(767);
         this.pnlWaitPls.SetElementClassName("container-fluid");
         this.pnlWaitPls.SetHeightStyle(0);
         this.pnlWaitPls.SetWidthStyle(0);
@@ -42256,7 +42393,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlHistory.SetLeft(0);
         this.pnlHistory.SetTop(50);
         this.pnlHistory.SetWidth(428);
-        this.pnlHistory.SetHeight(733);
+        this.pnlHistory.SetHeight(767);
         this.pnlHistory.SetElementClassName("card");
         this.pnlHistory.SetHeightStyle(0);
         this.pnlHistory.SetWidthStyle(0);
@@ -42313,7 +42450,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlOptions.SetLeft(0);
         this.pnlOptions.SetTop(50);
         this.pnlOptions.SetWidth(428);
-        this.pnlOptions.SetHeight(733);
+        this.pnlOptions.SetHeight(767);
         this.pnlOptions.SetElementClassName("card");
         this.pnlOptions.SetHeightStyle(0);
         this.pnlOptions.SetWidthStyle(0);
@@ -42471,7 +42608,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlCaptures.SetLeft(0);
         this.pnlCaptures.SetTop(50);
         this.pnlCaptures.SetWidth(428);
-        this.pnlCaptures.SetHeight(733);
+        this.pnlCaptures.SetHeight(767);
         this.pnlCaptures.SetElementClassName("greenBG");
         this.pnlCaptures.SetHeightStyle(0);
         this.pnlCaptures.SetWidthStyle(0);
@@ -42646,7 +42783,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlListings.SetLeft(0);
         this.pnlListings.SetTop(50);
         this.pnlListings.SetWidth(428);
-        this.pnlListings.SetHeight(733);
+        this.pnlListings.SetHeight(767);
         this.pnlListings.SetElementClassName("greenBG");
         this.pnlListings.SetHeightStyle(0);
         this.pnlListings.SetWidthStyle(0);
@@ -42693,7 +42830,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.EPG.SetLeft(0);
         this.EPG.SetTop(0);
         this.EPG.SetWidth(428);
-        this.EPG.SetHeight(733);
+        this.EPG.SetHeight(767);
         this.EPG.SetAlign(5);
         this.EPG.SetBorderStyle(0);
         this.EPG.SetColor(8388608);

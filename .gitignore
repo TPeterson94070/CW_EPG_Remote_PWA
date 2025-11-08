@@ -26,6 +26,8 @@
 *.obj
 #
 
+# Secret key, keep secret
+AppKey.inc
 # Delphi compiler-generated binaries (safe to delete)
 *.exe
 *.dll

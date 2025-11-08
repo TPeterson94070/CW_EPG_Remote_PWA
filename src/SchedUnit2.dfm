@@ -161,6 +161,7 @@ object SchedForm: TSchedForm
       HeightPercent = 100.000000000000000000
       ParentFont = False
       WidthPercent = 100.000000000000000000
+      ExplicitWidth = 62
     end
     object lblSubTitle: TWebLabel
       Left = 0
@@ -179,6 +180,7 @@ object SchedForm: TSchedForm
       HeightPercent = 100.000000000000000000
       ParentFont = False
       WidthPercent = 100.000000000000000000
+      ExplicitWidth = 81
     end
     object lblDescription: TWebLabel
       Left = 0
@@ -197,6 +199,7 @@ object SchedForm: TSchedForm
       HeightPercent = 100.000000000000000000
       ParentFont = False
       WidthPercent = 100.000000000000000000
+      ExplicitWidth = 97
     end
     object mmTitle: TWebMemo
       Left = 0
