@@ -225,6 +225,7 @@ object DetailsFrm: TDetailsFrm
       ParentFont = False
       Transparent = False
       WidthPercent = 100.000000000000000000
+      ExplicitWidth = 47
     end
     object lblSubTitle: TWebLabel
       Left = 0
@@ -244,6 +245,7 @@ object DetailsFrm: TDetailsFrm
       ParentFont = False
       Transparent = False
       WidthPercent = 100.000000000000000000
+      ExplicitWidth = 60
     end
     object lblDescription: TWebLabel
       Left = 0
@@ -263,6 +265,7 @@ object DetailsFrm: TDetailsFrm
       ParentFont = False
       Transparent = False
       WidthPercent = 100.000000000000000000
+      ExplicitWidth = 71
     end
     object mmTitle: TWebMemo
       Left = 0

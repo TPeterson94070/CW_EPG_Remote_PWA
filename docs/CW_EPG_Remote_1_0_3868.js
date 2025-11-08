@@ -39608,8 +39608,6 @@ rtl.module("SchedUnit2",["System","SysUtils","Classes","JS","Web","WEBLib.Graphi
         this.FFont.SetName("Arial");
         this.FFont.SetStyle({});
         this.SetParentFont(false);
-        this.SetEvent(this,"OnEnter","WebFormEnter");
-        this.SetEvent(this,"OnExit","WebFormExit");
         this.SetEvent(this,"OnShow","WebFormShow");
         this.lblChannel.SetParentComponent(this);
         this.lblChannel.SetName("lblChannel");
@@ -40108,8 +40106,6 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
         this.FFont.SetStyle({});
         this.SetParentFont(false);
         this.FShowClose = false;
-        this.SetEvent(this,"OnEnter","WebFormEnter");
-        this.SetEvent(this,"OnExit","WebFormExit");
         this.SetEvent(this,"OnShow","WebFormShow");
         this.lb02New.SetParentComponent(this);
         this.lb02New.SetName("lb02New");
