@@ -26,11 +26,7 @@ type
     lb09OrigDate: TWebLabel;
     lb10Channel: TWebLabel;
     lb11Time: TWebLabel;
-//    procedure WebFormEnter(Sender: TObject);
-//    procedure WebFormExit(Sender: TObject);
     procedure WebFormShow(Sender: TObject);
-    procedure WebFormUnload(Sender: TObject);
-//    procedure WebFormShow(Sender: TObject);
   private
     { Private declarations }
   public
@@ -45,45 +41,10 @@ implementation
 uses CWRmainForm;
 
 {$R *.dfm}
-//
-//(*
-//Source - https://stackoverflow.com/a/78210803
-//Posted by Shaun Roselt
-//Retrieved 2025-11-08, License - CC BY-SA 4.0
-//*)
-//
-//procedure SwipeDownRefresh(Enabled: Boolean);
-//begin
-//  if Enabled then
-//  begin
-//    TJSHTMLElement(document.body).style.removeProperty('overscroll-behavior-y');
-//    TJSHTMLElement(document.body.parentElement).style.removeProperty('overscroll-behavior-y');
-//  end else
-//  begin
-//    TJSHTMLElement(document.body).style.setProperty('overscroll-behavior-y','contain');
-//    TJSHTMLElement(document.body.parentElement).style.setProperty('overscroll-behavior-y','contain');
-//  end;
-//end;
-
-//procedure TDetailsFrm.WebFormEnter(Sender: TObject);
-//begin
-//  CWRmainFrm.SwipeDownRefresh(False);
-//end;
-//
-//procedure TDetailsFrm.WebFormExit(Sender: TObject);
-//begin
-//  CWRmainFrm.SwipeDownRefresh(True);
-//end;
 
 procedure TDetailsFrm.WebFormShow(Sender: TObject);
 begin
-  CWRmainFrm.SwipeDownRefresh(False);
   btnReturn.SetFocus;
-end;
-
-procedure TDetailsFrm.WebFormUnload(Sender: TObject);
-begin
-  CWRmainFrm.SwipeDownRefresh(True);
 end;
 
 end.

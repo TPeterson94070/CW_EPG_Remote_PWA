@@ -26,10 +26,7 @@ type
     btnOK: TWebButton;
     tpStartTime: TWebDateTimePicker;
     tpEndTime: TWebDateTimePicker;
-//    procedure WebFormEnter(Sender: TObject);
-//    procedure WebFormExit(Sender: TObject);
     procedure WebFormShow(Sender: TObject);
-    procedure WebFormUnload(Sender: TObject);
   private
     { Private declarations }
   public
@@ -64,26 +61,10 @@ uses CWRmainForm;
 //  end;
 //end;
 
-//procedure TSchedForm.WebFormEnter(Sender: TObject);
-//begin
-//  CWRmainFrm.SwipeDownRefresh(False);
-//end;
-
-//procedure TSchedForm.WebFormExit(Sender: TObject);
-//begin
-//  CWRmainFrm.SwipeDownRefresh(True);
-//end;
-
 procedure TSchedForm.WebFormShow(Sender: TObject);
 begin
-  CWRmainFrm.SwipeDownRefresh(False);
   // Start with Cancel button active
   btnCancel.SetFocus;
-end;
-
-procedure TSchedForm.WebFormUnload(Sender: TObject);
-begin
-  CWRmainFrm.SwipeDownRefresh(True);
 end;
 
 end.

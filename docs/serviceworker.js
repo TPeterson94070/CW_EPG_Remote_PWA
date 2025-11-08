@@ -8,7 +8,7 @@ var CACHED_URLS = [
   "https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js",
   "https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css",
   "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/webfonts/fa-solid-900.woff2",
-  "CW_EPG_Remote_1_0_3871.js",
+  "CW_EPG_Remote_1_0_3872.js",
   "CWRmainForm.html",
   "Details.html",
   "IconResHigh.png",

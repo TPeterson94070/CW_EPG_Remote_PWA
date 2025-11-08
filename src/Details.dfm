@@ -12,7 +12,6 @@ object DetailsFrm: TDetailsFrm
   ParentFont = False
   ShowClose = False
   OnShow = WebFormShow
-  OnUnload = WebFormUnload
   object lb02New: TWebLabel
     Left = 200
     Top = 331

@@ -11,7 +11,6 @@ object SchedForm: TSchedForm
   Font.Style = []
   ParentFont = False
   OnShow = WebFormShow
-  OnUnload = WebFormUnload
   object lblChannel: TWebLabel
     Left = 83
     Top = 293
