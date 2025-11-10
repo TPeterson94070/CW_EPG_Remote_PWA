@@ -40931,8 +40931,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log("Settings visible");
     };
     this.EPGClickCell = async function (Sender, ACol, ARow) {
-      this.EPG.FOnClickCell = null;
-      await sleep(10);
       try {
         $impl.Log("========== EPGClickCell() called from Row " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
             return ARow;
@@ -40940,13 +40938,12 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
             ARow = v;
           }}));
         if (this.pnlFilterSelection.FVisible) this.pnlFilterSelection.Hide();
-        await this.ShowItemDetails(pas.SysUtils.TStringHelper.ToInteger$1.call({p: this.EPG.GetCells(3,ARow), get: function () {
+        this.ShowItemDetails(pas.SysUtils.TStringHelper.ToInteger$1.call({p: this.EPG.GetCells(3,ARow), get: function () {
             return this.p;
           }, set: function (v) {
             this.p = v;
           }}),true);
       } finally {
-        this.EPG.FOnClickCell = rtl.createCallback(this,"EPGClickCell");
         $impl.Log("========== EPGClickCell() finished");
       };
     };

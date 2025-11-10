@@ -68,7 +68,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 733
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -110,14 +110,13 @@ object CWRmainFrm: TCWRmainFrm
       SelStart = 0
       WidthStyle = ssPercent
       WidthPercent = 100.000000000000000000
-      ExplicitHeight = 683
     end
   end
   object pnlWaitPls: TWebPanel
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 733
     ElementClassName = 'container-fluid'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -259,7 +258,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 733
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -317,7 +316,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 733
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -466,7 +465,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 733
     ElementClassName = 'greenBG'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -636,7 +635,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 733
     ElementClassName = 'greenBG'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -657,7 +656,7 @@ object CWRmainFrm: TCWRmainFrm
     ExplicitHeight = 699
     DesignSize = (
       428
-      767)
+      733)
     object lblEmptyEPG: TWebLabel
       Left = 96
       Top = 58
@@ -688,7 +687,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 767
+      Height = 733
       Align = alClient
       BorderStyle = bsNone
       Color = clNavy

@@ -1558,15 +1558,16 @@ end;
 procedure TCWRmainFrm.EPGClickCell(Sender: TObject; ACol, ARow: Integer);
 
 begin
-  EPG.OnClickCell := nil;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//  EPG.OnClickCell := nil;
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   try
     Log('========== EPGClickCell() called from Row ' + ARow.ToString);
     // Quit Combobox if still open
     if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
-    {$IFDEF PAS2JS} await {$ENDIF}(ShowItemDetails(EPG.Cells[3,ARow].ToInteger));
+//    {$IFDEF PAS2JS} await {$ENDIF}
+    (ShowItemDetails(EPG.Cells[3,ARow].ToInteger));
   finally
-    EPG.OnClickCell := EPGClickCell;
+//    EPG.OnClickCell := EPGClickCell;
     Log('========== EPGClickCell() finished');
   end;
 end;
