@@ -40079,7 +40079,6 @@ rtl.module("Details",["System","SysUtils","Classes","JS","Web","WEBLib.Graphics"
         this.FFont.SetStyle({});
         this.SetParentFont(false);
         this.FShowClose = false;
-        this.SetEvent(this,"OnShow","WebFormShow");
         this.lb02New.SetParentComponent(this);
         this.lb02New.SetName("lb02New");
         this.lb02New.SetLeft(200);
