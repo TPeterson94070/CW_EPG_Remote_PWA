@@ -26,7 +26,7 @@ type
     btnOK: TWebButton;
     tpStartTime: TWebDateTimePicker;
     tpEndTime: TWebDateTimePicker;
-    procedure WebFormShow(Sender: TObject);
+//    procedure WebFormShow(Sender: TObject);
   private
     { Private declarations }
   public
@@ -40,7 +40,7 @@ implementation
 
 {$R *.dfm}
 
-uses CWRmainForm;
+//uses CWRmainForm;
 
 //(*
 //Source - https://stackoverflow.com/a/78210803
@@ -61,10 +61,10 @@ uses CWRmainForm;
 //  end;
 //end;
 
-procedure TSchedForm.WebFormShow(Sender: TObject);
-begin
-  // Start with Cancel button active
-  btnCancel.SetFocus;
-end;
+//procedure TSchedForm.WebFormShow(Sender: TObject);
+//begin
+//  // Start with Cancel button active
+//  btnCancel.SetFocus;
+//end;
 
 end.

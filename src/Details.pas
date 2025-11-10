@@ -26,7 +26,7 @@ type
     lb09OrigDate: TWebLabel;
     lb10Channel: TWebLabel;
     lb11Time: TWebLabel;
-    procedure WebFormShow(Sender: TObject);
+//    procedure WebFormShow(Sender: TObject);
   private
     { Private declarations }
   public
@@ -38,13 +38,13 @@ var
 
 implementation
 
-uses CWRmainForm;
+//uses CWRmainForm;
 
 {$R *.dfm}
 
-procedure TDetailsFrm.WebFormShow(Sender: TObject);
-begin
-  btnReturn.SetFocus;
-end;
+//procedure TDetailsFrm.WebFormShow(Sender: TObject);
+//begin
+//  btnReturn.SetFocus;
+//end;
 
 end.

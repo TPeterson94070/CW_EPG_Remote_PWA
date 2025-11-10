@@ -10,7 +10,6 @@ object SchedForm: TSchedForm
   Font.Name = 'Arial'
   Font.Style = []
   ParentFont = False
-  OnShow = WebFormShow
   object lblChannel: TWebLabel
     Left = 83
     Top = 293
@@ -258,9 +257,9 @@ object SchedForm: TSchedForm
     Margins.Right = 8
     Margins.Bottom = 8
     Anchors = [akLeft, akBottom]
-    Cancel = True
     Caption = 'Cancel'
     ChildOrder = 10
+    Default = True
     ElementClassName = 'btn btn-warning'
     ElementFont = efCSS
     Font.Charset = DEFAULT_CHARSET
