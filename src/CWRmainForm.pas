@@ -429,32 +429,8 @@ begin
     byType.Checked := False;
     ByChannel.Checked := False;
     pnlFilterSelection.Hide;
-//    ByAll.Checked := True;
     {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
-//    if WIDBCDS.Filter <> BaseFilter then
-      {$IfDef PAS2JS}await{$EndIf}(SetFilters)
-//    else
-//    begin
-//      if WIDBCDS.ControlsDisabled then
-//      begin
-//        Log('Resyncing -- EPG update & WIDBCDS controls enable');
-//        EPG.BeginUpdate;
-//        {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
-//        WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
-//        {$IfDef PAS2JS}EPG.Row := 1{$EndIf};
-//        EPG.EndUpdate;
-//        Log('Done resyncing');
-//      end;
-//      x := EPG.Cells[3,1];
-//      Log('++ ^Rec EPG.Row: ' + EPG.Cells[3,1]);
-//      Log('++ WIDBCDS.RecNo: ' + WIDBCDS.RecNo.ToString);
-//      if EPG.IsUpdating then
-//      begin
-//        EPG.EndUpdate;
-//      end;
-//        EPG.Show;
-//      end;
-//    end;
+    {$IfDef PAS2JS}await{$EndIf}(SetFilters)
   finally
     ByAll.OnClick := ByAllClick;
     Log('ByAllClick finished');
@@ -788,8 +764,6 @@ begin
       end;
       for j := 1 to BufferGrid.RowCount - 1 do
       try
-        // Lose superfluous <"> -- not needed!
-//        BufferGrid.Cells[0,j] := ReplaceStr(BufferGrid.Cells[0,j],'"','');
         WIDBCDS.Append;
         WIDBCDS.Fields[0].Value := j;
         for i := 1 to BufferGrid.ColCount do
@@ -831,8 +805,6 @@ begin
   finally
     Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
     {$IfDef PAS2JS}await{$EndIf}(LogDataRange);
-//    if WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
-//      WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
     Log('WIDBCDS Controls are ' + IfThen(WIDBCDS.ControlsDisabled,'NOT ') + 'Enabled');
     Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
     Log('========= Finished LoadWIDBCDS');
