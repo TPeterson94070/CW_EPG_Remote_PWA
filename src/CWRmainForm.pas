@@ -1058,7 +1058,8 @@ begin
   if ByChannel.Checked then fltr := fltr + ' and PSIP = ' + QuotedStr(wcbChannels.Text);
   if ByType.Checked then fltr := fltr + ' and Class = '
     + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
-  if fltr>'' then Log('Epg Filter: BaseFilter + ' + fltr);
+  if fltr = '' then fltr := ' and ID < 3000';
+  Log('Epg Filter: BaseFilter + ' + fltr);
   WIDBCDS.Filter := BaseFilter + fltr;
   WIDBCDS.Filtered := True;
   {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}

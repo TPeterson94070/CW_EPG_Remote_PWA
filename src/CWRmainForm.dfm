@@ -948,7 +948,7 @@ object CWRmainFrm: TCWRmainFrm
     Width = 404
     Height = 50
     object ByAll: TMenuItem
-      Caption = 'Unfiltered Listing'
+      Caption = '1st 3000 Listings'
       Checked = True
       Default = True
       RadioItem = True
