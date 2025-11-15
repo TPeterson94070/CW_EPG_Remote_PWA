@@ -40810,7 +40810,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log("Running version:  " + AppVersion);
       $impl.Log("App is " + pas.StrUtils.IfThen(!pas["WEBLib.Forms"].Application.GetIsOnline(),"NOT ","") + "online");
       this.WebRESTClient1.ReadTokens();
-      if (pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMDAYS) !== "") this.cbNumDisplayDays.SetItemIndex(this.cbNumDisplayDays.FItems.IndexOf(pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMDAYS)));
       if (pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMHIST) !== "") this.cbNumHistList.SetItemIndex(this.cbNumHistList.FItems.IndexOf(pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMHIST)));
       this.WebMainMenu1.FAppearance.FHamburgerMenu.SetCaption("[" + pas["WEBLib.Storage"].TWebLocalStorage.GetValue($impl.EMAILADDR) + "]");
       this.EPG.Hide();
@@ -41045,16 +41044,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.ByChannel.SetChecked(this.wcbChannels.GetText() !== "All");
       this.SetFilters();
     };
-    this.cbNumDisplayDaysChange = async function (Sender) {
-      if (pas.System.Trunc($impl.LastStartDate - pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false)) < pas.SysUtils.StrToInt(this.cbNumDisplayDays.GetText())) {
-        await pas["WEBLib.Dialogs"].MessageDlgAsync("I currently have less than the requested " + this.cbNumDisplayDays.GetText() + " days of listings stored." + "\rTo display more, please use Options | Refresh Data",2,rtl.createSet(2));
-        this.cbNumDisplayDays.SetItemIndex(this.cbNumDisplayDays.FItems.IndexOf(pas.SysUtils.TNativeIntHelper.ToString$1.call({a: pas.System.Trunc($impl.LastStartDate - pas.SysUtils.Now()), get: function () {
-            return this.a;
-          }, set: function (v) {
-            this.a = v;
-          }})));
-      };
-    };
     this.NewCapturesClickCell = async function (Sender, ACol, ARow) {
       var PSIP = "";
       var Title = "";
@@ -41114,20 +41103,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.wcbChannelsFocusOut = function (Sender) {
       this.pnlFilterSelection.Hide();
       this.wcbChannels.Hide();
-    };
-    this.btnOptOKClick = async function (Sender) {
-      $impl.Log("OptOK called");
-      await this.ShowPlsWait("Updating Settings");
-      pas["WEBLib.Storage"].TLocalStorage.SetValue($impl.NUMHIST,this.cbNumHistList.GetText());
-      $impl.Log("New number History Display Days: " + this.cbNumHistList.GetText());
-      if (pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMDAYS) !== this.cbNumDisplayDays.GetText()) {
-        pas["WEBLib.Storage"].TLocalStorage.SetValue($impl.NUMDAYS,this.cbNumDisplayDays.GetText());
-        $impl.Log("New number EPG Display Days: " + this.cbNumDisplayDays.GetText());
-        this.ClearFilterLists();
-        await this.SetupWIDBCDS();
-        await this.ReFreshListings();
-      } else this.ByAllClick(this);
-      $impl.Log("OptOK finished");
     };
     this.btnSchdRefrshClick = async function (Sender) {
       await this.FetchCapReservations();
@@ -41218,6 +41193,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $impl.Log("========== EPGClickCell() finished");
       };
     };
+    this.cbNumHistListChange = function (Sender) {
+      pas["WEBLib.Storage"].TLocalStorage.SetValue($impl.NUMHIST,this.cbNumHistList.GetText());
+    };
     this.HistoryTableClickCell = function (Sender, ACol, ARow) {
       this.ShowHistoryDetails(ARow);
     };
@@ -41303,7 +41281,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlLog.BringToFront();
         this.pnlLog.Show();
       } else if ($tmp === 4) {
-        if (pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMDAYS) !== "") this.cbNumDisplayDays.SetItemIndex(this.cbNumDisplayDays.FItems.IndexOf(pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMDAYS)));
         if (pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMHIST) !== "") this.cbNumHistList.SetItemIndex(this.cbNumHistList.FItems.IndexOf(pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMHIST)));
         this.pnlOptions.BringToFront();
         this.pnlOptions.Show();
@@ -41404,17 +41381,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log(" ======== RefreshListings is called.");
       this.EPG.Hide();
       await this.SetupEpg();
-      $impl.Log("Days to Display, Available: " + this.cbNumDisplayDays.GetText() + ", " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: $impl, get: function () {
-          return this.p.TotalAvailableDays;
-        }, set: function (v) {
-          this.p.TotalAvailableDays = v;
-        }}));
       if ((this.WIDBCDS.GetRecordCount() > 0) && ($impl.TotalAvailableDays >= 0)) {
-        await this.ShowPlsWait("Preparing " + pas.SysUtils.TIntegerHelper.ToString$1.call({a: Math.min(pas.SysUtils.StrToIntDef(this.cbNumDisplayDays.GetText(),1),$impl.TotalAvailableDays), get: function () {
-            return this.a;
-          }, set: function (v) {
-            this.a = v;
-          }}) + "-day Listing.");
         await this.ByAllClick(this);
         if (!this.EPG.FVisible) this.EPG.Show();
       } else await pas["WEBLib.Dialogs"].MessageDlgAsync("There are no current data!" + "\r\rTo update, use the Refresh Data button." + "\r\rTo watch the Log, first switch to" + "\rView Log and then use Refresh Data." + "\r(Recommended _only_ in case of severe hang issue)",2,rtl.createSet(2));
@@ -41657,23 +41624,16 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     };
     this.SetupEpg = async function () {
       var FirstEndTime = 0.0;
-      var LastStartTime = 0.0;
       $impl.Log("====== SetupEpg called");
       if ((this.WIDBCDS.GetRecordCount() === 0) || ($impl.TotalAvailableDays < 0)) return;
       await this.ShowPlsWait("Preparing Stored Data");
-      $impl.Log(' Finished posting "Please Wait" panel');
       FirstEndTime = pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false);
-      LastStartTime = FirstEndTime + pas.SysUtils.StrToIntDef(this.cbNumDisplayDays.GetText(),1);
       $impl.BaseFilter = "EndTime >= " + pas.SysUtils.TDoubleHelper.ToString$3.call({get: function () {
           return FirstEndTime;
         }, set: function (v) {
           FirstEndTime = v;
-        }}) + " and StartTime <= " + pas.SysUtils.TDoubleHelper.ToString$3.call({get: function () {
-          return LastStartTime;
-        }, set: function (v) {
-          LastStartTime = v;
         }});
-      $impl.Log("BaseFilter(UTC): EndTime >= " + pas.SysUtils.DateTimeToStr(FirstEndTime,false) + " and StartTime <= " + pas.SysUtils.DateTimeToStr(LastStartTime,false));
+      $impl.Log("BaseFilter(UTC): EndTime >= " + pas.SysUtils.DateTimeToStr(FirstEndTime,false));
       $impl.Log(" WIDBCDS.Filtered is " + pas.StrUtils.IfThen(this.WIDBCDS.FFiltered,"True","False"));
       if (this.WIDBCDS.FFiltered) this.WIDBCDS.SetFiltered(false);
       $impl.Log(" WIDBCDS is not filtered");
@@ -41742,7 +41702,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlWaitPls.BringToFront();
         this.pnlWaitPls.Show();
         await sleep(100);
-      } else $impl.Log("####### " + PlsWaitCap);
+      };
+      $impl.Log("### Showing panel ### " + PlsWaitCap);
     };
     this.SetupFilterLists = async function () {
       var fn = 0;
@@ -42458,6 +42419,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.cbNumHistList.SetRole("combobox");
         this.cbNumHistList.SetText("200");
         this.cbNumHistList.SetWidthPercent(100.000000000000000000);
+        this.SetEvent$1(this.cbNumHistList,this,"OnChange","cbNumHistListChange");
         this.cbNumHistList.SetItemIndex(1);
         this.cbNumHistList.FItems.BeginUpdate();
         try {
@@ -42485,7 +42447,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebGroupBox1.SetWidthPercent(25.000000000000000000);
         this.WebGroupBox1.SetAlign(6);
         this.WebGroupBox1.SetBorderColor(12632256);
-        this.WebGroupBox1.SetCaption("EPG Days Displayed");
+        this.WebGroupBox1.SetCaption("EPG Days Displayed (unused)");
         this.WebGroupBox1.SetColor(16776960);
         this.WebGroupBox1.SetElementFont(1);
         this.WebGroupBox1.SetElementLegendClassName("h6");
@@ -42495,6 +42457,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebGroupBox1.FFont.SetName("Arial");
         this.WebGroupBox1.FFont.SetStyle({});
         this.WebGroupBox1.SetParentFont(false);
+        this.WebGroupBox1.SetVisible(false);
         this.cbNumDisplayDays.SetParentComponent(this.WebGroupBox1);
         this.cbNumDisplayDays.SetName("cbNumDisplayDays");
         this.cbNumDisplayDays.SetLeft(88);
@@ -42515,8 +42478,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.cbNumDisplayDays.SetRole("combobox");
         this.cbNumDisplayDays.SetText("3");
         this.cbNumDisplayDays.SetWidthPercent(100.000000000000000000);
-        this.SetEvent$1(this.cbNumDisplayDays,this,"OnChange","cbNumDisplayDaysChange");
-        this.cbNumDisplayDays.SetItemIndex(2);
+        this.cbNumDisplayDays.SetItemIndex(-1);
         this.cbNumDisplayDays.FItems.BeginUpdate();
         try {
           this.cbNumDisplayDays.FItems.Clear();
@@ -42553,8 +42515,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.btnOptOK.FModalResult = 1;
         this.btnOptOK.SetParentFont(false);
         this.btnOptOK.SetRole("button");
+        this.btnOptOK.SetVisible(false);
         this.btnOptOK.SetWidthPercent(100.000000000000000000);
-        this.SetEvent$1(this.btnOptOK,this,"OnClick","btnOptOKClick");
         this.pnlCaptures.SetParentComponent(this);
         this.pnlCaptures.SetName("pnlCaptures");
         this.pnlCaptures.SetLeft(0);
@@ -43271,13 +43233,11 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addMethod("ByAllClick",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("ByChannelClick",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("wcbChannelsChange",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
-    $r.addMethod("cbNumDisplayDaysChange",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("NewCapturesClickCell",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("WIDBCDSIDBError",0,[["DataSet",pas.DB.$rtti["TDataSet"]],["opCode",pas["WEBLib.IndexedDb"].$rtti["TIndexedDbOpCode"]],["errorName",rtl.string],["errorMsg",rtl.string]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("NewCapturesGetCellData",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint],["AField",pas.DB.$rtti["TField"]],["AValue",rtl.string,1]],4);
     $r.addMethod("wcbGenresFocusOut",0,[["Sender",pas.System.$rtti["TObject"]]],4);
     $r.addMethod("wcbChannelsFocusOut",0,[["Sender",pas.System.$rtti["TObject"]]],4);
-    $r.addMethod("btnOptOKClick",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("btnSchdRefrshClick",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("btnRefreshDataClick",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("wcbTypesChange",0,[["Sender",pas.System.$rtti["TObject"]]],4);
@@ -43287,6 +43247,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addMethod("WebTimer2Timer",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("CapturesGetCellData",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint],["AField",pas.DB.$rtti["TField"]],["AValue",rtl.string,1]],4);
     $r.addMethod("CapturesClickCell",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
+    $r.addMethod("cbNumHistListChange",0,[["Sender",pas.System.$rtti["TObject"]]],4);
     $r.addMethod("HistoryTableClickCell",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint]],4);
     $r.addMethod("SwipeDownRefresh",0,[["Enabled",rtl.boolean]],4);
   });
@@ -43302,7 +43263,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $impl.BaseFilter = "";
     $impl.ProgramTypes = {"0": "New", New: 0, "1": "Rerun", Rerun: 1, "2": "Movie", Movie: 2, "3": "Other", Other: 3};
     $mod.$rtti.$Enum("ProgramTypes",{minvalue: 0, maxvalue: 3, ordtype: 1, enumtype: $impl.ProgramTypes});
-    $impl.NUMDAYS = "NumDisplayDays";
     $impl.NUMHIST = "NumHistoryItems";
     $impl.EMAILADDR = "emailAddress";
     $impl.CSV_EPG = "cwr_epg.csv";
