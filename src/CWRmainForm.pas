@@ -104,7 +104,7 @@ type
   [async] procedure ByAllClick(Sender: TObject);
   [async] procedure ByChannelClick(Sender: TObject);
   [async] procedure wcbChannelsChange(Sender: TObject);
-  [async] procedure cbNumDisplayDaysChange(Sender: TObject);
+//  [async] procedure cbNumDisplayDaysChange(Sender: TObject);
   [async] procedure NewCapturesClickCell(Sender: TObject; ACol, ARow: Integer);
   [async] procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
       errorName, errorMsg: string);
@@ -112,7 +112,7 @@ type
       AField: TField; var AValue: string);
     procedure wcbGenresFocusOut(Sender: TObject);
     procedure wcbChannelsFocusOut(Sender: TObject);
-  [async] procedure btnOptOKClick(Sender: TObject);
+//  [async] procedure btnOptOKClick(Sender: TObject);
   [async] procedure btnSchdRefrshClick(Sender: TObject);
   [async] procedure btnRefreshDataClick(Sender: TObject);
     procedure wcbTypesChange(Sender: TObject);
@@ -123,6 +123,7 @@ type
     procedure CapturesGetCellData(Sender: TObject; ACol, ARow: Integer;
       AField: TField; var AValue: string);
     [async] procedure CapturesClickCell(Sender: TObject; ACol, ARow: Integer);
+  procedure cbNumHistListChange(Sender: TObject);
     procedure HistoryTableClickCell(Sender: TObject; ACol, ARow: Integer);
     procedure SwipeDownRefresh(Enabled: Boolean);
 private
@@ -185,7 +186,7 @@ var
 
 type ProgramTypes = (New,Rerun,Movie,Other);
 const
-  NUMDAYS = 'NumDisplayDays';
+//  NUMDAYS = 'NumDisplayDays';
   NUMHIST = 'NumHistoryItems';
   EMAILADDR = 'emailAddress';
   CSV_EPG = 'cwr_epg.csv';
@@ -295,8 +296,8 @@ begin
   Log('Running version:  ' + AppVersion);
   Log('App is ' + IfThen(not Application.IsOnline, 'NOT ') + 'online');
   WebRESTClient1.ReadTokens; // retrieve previous access token
-  if TWebLocalStorage.GetValue(NUMDAYS) <> '' then
-    cbNumDisplayDays.ItemIndex := cbNumDisplayDays.Items.IndexOf(TWebLocalStorage.GetValue(NUMDAYS));
+//  if TWebLocalStorage.GetValue(NUMDAYS) <> '' then
+//    cbNumDisplayDays.ItemIndex := cbNumDisplayDays.Items.IndexOf(TWebLocalStorage.GetValue(NUMDAYS));
   if TWebLocalStorage.GetValue(NUMHIST) <> '' then
     cbNumHistList.ItemIndex := cbNumHistList.Items.IndexOf(TWebLocalStorage.GetValue(NUMHIST));
     WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
@@ -379,23 +380,23 @@ begin
   end;
 end;
 
-procedure TCWRmainFrm.btnOptOKClick(Sender: TObject);
-begin
-  Log('OptOK called');
-  {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Updating Settings'));
-  TWebLocalStorage.SetValue(NUMHIST, cbNumHistList.Text);
-  Log('New number History Display Days: ' + cbNumHistList.Text);
-  if TWebLocalStorage.GetValue(NUMDAYS) <> cbNumDisplayDays.Text then
-  begin
-    TWebLocalStorage.SetValue(NUMDAYS, cbNumDisplayDays.Text);
-    Log('New number EPG Display Days: ' + cbNumDisplayDays.Text);
-    ClearFilterLists;
-    {$IfDef PAS2JS}await{$EndIf}(SetupWIDBCDS);
-    {$IfDef PAS2JS}await{$EndIf}(ReFreshListings);
-  end
-  else ByAllClick(Self);
-  Log('OptOK finished');
-end;
+//procedure TCWRmainFrm.btnOptOKClick(Sender: TObject);
+//begin
+//  Log('OptOK called');
+//  {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Updating Settings'));
+//  TWebLocalStorage.SetValue(NUMHIST, cbNumHistList.Text);
+//  Log('New number History Display Days: ' + cbNumHistList.Text);
+//  if TWebLocalStorage.GetValue(NUMDAYS) <> cbNumDisplayDays.Text then
+//  begin
+//    TWebLocalStorage.SetValue(NUMDAYS, cbNumDisplayDays.Text);
+//    Log('New number EPG Display Days: ' + cbNumDisplayDays.Text);
+//    ClearFilterLists;
+//    {$IfDef PAS2JS}await{$EndIf}(SetupWIDBCDS);
+//    {$IfDef PAS2JS}await{$EndIf}(ReFreshListings);
+//  end
+//  {else }ByAllClick(Self);
+//  Log('OptOK finished');
+//end;
 
 procedure TCWRmainFrm.btnRefreshDataClick(Sender: TObject);
 begin
@@ -560,17 +561,17 @@ begin
   if ACol = 3 then AValue := IfThen(AValue > '', FormatDateTime('mm/dd', StrToDateDef(AValue, 0)));
 end;
 
-procedure TCWRmainFrm.cbNumDisplayDaysChange(Sender: TObject);
-begin
-  // Make sure that current dataset supports the requested number
-  if Trunc(LastStartDate - TTimeZone.Local.ToUniversalTime(Now)) < StrToInt(cbNumDisplayDays.Text) then
-  begin
-    TAwait.ExecP<TModalResult> (MessageDlgAsync('I currently have less than the requested '
-      + cbNumDisplayDays.Text + ' days of listings stored.'
-      + #13'To display more, please use Options | Refresh Data',mtInformation, [mbOK]));
-    cbNumDisplayDays.ItemIndex := cbNumDisplayDays.Items.IndexOf(Trunc(LastStartDate - Now).ToString);
-  end;
-end;
+//procedure TCWRmainFrm.cbNumDisplayDaysChange(Sender: TObject);
+//begin
+//  // Make sure that current dataset supports the requested number
+//  if Trunc(LastStartDate - TTimeZone.Local.ToUniversalTime(Now)) < StrToInt(cbNumDisplayDays.Text) then
+//  begin
+//    TAwait.ExecP<TModalResult> (MessageDlgAsync('I currently have less than the requested '
+//      + cbNumDisplayDays.Text + ' days of listings stored.'
+//      + #13'To display more, please use Options | Refresh Data',mtInformation, [mbOK]));
+//    cbNumDisplayDays.ItemIndex := cbNumDisplayDays.Items.IndexOf(Trunc(LastStartDate - Now).ToString);
+//  end;
+//end;
 
 function TCWRmainFrm.GetGoogleDriveFile(TableFile: string; var id: string): string;
 var
@@ -916,19 +917,19 @@ end;
 
 procedure TCWRmainFrm.SetupEpg;
 var
-  FirstEndTime, LastStartTime:  TDateTime;
+  FirstEndTime{, LastStartTime}:  TDateTime;
 
 begin
   Log('====== SetupEpg called');
   if (WIDBCDS.RecordCount = 0) or (TotalAvailableDays < 0) then Exit;
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing Stored Data'));
-  Log(' Finished posting "Please Wait" panel');
+//  Log(' Finished posting "Please Wait" panel');
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
-  LastStartTime := FirstEndTime + StrToIntDef(cbNumDisplayDays.Text,1);
+//  LastStartTime := FirstEndTime + StrToIntDef(cbNumDisplayDays.Text,1);
   BaseFilter := 'EndTime >= ' + Double(FirstEndTime).ToString
-      + ' and StartTime <= ' + Double(LastStartTime).ToString;
+      {+ ' and StartTime <= ' + Double(LastStartTime).ToString};
   Log('BaseFilter(UTC): EndTime >= ' + DateTimeToStr(FirstEndTime)
-      + ' and StartTime <= ' + DateTimeToStr(LastStartTime));
+      {+ ' and StartTime <= ' + DateTimeToStr(LastStartTime)});
   Log(' WIDBCDS.Filtered is ' + IfThen(WIDBCDS.Filtered, 'True', 'False'));
   if WIDBCDS.Filtered then WIDBCDS.Filtered := False;
   Log(' WIDBCDS is not filtered');
@@ -1082,8 +1083,8 @@ begin
     pnlWaitPls.BringToFront;
     pnlWaitPls.Show;
     {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
-  end
-  else Log('####### ' + PlsWaitCap);   // Just make log entry
+  end;
+  {else }Log('### Showing panel ### ' + PlsWaitCap);   // make log entry
 end;
 
 procedure TCWRmainFrm.ReFreshListings;
@@ -1091,11 +1092,11 @@ begin
   Log(' ======== RefreshListings is called.');
   EPG.Hide;
   {$IfDef PAS2JS}await{$EndIf}(SetupEpg);
-  Log('Days to Display, Available: ' + cbNumDisplayDays.Text + ', ' + TotalAvailableDays.ToString);
+//  Log('Days to Display, Available: ' + cbNumDisplayDays.Text + ', ' + TotalAvailableDays.ToString);
 
   if (WIDBCDS.RecordCount > 0) and (TotalAvailableDays >= 0) then
   begin
-    {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + Min(StrToIntDef(cbNumDisplayDays.Text, 1), TotalAvailableDays).ToString + '-day Listing.'));
+//    {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + Min(StrToIntDef(cbNumDisplayDays.Text, 1), TotalAvailableDays).ToString + '-day Listing.'));
     {$IfDef PAS2JS}await{$EndIf}(ByAllClick(Self));
     if not EPG.Visible then EPG.Show;
   end
@@ -1327,8 +1328,8 @@ begin
       pnlLog.Show;
     end;
     4: begin {Options}
-      if TWebLocalStorage.GetValue(NUMDAYS) <> '' then
-        cbNumDisplayDays.ItemIndex := cbNumDisplayDays.Items.IndexOf(TWebLocalStorage.GetValue(NUMDAYS));
+//      if TWebLocalStorage.GetValue(NUMDAYS) <> '' then
+//        cbNumDisplayDays.ItemIndex := cbNumDisplayDays.Items.IndexOf(TWebLocalStorage.GetValue(NUMDAYS));
       if TWebLocalStorage.GetValue(NUMHIST) <> '' then
         cbNumHistList.ItemIndex := cbNumHistList.Items.IndexOf(TWebLocalStorage.GetValue(NUMHIST));
       pnlOptions.BringToFront;
@@ -1360,6 +1361,11 @@ begin
      AValue := LeftStr(AValue,4) + '...' + RightStr(AValue,3);
   2: AValue := copy(AValue,4,10);
   end;
+end;
+
+procedure TCWRmainFrm.cbNumHistListChange(Sender: TObject);
+begin
+  TWebLocalStorage.SetValue(NUMHIST, cbNumHistList.Text);
 end;
 
 procedure TCWRmainFrm.EPGGetCellClass(Sender: TObject; ACol,

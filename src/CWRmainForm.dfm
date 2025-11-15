@@ -366,6 +366,7 @@ object CWRmainFrm: TCWRmainFrm
         Role = 'combobox'
         Text = '200'
         WidthPercent = 100.000000000000000000
+        OnChange = cbNumHistListChange
         ItemIndex = 1
         Items.Strings = (
           '100'
@@ -389,7 +390,7 @@ object CWRmainFrm: TCWRmainFrm
       WidthPercent = 25.000000000000000000
       Align = alCustom
       BorderColor = clSilver
-      Caption = 'EPG Days Displayed'
+      Caption = 'EPG Days Displayed (unused)'
       Color = clAqua
       ElementFont = efCSS
       ElementLegendClassName = 'h6'
@@ -399,6 +400,7 @@ object CWRmainFrm: TCWRmainFrm
       Font.Name = 'Arial'
       Font.Style = []
       ParentFont = False
+      Visible = False
       object cbNumDisplayDays: TWebComboBox
         Left = 88
         Top = 41
@@ -418,8 +420,7 @@ object CWRmainFrm: TCWRmainFrm
         Role = 'combobox'
         Text = '3'
         WidthPercent = 100.000000000000000000
-        OnChange = cbNumDisplayDaysChange
-        ItemIndex = 2
+        ItemIndex = -1
         Items.Strings = (
           '1'
           '2'
@@ -452,8 +453,8 @@ object CWRmainFrm: TCWRmainFrm
       ModalResult = 1
       ParentFont = False
       Role = 'button'
+      Visible = False
       WidthPercent = 100.000000000000000000
-      OnClick = btnOptOKClick
     end
   end
   object pnlCaptures: TWebPanel
