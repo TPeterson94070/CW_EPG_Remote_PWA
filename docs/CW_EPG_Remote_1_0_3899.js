@@ -40598,11 +40598,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WebHTMLForm1 = undefined;
       pas["WEBLib.Forms"].TForm.$final.call(this);
     };
-    this.ClearFilterLists = function () {
-      pas["WEBLib.Storage"].TLocalStorage.RemoveKey("wcbGenresItems");
-      pas["WEBLib.Storage"].TLocalStorage.RemoveKey("wcbTitlesItems");
-      pas["WEBLib.Storage"].TLocalStorage.RemoveKey("wcbChannelsItems");
-    };
     var HEADINGS = ["Ch Name","RecordStart","RecordEnd","Title","SubTitle","StartTime","ProgramID"];
     var WIDTHS = [75,95,95,150,400,0,0];
     this.SetCapturesFormats = function () {
@@ -40658,6 +40653,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.WIDBCDS.SetFiltered(false);
       $impl.Log("WIDBCDS is " + pas.StrUtils.IfThen(!this.WIDBCDS.FFiltered,"UN","") + "filtered");
       this.WIDBCDS.Close();
+      pas["WEBLib.Storage"].TLocalStorage.RemoveKey("wcbGenresItems");
+      pas["WEBLib.Storage"].TLocalStorage.RemoveKey("wcbChannelsItems");
       await this.WIDBCDS.OpenAsync();
       try {
         if (this.WIDBCDS.GetActive() && (this.BufferGrid.FRowCount > 1)) {
@@ -40754,7 +40751,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var StartT = 0.0;
       $impl.Log('======== "Refresh Data" clicked');
       this.WIDBCDS.Close();
-      this.ClearFilterLists();
       await this.RefreshCSV($impl.CSV_EPG,"EPG",{get: function () {
           return id;
         }, set: function (v) {
@@ -41623,28 +41619,27 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log("====== SetupEpg called");
       if ((this.WIDBCDS.GetRecordCount() === 0) || ($impl.TotalAvailableDays < 0)) return;
       await this.ShowPlsWait("Preparing Stored Data");
+      if (this.WIDBCDS.FFiltered) this.WIDBCDS.SetFiltered(false);
       FirstEndTime = pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false);
-      $impl.BaseFilter = "EndTime >= " + pas.SysUtils.TDoubleHelper.ToString$3.call({get: function () {
+      $impl.Log("First record EndTime (UTC) >= " + pas.SysUtils.DateTimeToStr(FirstEndTime,false));
+      this.WIDBCDS.SetFilterText("EndTime >= " + pas.SysUtils.TDoubleHelper.ToString$3.call({get: function () {
           return FirstEndTime;
         }, set: function (v) {
           FirstEndTime = v;
-        }});
-      $impl.Log("BaseFilter(UTC): EndTime >= " + pas.SysUtils.DateTimeToStr(FirstEndTime,false));
-      $impl.Log(" WIDBCDS.Filtered is " + pas.StrUtils.IfThen(this.WIDBCDS.FFiltered,"True","False"));
-      if (this.WIDBCDS.FFiltered) this.WIDBCDS.SetFiltered(false);
-      $impl.Log(" WIDBCDS is not filtered");
-      this.WIDBCDS.SetFilterText($impl.BaseFilter);
-      $impl.Log(" WIDBCDS BaseFilter assigned, but not active");
-      this.EPG.FColumns.GetItem$1(0).SetAlignment(2);
-      this.EPG.FColumns.GetItem$1(2).SetAlignment(0);
-      await this.SetupFilterLists();
-      if (!this.WIDBCDS.FFiltered) this.WIDBCDS.SetFiltered(true);
+        }}));
+      this.WIDBCDS.SetFiltered(true);
       this.WIDBCDS.First();
+      $impl.BaseFilter = "ID >= " + this.WIDBCDS.FFieldList.GetField(0).GetAsString();
       $impl.LastID = pas.SysUtils.TIntegerHelper.ToString$1.call({a: this.WIDBCDS.FFieldList.GetField(0).GetAsInteger() + 1000, get: function () {
           return this.a;
         }, set: function (v) {
           rtl.raiseE("EPropReadOnly");
         }});
+      this.WIDBCDS.SetFiltered(false);
+      $impl.Log(" WIDBCDS BaseFilter [" + $impl.BaseFilter + "] assigned, but not active");
+      this.EPG.FColumns.GetItem$1(0).SetAlignment(2);
+      this.EPG.FColumns.GetItem$1(2).SetAlignment(0);
+      await this.SetupFilterLists();
       $impl.Log("====== SetupEpg finished");
     };
     this.PopupFilterList = async function (cb, fn) {
@@ -42964,7 +42959,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.SetEvent$1(this.RefreshEPG,this,"OnClick","RefreshData");
         this.ChangeHTPC1.SetParentComponent(this.Options);
         this.ChangeHTPC1.SetName("ChangeHTPC1");
-        this.ChangeHTPC1.SetCaption("Change HTPC");
+        this.ChangeHTPC1.SetCaption("Change GDrive acct");
         this.SetEvent$1(this.ChangeHTPC1,this,"OnClick","ChangeTargetHTPC");
         this.ViewLog1.SetParentComponent(this.Options);
         this.ViewLog1.SetName("ViewLog1");
@@ -43118,7 +43113,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addField("WebTimer1",pas["WEBLib.ExtCtrls"].$rtti["TTimer"],4);
     $r.addField("WebTimer2",pas["WEBLib.ExtCtrls"].$rtti["TTimer"],4);
     $r.addField("WebHTMLForm1",pas["WEBLib.ExtCtrls"].$rtti["THTMLForm"],4);
-    $r.addMethod("ClearFilterLists",0,[],4);
     $r.addMethod("SetCapturesFormats",0,[],4);
     $r.addMethod("EPGGetCellClass",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint],["AField",pas.DB.$rtti["TField"]],["AValue",rtl.string],["AClassName",rtl.string,1]],4);
     $r.addMethod("SaveNewCapturesFile",0,[["id",rtl.string]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
