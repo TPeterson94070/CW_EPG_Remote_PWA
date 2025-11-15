@@ -892,29 +892,25 @@ end;
 
 procedure TCWRmainFrm.SetupEpg;
 var
-  FirstEndTime{, LastStartTime}:  TDateTime;
+  FirstEndTime:  TDateTime;
 
 begin
   Log('====== SetupEpg called');
   if (WIDBCDS.RecordCount = 0) or (TotalAvailableDays < 0) then Exit;
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing Stored Data'));
-  FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
-//  LastStartTime := FirstEndTime + StrToIntDef(cbNumDisplayDays.Text,1);
-  BaseFilter := 'EndTime >= ' + Double(FirstEndTime).ToString
-      {+ ' and StartTime <= ' + Double(LastStartTime).ToString};
-  Log('BaseFilter(UTC): EndTime >= ' + DateTimeToStr(FirstEndTime)
-      {+ ' and StartTime <= ' + DateTimeToStr(LastStartTime)});
-  Log(' WIDBCDS.Filtered is ' + IfThen(WIDBCDS.Filtered, 'True', 'False'));
   if WIDBCDS.Filtered then WIDBCDS.Filtered := False;
-  Log(' WIDBCDS is not filtered');
-  WIDBCDS.Filter := BaseFilter;
-  Log(' WIDBCDS BaseFilter assigned, but not active');
+  FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
+  Log('First record EndTime (UTC) >= ' + DateTimeToStr(FirstEndTime));
+  WIDBCDS.Filter := 'EndTime >= ' + Double(FirstEndTime).ToString;
+  WIDBCDS.Filtered := True;
+  WIDBCDS.First;
+  BaseFilter := 'ID >= ' + WIDBCDS.Fields[0].AsString;
+  LastID := (WIDBCDS.Fields[0].AsInteger + NUMIDS).ToString;
+  WIDBCDS.Filtered := False;
+  Log(' WIDBCDS BaseFilter [' + BaseFilter + '] assigned, but not active');
   EPG.Columns[0].Alignment := taCenter;
   EPG.Columns[2].Alignment := taLeftJustify;
   {$IfDef PAS2JS}await{$EndIf}(SetupFilterLists);
-  if not WIDBCDS.Filtered then WIDBCDS.Filtered := True;   // Take the hit now if not before
-  WIDBCDS.First;
-  LastID := (WIDBCDS.Fields[0].AsInteger + NUMIDS).ToString;
   Log('====== SetupEpg finished');
 end;
 
