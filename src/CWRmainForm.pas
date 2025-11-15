@@ -181,12 +181,13 @@ var
   FirstEndDate,
   LastStartDate:    TDate;
   TotalAvailableDays: Integer;
+  LastID,
   SearchFilter,
   BaseFilter:       string;
 
 type ProgramTypes = (New,Rerun,Movie,Other);
 const
-//  NUMDAYS = 'NumDisplayDays';
+  NUMIDS = 1000;
   NUMHIST = 'NumHistoryItems';
   EMAILADDR = 'emailAddress';
   CSV_EPG = 'cwr_epg.csv';
@@ -904,6 +905,7 @@ begin
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active, 'not ')
     + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
   {$IfDef PAS2JS}await{$EndIf}(LogDataRange);
+  Log('Notify user if refresh WIDBCDS needed');
   btnRefreshData.Show;
   if TTimeZone.Local.ToUniversalTime(Now) > LastStartDate then
     TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'#13'Please make sure that the HTPC'
@@ -913,6 +915,7 @@ begin
       + #13'and there are only about ' + Round(LastStartDate - TTimeZone.Local.ToUniversalTime(Now)).ToString + ' days now available.'
       + #13#13'To update, please use the Refresh Data button.',mtInformation, [mbOK]))
   else btnRefreshData.Hide;
+  Log('Finished opening WIDBCDS');
 end;
 
 procedure TCWRmainFrm.SetupEpg;
@@ -923,7 +926,6 @@ begin
   Log('====== SetupEpg called');
   if (WIDBCDS.RecordCount = 0) or (TotalAvailableDays < 0) then Exit;
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing Stored Data'));
-//  Log(' Finished posting "Please Wait" panel');
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
 //  LastStartTime := FirstEndTime + StrToIntDef(cbNumDisplayDays.Text,1);
   BaseFilter := 'EndTime >= ' + Double(FirstEndTime).ToString
@@ -939,6 +941,8 @@ begin
   EPG.Columns[2].Alignment := taLeftJustify;
   {$IfDef PAS2JS}await{$EndIf}(SetupFilterLists);
   if not WIDBCDS.Filtered then WIDBCDS.Filtered := True;   // Take the hit now if not before
+  WIDBCDS.First;
+  LastID := (WIDBCDS.Fields[0].AsInteger + NUMIDS).ToString;
   Log('====== SetupEpg finished');
 end;
 
@@ -1059,7 +1063,7 @@ begin
   if ByChannel.Checked then fltr := fltr + ' and PSIP = ' + QuotedStr(wcbChannels.Text);
   if ByType.Checked then fltr := fltr + ' and Class = '
     + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
-  if fltr = '' then fltr := ' and ID < 3000';
+  if fltr = '' then fltr := ' and ID < ' + LastID;
   Log('Epg Filter: BaseFilter + ' + fltr);
   WIDBCDS.Filter := BaseFilter + fltr;
   WIDBCDS.Filtered := True;
