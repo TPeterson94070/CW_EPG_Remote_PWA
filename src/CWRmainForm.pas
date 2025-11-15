@@ -41,7 +41,6 @@ type
   ViewLog1: TMenuItem;
   Settings1: TMenuItem;
   WebGroupBox3: TWebGroupBox;
-  WebGroupBox1: TWebGroupBox;
   EPG: TWebDBGrid;
   WebDataSource1: TWebDataSource;
   WebButton1: TWebButton;
@@ -61,9 +60,7 @@ type
     pnlFilterSelection: TWebPanel;
     lblFilterSelect: TWebLabel;
     WebHTMLDiv4: TWebHTMLDiv;
-    cbNumDisplayDays: TWebComboBox;
     cbNumHistList: TWebComboBox;
-    btnOptOK: TWebButton;
     WIDBCDS: TWebIndexedDbClientDataset;
     btnSchdRefrsh: TWebButton;
     btnRefreshData: TWebSpeedButton;
@@ -297,8 +294,6 @@ begin
   Log('Running version:  ' + AppVersion);
   Log('App is ' + IfThen(not Application.IsOnline, 'NOT ') + 'online');
   WebRESTClient1.ReadTokens; // retrieve previous access token
-//  if TWebLocalStorage.GetValue(NUMDAYS) <> '' then
-//    cbNumDisplayDays.ItemIndex := cbNumDisplayDays.Items.IndexOf(TWebLocalStorage.GetValue(NUMDAYS));
   if TWebLocalStorage.GetValue(NUMHIST) <> '' then
     cbNumHistList.ItemIndex := cbNumHistList.Items.IndexOf(TWebLocalStorage.GetValue(NUMHIST));
     WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
@@ -381,31 +376,9 @@ begin
   end;
 end;
 
-//procedure TCWRmainFrm.btnOptOKClick(Sender: TObject);
-//begin
-//  Log('OptOK called');
-//  {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Updating Settings'));
-//  TWebLocalStorage.SetValue(NUMHIST, cbNumHistList.Text);
-//  Log('New number History Display Days: ' + cbNumHistList.Text);
-//  if TWebLocalStorage.GetValue(NUMDAYS) <> cbNumDisplayDays.Text then
-//  begin
-//    TWebLocalStorage.SetValue(NUMDAYS, cbNumDisplayDays.Text);
-//    Log('New number EPG Display Days: ' + cbNumDisplayDays.Text);
-//    ClearFilterLists;
-//    {$IfDef PAS2JS}await{$EndIf}(SetupWIDBCDS);
-//    {$IfDef PAS2JS}await{$EndIf}(ReFreshListings);
-//  end
-//  {else }ByAllClick(Self);
-//  Log('OptOK finished');
-//end;
-
 procedure TCWRmainFrm.btnRefreshDataClick(Sender: TObject);
 begin
   btnRefreshData.Hide;
-  // In case of a hang, allow user to show Log here
-//  if TAwait.ExecP<TModalResult> (MessageDlgAsync('Do you want to switch to viewing the Log'
-//    + #13'during the Data Refresh?',mtConfirmation, [mbYes,mbNo])) = mrYes then
-//    {$IfDef PAS2JS}await{$EndIf}(SetPage(3));
   RefreshData(Self);
 end;
 
@@ -420,7 +393,6 @@ begin
 end;
 
 procedure TCWRmainFrm.ByAllClick(Sender: TObject);
-//var x: string;
 begin
   Log('ByAllClick called');
   ByAll.OnClick := nil;
@@ -1332,8 +1304,6 @@ begin
       pnlLog.Show;
     end;
     4: begin {Options}
-//      if TWebLocalStorage.GetValue(NUMDAYS) <> '' then
-//        cbNumDisplayDays.ItemIndex := cbNumDisplayDays.Items.IndexOf(TWebLocalStorage.GetValue(NUMDAYS));
       if TWebLocalStorage.GetValue(NUMHIST) <> '' then
         cbNumHistList.ItemIndex := cbNumHistList.Items.IndexOf(TWebLocalStorage.GetValue(NUMHIST));
       pnlOptions.BringToFront;

@@ -308,155 +308,6 @@ object CWRmainFrm: TCWRmainFrm
       OnGetCellClass = HistoryTableGetCellClass
     end
   end
-  object pnlOptions: TWebPanel
-    Left = 0
-    Top = 50
-    Width = 428
-    Height = 699
-    ElementClassName = 'card'
-    HeightStyle = ssPercent
-    WidthStyle = ssPercent
-    Align = alClient
-    Caption = 'pnlOptions'
-    ChildOrder = 9
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    Font.Charset = ANSI_CHARSET
-    Font.Color = clBlack
-    Font.Height = -19
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-    ShowCaption = False
-    TabOrder = 4
-    object WebGroupBox3: TWebGroupBox
-      Left = 15
-      Top = 115
-      Width = 264
-      Height = 104
-      ElementClassName = 'btn-group'
-      WidthPercent = 25.000000000000000000
-      Align = alCustom
-      BorderColor = clSilver
-      Caption = 'History Events Displayed'
-      Color = clAqua
-      ElementFont = efCSS
-      ElementLegendClassName = 'h6'
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clBlack
-      Font.Height = -19
-      Font.Name = 'Arial'
-      Font.Style = []
-      ParentFont = False
-      object cbNumHistList: TWebComboBox
-        Left = 81
-        Top = 40
-        Width = 100
-        Height = 30
-        ElementClassName = 'form-select'
-        ElementFont = efCSS
-        Font.Charset = ANSI_CHARSET
-        Font.Color = clBlack
-        Font.Height = -19
-        Font.Name = 'Arial'
-        Font.Style = []
-        HeightStyle = ssAuto
-        HeightPercent = 100.000000000000000000
-        ParentFont = False
-        Role = 'combobox'
-        Text = '200'
-        WidthPercent = 100.000000000000000000
-        OnChange = cbNumHistListChange
-        ItemIndex = 1
-        Items.Strings = (
-          '100'
-          '200'
-          '300'
-          '400'
-          '500'
-          '600'
-          '700'
-          '800'
-          '900'
-          '1000')
-      end
-    end
-    object WebGroupBox1: TWebGroupBox
-      Left = 15
-      Top = 0
-      Width = 264
-      Height = 100
-      ElementClassName = 'btn-group'
-      WidthPercent = 25.000000000000000000
-      Align = alCustom
-      BorderColor = clSilver
-      Caption = 'EPG Days Displayed (unused)'
-      Color = clAqua
-      ElementFont = efCSS
-      ElementLegendClassName = 'h6'
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clBlack
-      Font.Height = -19
-      Font.Name = 'Arial'
-      Font.Style = []
-      ParentFont = False
-      Visible = False
-      object cbNumDisplayDays: TWebComboBox
-        Left = 88
-        Top = 41
-        Width = 80
-        Height = 30
-        Align = alCustom
-        ElementClassName = 'form-select'
-        ElementFont = efCSS
-        Font.Charset = ANSI_CHARSET
-        Font.Color = clBlack
-        Font.Height = -19
-        Font.Name = 'Arial'
-        Font.Style = []
-        HeightStyle = ssAuto
-        HeightPercent = 100.000000000000000000
-        ParentFont = False
-        Role = 'combobox'
-        Text = '3'
-        WidthPercent = 100.000000000000000000
-        ItemIndex = -1
-        Items.Strings = (
-          '1'
-          '2'
-          '3'
-          '4'
-          '5'
-          '6'
-          '7'
-          '8'
-          '9'
-          '10')
-      end
-    end
-    object btnOptOK: TWebButton
-      Left = 72
-      Top = 235
-      Width = 135
-      Height = 37
-      Caption = 'Save Settings'
-      ChildOrder = 2
-      ElementClassName = 'btn btn-outline-primary'
-      ElementFont = efCSS
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clBlack
-      Font.Height = -19
-      Font.Name = 'Arial'
-      Font.Style = []
-      HeightStyle = ssAuto
-      HeightPercent = 100.000000000000000000
-      ModalResult = 1
-      ParentFont = False
-      Role = 'button'
-      Visible = False
-      WidthPercent = 100.000000000000000000
-    end
-  end
   object pnlCaptures: TWebPanel
     Left = 0
     Top = 50
@@ -624,6 +475,80 @@ object CWRmainFrm: TCWRmainFrm
       ParentFont = False
       WidthPercent = 100.000000000000000000
       OnClick = btnSchdRefrshClick
+    end
+  end
+  object pnlOptions: TWebPanel
+    Left = 0
+    Top = 50
+    Width = 428
+    Height = 699
+    ElementClassName = 'card'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
+    Align = alClient
+    Caption = 'pnlOptions'
+    ChildOrder = 9
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -19
+    Font.Name = 'Arial'
+    Font.Style = []
+    ParentFont = False
+    ShowCaption = False
+    TabOrder = 4
+    object WebGroupBox3: TWebGroupBox
+      Left = 15
+      Top = 16
+      Width = 264
+      Height = 104
+      ElementClassName = 'btn-group'
+      WidthPercent = 25.000000000000000000
+      Align = alCustom
+      BorderColor = clSilver
+      Caption = 'History Events Displayed'
+      Color = clAqua
+      ElementFont = efCSS
+      ElementLegendClassName = 'h6'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -19
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+      object cbNumHistList: TWebComboBox
+        Left = 81
+        Top = 40
+        Width = 100
+        Height = 30
+        ElementClassName = 'form-select'
+        ElementFont = efCSS
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clBlack
+        Font.Height = -19
+        Font.Name = 'Arial'
+        Font.Style = []
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        ParentFont = False
+        Role = 'combobox'
+        Text = '200'
+        WidthPercent = 100.000000000000000000
+        OnChange = cbNumHistListChange
+        ItemIndex = 1
+        Items.Strings = (
+          '100'
+          '200'
+          '300'
+          '400'
+          '500'
+          '600'
+          '700'
+          '800'
+          '900'
+          '1000')
+      end
     end
   end
   object pnlListings: TWebPanel
@@ -949,7 +874,7 @@ object CWRmainFrm: TCWRmainFrm
     Width = 404
     Height = 50
     object ByAll: TMenuItem
-      Caption = '1st 3000 Listings'
+      Caption = '1st 1000 Listings'
       Checked = True
       Default = True
       RadioItem = True
