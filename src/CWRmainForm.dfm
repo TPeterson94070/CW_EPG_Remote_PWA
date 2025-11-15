@@ -911,7 +911,7 @@ object CWRmainFrm: TCWRmainFrm
         OnClick = RefreshData
       end
       object ChangeHTPC1: TMenuItem
-        Caption = 'Change HTPC'
+        Caption = 'Change GDrive acct'
         OnClick = ChangeTargetHTPC
       end
       object ViewLog1: TMenuItem
