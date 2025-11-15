@@ -70,7 +70,7 @@ type
     WebTimer1: TWebTimer;
     WebTimer2: TWebTimer;
     WebHTMLForm1: TWebHTMLForm;
-  procedure ClearFilterLists;
+//  procedure ClearFilterLists;
   procedure SetCapturesFormats;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
@@ -101,7 +101,6 @@ type
   [async] procedure ByAllClick(Sender: TObject);
   [async] procedure ByChannelClick(Sender: TObject);
   [async] procedure wcbChannelsChange(Sender: TObject);
-//  [async] procedure cbNumDisplayDaysChange(Sender: TObject);
   [async] procedure NewCapturesClickCell(Sender: TObject; ACol, ARow: Integer);
   [async] procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
       errorName, errorMsg: string);
@@ -319,13 +318,6 @@ begin
     ,mtInformation, [mbOK]))
 end;
 
-procedure TCWRmainFrm.ClearFilterLists;
-begin
-  TLocalStorage.RemoveKey('wcbGenresItems');
-  TLocalStorage.RemoveKey('wcbTitlesItems');
-  TLocalStorage.RemoveKey('wcbChannelsItems');
-end;
-
 procedure TCWRmainFrm.RefreshData(Sender: TObject);
 var
   id: string; {param used only by UpdateNewcaptures}
@@ -333,7 +325,6 @@ var
 begin
   Log('======== "Refresh Data" clicked');
   WIDBCDS.Close;
-  ClearFilterLists;
   {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_EPG,'EPG', id));
   FillTable(BufferGrid, CSV_EPG);
   if BufferGrid.RowCount > 0 then
@@ -722,6 +713,8 @@ begin
   WIDBCDS.Filtered := False;
   Log('WIDBCDS is ' + IfThen(not WIDBCDS.Filtered, 'UN') + 'filtered');
   WIDBCDS.Close;
+  TLocalStorage.RemoveKey('wcbGenresItems');  // Dump any saved values
+  TLocalStorage.RemoveKey('wcbChannelsItems');
   TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   try
     if WIDBCDS.Active and (BufferGrid.RowCount > 1) then
