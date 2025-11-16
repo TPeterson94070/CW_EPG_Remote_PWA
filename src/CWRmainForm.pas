@@ -179,8 +179,8 @@ var
   LastStartDate:    TDate;
   TotalAvailableDays: Integer;
   LastID,
-  SearchFilter,
-  BaseFilter:       string;
+  SearchFilter:     string;
+  BaseFilter:       string = 'ID >= 1';
 
 type ProgramTypes = (New,Rerun,Movie,Other);
 const
