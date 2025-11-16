@@ -41339,8 +41339,11 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
             if (Reply !== "") {
               await this.ShowPlsWait("Refreshing " + Title);
               $impl.Log(TableFile + " starts: " + pas.System.Copy(Reply,1,50));
+              pas["WEBLib.Storage"].TLocalStorage.SetValue(TableFile,Reply);
+            } else {
+              $impl.Log(TableFile + " fetch failed.");
+              pas["WEBLib.Storage"].TLocalStorage.RemoveKey(TableFile);
             };
-            pas["WEBLib.Storage"].TLocalStorage.SetValue(TableFile,Reply);
           } catch ($e) {
             if (pas.SysUtils.Exception.isPrototypeOf($e)) {
               var E = $e;
@@ -41509,7 +41512,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $Self.WebRESTClient1.FApp.FKey = $impl.CLIENT_APP_KEY;
         $Self.WebRESTClient1.FApp.FCallbackURL = window.location.href;
         $Self.WebRESTClient1.FApp.FAuthURL = "https://accounts.google.com/o/oauth2/v2/auth" + "?client_id=" + $Self.WebRESTClient1.FApp.FKey + "&include_granted_scopes" + "&scope=https://www.googleapis.com/auth/drive" + "&state=bf" + "&response_type=token" + "&redirect_uri=" + $Self.WebRESTClient1.FApp.FCallbackURL + "&prompt=" + $impl.ResetPrompt;
-        window.console.log("WEBRESTClient1.App.CallBackURL: " + $Self.WebRESTClient1.FApp.FCallbackURL);
+        $impl.Log("WEBRESTClient1.App.CallBackURL: " + $Self.WebRESTClient1.FApp.FCallbackURL);
         if (($Self.WebRESTClient1.FAccessToken === "") || ($impl.ResetPrompt !== "none")) {
           window.console.log("Performing OAuth");
           await $Self.ShowPlsWait("Select Login Credentials");
@@ -41532,10 +41535,11 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       rq = await TryLogIn();
       if (rq != null) {
         if (rq.status !== 200) {
-          window.console.log(rq.statusText);
+          $impl.Log("Bad Request Status: " + rq.statusText);
           this.WebRESTClient1.ClearTokens();
-          window.console.log("Retrying login");
+          $impl.Log("Retrying login");
           rq = await TryLogIn();
+          $impl.Log("Retry Request Status: " + rq.statusText);
           if (rq.status !== 200) return "";
         };
         AResponse = rq.responseText;
@@ -41564,7 +41568,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           if (id.get() === "") return "";
           rq = await this.WebRESTClient1.HttpRequest("GET","https://www.googleapis.com/drive/v3/files/" + id.get() + "?alt=media","","",null).catch(function (AValue) {
             var Result = undefined;
-            window.console.log("error here",AValue);
+            $impl.Log("error here" + rtl.getObject(AValue).ToString());
             return Result;
           });
           if (rq != null) Result = rq.responseText;
