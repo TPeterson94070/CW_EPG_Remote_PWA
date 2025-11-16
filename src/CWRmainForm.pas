@@ -667,8 +667,14 @@ begin
           // Reshow message in case lost during OAuth
           {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing ' + Title));
           Log(TableFile + ' starts: ' + copy(Reply,1,50));
+          // Save the csv as string in local storage
+          TLocalStorage.SetValue(TableFile, Reply);
+        end
+        else
+        begin
+          Log(TableFile + ' fetch failed.');
+          TLocalStorage.RemoveKey(TableFile);
         end;
-        TLocalStorage.SetValue(TableFile, Reply);
       except
         on E:Exception do
         begin
