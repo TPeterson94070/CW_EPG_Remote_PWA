@@ -43186,7 +43186,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $impl.TotalAvailableDays = 0;
     $impl.LastID = "";
     $impl.SearchFilter = "";
-    $impl.BaseFilter = "";
+    $impl.BaseFilter = "ID >= 1";
     $impl.ProgramTypes = {"0": "New", New: 0, "1": "Rerun", Rerun: 1, "2": "Movie", Movie: 2, "3": "Other", Other: 3};
     $mod.$rtti.$Enum("ProgramTypes",{minvalue: 0, maxvalue: 3, ordtype: 1, enumtype: $impl.ProgramTypes});
     $impl.NUMIDS = 1000;
