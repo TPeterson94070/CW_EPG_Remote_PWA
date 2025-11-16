@@ -539,7 +539,7 @@ var
     console.log('AccessToken: ' + WebRESTClient1.AccessToken);
     if WebRESTClient1.AccessToken = '' then ResetPrompt := 'select_account';
     WebRESTClient1.App.Key := CLIENT_APP_KEY;
-    WEBRESTClient1.App.CallBackURL := window.location.href;
+    WEBRESTClient1.App.CallBackURL := window.location.href;   // <=============== is Safari/FF desktop site problem?
     WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth'
       + '?client_id=' + WebRESTCLient1.App.Key
       + '&include_granted_scopes'
@@ -548,7 +548,7 @@ var
       + '&response_type=token'
       + '&redirect_uri=' + WEBRESTClient1.App.CallbackURL
       + '&prompt=' + ResetPrompt;
-    console.log('WEBRESTClient1.App.CallBackURL: ' + WEBRESTClient1.App.CallbackURL);
+    {console.}log('WEBRESTClient1.App.CallBackURL: ' + WEBRESTClient1.App.CallbackURL);
     if (WebRESTClient1.AccessToken = '') or (ResetPrompt <> 'none') then
     begin
       console.log('Performing OAuth');
@@ -582,11 +582,12 @@ begin
     if rq.Status <> 200 then // Set up a retry
     begin
 // if rq.Status = 401 then Access token expired, but <>200 is enough for a retry
-      console.log(rq.StatusText);
+      {console.}log('Bad Request Status: ' +  rq.StatusText);
       WebRESTClient1.ClearTokens;
-      console.log('Retrying login');
+      {console.}log('Retrying login');
       rq := TAwait.ExecP<TJSXMLHttpRequest> (TryLogIn);
-      if rq.Status <> 200 then exit('');
+      {console.}log('Retry Request Status: ' +  rq.StatusText);
+      if rq.Status <> 200 then exit('');   // Return null string on failure
     end;
     AResponse := rq.responseText;
     console.log(rq.responseText);
@@ -607,13 +608,13 @@ begin
       jso.Free;
       ja.Free;
       console.log(id);
-      if id = '' then exit('');
+      if id = '' then exit('');  // Return null string on no ID
 {$IFDef PAS2JS}
       rq := TAwait.ExecP<TJSXMLHttpRequest> (WebRESTClient1.httprequest('GET',
         'https://www.googleapis.com/drive/v3/files/'+id+'?alt=media').catch(
         function(AValue: JSValue): JSValue
         begin
-          console.log('error here',AValue);
+          {console.}log('error here' + TJSONString(AValue).ToString);
         end));
 {$ENDIF}
       if Assigned(rq) then Result := rq.responseText;
@@ -631,8 +632,6 @@ begin
   if rs > '' then
   begin
     sl := TStringList.Create;
-//    rs := ReplaceStr(rs, #10, ''); // dump linefeeds
-//    rs := ReplaceStr(rs, #160, ''); // dump &nbsp too
     ReplyArray := rs.Split([#13#10],TStringSplitOptions.ExcludeEmpty);
     Log('Begin extract ' + IntToStr(Length(ReplyArray)) + ' strings');
     for Line in ReplyArray do sl.Add(Line);
