@@ -40749,7 +40749,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.RefreshData = async function (Sender) {
       var id = "";
       var StartT = 0.0;
-      $impl.Log('======== "Refresh Data" clicked');
+      $impl.Log('########### "Refresh Data" clicked ###########');
       this.WIDBCDS.Close();
       await this.RefreshCSV($impl.CSV_EPG,"EPG",{get: function () {
           return id;
@@ -40789,6 +40789,11 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.WebFormCreate = async function (Sender) {
       var AppVersion = "";
       $impl.Log("========== FormCreate is called");
+      $impl.LastID = pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
+          return 1000;
+        }, set: function (v) {
+          rtl.raiseE("EPropReadOnly");
+        }});
       console.log('Starting ' + ProjectName);
       // Define sleep function used to allow screen updates
           window.sleep = async function(msecs) {return new Promise((resolve) => setTimeout(resolve, msecs)); }
@@ -41298,16 +41303,17 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log(" ====== FetchNewCapRequests finished =========");
     };
     this.FillTable = async function (WSG, rs) {
+      var CSVstring = "";
       var Line = "";
       var sl = null;
       var ReplyArray = [];
-      rs = pas["WEBLib.Storage"].TLocalStorage.GetValue(rs);
-      if (rs > "") {
+      CSVstring = pas["WEBLib.Storage"].TLocalStorage.GetValue(rs);
+      if (CSVstring > "") {
         sl = pas.Classes.TStringList.$create("Create$1");
         ReplyArray = pas.SysUtils.TStringHelper.Split$10.call({get: function () {
-            return rs;
+            return CSVstring;
           }, set: function (v) {
-            rs = v;
+            CSVstring = v;
           }},["\r\n"],1);
         $impl.Log("Begin extract " + pas.SysUtils.IntToStr(rtl.length(ReplyArray)) + " strings");
         for (var $in = ReplyArray, $l = 0, $end = rtl.length($in) - 1; $l <= $end; $l++) {
@@ -41336,14 +41342,11 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           $impl.Log("Requesting: " + TableFile);
           try {
             Reply = await this.GetGoogleDriveFile(TableFile,id);
-            if (Reply !== "") {
+            if (Reply > "") {
               await this.ShowPlsWait("Refreshing " + Title);
               $impl.Log(TableFile + " starts: " + pas.System.Copy(Reply,1,50));
-              pas["WEBLib.Storage"].TLocalStorage.SetValue(TableFile,Reply);
-            } else {
-              $impl.Log(TableFile + " fetch failed.");
-              pas["WEBLib.Storage"].TLocalStorage.RemoveKey(TableFile);
-            };
+            } else $impl.Log(TableFile + " fetch failed.");
+            pas["WEBLib.Storage"].TLocalStorage.SetValue(TableFile,Reply);
           } catch ($e) {
             if (pas.SysUtils.Exception.isPrototypeOf($e)) {
               var E = $e;
@@ -41564,7 +41567,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           };
           jso = rtl.freeLoc(jso);
           ja = rtl.freeLoc(ja);
-          window.console.log(id.get());
+          $impl.Log("File ID: <" + id.get() + ">");
           if (id.get() === "") return "";
           rq = await this.WebRESTClient1.HttpRequest("GET","https://www.googleapis.com/drive/v3/files/" + id.get() + "?alt=media","","",null).catch(function (AValue) {
             var Result = undefined;
@@ -41633,8 +41636,13 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         }}));
       this.WIDBCDS.SetFiltered(true);
       this.WIDBCDS.First();
-      $impl.BaseFilter = "ID >= " + this.WIDBCDS.FFieldList.GetField(0).GetAsString();
-      $impl.LastID = pas.SysUtils.TIntegerHelper.ToString$1.call({a: this.WIDBCDS.FFieldList.GetField(0).GetAsInteger() + 1000, get: function () {
+      $impl.FirstID = Math.max(this.WIDBCDS.FFieldList.GetField(0).GetAsInteger(),1);
+      $impl.BaseFilter = "ID >= " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: $impl, get: function () {
+          return this.p.FirstID;
+        }, set: function (v) {
+          this.p.FirstID = v;
+        }});
+      $impl.LastID = pas.SysUtils.TIntegerHelper.ToString$1.call({a: $impl.FirstID + 1000, get: function () {
           return this.a;
         }, set: function (v) {
           rtl.raiseE("EPropReadOnly");
@@ -43164,6 +43172,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $impl.CLIENT_APP_KEY = "654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com";
     $impl.ResetPrompt = "none";
     $impl.VisiblePanelNum = 0;
+    $impl.FirstID = 1;
     $impl.FirstEndDate = 0.0;
     $impl.LastStartDate = 0.0;
     $impl.TotalAvailableDays = 0;

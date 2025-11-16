@@ -174,6 +174,7 @@ uses
 var
   ResetPrompt:      string = 'none' ;
   VisiblePanelNum:  Integer = 0;
+  FirstID:          Integer = 1;
   FirstEndDate,
   LastStartDate:    TDate;
   TotalAvailableDays: Integer;
@@ -861,7 +862,6 @@ end;
 procedure TCWRmainFrm.SetupEpg;
 var
   FirstEndTime: TDateTime;
-  FirstID:      Integer;
 
 begin
   Log('====== SetupEpg called');
