@@ -192,26 +192,11 @@ const
   CSV_HISTORY = 'cwr_history.csv';
   TypeClass: array[ProgramTypes] of string = ('green','rose','goldenRod','gray');
 
-procedure Log(const s: string); // {$IFDEF PAS2JS} async; {$ENDIF}
+procedure Log(const s: string);
 begin
   CWRmainFrm.WebMemo2.Lines.Add(DateTimeToStr(now) + '--' + s);
-//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   console.log(DateTimeToStr(now) + '--' + s);
 end;
-
-//procedure SetTableDefaults(WSG: TWebStringGrid; C0, C1, C2, C3: Integer);
-//var
-//  i: Integer;
-//begin
-//  WSG.ColWidths[0] := C0;
-//  WSG.ColWidths[1] := C1;
-//  WSG.ColWidths[2] := C2;
-//  WSG.ColWidths[3] := C3;
-//  for i := 4 to WSG.ColCount-1 do WSG.ColWidths[i] := 0;
-//  WSG.ColAlignments[0] := taCenter;
-//  WSG.ColAlignments[1] := taCenter;
-//
-//end;
 
 procedure TCWRmainFrm.wcbGenresChange(Sender: TObject);
 begin
@@ -276,6 +261,7 @@ var
   AppVersion: string;
 begin
   Log('========== FormCreate is called');
+  LastID := NUMIDS.ToString;  // Make sure it's not '' for filter
 //  WebMainMenu1.Height := 20;   // Works someday, I hope
 {$IFDEF PAS2JS}
   asm
@@ -323,7 +309,7 @@ var
   id: string; {param used only by UpdateNewcaptures}
   StartT: TDateTime;
 begin
-  Log('======== "Refresh Data" clicked');
+  Log('########### "Refresh Data" clicked ###########');
   WIDBCDS.Close;
   {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_EPG,'EPG', id));
   FillTable(BufferGrid, CSV_EPG);
@@ -607,7 +593,7 @@ begin
       end;
       jso.Free;
       ja.Free;
-      console.log(id);
+      {console.}log('File ID: <' + id + '>');
       if id = '' then exit('');  // Return null string on no ID
 {$IFDef PAS2JS}
       rq := TAwait.ExecP<TJSXMLHttpRequest> (WebRESTClient1.httprequest('GET',
@@ -624,15 +610,15 @@ end;
 
 procedure TCWRmainFrm.FillTable(var WSG: TWebStringGrid; rs: string);
 var
-  Line: string;
+  CSVstring, Line: string;
   sl: TStrings;
   ReplyArray: TArray<string>;
 begin
-  rs := TLocalStorage.GetValue(rs);
-  if rs > '' then
+  CSVstring := TLocalStorage.GetValue(rs);
+  if CSVstring > '' then
   begin
     sl := TStringList.Create;
-    ReplyArray := rs.Split([#13#10],TStringSplitOptions.ExcludeEmpty);
+    ReplyArray := CSVstring.Split([#13#10],TStringSplitOptions.ExcludeEmpty);
     Log('Begin extract ' + IntToStr(Length(ReplyArray)) + ' strings');
     for Line in ReplyArray do sl.Add(Line);
     WSG.BeginUpdate;
@@ -660,20 +646,16 @@ begin
       Log('Requesting: ' + TableFile);
       try
         Reply := TAwait.ExecP<string>(GetGoogleDriveFile(TableFile, id));
-
-        if Reply <> '' then  // Got a response
+        if Reply > '' then  // Got a response
         begin
           // Reshow message in case lost during OAuth
           {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing ' + Title));
           Log(TableFile + ' starts: ' + copy(Reply,1,50));
-          // Save the csv as string in local storage
-          TLocalStorage.SetValue(TableFile, Reply);
         end
         else
-        begin
           Log(TableFile + ' fetch failed.');
-          TLocalStorage.RemoveKey(TableFile);
-        end;
+        // Save the csv (or '') as string in local storage
+        TLocalStorage.SetValue(TableFile, Reply);
       except
         on E:Exception do
         begin
@@ -878,7 +860,8 @@ end;
 
 procedure TCWRmainFrm.SetupEpg;
 var
-  FirstEndTime:  TDateTime;
+  FirstEndTime: TDateTime;
+  FirstID:      Integer;
 
 begin
   Log('====== SetupEpg called');
@@ -890,8 +873,9 @@ begin
   WIDBCDS.Filter := 'EndTime >= ' + Double(FirstEndTime).ToString;
   WIDBCDS.Filtered := True;
   WIDBCDS.First;
-  BaseFilter := 'ID >= ' + WIDBCDS.Fields[0].AsString;
-  LastID := (WIDBCDS.Fields[0].AsInteger + NUMIDS).ToString;
+  FirstID := Max(WIDBCDS.Fields[0].AsInteger, 1);
+  BaseFilter := 'ID >= ' + FirstID.ToString;
+  LastID := (FirstID + NUMIDS).ToString;
   WIDBCDS.Filtered := False;
   Log(' WIDBCDS BaseFilter [' + BaseFilter + '] assigned, but not active');
   EPG.Columns[0].Alignment := taCenter;
