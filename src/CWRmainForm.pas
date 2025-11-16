@@ -569,11 +569,11 @@ begin
     if rq.Status <> 200 then // Set up a retry
     begin
 // if rq.Status = 401 then Access token expired, but <>200 is enough for a retry
-      {console.}log('Bad Request Status: ' +  rq.StatusText);
+      {console.}log('Bad Request Status: ' +  rq.Status.ToString);
       WebRESTClient1.ClearTokens;
       {console.}log('Retrying login');
       rq := TAwait.ExecP<TJSXMLHttpRequest> (TryLogIn);
-      {console.}log('Retry Request Status: ' +  rq.StatusText);
+      {console.}log('Retry Request Status: ' +  rq.Status.ToString);
       if rq.Status <> 200 then exit('');   // Return null string on failure
     end;
     AResponse := rq.responseText;

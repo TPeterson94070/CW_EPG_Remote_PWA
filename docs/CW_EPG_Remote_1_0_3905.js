@@ -41538,11 +41538,19 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       rq = await TryLogIn();
       if (rq != null) {
         if (rq.status !== 200) {
-          $impl.Log("Bad Request Status: " + rq.statusText);
+          $impl.Log("Bad Request Status: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: rq, get: function () {
+              return this.p.status;
+            }, set: function (v) {
+              this.p.status = v;
+            }}));
           this.WebRESTClient1.ClearTokens();
           $impl.Log("Retrying login");
           rq = await TryLogIn();
-          $impl.Log("Retry Request Status: " + rq.statusText);
+          $impl.Log("Retry Request Status: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: rq, get: function () {
+              return this.p.status;
+            }, set: function (v) {
+              this.p.status = v;
+            }}));
           if (rq.status !== 200) return "";
         };
         AResponse = rq.responseText;
