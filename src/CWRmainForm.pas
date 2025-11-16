@@ -525,18 +525,6 @@ begin
   if ACol = 3 then AValue := IfThen(AValue > '', FormatDateTime('mm/dd', StrToDateDef(AValue, 0)));
 end;
 
-//procedure TCWRmainFrm.cbNumDisplayDaysChange(Sender: TObject);
-//begin
-//  // Make sure that current dataset supports the requested number
-//  if Trunc(LastStartDate - TTimeZone.Local.ToUniversalTime(Now)) < StrToInt(cbNumDisplayDays.Text) then
-//  begin
-//    TAwait.ExecP<TModalResult> (MessageDlgAsync('I currently have less than the requested '
-//      + cbNumDisplayDays.Text + ' days of listings stored.'
-//      + #13'To display more, please use Options | Refresh Data',mtInformation, [mbOK]));
-//    cbNumDisplayDays.ItemIndex := cbNumDisplayDays.Items.IndexOf(Trunc(LastStartDate - Now).ToString);
-//  end;
-//end;
-
 function TCWRmainFrm.GetGoogleDriveFile(TableFile: string; var id: string): string;
 var
   q, AResponse: string;
