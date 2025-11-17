@@ -657,6 +657,7 @@ begin
           Log(TableFile + ' fetch failed.');
         // Save the csv (or '') as string in local storage
         TLocalStorage.SetValue(TableFile, Reply);
+        Log('ReFreshCSV, ' + TableFile + ' Length: ' + IntToStr(Length(Reply)));
       except
         on E:Exception do
         begin
@@ -673,7 +674,6 @@ begin
     TAwait.ExecP<TModalResult> (MessageDlgAsync('Cannot refresh EPG data while CW_EPG_Remote is offline', mtInformation, [mbOK]));
     Log('No LAN connection');
   end;
-  Log('ReFreshCSV, '+TableFile+' Length: ' + IntToStr(Length(Reply)));
 end;
 
 procedure TCWRmainFrm.LoadWIDBCDS;

@@ -41347,6 +41347,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
               $impl.Log(TableFile + " starts: " + pas.System.Copy(Reply,1,50));
             } else $impl.Log(TableFile + " fetch failed.");
             pas["WEBLib.Storage"].TLocalStorage.SetValue(TableFile,Reply);
+            $impl.Log("ReFreshCSV, " + TableFile + " Length: " + pas.SysUtils.IntToStr(Reply.length));
           } catch ($e) {
             if (pas.SysUtils.Exception.isPrototypeOf($e)) {
               var E = $e;
@@ -41361,7 +41362,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         await pas["WEBLib.Dialogs"].MessageDlgAsync("Cannot refresh EPG data while CW_EPG_Remote is offline",2,rtl.createSet(2));
         $impl.Log("No LAN connection");
       };
-      $impl.Log("ReFreshCSV, " + TableFile + " Length: " + pas.SysUtils.IntToStr(Reply.length));
     };
     this.FetchHistory = async function () {
       var id = "";
