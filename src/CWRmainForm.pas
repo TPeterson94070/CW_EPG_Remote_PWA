@@ -276,6 +276,7 @@ begin
 //                 ('standalone' in window.navigator);
   end;
 {$ENDIF}
+  {$IFDef PAS2JS} await {$ENDIF}(ShowPlsWait('Preparing Database'));
   // Log Version Information
   Log('Running version:  ' + AppVersion);
   Log('App is ' + IfThen(not Application.IsOnline, 'NOT ') + 'online');
@@ -313,7 +314,7 @@ begin
   Log('########### "Refresh Data" clicked ###########');
   WIDBCDS.Close;
   {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_EPG,'EPG', id));
-  FillTable(BufferGrid, CSV_EPG);
+  {$IfDef PAS2JS}await{$EndIf}(FillTable(BufferGrid, CSV_EPG));
   if BufferGrid.RowCount > 0 then
   begin
     Log('********* Starting timer');
@@ -615,7 +616,9 @@ var
   sl: TStrings;
   ReplyArray: TArray<string>;
 begin
+  Log('FillTable called for ' + WSG.Name);
   CSVstring := TLocalStorage.GetValue(rs);
+  Log(rs + ' length: ' + IntToStr(Length(CSVstring)));
   if CSVstring > '' then
   begin
     sl := TStringList.Create;
@@ -656,8 +659,8 @@ begin
         else
           Log(TableFile + ' fetch failed.');
         // Save the csv (or '') as string in local storage
-        TLocalStorage.SetValue(TableFile, Reply);
-//        Log('ReFreshCSV, ' + TableFile + ' Length: ' + IntToStr(Length(Reply)));
+        {$IfDef PAS2JS}await{$EndIf}(TLocalStorage.SetValue(TableFile, Reply));
+        Log('ReFreshCSV, ' + TableFile + ' Length: ' + IntToStr(Length(Reply)));
       except
         on E:Exception do
         begin
@@ -774,7 +777,7 @@ begin
     ProgID := NewCaptures.Cells[6,ARow];
     NewCaptures.BeginUpdate;
     {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES,'New Captures', id));
-    FillTable(NewCaptures, CSV_NEWCAPTURES);
+    {$IfDef PAS2JS}await{$EndIf}(FillTable(NewCaptures, CSV_NEWCAPTURES));
     Log('NewCaptures Rows: '+NewCaptures.RowCount.ToString);
     if NewCaptures.RowCount > 1 then // file exists, find matching row
       for i := 1 to Pred(NewCaptures.RowCount) do
@@ -1529,7 +1532,7 @@ var
 begin
   Log(' ====== UpdateNewCaptures called =========');
   {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES,'New Captures', id));
-  FillTable(NewCaptures, CSV_NEWCAPTURES);
+  {$IfDef PAS2JS}await{$EndIf}(FillTable(NewCaptures, CSV_NEWCAPTURES));
   Log('NewCaptures Rows: '+NewCaptures.RowCount.ToString);
   if NewCaptures.RowCount = 0 then // fnf, create new one
   begin

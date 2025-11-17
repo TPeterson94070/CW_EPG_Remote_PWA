@@ -40756,7 +40756,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         }, set: function (v) {
           id = v;
         }});
-      this.FillTable({p: this, get: function () {
+      await this.FillTable({p: this, get: function () {
           return this.p.BufferGrid;
         }, set: function (v) {
           this.p.BufferGrid = v;
@@ -40802,6 +40802,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       // Discover if installed ("standalone") : Does not work!!
       //   IsInstalled = (window.matchMedia('(display-mode: standalone)').matches) ||
       //                 ('standalone' in window.navigator);
+      await this.ShowPlsWait("Preparing Database");
       $impl.Log("Running version:  " + AppVersion);
       $impl.Log("App is " + pas.StrUtils.IfThen(!pas["WEBLib.Forms"].Application.GetIsOnline(),"NOT ","") + "online");
       this.WebRESTClient1.ReadTokens();
@@ -41060,7 +41061,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           }, set: function (v) {
             id = v;
           }});
-        this.FillTable({p: this, get: function () {
+        await this.FillTable({p: this, get: function () {
             return this.p.NewCaptures;
           }, set: function (v) {
             this.p.NewCaptures = v;
@@ -41307,7 +41308,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var Line = "";
       var sl = null;
       var ReplyArray = [];
+      $impl.Log("FillTable called for " + WSG.get().FName);
       CSVstring = pas["WEBLib.Storage"].TLocalStorage.GetValue(rs);
+      $impl.Log(rs + " length: " + pas.SysUtils.IntToStr(CSVstring.length));
       if (CSVstring > "") {
         sl = pas.Classes.TStringList.$create("Create$1");
         ReplyArray = pas.SysUtils.TStringHelper.Split$10.call({get: function () {
@@ -41456,7 +41459,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         }, set: function (v) {
           id = v;
         }});
-      this.FillTable({p: this, get: function () {
+      await this.FillTable({p: this, get: function () {
           return this.p.NewCaptures;
         }, set: function (v) {
           this.p.NewCaptures = v;
