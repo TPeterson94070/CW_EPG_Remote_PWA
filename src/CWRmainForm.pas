@@ -657,7 +657,7 @@ begin
           Log(TableFile + ' fetch failed.');
         // Save the csv (or '') as string in local storage
         TLocalStorage.SetValue(TableFile, Reply);
-        Log('ReFreshCSV, ' + TableFile + ' Length: ' + IntToStr(Length(Reply)));
+//        Log('ReFreshCSV, ' + TableFile + ' Length: ' + IntToStr(Length(Reply)));
       except
         on E:Exception do
         begin
