@@ -41346,7 +41346,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
               await this.ShowPlsWait("Refreshing " + Title);
               $impl.Log(TableFile + " starts: " + pas.System.Copy(Reply,1,50));
             } else $impl.Log(TableFile + " fetch failed.");
-            pas["WEBLib.Storage"].TLocalStorage.SetValue(TableFile,Reply);
+            await pas["WEBLib.Storage"].TLocalStorage.SetValue(TableFile,Reply);
+            $impl.Log("ReFreshCSV, " + TableFile + " Length: " + pas.SysUtils.IntToStr(Reply.length));
           } catch ($e) {
             if (pas.SysUtils.Exception.isPrototypeOf($e)) {
               var E = $e;
