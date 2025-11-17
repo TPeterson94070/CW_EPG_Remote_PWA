@@ -178,6 +178,7 @@ var
   FirstEndDate,
   LastStartDate:    TDate;
   TotalAvailableDays: Integer;
+  CSVString,
   LastID,
   SearchFilter:     string;
   BaseFilter:       string = 'ID >= 1';
@@ -612,12 +613,13 @@ end;
 
 procedure TCWRmainFrm.FillTable(var WSG: TWebStringGrid; rs: string);
 var
-  CSVstring, Line: string;
+  Line: string;
   sl: TStrings;
   ReplyArray: TArray<string>;
 begin
   Log('FillTable called for ' + WSG.Name);
-  CSVstring := TLocalStorage.GetValue(rs);
+  // Fetch string from local storage if not cwr_epg.csv
+  if rs <> CSV_EPG then CSVstring := TLocalStorage.GetValue(rs);
   Log(rs + ' length: ' + IntToStr(Length(CSVstring)));
   if CSVstring > '' then
   begin
@@ -658,7 +660,10 @@ begin
         end
         else
           Log(TableFile + ' fetch failed.');
-        // Save the csv (or '') as string in local storage
+        // cw_epg.csv can be >2MB and Safari cannot tolerate that in LocalStorage
+        if TableFile = CSV_EPG then // park result in global variable
+          CSVString := Reply
+        else // Save the csv (or '') as string in local storage
         {$IfDef PAS2JS}await{$EndIf}(TLocalStorage.SetValue(TableFile, Reply));
         Log('ReFreshCSV, ' + TableFile + ' Length: ' + IntToStr(Length(Reply)));
       except
@@ -912,7 +917,7 @@ begin
     if TLocalStorage.GetValue(cb.Name + 'Items') > '' then // Reload saved list
     begin
       cb.Items.AddStrings(TLocalStorage.GetValue(cb.Name + 'Items').Split([#10], TStringSplitOptions.ExcludeEmpty));
-      Continue;
+      Continue;  // Skip looping
     end;
     if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
     if not WIDBCDS.Filtered then WIDBCDS.Filtered := True;   // Take the hit now

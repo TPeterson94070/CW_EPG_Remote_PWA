@@ -41304,19 +41304,18 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log(" ====== FetchNewCapRequests finished =========");
     };
     this.FillTable = async function (WSG, rs) {
-      var CSVstring = "";
       var Line = "";
       var sl = null;
       var ReplyArray = [];
       $impl.Log("FillTable called for " + WSG.get().FName);
-      CSVstring = pas["WEBLib.Storage"].TLocalStorage.GetValue(rs);
-      $impl.Log(rs + " length: " + pas.SysUtils.IntToStr(CSVstring.length));
-      if (CSVstring > "") {
+      if (rs !== $impl.CSV_EPG) $impl.CSVString = pas["WEBLib.Storage"].TLocalStorage.GetValue(rs);
+      $impl.Log(rs + " length: " + pas.SysUtils.IntToStr($impl.CSVString.length));
+      if ($impl.CSVString > "") {
         sl = pas.Classes.TStringList.$create("Create$1");
-        ReplyArray = pas.SysUtils.TStringHelper.Split$10.call({get: function () {
-            return CSVstring;
+        ReplyArray = pas.SysUtils.TStringHelper.Split$10.call({p: $impl, get: function () {
+            return this.p.CSVString;
           }, set: function (v) {
-            CSVstring = v;
+            this.p.CSVString = v;
           }},["\r\n"],1);
         $impl.Log("Begin extract " + pas.SysUtils.IntToStr(rtl.length(ReplyArray)) + " strings");
         for (var $in = ReplyArray, $l = 0, $end = rtl.length($in) - 1; $l <= $end; $l++) {
@@ -41349,7 +41348,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
               await this.ShowPlsWait("Refreshing " + Title);
               $impl.Log(TableFile + " starts: " + pas.System.Copy(Reply,1,50));
             } else $impl.Log(TableFile + " fetch failed.");
-            await pas["WEBLib.Storage"].TLocalStorage.SetValue(TableFile,Reply);
+            if (TableFile === $impl.CSV_EPG) {
+              $impl.CSVString = Reply}
+             else await pas["WEBLib.Storage"].TLocalStorage.SetValue(TableFile,Reply);
             $impl.Log("ReFreshCSV, " + TableFile + " Length: " + pas.SysUtils.IntToStr(Reply.length));
           } catch ($e) {
             if (pas.SysUtils.Exception.isPrototypeOf($e)) {
@@ -43187,6 +43188,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $impl.FirstEndDate = 0.0;
     $impl.LastStartDate = 0.0;
     $impl.TotalAvailableDays = 0;
+    $impl.CSVString = "";
     $impl.LastID = "";
     $impl.SearchFilter = "";
     $impl.BaseFilter = "ID >= 1";
