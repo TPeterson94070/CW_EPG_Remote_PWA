@@ -377,7 +377,7 @@ begin
   Log('ByAllClick called');
   ByAll.OnClick := nil;
   try
-    EPG.Columns[2].Title := 'Title';
+//    EPG.Columns[2].Title := 'Title';
     ByGenre.Checked := False;
     ByTitle.Checked := False;
     byType.Checked := False;
@@ -995,8 +995,9 @@ begin
   EPG.Hide;
   EPG.BeginUpdate;
   EPG.Columns[2].Title := IfThen(ByChannel.Checked, wcbChannels.Text + ' ')
-    + IfThen(byType.Checked, wcbTypes.Text + ' ')
-    + IfThen(ByGenre.Checked, wcbGenres.Text + ' ') + 'Programs'
+    + IfThen(byType.Checked, '"' + wcbTypes.Text + '" ')
+    + IfThen(ByGenre.Checked, wcbGenres.Text + ' ')
+    + 'Programs' + IfThen(ByAll.Checked, ' (1st ' + NUMIDS.ToString + ' items)')
     + IfThen(ByTitle.Checked, ' w/Titles:' + QuotedStr('*' + SearchFilter + '*'));
   EPG.ColWidths[0] := IfThen(ByChannel.Checked, 0, 75);
   if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
