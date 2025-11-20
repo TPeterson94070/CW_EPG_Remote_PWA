@@ -311,6 +311,7 @@ procedure TCWRmainFrm.RefreshData(Sender: TObject);
 var
   id: string; {param used only by UpdateNewcaptures}
   StartT: TDateTime;
+  TotalEPGRecordCount: Integer;
 begin
   Log('########### "Refresh Data" clicked ###########');
   WIDBCDS.Close;
@@ -321,6 +322,9 @@ begin
     Log('********* Starting timer');
     StartT := Now;
     {$IfDef PAS2JS}await{$EndIf}(LoadWIDBCDS);
+    // Save unfiltered record count (now that TMS Web Core honors filtering)
+    if WIDBCDS.Filtered then WIDBCDS.Filtered := False;
+    TotalEPGRecordCount := WIDBCDS.RecordCount;
     {$IfDef PAS2JS}await{$EndIf}(FetchCapReservations);
     {$IfDef PAS2JS}await{$EndIf}(FetchNewCapRequests);
     {$IfDef PAS2JS}await{$EndIf}(FetchHistory);
@@ -333,7 +337,7 @@ begin
   if VisiblePanelNum <> 3 then {$IfDef PAS2JS}await{$EndIf}(ReFreshListings)
   else {$IfDef PAS2JS}await{$EndIf}(SetupEpg);
   Log('*********** Delta t (sec): ' + SecondsBetween(Now, StartT).ToString);
-  Log('*********** Rate (ms/rec): ' + (MilliSecondsBetween(Now, StartT)/WIDBCDS.RecordCount).ToString);
+  Log('*********** Rate (ms/rec): ' + (MilliSecondsBetween(Now, StartT)/TotalEPGRecordCount).ToString);
   if pnlWaitPls.Visible then pnlWaitPls.Hide;
 end;
 
@@ -663,7 +667,7 @@ begin
         if TableFile = CSV_EPG then // park result in global variable
           CSVString := Reply
         else // Save the csv (or '') as string in local storage
-        {$IfDef PAS2JS}await{$EndIf}(TLocalStorage.SetValue(TableFile, Reply));
+          TLocalStorage.SetValue(TableFile, Reply);
         Log('ReFreshCSV, ' + TableFile + ' Length: ' + IntToStr(Length(Reply)));
       except
         on E:Exception do

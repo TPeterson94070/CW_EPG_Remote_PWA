@@ -40784,6 +40784,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.RefreshData = async function (Sender) {
       var id = "";
       var StartT = 0.0;
+      var TotalEPGRecordCount = 0;
       $impl.Log('########### "Refresh Data" clicked ###########');
       this.WIDBCDS.Close();
       await this.RefreshCSV($impl.CSV_EPG,"EPG",{get: function () {
@@ -40800,6 +40801,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $impl.Log("********* Starting timer");
         StartT = pas.SysUtils.Now();
         await this.LoadWIDBCDS();
+        if (this.WIDBCDS.FFiltered) this.WIDBCDS.SetFiltered(false);
+        TotalEPGRecordCount = this.WIDBCDS.GetRecordCount();
         await this.FetchCapReservations();
         await this.FetchNewCapRequests();
         await this.FetchHistory();
@@ -40814,7 +40817,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         }, set: function (v) {
           this.a = v;
         }}));
-      $impl.Log("*********** Rate (ms/rec): " + pas.SysUtils.TDoubleHelper.ToString$3.call({a: pas.DateUtils.MilliSecondsBetween(pas.SysUtils.Now(),StartT) / this.WIDBCDS.GetRecordCount(), get: function () {
+      $impl.Log("*********** Rate (ms/rec): " + pas.SysUtils.TDoubleHelper.ToString$3.call({a: pas.DateUtils.MilliSecondsBetween(pas.SysUtils.Now(),StartT) / TotalEPGRecordCount, get: function () {
           return this.a;
         }, set: function (v) {
           rtl.raiseE("EPropReadOnly");
@@ -41384,7 +41387,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
             } else $impl.Log(TableFile + " fetch failed.");
             if (TableFile === $impl.CSV_EPG) {
               $impl.CSVString = Reply}
-             else await pas["WEBLib.Storage"].TLocalStorage.SetValue(TableFile,Reply);
+             else pas["WEBLib.Storage"].TLocalStorage.SetValue(TableFile,Reply);
             $impl.Log("ReFreshCSV, " + TableFile + " Length: " + pas.SysUtils.IntToStr(Reply.length));
           } catch ($e) {
             if (pas.SysUtils.Exception.isPrototypeOf($e)) {
@@ -42181,7 +42184,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlLog.SetLeft(0);
         this.pnlLog.SetTop(50);
         this.pnlLog.SetWidth(428);
-        this.pnlLog.SetHeight(733);
+        this.pnlLog.SetHeight(767);
         this.pnlLog.SetElementClassName("card");
         this.pnlLog.SetHeightStyle(0);
         this.pnlLog.SetWidthStyle(0);
@@ -42227,7 +42230,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlWaitPls.SetLeft(0);
         this.pnlWaitPls.SetTop(50);
         this.pnlWaitPls.SetWidth(428);
-        this.pnlWaitPls.SetHeight(733);
+        this.pnlWaitPls.SetHeight(767);
         this.pnlWaitPls.SetElementClassName("container-fluid");
         this.pnlWaitPls.SetHeightStyle(0);
         this.pnlWaitPls.SetWidthStyle(0);
@@ -42359,7 +42362,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlHistory.SetLeft(0);
         this.pnlHistory.SetTop(50);
         this.pnlHistory.SetWidth(428);
-        this.pnlHistory.SetHeight(733);
+        this.pnlHistory.SetHeight(767);
         this.pnlHistory.SetElementClassName("card");
         this.pnlHistory.SetHeightStyle(0);
         this.pnlHistory.SetWidthStyle(0);
@@ -42416,7 +42419,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlCaptures.SetLeft(0);
         this.pnlCaptures.SetTop(50);
         this.pnlCaptures.SetWidth(428);
-        this.pnlCaptures.SetHeight(733);
+        this.pnlCaptures.SetHeight(767);
         this.pnlCaptures.SetElementClassName("greenBG");
         this.pnlCaptures.SetHeightStyle(0);
         this.pnlCaptures.SetWidthStyle(0);
@@ -42591,7 +42594,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlOptions.SetLeft(0);
         this.pnlOptions.SetTop(50);
         this.pnlOptions.SetWidth(428);
-        this.pnlOptions.SetHeight(733);
+        this.pnlOptions.SetHeight(767);
         this.pnlOptions.SetElementClassName("card");
         this.pnlOptions.SetHeightStyle(0);
         this.pnlOptions.SetWidthStyle(0);
@@ -42670,7 +42673,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlListings.SetLeft(0);
         this.pnlListings.SetTop(50);
         this.pnlListings.SetWidth(428);
-        this.pnlListings.SetHeight(733);
+        this.pnlListings.SetHeight(767);
         this.pnlListings.SetElementClassName("greenBG");
         this.pnlListings.SetHeightStyle(0);
         this.pnlListings.SetWidthStyle(0);
@@ -42717,7 +42720,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.EPG.SetLeft(0);
         this.EPG.SetTop(0);
         this.EPG.SetWidth(428);
-        this.EPG.SetHeight(733);
+        this.EPG.SetHeight(767);
         this.EPG.SetAlign(5);
         this.EPG.SetBorderStyle(0);
         this.EPG.SetColor(8388608);

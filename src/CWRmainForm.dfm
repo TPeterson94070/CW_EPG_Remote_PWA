@@ -68,7 +68,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 699
+    Height = 767
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -85,12 +85,13 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 1
+    ExplicitHeight = 699
     object WebMemo2: TWebMemo
       AlignWithMargins = True
       Left = 3
       Top = 3
       Width = 422
-      Height = 693
+      Height = 761
       Align = alClient
       Color = clBlack
       ElementClassName = 'white'
@@ -109,13 +110,14 @@ object CWRmainFrm: TCWRmainFrm
       SelStart = 0
       WidthStyle = ssPercent
       WidthPercent = 100.000000000000000000
+      ExplicitHeight = 693
     end
   end
   object pnlWaitPls: TWebPanel
     Left = 0
     Top = 50
     Width = 428
-    Height = 699
+    Height = 767
     ElementClassName = 'container-fluid'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -132,11 +134,12 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 3
+    ExplicitHeight = 699
     object WebGridPanel1: TWebGridPanel
       Left = 0
       Top = 0
       Width = 428
-      Height = 699
+      Height = 767
       WidthStyle = ssPercent
       Align = alClient
       ColumnCollection = <
@@ -174,11 +177,12 @@ object CWRmainFrm: TCWRmainFrm
         item
           Value = 25
         end>
+      ExplicitHeight = 699
       object WebLabel2: TWebLabel
         Left = 2
-        Top = 352
+        Top = 386
         Width = 424
-        Height = 171
+        Height = 188
         Align = alClient
         Alignment = taCenter
         Caption = 'Please Wait...'
@@ -201,9 +205,9 @@ object CWRmainFrm: TCWRmainFrm
       end
       object WebLabel1: TWebLabel
         Left = 2
-        Top = 177
+        Top = 194
         Width = 424
-        Height = 171
+        Height = 188
         Align = alClient
         Alignment = taCenter
         Caption = 'Preparing EPG Listings.'
@@ -229,7 +233,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 2
         Top = 2
         Width = 424
-        Height = 171
+        Height = 188
         Align = alClient
         Caption = '<i class="fa-solid fa-spinner fa-spin"></>'
         Color = clYellow
@@ -255,7 +259,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 699
+    Height = 767
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -272,6 +276,7 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 0
+    ExplicitHeight = 699
     object HistoryTable: TWebStringGrid
       Left = 0
       Top = 0
@@ -312,7 +317,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 699
+    Height = 767
     ElementClassName = 'greenBG'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -330,6 +335,7 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 2
+    ExplicitHeight = 699
     object WebHTMLDiv1: TWebHTMLDiv
       Left = 0
       Top = 266
@@ -481,7 +487,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 699
+    Height = 767
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -498,6 +504,7 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 4
+    ExplicitHeight = 699
     object WebGroupBox3: TWebGroupBox
       Left = 15
       Top = 16
@@ -555,7 +562,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 699
+    Height = 767
     ElementClassName = 'greenBG'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -573,9 +580,10 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 5
+    ExplicitHeight = 699
     DesignSize = (
       428
-      699)
+      767)
     object lblEmptyEPG: TWebLabel
       Left = 96
       Top = 58
@@ -606,7 +614,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 699
+      Height = 767
       Align = alClient
       BorderStyle = bsNone
       Color = clNavy
@@ -671,6 +679,7 @@ object CWRmainFrm: TCWRmainFrm
       WidthPercent = 100.000000000000000000
       OnClickCell = EPGClickCell
       OnGetCellClass = EPGGetCellClass
+      ExplicitHeight = 699
       ColWidths = (
         75
         155
@@ -724,7 +733,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 3
         Top = 31
         Width = 144
-        Height = 30
+        Height = 41
         Align = alClient
         ElementClassName = 'form-select'
         ElementFont = efCSS
@@ -749,7 +758,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 3
         Top = 31
         Width = 144
-        Height = 30
+        Height = 41
         Align = alClient
         ElementClassName = 'form-select'
         ElementFont = efCSS
@@ -774,7 +783,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 3
         Top = 31
         Width = 144
-        Height = 30
+        Height = 41
         Align = alClient
         ElementClassName = 'form-select'
         ElementFont = efCSS
