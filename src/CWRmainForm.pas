@@ -377,7 +377,6 @@ begin
   Log('ByAllClick called');
   ByAll.OnClick := nil;
   try
-//    EPG.Columns[2].Title := 'Title';
     ByGenre.Checked := False;
     ByTitle.Checked := False;
     byType.Checked := False;
@@ -991,7 +990,7 @@ begin
   Log('====== SetFilters called');
   ByAll.Checked := not (ByChannel.Checked or ByGenre.Checked or ByTitle.Checked or byType.Checked);
   if not pnlWaitPls.Visible then
-    {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, 'Un') + 'Filtered List'));
+    {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, 'Short Un') + 'Filtered List'));
   EPG.Hide;
   EPG.BeginUpdate;
   EPG.Columns[2].Title := IfThen(ByChannel.Checked, wcbChannels.Text + ' ')

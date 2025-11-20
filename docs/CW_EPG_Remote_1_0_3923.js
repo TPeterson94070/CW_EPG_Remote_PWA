@@ -10984,6 +10984,7 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
       var eh = null;
       var es = null;
       var useCSS = false;
+      var LinkedForm = false;
       eh = this.GetElementHandle();
       if (!(eh != null)) return;
       if (this.IsUpdating()) return;
@@ -10994,7 +10995,8 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
         this.FFont.FOnChange = rtl.createCallback(this,"HandleFontChanged");
       };
       if (this.FElementClassName === "") {
-        if (!this.GetIsLinked()) {
+        LinkedForm = pas["WEBLib.Forms"].TCustomForm.isPrototypeOf(this) && (rtl.as(this,pas["WEBLib.Forms"].TCustomForm).FFormContainer !== "");
+        if (!this.GetIsLinked() && !LinkedForm) {
           if (this.FClipChildren && (pas.SysUtils.LowerCase(eh.tagName) !== pas["WEBLib.WebTools"].cBodyTag)) {
             es.setProperty("overflow","hidden")}
            else es.setProperty("overflow","");
@@ -11106,8 +11108,10 @@ rtl.module("WEBLib.Controls",["System","Classes","WEBLib.Graphics","Types","SysU
     };
     this.UpdateParent = function () {
       this.InternalUpdateParent();
-      this.UpdateChildren(this.FPrevParent);
-      this.UpdateChildren(this.FParent);
+      if (this.FAlign !== 0) {
+        this.UpdateChildren(this.FPrevParent);
+        this.UpdateChildren(this.FParent);
+      };
     };
     this.UpdateControlSize = function (AWidth, AHeight) {
       this.FWidth = AWidth;
@@ -15471,16 +15475,14 @@ rtl.module("WEBLib.Menus",["System","Classes","SysUtils","WEBLib.Controls","WEBL
     this.HandleDoContextMenu = function (Event) {
       var Result = false;
       var pt = pas.Types.TPoint.$new();
-      var frm = null;
       var r = null;
       pas["WEBLib.Controls"].TControl.HandleDoContextMenu.apply(this,arguments);
       if (this.FPopupMenu != null) {
         Event.stopPropagation();
         Event.preventDefault();
         pt.$assign(pas.Types.Point(Math.round(Event.clientX),Math.round(Event.clientY)));
-        frm = pas["WEBLib.Forms"].GetParentForm(this);
-        if ((frm != null) && (frm.GetContainer() != null)) {
-          r = frm.GetContainer().getBoundingClientRect();
+        if ((this.FPopupMenu.FOwner != null) && (this.FPopupMenu.FOwner.GetContainer() != null)) {
+          r = this.FPopupMenu.FOwner.GetContainer().getBoundingClientRect();
           pt.x = pt.x - Math.round(r.left);
           pt.y = pt.y - Math.round(r.top);
         };
@@ -15824,6 +15826,7 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
       this.FOnDOMContentLoaded = null;
       this.FShowClose = false;
       this.FOnHashChange = null;
+      this.FDefaultCloseAction = 0;
     };
     this.$final = function () {
       this.FDesignContainer = undefined;
@@ -16898,6 +16901,7 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
       this.FBorder = 2;
       this.FShadow = true;
       this.FShowClose = true;
+      this.FDefaultCloseAction = 1;
       this.FTimerID = -1;
       this.FCaptionElement = null;
       this.FColor = 16777215;
@@ -16913,6 +16917,7 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
       this.FFormElement = "";
       this.FModalResult = 0;
       this.FFormStyle = 0;
+      this.FDefaultCloseAction = 1;
       this.DoCreate();
       return this;
     };
@@ -16924,6 +16929,7 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
       this.FFormElement = "";
       this.FModalResult = 0;
       this.FFormStyle = 0;
+      this.FDefaultCloseAction = 1;
       this.DoCreate();
       return this;
     };
@@ -16987,7 +16993,7 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
       var el = null;
       if (this.CloseQuery()) {
         this.UnbindEvents();
-        lAction = 1;
+        lAction = this.FDefaultCloseAction;
         if (this.FTimerID !== -1) {
           window.clearInterval(this.FTimerID);
           this.FTimerID = -1;
@@ -17061,6 +17067,7 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
     };
     this.Show$1 = function () {
       var dr = null;
+      var el = null;
       if (this.FCreating && this.FPopup) {
         $mod.Application.ChangeMaxZIndex(+1);
         this.FCreating = false;
@@ -17080,6 +17087,12 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
             document.body.appendChild(this.GetContainer());
           };
         } else {
+          if ((this.FElementClassName !== "") && this.FDirectForm) {
+            el = document.createElement("DIV");
+            el.setAttribute("class",this.FElementClassName);
+            el.appendChild(this.GetContainer());
+            this.FContainer = el;
+          };
           if (this.FPopup) {
             this.SetFormPos();
             this.FLayer$1.appendChild(this.GetContainer());
@@ -17092,6 +17105,10 @@ rtl.module("WEBLib.Forms",["System","Classes","Types","SysUtils","WEBLib.Graphic
           };
         };
         if (this.FPopup) {
+          if (this.FPopupOpacity < 1) {
+            this.FLayer$1.style.setProperty(pas["WEBLib.Controls"].CSSBackground,"black");
+            this.FLayer$1.style.setProperty("opacity",pas["WEBLib.WebTools"].DoubleToHTML(this.FPopupOpacity));
+          };
           if (this.FBorder === 2) {
             dr = this.GetContainer().getBoundingClientRect();
             this.FOrigWidth = Math.round(dr.right - dr.left);
@@ -31172,6 +31189,13 @@ rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Cont
         if (this.FCursor === 0) this.GetElementHandle().style.setProperty("cursor","");
       };
     };
+    this.HandleKeyPreview = function (Key) {
+      var i = 0;
+      for (var $l = 0, $end = this.GetControlsCount() - 1; $l <= $end; $l++) {
+        i = $l;
+        if ((Key === 13) || (Key === 27)) this.GetControls(i).HandleKeyPreview(Key);
+      };
+    };
     this.GetOuterWidth = function () {
       var Result = 0;
       Result = pas["WEBLib.Controls"].TControl.GetOuterWidth.call(this);
@@ -31348,6 +31372,7 @@ rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Cont
       this.FFieldSet = null;
       this.FElementLegendClassName = "";
       this.FPadding = null;
+      this.FTransparent = false;
     };
     this.$final = function () {
       this.FLegend = undefined;
@@ -31358,6 +31383,12 @@ rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Cont
     this.SetElementLegendClassName = function (Value) {
       if (this.FElementLegendClassName !== Value) {
         this.FElementLegendClassName = Value;
+        this.UpdateElementVisual();
+      };
+    };
+    this.SetTransparent = function (Value) {
+      if (this.FTransparent !== Value) {
+        this.FTransparent = Value;
         this.UpdateElementVisual();
       };
     };
@@ -31417,7 +31448,9 @@ rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Cont
         this.FLegend.style.setProperty("float","none");
       };
       if (this.FFieldSet != null) {
-        this.FFieldSet.style.setProperty("background-color",pas["WEBLib.Graphics"].ColorToHTML(this.FColor));
+        if (this.FTransparent) {
+          this.FFieldSet.style.removeProperty("background-color")}
+         else this.FFieldSet.style.setProperty("background-color",pas["WEBLib.Graphics"].ColorToHTML(this.FColor));
         this.FFieldSet.style.setProperty("overflow","visible");
         this.SetFieldSetSize();
         this.FFieldSet.style.setProperty("white-space","nowrap");
@@ -31452,6 +31485,7 @@ rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Cont
       this.FEnablePropagation = true;
       this.FControlStyle = rtl.unionSet(this.FControlStyle,rtl.createSet(0));
       this.SetColor(15790320);
+      this.FTransparent = false;
       this.FPadding = pas["WEBLib.Controls"].TPadding.$create("Create$1");
       if (4 in this.FComponentState) {
         this.SetWidth(400);
@@ -31483,6 +31517,7 @@ rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Cont
     $r.addProperty("ParentFont",2,rtl.boolean,"FParentFont","SetParentFont",4,{Default: true});
     $r.addProperty("PopupMenu",0,pas["WEBLib.Menus"].$rtti["TPopupMenu"],"FPopupMenu","FPopupMenu");
     $r.addProperty("Role",3,rtl.string,"GetRole","SetRole");
+    $r.addProperty("Transparent",2,rtl.boolean,"FTransparent","SetTransparent");
     $r.addProperty("WidthPercent",2,rtl.double,"FWidthPercent","SetWidthPercent",4,{Default: 100});
     $r.addProperty("WidthStyle",2,pas["WEBLib.Controls"].$rtti["TSizeStyle"],"FWidthStyle","SetWidthStyle",4,{Default: pas["WEBLib.Controls"].TSizeStyle.ssAbsolute});
     $r.addProperty("OnDragDrop",0,pas["WEBLib.Controls"].$rtti["TDragDropEvent"],"FOnDragDrop","FOnDragDrop");
@@ -41008,7 +41043,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log("ByAllClick called");
       this.ByAll.FOnClick = null;
       try {
-        this.EPG.FColumns.GetItem$1(2).SetTitle("Title");
         this.ByGenre.SetChecked(false);
         this.ByTitle.SetChecked(false);
         this.byType.SetChecked(false);
@@ -41690,10 +41724,14 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var fltr = "";
       $impl.Log("====== SetFilters called");
       this.ByAll.SetChecked(!(this.ByChannel.FChecked || this.ByGenre.FChecked || this.ByTitle.FChecked || this.byType.FChecked));
-      if (!this.pnlWaitPls.FVisible) await this.ShowPlsWait("Preparing " + pas.StrUtils.IfThen(this.ByAll.FChecked,"Un","") + "Filtered List");
+      if (!this.pnlWaitPls.FVisible) await this.ShowPlsWait("Preparing " + pas.StrUtils.IfThen(this.ByAll.FChecked,"Short Un","") + "Filtered List");
       this.EPG.Hide();
       this.EPG.BeginUpdate();
-      this.EPG.FColumns.GetItem$1(2).SetTitle(pas.StrUtils.IfThen(this.ByChannel.FChecked,this.wcbChannels.GetText() + " ","") + pas.StrUtils.IfThen(this.byType.FChecked,this.wcbTypes.GetText() + " ","") + pas.StrUtils.IfThen(this.ByGenre.FChecked,this.wcbGenres.GetText() + " ","") + "Programs" + pas.StrUtils.IfThen(this.ByTitle.FChecked," w/Titles:" + pas.SysUtils.QuotedStr("*" + $impl.SearchFilter + "*","'"),""));
+      this.EPG.FColumns.GetItem$1(2).SetTitle(pas.StrUtils.IfThen(this.ByChannel.FChecked,this.wcbChannels.GetText() + " ","") + pas.StrUtils.IfThen(this.byType.FChecked,'"' + this.wcbTypes.GetText() + '" ',"") + pas.StrUtils.IfThen(this.ByGenre.FChecked,this.wcbGenres.GetText() + " ","") + "Programs" + pas.StrUtils.IfThen(this.ByAll.FChecked," (1st " + pas.SysUtils.TIntegerHelper.ToString$1.call({get: function () {
+          return 1000;
+        }, set: function (v) {
+          rtl.raiseE("EPropReadOnly");
+        }}) + " items)","") + pas.StrUtils.IfThen(this.ByTitle.FChecked," w/Titles:" + pas.SysUtils.QuotedStr("*" + $impl.SearchFilter + "*","'"),""));
       this.EPG.SetColWidths(0,pas.Math.IfThen(this.ByChannel.FChecked,0,75));
       if (!this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.DisableControls();
       this.WIDBCDS.SetFiltered(false);
@@ -42143,7 +42181,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlLog.SetLeft(0);
         this.pnlLog.SetTop(50);
         this.pnlLog.SetWidth(428);
-        this.pnlLog.SetHeight(699);
+        this.pnlLog.SetHeight(733);
         this.pnlLog.SetElementClassName("card");
         this.pnlLog.SetHeightStyle(0);
         this.pnlLog.SetWidthStyle(0);
@@ -42166,7 +42204,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebMemo2.SetLeft(3);
         this.WebMemo2.SetTop(3);
         this.WebMemo2.SetWidth(422);
-        this.WebMemo2.SetHeight(693);
+        this.WebMemo2.SetHeight(761);
         this.WebMemo2.SetAlign(5);
         this.WebMemo2.SetColor(0);
         this.WebMemo2.SetElementClassName("white");
@@ -42189,7 +42227,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlWaitPls.SetLeft(0);
         this.pnlWaitPls.SetTop(50);
         this.pnlWaitPls.SetWidth(428);
-        this.pnlWaitPls.SetHeight(699);
+        this.pnlWaitPls.SetHeight(733);
         this.pnlWaitPls.SetElementClassName("container-fluid");
         this.pnlWaitPls.SetHeightStyle(0);
         this.pnlWaitPls.SetWidthStyle(0);
@@ -42211,7 +42249,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebGridPanel1.SetLeft(0);
         this.WebGridPanel1.SetTop(0);
         this.WebGridPanel1.SetWidth(428);
-        this.WebGridPanel1.SetHeight(699);
+        this.WebGridPanel1.SetHeight(767);
         this.WebGridPanel1.SetWidthStyle(0);
         this.WebGridPanel1.SetAlign(5);
         this.WebGridPanel1.FColumnCollection.Clear();
@@ -42244,9 +42282,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebLabel2.SetParentComponent(this.WebGridPanel1);
         this.WebLabel2.SetName("WebLabel2");
         this.WebLabel2.SetLeft(2);
-        this.WebLabel2.SetTop(352);
+        this.WebLabel2.SetTop(386);
         this.WebLabel2.SetWidth(424);
-        this.WebLabel2.SetHeight(171);
+        this.WebLabel2.SetHeight(188);
         this.WebLabel2.SetAlign(5);
         this.WebLabel2.SetAlignment(2);
         this.WebLabel2.SetCaption("Please Wait...");
@@ -42269,9 +42307,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebLabel1.SetParentComponent(this.WebGridPanel1);
         this.WebLabel1.SetName("WebLabel1");
         this.WebLabel1.SetLeft(2);
-        this.WebLabel1.SetTop(177);
+        this.WebLabel1.SetTop(194);
         this.WebLabel1.SetWidth(424);
-        this.WebLabel1.SetHeight(171);
+        this.WebLabel1.SetHeight(188);
         this.WebLabel1.SetAlign(5);
         this.WebLabel1.SetAlignment(2);
         this.WebLabel1.SetCaption("Preparing EPG Listings.");
@@ -42297,7 +42335,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebButton1.SetLeft(2);
         this.WebButton1.SetTop(2);
         this.WebButton1.SetWidth(424);
-        this.WebButton1.SetHeight(171);
+        this.WebButton1.SetHeight(188);
         this.WebButton1.SetAlign(5);
         this.WebButton1.SetCaption('<i class="fa-solid fa-spinner fa-spin"></>');
         this.WebButton1.SetColor(65535);
@@ -42321,7 +42359,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlHistory.SetLeft(0);
         this.pnlHistory.SetTop(50);
         this.pnlHistory.SetWidth(428);
-        this.pnlHistory.SetHeight(699);
+        this.pnlHistory.SetHeight(733);
         this.pnlHistory.SetElementClassName("card");
         this.pnlHistory.SetHeightStyle(0);
         this.pnlHistory.SetWidthStyle(0);
@@ -42378,7 +42416,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlCaptures.SetLeft(0);
         this.pnlCaptures.SetTop(50);
         this.pnlCaptures.SetWidth(428);
-        this.pnlCaptures.SetHeight(699);
+        this.pnlCaptures.SetHeight(733);
         this.pnlCaptures.SetElementClassName("greenBG");
         this.pnlCaptures.SetHeightStyle(0);
         this.pnlCaptures.SetWidthStyle(0);
@@ -42553,7 +42591,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlOptions.SetLeft(0);
         this.pnlOptions.SetTop(50);
         this.pnlOptions.SetWidth(428);
-        this.pnlOptions.SetHeight(699);
+        this.pnlOptions.SetHeight(733);
         this.pnlOptions.SetElementClassName("card");
         this.pnlOptions.SetHeightStyle(0);
         this.pnlOptions.SetWidthStyle(0);
@@ -42632,7 +42670,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlListings.SetLeft(0);
         this.pnlListings.SetTop(50);
         this.pnlListings.SetWidth(428);
-        this.pnlListings.SetHeight(699);
+        this.pnlListings.SetHeight(733);
         this.pnlListings.SetElementClassName("greenBG");
         this.pnlListings.SetHeightStyle(0);
         this.pnlListings.SetWidthStyle(0);
@@ -42679,7 +42717,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.EPG.SetLeft(0);
         this.EPG.SetTop(0);
         this.EPG.SetWidth(428);
-        this.EPG.SetHeight(699);
+        this.EPG.SetHeight(733);
         this.EPG.SetAlign(5);
         this.EPG.SetBorderStyle(0);
         this.EPG.SetColor(8388608);
@@ -42791,7 +42829,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.wcbGenres.SetLeft(3);
         this.wcbGenres.SetTop(31);
         this.wcbGenres.SetWidth(144);
-        this.wcbGenres.SetHeight(30);
+        this.wcbGenres.SetHeight(41);
         this.wcbGenres.SetAlign(5);
         this.wcbGenres.SetElementClassName("form-select");
         this.wcbGenres.SetElementFont(1);
@@ -42816,7 +42854,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.wcbChannels.SetLeft(3);
         this.wcbChannels.SetTop(31);
         this.wcbChannels.SetWidth(144);
-        this.wcbChannels.SetHeight(30);
+        this.wcbChannels.SetHeight(41);
         this.wcbChannels.SetAlign(5);
         this.wcbChannels.SetElementClassName("form-select");
         this.wcbChannels.SetElementFont(1);
@@ -42841,7 +42879,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.wcbTypes.SetLeft(3);
         this.wcbTypes.SetTop(31);
         this.wcbTypes.SetWidth(144);
-        this.wcbTypes.SetHeight(30);
+        this.wcbTypes.SetHeight(41);
         this.wcbTypes.SetAlign(5);
         this.wcbTypes.SetElementClassName("form-select");
         this.wcbTypes.SetElementFont(1);
