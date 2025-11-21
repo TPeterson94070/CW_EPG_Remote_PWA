@@ -531,9 +531,13 @@ var
     console.log('AccessToken: ' + WebRESTClient1.AccessToken);
     if WebRESTClient1.AccessToken = '' then ResetPrompt := 'select_account';
     WebRESTClient1.App.Key := CLIENT_APP_KEY;
-    WEBRESTClient1.App.CallBackURL := window.location.href;   // <=============== is Safari/FF desktop site problem?
-    if WebRESTClient1.App.CallbackURL.EndsWith('?') then
-      WebRESTClient1.App.CallbackURL := LeftStr(WebRESTClient1.App.CallbackURL, Pred(Length(WebRESTClient1.App.CallbackURL))) + 'index.html';
+    if window.location.href.EndsWith('?') then
+    begin
+      WebRESTClient1.App.CallbackURL := LeftStr(window.location.href, Pred(Length(window.location.href))) + 'index.html';
+      Log('window.location.href: ' + window.location.href);
+    end
+    else WEBRESTClient1.App.CallBackURL := window.location.href;
+    Log('WEBRESTClient1.App.CallBackURL: ' + WEBRESTClient1.App.CallbackURL);
     WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth'
       + '?client_id=' + WebRESTCLient1.App.Key
       + '&include_granted_scopes'
@@ -542,7 +546,6 @@ var
       + '&response_type=token'
       + '&redirect_uri=' + WEBRESTClient1.App.CallbackURL
       + '&prompt=' + ResetPrompt;
-    {console.}log('WEBRESTClient1.App.CallBackURL: ' + WEBRESTClient1.App.CallbackURL);
     if (WebRESTClient1.AccessToken = '') or (ResetPrompt <> 'none') then
     begin
       console.log('Performing OAuth');

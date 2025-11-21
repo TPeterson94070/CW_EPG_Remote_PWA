@@ -41579,14 +41579,16 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         window.console.log("AccessToken: " + $Self.WebRESTClient1.FAccessToken);
         if ($Self.WebRESTClient1.FAccessToken === "") $impl.ResetPrompt = "select_account";
         $Self.WebRESTClient1.FApp.FKey = $impl.CLIENT_APP_KEY;
-        $Self.WebRESTClient1.FApp.FCallbackURL = window.location.href;
-        if (pas.SysUtils.TStringHelper.EndsWith.call({p: $Self.WebRESTClient1.FApp, get: function () {
-            return this.p.FCallbackURL;
+        if (pas.SysUtils.TStringHelper.EndsWith.call({p: window.location, get: function () {
+            return this.p.href;
           }, set: function (v) {
-            this.p.FCallbackURL = v;
-          }},"?")) $Self.WebRESTClient1.FApp.FCallbackURL = pas.StrUtils.LeftStr($Self.WebRESTClient1.FApp.FCallbackURL,$Self.WebRESTClient1.FApp.FCallbackURL.length - 1) + "index.html";
-        $Self.WebRESTClient1.FApp.FAuthURL = "https://accounts.google.com/o/oauth2/v2/auth" + "?client_id=" + $Self.WebRESTClient1.FApp.FKey + "&include_granted_scopes" + "&scope=https://www.googleapis.com/auth/drive" + "&state=bf" + "&response_type=token" + "&redirect_uri=" + $Self.WebRESTClient1.FApp.FCallbackURL + "&prompt=" + $impl.ResetPrompt;
+            this.p.href = v;
+          }},"?")) {
+          $Self.WebRESTClient1.FApp.FCallbackURL = pas.StrUtils.LeftStr(window.location.href,window.location.href.length - 1) + "index.html";
+          $impl.Log("window.location.href: " + window.location.href);
+        } else $Self.WebRESTClient1.FApp.FCallbackURL = window.location.href;
         $impl.Log("WEBRESTClient1.App.CallBackURL: " + $Self.WebRESTClient1.FApp.FCallbackURL);
+        $Self.WebRESTClient1.FApp.FAuthURL = "https://accounts.google.com/o/oauth2/v2/auth" + "?client_id=" + $Self.WebRESTClient1.FApp.FKey + "&include_granted_scopes" + "&scope=https://www.googleapis.com/auth/drive" + "&state=bf" + "&response_type=token" + "&redirect_uri=" + $Self.WebRESTClient1.FApp.FCallbackURL + "&prompt=" + $impl.ResetPrompt;
         if (($Self.WebRESTClient1.FAccessToken === "") || ($impl.ResetPrompt !== "none")) {
           window.console.log("Performing OAuth");
           await $Self.ShowPlsWait("Select Login Credentials");
