@@ -532,6 +532,8 @@ var
     if WebRESTClient1.AccessToken = '' then ResetPrompt := 'select_account';
     WebRESTClient1.App.Key := CLIENT_APP_KEY;
     WEBRESTClient1.App.CallBackURL := window.location.href;   // <=============== is Safari/FF desktop site problem?
+    if WebRESTClient1.App.CallbackURL.EndsWith('?') then
+      WebRESTClient1.App.CallbackURL := LeftStr(WebRESTClient1.App.CallbackURL, Pred(Length(WebRESTClient1.App.CallbackURL))) + 'index.html';
     WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth'
       + '?client_id=' + WebRESTCLient1.App.Key
       + '&include_granted_scopes'

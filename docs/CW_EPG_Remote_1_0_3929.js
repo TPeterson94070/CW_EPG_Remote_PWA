@@ -4571,6 +4571,11 @@ rtl.module("SysUtils",["System","RTLConsts","JS"],function () {
       Result = this.get().length;
       return Result;
     };
+    this.CompareText = function (A, B) {
+      var Result = 0;
+      Result = $mod.CompareText(A,B);
+      return Result;
+    };
     this.LowerCase = function (S) {
       var Result = "";
       Result = $mod.LowerCase(S);
@@ -4584,6 +4589,26 @@ rtl.module("SysUtils",["System","RTLConsts","JS"],function () {
     this.Contains = function (AValue) {
       var Result = false;
       Result = (AValue !== "") && (pas.System.Pos(AValue,this.get()) > 0);
+      return Result;
+    };
+    this.EndsWith = function (AValue) {
+      var Result = false;
+      Result = $mod.TStringHelper.EndsWith$1.call(this,AValue,false);
+      return Result;
+    };
+    this.EndsWith$1 = function (AValue, IgnoreCase) {
+      var Result = false;
+      var L = 0;
+      var S = "";
+      L = AValue.length;
+      Result = L === 0;
+      if (!Result) {
+        S = pas.System.Copy(this.get(),($mod.TStringHelper.GetLength.call(this) - L) + 1,L);
+        Result = S.length === L;
+        if (Result) if (IgnoreCase) {
+          Result = $mod.TStringHelper.CompareText(S,AValue) === 0}
+         else Result = S === AValue;
+      };
       return Result;
     };
     this.IndexOf = function (AValue) {
@@ -41555,6 +41580,11 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         if ($Self.WebRESTClient1.FAccessToken === "") $impl.ResetPrompt = "select_account";
         $Self.WebRESTClient1.FApp.FKey = $impl.CLIENT_APP_KEY;
         $Self.WebRESTClient1.FApp.FCallbackURL = window.location.href;
+        if (pas.SysUtils.TStringHelper.EndsWith.call({p: $Self.WebRESTClient1.FApp, get: function () {
+            return this.p.FCallbackURL;
+          }, set: function (v) {
+            this.p.FCallbackURL = v;
+          }},"?")) $Self.WebRESTClient1.FApp.FCallbackURL = pas.StrUtils.LeftStr($Self.WebRESTClient1.FApp.FCallbackURL,$Self.WebRESTClient1.FApp.FCallbackURL.length - 1) + "index.html";
         $Self.WebRESTClient1.FApp.FAuthURL = "https://accounts.google.com/o/oauth2/v2/auth" + "?client_id=" + $Self.WebRESTClient1.FApp.FKey + "&include_granted_scopes" + "&scope=https://www.googleapis.com/auth/drive" + "&state=bf" + "&response_type=token" + "&redirect_uri=" + $Self.WebRESTClient1.FApp.FCallbackURL + "&prompt=" + $impl.ResetPrompt;
         $impl.Log("WEBRESTClient1.App.CallBackURL: " + $Self.WebRESTClient1.FApp.FCallbackURL);
         if (($Self.WebRESTClient1.FAccessToken === "") || ($impl.ResetPrompt !== "none")) {
