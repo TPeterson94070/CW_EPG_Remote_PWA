@@ -531,9 +531,9 @@ var
     console.log('AccessToken: ' + WebRESTClient1.AccessToken);
     if WebRESTClient1.AccessToken = '' then ResetPrompt := 'select_account';
     WebRESTClient1.App.Key := CLIENT_APP_KEY;
-    if window.location.href.EndsWith('?') then
+    if window.location.href.Contains('?') then  // browser has "parameters" that need to be removed
     begin
-      WebRESTClient1.App.CallbackURL := LeftStr(window.location.href, Pred(Length(window.location.href))) + 'index.html';
+      WebRESTClient1.App.CallbackURL := LeftStr(window.location.href, Pred(Pos('?',window.location.href)));
       Log('window.location.href: ' + window.location.href);
     end
     else WEBRESTClient1.App.CallBackURL := window.location.href;

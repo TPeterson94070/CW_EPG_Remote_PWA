@@ -4571,11 +4571,6 @@ rtl.module("SysUtils",["System","RTLConsts","JS"],function () {
       Result = this.get().length;
       return Result;
     };
-    this.CompareText = function (A, B) {
-      var Result = 0;
-      Result = $mod.CompareText(A,B);
-      return Result;
-    };
     this.LowerCase = function (S) {
       var Result = "";
       Result = $mod.LowerCase(S);
@@ -4589,26 +4584,6 @@ rtl.module("SysUtils",["System","RTLConsts","JS"],function () {
     this.Contains = function (AValue) {
       var Result = false;
       Result = (AValue !== "") && (pas.System.Pos(AValue,this.get()) > 0);
-      return Result;
-    };
-    this.EndsWith = function (AValue) {
-      var Result = false;
-      Result = $mod.TStringHelper.EndsWith$1.call(this,AValue,false);
-      return Result;
-    };
-    this.EndsWith$1 = function (AValue, IgnoreCase) {
-      var Result = false;
-      var L = 0;
-      var S = "";
-      L = AValue.length;
-      Result = L === 0;
-      if (!Result) {
-        S = pas.System.Copy(this.get(),($mod.TStringHelper.GetLength.call(this) - L) + 1,L);
-        Result = S.length === L;
-        if (Result) if (IgnoreCase) {
-          Result = $mod.TStringHelper.CompareText(S,AValue) === 0}
-         else Result = S === AValue;
-      };
       return Result;
     };
     this.IndexOf = function (AValue) {
@@ -41579,12 +41554,12 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         window.console.log("AccessToken: " + $Self.WebRESTClient1.FAccessToken);
         if ($Self.WebRESTClient1.FAccessToken === "") $impl.ResetPrompt = "select_account";
         $Self.WebRESTClient1.FApp.FKey = $impl.CLIENT_APP_KEY;
-        if (pas.SysUtils.TStringHelper.EndsWith.call({p: window.location, get: function () {
+        if (pas.SysUtils.TStringHelper.Contains.call({p: window.location, get: function () {
             return this.p.href;
           }, set: function (v) {
             this.p.href = v;
           }},"?")) {
-          $Self.WebRESTClient1.FApp.FCallbackURL = pas.StrUtils.LeftStr(window.location.href,window.location.href.length - 1) + "index.html";
+          $Self.WebRESTClient1.FApp.FCallbackURL = pas.StrUtils.LeftStr(window.location.href,pas.System.Pos("?",window.location.href) - 1);
           $impl.Log("window.location.href: " + window.location.href);
         } else $Self.WebRESTClient1.FApp.FCallbackURL = window.location.href;
         $impl.Log("WEBRESTClient1.App.CallBackURL: " + $Self.WebRESTClient1.FApp.FCallbackURL);
