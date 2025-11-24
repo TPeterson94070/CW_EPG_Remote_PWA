@@ -1534,7 +1534,8 @@ var
   id: string;
 begin
   Log(' ====== FetchHistory called =========');
-    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_HISTORY,'History', id));
+  {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_HISTORY,'History', id));
+  HistoryTable.RowCount := 1;  // Force reload on next History view
   Log(' ====== FetchHistory finished =========');
 end;
 
