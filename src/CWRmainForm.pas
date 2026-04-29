@@ -621,8 +621,9 @@ end;
 
 procedure TCWRmainFrm.FillTable(var WSG: TWebStringGrid; rs: string);
 var
+  i, j: integer;
   Line: string;
-  sl: TStrings;
+  sl: TStringList;
   ReplyArray: TArray<string>;
 begin
   Log('FillTable called for ' + WSG.Name);
@@ -635,17 +636,28 @@ begin
     ReplyArray := CSVstring.Split([#13#10],TStringSplitOptions.ExcludeEmpty);
     Log('Begin extract ' + IntToStr(Length(ReplyArray)) + ' strings');
     for Line in ReplyArray do sl.Add(Line);
-    WSG.BeginUpdate;
+    // DEBUG:
+//    log(sl.Text);
+//    WSG.BeginUpdate;
     WSG.LoadFromStrings(sl, ',', True);
     // dump empty rows
-    while WSG.Cells[0,Pred(WSG.RowCount)] = '' do WSG.RowCount := Pred(WSG.RowCount);
-    WSG.EndUpdate;
+//    while WSG.Cells[0,Pred(WSG.RowCount)] = '' do WSG.RowCount := Pred(WSG.RowCount);
+//    WSG.EndUpdate;
   end
   else WSG.RowCount := 0;
   Log(WSG.Name+'.RowCount: ' + WSG.RowCount.ToString);
+
   Log('Done loading '+WSG.Name);
   sl.Free; // := nil;
-
+  // DEBUG:  list WSG to console/log file
+//  Log(WSG.Name + ' contents: ');
+//  for i := 0 to Pred(WSG.RowCount) do
+//  begin
+//    Line := EmptyStr;
+//    for j := 0 to Pred(WSG.ColCount) do
+//      Line := Line + ' ' + WSG.Cells[j,i];
+//    Log(Line);
+//  end;
 end;
 
 procedure TCWRmainFrm.RefreshCSV(TableFile, Title: string; var id: string);
@@ -788,7 +800,7 @@ begin
     RecordEnd := StrToDateTime(NewCaptures.Cells[2,ARow]);
     Title := NewCaptures.Cells[3,ARow];
     ProgID := NewCaptures.Cells[6,ARow];
-    NewCaptures.BeginUpdate;
+//    NewCaptures.BeginUpdate;
     {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES,'New Captures', id));
     {$IfDef PAS2JS}await{$EndIf}(FillTable(NewCaptures, CSV_NEWCAPTURES));
     Log('NewCaptures Rows: '+NewCaptures.RowCount.ToString);
@@ -805,7 +817,7 @@ begin
         SaveNewCapturesFile(id);
         Break;
       end;
-    NewCaptures.EndUpdate;
+//    NewCaptures.EndUpdate;
     pnlWaitPls.Hide;
   end;
 end;
@@ -936,7 +948,7 @@ begin
     sl.Clear;
     sl.Sorted := True;
     sl.Duplicates := dupIgnore;
-    sl.BeginUpdate;
+//    sl.BeginUpdate;
     WIDBCDS.First;
     Log('Looping over Epg for ' + cb.Name + ' Items');
     while not WIDBCDS.Eof do
@@ -954,10 +966,10 @@ begin
       WIDBCDS.Next;
     end;
     Log('====== Finished Epg DB scan');
-    sl.EndUpdate;
-    cb.BeginUpdate;
+//    sl.EndUpdate;
+//    cb.BeginUpdate;
     cb.Items.AddStrings(sl);
-    cb.EndUpdate;
+//    cb.EndUpdate;
     Log('Added ' + cb.Items.Count.ToString + ' to ' + cb.Name);
     // Save list to speed restart
     TLocalStorage.SetValue(cb.Name + 'Items', cb.Items.Text);
@@ -1001,7 +1013,7 @@ begin
   if not pnlWaitPls.Visible then
     {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, 'Short Un') + 'Filtered List'));
   EPG.Hide;
-  EPG.BeginUpdate;
+//  EPG.BeginUpdate;
   EPG.Columns[2].Title := IfThen(ByChannel.Checked, wcbChannels.Text + ' ')
     + IfThen(byType.Checked, '"' + wcbTypes.Text + '" ')
     + IfThen(ByGenre.Checked, wcbGenres.Text + ' ')
@@ -1025,7 +1037,7 @@ begin
   {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
   {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
   WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
-  EPG.EndUpdate;
+//  EPG.EndUpdate;
   EPG.Show;
   pnlWaitPls.Hide;
   EPG.BringToFront;
@@ -1164,8 +1176,8 @@ var
 
 begin
   Log('FillHistoryDisplay called');
-  Log('historyTable.BeginUpdate');
-  HistoryTable.BeginUpdate;
+//  Log('historyTable.BeginUpdate');
+//  HistoryTable.BeginUpdate;
   try
     LoadSG(HistoryTable, CSV_HISTORY);
     HistoryTable.Align := alClient;
@@ -1190,7 +1202,7 @@ begin
     HistoryTableFixedCellClick(Self, 8, 0);  // Change to descending
     while HistoryTable.RowCount > StrToInt(cbNumHistList.Text) do HistoryTable.RemoveRow(Pred(HistoryTable.RowCount));
   finally
-    HistoryTable.EndUpdate;
+//    HistoryTable.EndUpdate;
     Log('FillHistoryDisplay finished');
   end;
 end;
@@ -1218,9 +1230,9 @@ begin
   else SortDir := siAscending;
   Log('HistoryTableFixedCellClick, ACol: '+ACol.ToString+', RowCount: '+HistoryTable.RowCount.ToString);
   i := IfThen(ACol=8, 0, ACol);
-  HistoryTable.BeginUpdate;
+//  HistoryTable.BeginUpdate;
   HistoryTable.Sort(i,SortDir);
-  HistoryTable.EndUpdate;
+//  HistoryTable.EndUpdate;
   Log('HistoryTableFixedCellClick, after sort, RowCount: '+HistoryTable.RowCount.ToString);
   // Remove previous direction flags
   for i := 0 to HistoryTable.ColCount-1 do

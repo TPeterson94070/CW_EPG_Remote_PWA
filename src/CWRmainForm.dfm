@@ -85,7 +85,6 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 1
-    ExplicitHeight = 699
     object WebMemo2: TWebMemo
       AlignWithMargins = True
       Left = 3
@@ -110,7 +109,6 @@ object CWRmainFrm: TCWRmainFrm
       SelStart = 0
       WidthStyle = ssPercent
       WidthPercent = 100.000000000000000000
-      ExplicitHeight = 693
     end
   end
   object pnlWaitPls: TWebPanel
@@ -134,7 +132,6 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 3
-    ExplicitHeight = 699
     object WebGridPanel1: TWebGridPanel
       Left = 0
       Top = 0
@@ -177,7 +174,6 @@ object CWRmainFrm: TCWRmainFrm
         item
           Value = 25
         end>
-      ExplicitHeight = 699
       object WebLabel2: TWebLabel
         Left = 2
         Top = 386
@@ -276,12 +272,11 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 0
-    ExplicitHeight = 699
     object HistoryTable: TWebStringGrid
       Left = 0
       Top = 0
       Width = 428
-      Height = 699
+      Height = 727
       Align = alClient
       Color = clDarkslategray
       ColCount = 32
@@ -335,7 +330,6 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 2
-    ExplicitHeight = 699
     object WebHTMLDiv1: TWebHTMLDiv
       Left = 0
       Top = 266
@@ -504,7 +498,6 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 4
-    ExplicitHeight = 699
     object WebGroupBox3: TWebGroupBox
       Left = 15
       Top = 16
@@ -580,7 +573,6 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 5
-    ExplicitHeight = 699
     DesignSize = (
       428
       767)
@@ -679,7 +671,6 @@ object CWRmainFrm: TCWRmainFrm
       WidthPercent = 100.000000000000000000
       OnClickCell = EPGClickCell
       OnGetCellClass = EPGGetCellClass
-      ExplicitHeight = 699
       ColWidths = (
         75
         155
@@ -726,14 +717,13 @@ object CWRmainFrm: TCWRmainFrm
         ParentFont = False
         WidthStyle = ssAuto
         WidthPercent = 100.000000000000000000
-        ExplicitWidth = 110
       end
       object wcbGenres: TWebComboBox
         AlignWithMargins = True
         Left = 3
         Top = 31
         Width = 144
-        Height = 41
+        Height = 30
         Align = alClient
         ElementClassName = 'form-select'
         ElementFont = efCSS
@@ -758,7 +748,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 3
         Top = 31
         Width = 144
-        Height = 41
+        Height = 30
         Align = alClient
         ElementClassName = 'form-select'
         ElementFont = efCSS
@@ -783,7 +773,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 3
         Top = 31
         Width = 144
-        Height = 41
+        Height = 30
         Align = alClient
         ElementClassName = 'form-select'
         ElementFont = efCSS
@@ -812,7 +802,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 0
         Top = 28
         Width = 150
-        Height = 47
+        Height = 124
         Action = ''
         Align = alClient
         ElementFont = efCSS
@@ -820,7 +810,7 @@ object CWRmainFrm: TCWRmainFrm
           Left = 0
           Top = 0
           Width = 150
-          Height = 47
+          Height = 124
           Align = alClient
           AutoCompletion = acNone
           AutoFocus = True
