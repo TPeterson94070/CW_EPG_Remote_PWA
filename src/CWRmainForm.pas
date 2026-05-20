@@ -6,7 +6,7 @@
 interface
 
 uses
-  JSONDataSet,
+//  JSONDataSet,
   System.SysUtils, System.Classes, WEBLib.Graphics, WEBLib.Forms, Vcl.StdCtrls,
   WEBLib.StdCtrls, Vcl.Controls, WEBLib.Dialogs, Vcl.Imaging.pngimage,
   WEBLib.ExtCtrls, WEBLib.Controls, Web, JS, WebLib.DB, WEBLib.IndexedDb,
@@ -70,7 +70,7 @@ type
     WebTimer1: TWebTimer;
     WebTimer2: TWebTimer;
     WebHTMLForm1: TWebHTMLForm;
-//  procedure ClearFilterLists;
+    WebDataGrid1: TWebDataGrid;
   procedure SetCapturesFormats;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
@@ -108,7 +108,6 @@ type
       AField: TField; var AValue: string);
     procedure wcbGenresFocusOut(Sender: TObject);
     procedure wcbChannelsFocusOut(Sender: TObject);
-//  [async] procedure btnOptOKClick(Sender: TObject);
   [async] procedure btnSchdRefrshClick(Sender: TObject);
   [async] procedure btnRefreshDataClick(Sender: TObject);
     procedure wcbTypesChange(Sender: TObject);
@@ -636,12 +635,10 @@ begin
     ReplyArray := CSVstring.Split([#13#10],TStringSplitOptions.ExcludeEmpty);
     Log('Begin extract ' + IntToStr(Length(ReplyArray)) + ' strings');
     for Line in ReplyArray do sl.Add(Line);
-    // DEBUG:
-//    log(sl.Text);
 //    WSG.BeginUpdate;
     WSG.LoadFromStrings(sl, ',', True);
     // dump empty rows
-//    while WSG.Cells[0,Pred(WSG.RowCount)] = '' do WSG.RowCount := Pred(WSG.RowCount);
+    while WSG.Cells[0,Pred(WSG.RowCount)] = '' do WSG.RowCount := Pred(WSG.RowCount);
 //    WSG.EndUpdate;
   end
   else WSG.RowCount := 0;
@@ -649,6 +646,7 @@ begin
 
   Log('Done loading '+WSG.Name);
   sl.Free; // := nil;
+
   // DEBUG:  list WSG to console/log file
 //  Log(WSG.Name + ' contents: ');
 //  for i := 0 to Pred(WSG.RowCount) do
@@ -658,6 +656,7 @@ begin
 //      Line := Line + ' ' + WSG.Cells[j,i];
 //    Log(Line);
 //  end;
+
 end;
 
 procedure TCWRmainFrm.RefreshCSV(TableFile, Title: string; var id: string);

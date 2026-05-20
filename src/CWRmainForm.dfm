@@ -68,7 +68,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 727
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -90,7 +90,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 3
       Top = 3
       Width = 422
-      Height = 761
+      Height = 721
       Align = alClient
       Color = clBlack
       ElementClassName = 'white'
@@ -115,7 +115,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 727
     ElementClassName = 'container-fluid'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -136,7 +136,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 767
+      Height = 727
       WidthStyle = ssPercent
       Align = alClient
       ColumnCollection = <
@@ -176,9 +176,9 @@ object CWRmainFrm: TCWRmainFrm
         end>
       object WebLabel2: TWebLabel
         Left = 2
-        Top = 386
+        Top = 366
         Width = 424
-        Height = 188
+        Height = 178
         Align = alClient
         Alignment = taCenter
         Caption = 'Please Wait...'
@@ -201,9 +201,9 @@ object CWRmainFrm: TCWRmainFrm
       end
       object WebLabel1: TWebLabel
         Left = 2
-        Top = 194
+        Top = 184
         Width = 424
-        Height = 188
+        Height = 178
         Align = alClient
         Alignment = taCenter
         Caption = 'Preparing EPG Listings.'
@@ -229,7 +229,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 2
         Top = 2
         Width = 424
-        Height = 188
+        Height = 178
         Align = alClient
         Caption = '<i class="fa-solid fa-spinner fa-spin"></>'
         Color = clYellow
@@ -251,68 +251,11 @@ object CWRmainFrm: TCWRmainFrm
       end
     end
   end
-  object pnlHistory: TWebPanel
-    Left = 0
-    Top = 50
-    Width = 428
-    Height = 767
-    ElementClassName = 'card'
-    HeightStyle = ssPercent
-    WidthStyle = ssPercent
-    Align = alClient
-    Caption = 'pnlHistory'
-    ChildOrder = 11
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    Font.Charset = ANSI_CHARSET
-    Font.Color = clBlack
-    Font.Height = -19
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-    ShowCaption = False
-    TabOrder = 0
-    object HistoryTable: TWebStringGrid
-      Left = 0
-      Top = 0
-      Width = 428
-      Height = 727
-      Align = alClient
-      Color = clDarkslategray
-      ColCount = 32
-      DefaultColWidth = 61
-      DefaultRowHeight = 23
-      FixedCols = 0
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clGray
-      Font.Height = -19
-      Font.Name = 'Arial'
-      Font.Style = []
-      Options = [goRowSelect, goFixedRowClick]
-      ParentFont = False
-      TabOrder = 0
-      StyleElements = []
-      OnFixedCellClick = HistoryTableFixedCellClick
-      ElementFont = efCSS
-      FixedFont.Charset = DEFAULT_CHARSET
-      FixedFont.Color = clWindowText
-      FixedFont.Height = -21
-      FixedFont.Name = 'Segoe UI'
-      FixedFont.Style = []
-      RangeEdit.Max = 100.000000000000000000
-      RangeEdit.Step = 1.000000000000000000
-      HeightStyle = ssPercent
-      HeightPercent = 100.000000000000000000
-      WidthPercent = 100.000000000000000000
-      OnClickCell = HistoryTableClickCell
-      OnGetCellClass = HistoryTableGetCellClass
-    end
-  end
   object pnlCaptures: TWebPanel
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 727
     ElementClassName = 'greenBG'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -481,7 +424,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 727
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -555,7 +498,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 727
     ElementClassName = 'greenBG'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -575,7 +518,7 @@ object CWRmainFrm: TCWRmainFrm
     TabOrder = 5
     DesignSize = (
       428
-      767)
+      727)
     object lblEmptyEPG: TWebLabel
       Left = 96
       Top = 58
@@ -606,7 +549,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 767
+      Height = 727
       Align = alClient
       BorderStyle = bsNone
       Color = clNavy
@@ -802,7 +745,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 0
         Top = 28
         Width = 150
-        Height = 124
+        Height = 47
         Action = ''
         Align = alClient
         ElementFont = efCSS
@@ -810,7 +753,7 @@ object CWRmainFrm: TCWRmainFrm
           Left = 0
           Top = 0
           Width = 150
-          Height = 124
+          Height = 47
           Align = alClient
           AutoCompletion = acNone
           AutoFocus = True
@@ -852,6 +795,80 @@ object CWRmainFrm: TCWRmainFrm
       Visible = False
       WidthPercent = 100.000000000000000000
       OnClick = btnRefreshDataClick
+    end
+  end
+  object pnlHistory: TWebPanel
+    Left = 0
+    Top = 50
+    Width = 428
+    Height = 727
+    ElementClassName = 'card'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
+    Align = alClient
+    Caption = 'pnlHistory'
+    ChildOrder = 11
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -19
+    Font.Name = 'Arial'
+    Font.Style = []
+    ParentFont = False
+    ShowCaption = False
+    TabOrder = 0
+    object HistoryTable: TWebStringGrid
+      Left = 0
+      Top = 0
+      Width = 428
+      Height = 727
+      Align = alClient
+      Color = clDarkslategray
+      ColCount = 32
+      DefaultColWidth = 61
+      DefaultRowHeight = 23
+      FixedCols = 0
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clGray
+      Font.Height = -19
+      Font.Name = 'Arial'
+      Font.Style = []
+      Options = [goRowSelect, goFixedRowClick]
+      ParentFont = False
+      TabOrder = 0
+      StyleElements = []
+      OnFixedCellClick = HistoryTableFixedCellClick
+      ElementFont = efCSS
+      FixedFont.Charset = DEFAULT_CHARSET
+      FixedFont.Color = clWindowText
+      FixedFont.Height = -21
+      FixedFont.Name = 'Segoe UI'
+      FixedFont.Style = []
+      RangeEdit.Max = 100.000000000000000000
+      RangeEdit.Step = 1.000000000000000000
+      HeightStyle = ssPercent
+      HeightPercent = 100.000000000000000000
+      WidthPercent = 100.000000000000000000
+      OnClickCell = HistoryTableClickCell
+      OnGetCellClass = HistoryTableGetCellClass
+    end
+    object WebDataGrid1: TWebDataGrid
+      Left = 16
+      Top = 216
+      Width = 400
+      Height = 300
+      ColumnDefs = <
+        item
+          Field = 'column1'
+          SelectOptions = <>
+        end
+        item
+          Field = 'column2'
+          SelectOptions = <>
+        end>
+      MultilevelHeaders = <>
+      TabOrder = 1
     end
   end
   object WebMainMenu1: TWebMainMenu
