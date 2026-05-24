@@ -70,7 +70,6 @@ type
     WebTimer1: TWebTimer;
     WebTimer2: TWebTimer;
     WebHTMLForm1: TWebHTMLForm;
-    WebDataGrid1: TWebDataGrid;
   procedure SetCapturesFormats;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
@@ -824,7 +823,7 @@ end;
 procedure TCWRmainFrm.NewCapturesGetCellData(Sender: TObject; ACol,
   ARow: Integer; AField: TField; var AValue: string);
 begin
-  if ARow > 0 then
+  if (ARow > 0) and (AValue > '') then
     if ACol in [1,2] then AValue := FormatDateTime('mm/dd HH:nn', StrToDateTime(AValue));
 end;
 
@@ -863,10 +862,10 @@ begin
     // add normal fields
     for DbField in DBFIELDS do
     begin
-      if (DbField = 'StartTime') or (DbField = 'EndTime') then
-        WIDBCDS.FieldDefs.Add(DbField, ftDateTime)
-      else
-        WIDBCDS.FieldDefs.Add(DbField, ftString);
+    if (DbField = 'StartTime') or (DbField = 'EndTime') then
+      WIDBCDS.FieldDefs.Add(DbField, ftDateTime)
+    else
+      WIDBCDS.FieldDefs.Add(DbField, ftString);
     end;
     TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   end;
@@ -1341,6 +1340,7 @@ procedure TCWRmainFrm.EPGGetCellClass(Sender: TObject; ACol,
 { show listings row in color coded for type based on current IDB record }
 begin
   if ARow = 0 then exit;
+  if WIDBCDS.FieldCount < 16 then Exit;
   AClassName := WIDBCDS.Fields[15].AsString
 end;
 
