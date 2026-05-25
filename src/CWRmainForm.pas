@@ -628,17 +628,18 @@ begin
   // Fetch string from local storage if not cwr_epg.csv
   if rs <> CSV_EPG then CSVstring := TLocalStorage.GetValue(rs);
   Log(rs + ' length: ' + IntToStr(Length(CSVstring)));
+//  WSG.LoadFromStrings(rs,',',True);
   if CSVstring > '' then
   begin
     sl := TStringList.Create;
-    ReplyArray := CSVstring.Split([#13#10],TStringSplitOptions.ExcludeEmpty);
+    ReplyArray := CSVstring.Split([#13],TStringSplitOptions.ExcludeEmpty);
     Log('Begin extract ' + IntToStr(Length(ReplyArray)) + ' strings');
-    for Line in ReplyArray do sl.Add(Line);
-//    WSG.BeginUpdate;
+    for Line in ReplyArray do sl.Add(Trim(Line));
+    WSG.BeginUpdate;
     WSG.LoadFromStrings(sl, ',', True);
     // dump empty rows
     while WSG.Cells[0,Pred(WSG.RowCount)] = '' do WSG.RowCount := Pred(WSG.RowCount);
-//    WSG.EndUpdate;
+    WSG.EndUpdate;
   end
   else WSG.RowCount := 0;
   Log(WSG.Name+'.RowCount: ' + WSG.RowCount.ToString);
@@ -646,9 +647,9 @@ begin
   Log('Done loading '+WSG.Name);
   sl.Free; // := nil;
 
-  // DEBUG:  list WSG to console/log file
+//  // DEBUG:  list WSG to console/log file
 //  Log(WSG.Name + ' contents: ');
-//  for i := 0 to Pred(WSG.RowCount) do
+//  for i := 0 to 4 {Pred(WSG.RowCount)} do
 //  begin
 //    Line := EmptyStr;
 //    for j := 0 to Pred(WSG.ColCount) do
@@ -798,7 +799,7 @@ begin
     RecordEnd := StrToDateTime(NewCaptures.Cells[2,ARow]);
     Title := NewCaptures.Cells[3,ARow];
     ProgID := NewCaptures.Cells[6,ARow];
-//    NewCaptures.BeginUpdate;
+    NewCaptures.BeginUpdate;
     {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES,'New Captures', id));
     {$IfDef PAS2JS}await{$EndIf}(FillTable(NewCaptures, CSV_NEWCAPTURES));
     Log('NewCaptures Rows: '+NewCaptures.RowCount.ToString);
@@ -815,7 +816,7 @@ begin
         SaveNewCapturesFile(id);
         Break;
       end;
-//    NewCaptures.EndUpdate;
+    NewCaptures.EndUpdate;
     pnlWaitPls.Hide;
   end;
 end;
@@ -828,6 +829,14 @@ begin
 end;
 
 procedure TCWRmainFrm.LogDataRange;
+  procedure RecLog;
+  var i: Integer;
+  begin
+    for i := 0 to WIDBCDS.FieldCount-1 do
+      log('Fields['+i.ToString+']: '+WIDBCDS.Fields[i].AsString);
+  end;
+
+
 begin
   Log('WIDBCDS.RecordCount:  ' + WIDBCDS.RecordCount.ToString);
   if WIDBCDS.RecordCount > 0 then
@@ -837,9 +846,11 @@ begin
     WIDBCDS.First;
     FirstEndDate := WIDBCDS.{FieldByName('EndTime')}Fields[7].AsDateTime;
     Log('FirstEndDate (UTC) (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(FirstEndDate));
+    RecLog;
     WIDBCDS.Last;
     LastStartDate := WIDBCDS.{FieldByName('StartTime')}Fields[6].AsDateTime;
     Log('LastStartDate (UTC) (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(LastStartDate));
+    RecLog;
     Log('LastStartDate - Now: ' + Double(LastStartDate - TTimeZone.Local.ToUniversalTime(Now)).ToString);
     TotalAvailableDays := Trunc(LastStartDate - TTimeZone.Local.ToUniversalTime(Now));
   end else TotalAvailableDays := 0;
@@ -946,7 +957,7 @@ begin
     sl.Clear;
     sl.Sorted := True;
     sl.Duplicates := dupIgnore;
-//    sl.BeginUpdate;
+    sl.BeginUpdate;
     WIDBCDS.First;
     Log('Looping over Epg for ' + cb.Name + ' Items');
     while not WIDBCDS.Eof do
@@ -964,10 +975,10 @@ begin
       WIDBCDS.Next;
     end;
     Log('====== Finished Epg DB scan');
-//    sl.EndUpdate;
-//    cb.BeginUpdate;
+    sl.EndUpdate;
+    cb.BeginUpdate;
     cb.Items.AddStrings(sl);
-//    cb.EndUpdate;
+    cb.EndUpdate;
     Log('Added ' + cb.Items.Count.ToString + ' to ' + cb.Name);
     // Save list to speed restart
     TLocalStorage.SetValue(cb.Name + 'Items', cb.Items.Text);
@@ -1011,7 +1022,7 @@ begin
   if not pnlWaitPls.Visible then
     {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, 'Short Un') + 'Filtered List'));
   EPG.Hide;
-//  EPG.BeginUpdate;
+  EPG.BeginUpdate;
   EPG.Columns[2].Title := IfThen(ByChannel.Checked, wcbChannels.Text + ' ')
     + IfThen(byType.Checked, '"' + wcbTypes.Text + '" ')
     + IfThen(ByGenre.Checked, wcbGenres.Text + ' ')
@@ -1035,7 +1046,7 @@ begin
   {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
   {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
   WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
-//  EPG.EndUpdate;
+  EPG.EndUpdate;
   EPG.Show;
   pnlWaitPls.Hide;
   EPG.BringToFront;
@@ -1174,8 +1185,8 @@ var
 
 begin
   Log('FillHistoryDisplay called');
-//  Log('historyTable.BeginUpdate');
-//  HistoryTable.BeginUpdate;
+  Log('historyTable.BeginUpdate');
+  HistoryTable.BeginUpdate;
   try
     LoadSG(HistoryTable, CSV_HISTORY);
     HistoryTable.Align := alClient;
@@ -1200,7 +1211,7 @@ begin
     HistoryTableFixedCellClick(Self, 8, 0);  // Change to descending
     while HistoryTable.RowCount > StrToInt(cbNumHistList.Text) do HistoryTable.RemoveRow(Pred(HistoryTable.RowCount));
   finally
-//    HistoryTable.EndUpdate;
+    HistoryTable.EndUpdate;
     Log('FillHistoryDisplay finished');
   end;
 end;
@@ -1228,9 +1239,9 @@ begin
   else SortDir := siAscending;
   Log('HistoryTableFixedCellClick, ACol: '+ACol.ToString+', RowCount: '+HistoryTable.RowCount.ToString);
   i := IfThen(ACol=8, 0, ACol);
-//  HistoryTable.BeginUpdate;
+  HistoryTable.BeginUpdate;
   HistoryTable.Sort(i,SortDir);
-//  HistoryTable.EndUpdate;
+  HistoryTable.EndUpdate;
   Log('HistoryTableFixedCellClick, after sort, RowCount: '+HistoryTable.RowCount.ToString);
   // Remove previous direction flags
   for i := 0 to HistoryTable.ColCount-1 do
@@ -1243,7 +1254,7 @@ end;
 procedure TCWRmainFrm.HistoryTableGetCellClass(Sender: TObject; ACol,
   ARow: Integer; AField: TField; AValue: string; var AClassName: string);
 begin
-  if (ARow > 0) {and (HistoryTable.Cells[8,ARow] > '')} then
+  if (ARow > 0) and (HistoryTable.Cells[8,ARow] > '') then
   begin
     case HistoryTable.Cells[10,ARow][1] of
       'E': AClassName := 'green';         // Regular Episode

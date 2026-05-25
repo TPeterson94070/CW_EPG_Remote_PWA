@@ -937,7 +937,6 @@ object CWRmainFrm: TCWRmainFrm
     Top = 216
   end
   object WIDBCDS: TWebIndexedDbClientDataset
-    Active = True
     IDBDatabaseName = 'CWRDB-Manual-id'
     IDBObjectStoreName = 'epg'
     IDBKeyFieldName = 'id'
