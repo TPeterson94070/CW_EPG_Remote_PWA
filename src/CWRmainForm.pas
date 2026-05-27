@@ -6,7 +6,7 @@
 interface
 
 uses
-//  JSONDataSet,
+  JSONDataSet,
   System.SysUtils, System.Classes, WEBLib.Graphics, WEBLib.Forms, Vcl.StdCtrls,
   WEBLib.StdCtrls, Vcl.Controls, WEBLib.Dialogs, Vcl.Imaging.pngimage,
   WEBLib.ExtCtrls, WEBLib.Controls, Web, JS, WebLib.DB, WEBLib.IndexedDb,
@@ -14,7 +14,7 @@ uses
   System.StrUtils, WEBLib.DBCtrls, WEBLib.FlexControls, WEBLib.WebCtrls,
   WEBLib.REST, Types, WEBLib.Storage, WEBLib.CDS, WEBLib.Auth, WEBLib.JSON,
   WEBLib.WebTools, WEBLib.Google, WEBLib.DataGrid.Common, WEBLib.DataGrid,
-  WEBLib.Buttons, WEBLib.EditAutocomplete;
+  WEBLib.Buttons, WEBLib.EditAutocomplete, libDataGrid;
 
 type
   TGridDrawState = set of (gdSelected, gdFocused, gdFixed, gdRowSelected, gdHotTrack, gdPressed);
@@ -70,6 +70,7 @@ type
     WebTimer1: TWebTimer;
     WebTimer2: TWebTimer;
     WebHTMLForm1: TWebHTMLForm;
+//  procedure ClearFilterLists;
   procedure SetCapturesFormats;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
@@ -107,6 +108,7 @@ type
       AField: TField; var AValue: string);
     procedure wcbGenresFocusOut(Sender: TObject);
     procedure wcbChannelsFocusOut(Sender: TObject);
+//  [async] procedure btnOptOKClick(Sender: TObject);
   [async] procedure btnSchdRefrshClick(Sender: TObject);
   [async] procedure btnRefreshDataClick(Sender: TObject);
     procedure wcbTypesChange(Sender: TObject);
@@ -619,22 +621,20 @@ end;
 
 procedure TCWRmainFrm.FillTable(var WSG: TWebStringGrid; rs: string);
 var
-  i, j: integer;
   Line: string;
-  sl: TStringList;
+  sl: TStrings;
   ReplyArray: TArray<string>;
 begin
   Log('FillTable called for ' + WSG.Name);
   // Fetch string from local storage if not cwr_epg.csv
   if rs <> CSV_EPG then CSVstring := TLocalStorage.GetValue(rs);
   Log(rs + ' length: ' + IntToStr(Length(CSVstring)));
-//  WSG.LoadFromStrings(rs,',',True);
   if CSVstring > '' then
   begin
     sl := TStringList.Create;
-    ReplyArray := CSVstring.Split([#13],TStringSplitOptions.ExcludeEmpty);
+    ReplyArray := CSVstring.Split([#13#10],TStringSplitOptions.ExcludeEmpty);
     Log('Begin extract ' + IntToStr(Length(ReplyArray)) + ' strings');
-    for Line in ReplyArray do sl.Add(Trim(Line));
+    for Line in ReplyArray do sl.Add(Line);
     WSG.BeginUpdate;
     WSG.LoadFromStrings(sl, ',', True);
     // dump empty rows
@@ -643,19 +643,8 @@ begin
   end
   else WSG.RowCount := 0;
   Log(WSG.Name+'.RowCount: ' + WSG.RowCount.ToString);
-
   Log('Done loading '+WSG.Name);
   sl.Free; // := nil;
-
-//  // DEBUG:  list WSG to console/log file
-//  Log(WSG.Name + ' contents: ');
-//  for i := 0 to 4 {Pred(WSG.RowCount)} do
-//  begin
-//    Line := EmptyStr;
-//    for j := 0 to Pred(WSG.ColCount) do
-//      Line := Line + ' ' + WSG.Cells[j,i];
-//    Log(Line);
-//  end;
 
 end;
 
@@ -824,19 +813,12 @@ end;
 procedure TCWRmainFrm.NewCapturesGetCellData(Sender: TObject; ACol,
   ARow: Integer; AField: TField; var AValue: string);
 begin
-  if (ARow > 0) and (AValue > '') then
+  if AValue = '' then exit;
+  if ARow > 0 then
     if ACol in [1,2] then AValue := FormatDateTime('mm/dd HH:nn', StrToDateTime(AValue));
 end;
 
 procedure TCWRmainFrm.LogDataRange;
-  procedure RecLog;
-  var i: Integer;
-  begin
-    for i := 0 to WIDBCDS.FieldCount-1 do
-      log('Fields['+i.ToString+']: '+WIDBCDS.Fields[i].AsString);
-  end;
-
-
 begin
   Log('WIDBCDS.RecordCount:  ' + WIDBCDS.RecordCount.ToString);
   if WIDBCDS.RecordCount > 0 then
@@ -846,11 +828,9 @@ begin
     WIDBCDS.First;
     FirstEndDate := WIDBCDS.{FieldByName('EndTime')}Fields[7].AsDateTime;
     Log('FirstEndDate (UTC) (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(FirstEndDate));
-    RecLog;
     WIDBCDS.Last;
     LastStartDate := WIDBCDS.{FieldByName('StartTime')}Fields[6].AsDateTime;
     Log('LastStartDate (UTC) (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(LastStartDate));
-    RecLog;
     Log('LastStartDate - Now: ' + Double(LastStartDate - TTimeZone.Local.ToUniversalTime(Now)).ToString);
     TotalAvailableDays := Trunc(LastStartDate - TTimeZone.Local.ToUniversalTime(Now));
   end else TotalAvailableDays := 0;
@@ -873,10 +853,10 @@ begin
     // add normal fields
     for DbField in DBFIELDS do
     begin
-    if (DbField = 'StartTime') or (DbField = 'EndTime') then
-      WIDBCDS.FieldDefs.Add(DbField, ftDateTime)
-    else
-      WIDBCDS.FieldDefs.Add(DbField, ftString);
+      if (DbField = 'StartTime') or (DbField = 'EndTime') then
+        WIDBCDS.FieldDefs.Add(DbField, ftDateTime)
+      else
+        WIDBCDS.FieldDefs.Add(DbField, ftString);
     end;
     TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   end;
@@ -1254,7 +1234,7 @@ end;
 procedure TCWRmainFrm.HistoryTableGetCellClass(Sender: TObject; ACol,
   ARow: Integer; AField: TField; AValue: string; var AClassName: string);
 begin
-  if (ARow > 0) and (HistoryTable.Cells[8,ARow] > '') then
+  if (ARow > 0) {and (HistoryTable.Cells[8,ARow] > '')} then
   begin
     case HistoryTable.Cells[10,ARow][1] of
       'E': AClassName := 'green';         // Regular Episode
@@ -1351,8 +1331,8 @@ procedure TCWRmainFrm.EPGGetCellClass(Sender: TObject; ACol,
 { show listings row in color coded for type based on current IDB record }
 begin
   if ARow = 0 then exit;
-  if WIDBCDS.FieldCount < 16 then Exit;
-  AClassName := WIDBCDS.Fields[15].AsString
+  if WIDBCDS.FieldCount < 16 then exit;
+  AClassName := {EPG.Cells[3,ARow]; //} WIDBCDS.FieldByName('Class').AsString; // WIDBCDS.Fields[15].AsString;
 end;
 
 procedure TCWRmainFrm.ShowHistoryDetails(ItemNo: Integer);
@@ -1672,3 +1652,4 @@ begin
 end;
 
 end.
+

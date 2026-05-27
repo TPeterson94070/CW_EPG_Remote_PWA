@@ -251,6 +251,63 @@ object CWRmainFrm: TCWRmainFrm
       end
     end
   end
+  object pnlHistory: TWebPanel
+    Left = 0
+    Top = 50
+    Width = 428
+    Height = 727
+    ElementClassName = 'card'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
+    Align = alClient
+    Caption = 'pnlHistory'
+    ChildOrder = 11
+    ElementBodyClassName = 'card-body'
+    ElementFont = efCSS
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -19
+    Font.Name = 'Arial'
+    Font.Style = []
+    ParentFont = False
+    ShowCaption = False
+    TabOrder = 0
+    object HistoryTable: TWebStringGrid
+      Left = 0
+      Top = 0
+      Width = 428
+      Height = 727
+      Align = alClient
+      Color = clDarkslategray
+      ColCount = 32
+      DefaultColWidth = 61
+      DefaultRowHeight = 23
+      FixedCols = 0
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clGray
+      Font.Height = -19
+      Font.Name = 'Arial'
+      Font.Style = []
+      Options = [goRowSelect, goFixedRowClick]
+      ParentFont = False
+      TabOrder = 0
+      StyleElements = []
+      OnFixedCellClick = HistoryTableFixedCellClick
+      ElementFont = efCSS
+      FixedFont.Charset = DEFAULT_CHARSET
+      FixedFont.Color = clWindowText
+      FixedFont.Height = -21
+      FixedFont.Name = 'Segoe UI'
+      FixedFont.Style = []
+      RangeEdit.Max = 100.000000000000000000
+      RangeEdit.Step = 1.000000000000000000
+      HeightStyle = ssPercent
+      HeightPercent = 100.000000000000000000
+      WidthPercent = 100.000000000000000000
+      OnClickCell = HistoryTableClickCell
+      OnGetCellClass = HistoryTableGetCellClass
+    end
+  end
   object pnlCaptures: TWebPanel
     Left = 0
     Top = 50
@@ -494,63 +551,6 @@ object CWRmainFrm: TCWRmainFrm
       end
     end
   end
-  object pnlHistory: TWebPanel
-    Left = 0
-    Top = 50
-    Width = 428
-    Height = 727
-    ElementClassName = 'card'
-    HeightStyle = ssPercent
-    WidthStyle = ssPercent
-    Align = alClient
-    Caption = 'pnlHistory'
-    ChildOrder = 11
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    Font.Charset = ANSI_CHARSET
-    Font.Color = clBlack
-    Font.Height = -19
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-    ShowCaption = False
-    TabOrder = 0
-    object HistoryTable: TWebStringGrid
-      Left = 0
-      Top = 0
-      Width = 428
-      Height = 727
-      Align = alClient
-      Color = clDarkslategray
-      ColCount = 32
-      DefaultColWidth = 61
-      DefaultRowHeight = 23
-      FixedCols = 0
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clGray
-      Font.Height = -19
-      Font.Name = 'Arial'
-      Font.Style = []
-      Options = [goRowSelect, goFixedRowClick]
-      ParentFont = False
-      TabOrder = 0
-      StyleElements = []
-      OnFixedCellClick = HistoryTableFixedCellClick
-      ElementFont = efCSS
-      FixedFont.Charset = DEFAULT_CHARSET
-      FixedFont.Color = clWindowText
-      FixedFont.Height = -21
-      FixedFont.Name = 'Segoe UI'
-      FixedFont.Style = []
-      RangeEdit.Max = 100.000000000000000000
-      RangeEdit.Step = 1.000000000000000000
-      HeightStyle = ssPercent
-      HeightPercent = 100.000000000000000000
-      WidthPercent = 100.000000000000000000
-      OnClickCell = HistoryTableClickCell
-      OnGetCellClass = HistoryTableGetCellClass
-    end
-  end
   object pnlListings: TWebPanel
     Left = 0
     Top = 50
@@ -636,17 +636,16 @@ object CWRmainFrm: TCWRmainFrm
         end
         item
           AutoFormatDateTime = False
-          DataField = 'id'
-          Editor = geNone
-          Title = 'ID'
+          DataField = 'Class'
+          ImageWidth = 50
+          Title = 'Class'
           TitleElementClassName = 'h6'
-          Width = 0
+          Width = 50
         end
         item
           AutoFormatDateTime = False
-          ElementClassName = 'white'
-          DataField = 'Class'
-          Title = 'Class'
+          DataField = 'id'
+          Title = 'ID'
           TitleElementClassName = 'h6'
           Width = 0
         end>
@@ -675,7 +674,7 @@ object CWRmainFrm: TCWRmainFrm
         75
         155
         300
-        0
+        50
         0)
     end
     object pnlFilterSelection: TWebPanel
