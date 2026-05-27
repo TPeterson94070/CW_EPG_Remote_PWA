@@ -13,8 +13,8 @@ uses
   Vcl.Menus, WEBLib.Menus, WEBLib.ComCtrls, WEBLib.Grids, DB, Vcl.Grids,
   System.StrUtils, WEBLib.DBCtrls, WEBLib.FlexControls, WEBLib.WebCtrls,
   WEBLib.REST, Types, WEBLib.Storage, WEBLib.CDS, WEBLib.Auth, WEBLib.JSON,
-  WEBLib.WebTools, WEBLib.Google, WEBLib.DataGrid.Common, WEBLib.DataGrid,
-  WEBLib.Buttons, WEBLib.EditAutocomplete, libDataGrid, WEBLib.DB.DataGrid;
+  WEBLib.WebTools, WEBLib.Google, WEBLib.DataGrid.Common, libDataGrid, WEBLib.DB.DataGrid, WEBLib.DataGrid,
+  WEBLib.Buttons, WEBLib.EditAutocomplete;
 
 type
   TGridDrawState = set of (gdSelected, gdFocused, gdFixed, gdRowSelected, gdHotTrack, gdPressed);
@@ -120,6 +120,11 @@ type
       AField: TField; var AValue: string);
     [async] procedure CapturesClickCell(Sender: TObject; ACol, ARow: Integer);
   procedure cbNumHistListChange(Sender: TObject);
+  procedure EPGCellClickedEvent(Event: TJSCellClickedEvent);
+  procedure EPGCellDoubleClickedEvent(Event: TJSCellDoubleClickedEvent);
+  procedure EPGCellFocusedEvent(Event: TJSCellFocusedEvent);
+  function EPGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
+  procedure EPGRowSelected(Event: TJSRowSelectedEvent);
     procedure HistoryTableClickCell(Sender: TObject; ACol, ARow: Integer);
     procedure SwipeDownRefresh(Enabled: Boolean);
 private
@@ -510,7 +515,7 @@ begin
   try
     Log('========== CapturesClickCell() called from Row ' + ARow.ToString);
     // Find Capture Item in EPG
-    st := TTimeZone.Local.ToUniversalTime(StrToDateTime(Captures.Cells[3,ARow] + ' ' + Captures.Cells[4,ARow]));
+    st := TTimeZone.Local.ToUniversalTime(StrToDateTimeDef(Captures.Cells[3,ARow] + ' ' + Captures.Cells[4,ARow],Now));
     WIDBCDS.Filtered := False;
     WIDBCDS.Filter := 'Title like ' + QuotedStr(Captures.Cells[8,ARow])
       + ' and StartTime > ' + Double(st-15*OneMinute).ToString   // Allow for generous padding
@@ -802,8 +807,8 @@ begin
   begin
     // Find & delete matching row in Local Storage
     PSIP := NewCaptures.Cells[0,ARow];
-    RecordStart := StrToDateTime(NewCaptures.Cells[1,ARow]);
-    RecordEnd := StrToDateTime(NewCaptures.Cells[2,ARow]);
+    RecordStart := StrToDateTimeDef(NewCaptures.Cells[1,ARow],Now);
+    RecordEnd := StrToDateTimeDef(NewCaptures.Cells[2,ARow],Now);
     Title := NewCaptures.Cells[3,ARow];
     ProgID := NewCaptures.Cells[6,ARow];
     NewCaptures.BeginUpdate;
@@ -816,8 +821,8 @@ begin
         if not SameText(PSIP, NewCaptures.Cells[0,i]) then continue;
         if not SameText(Title, NewCaptures.Cells[3,i]) then continue;
         if not SameText(ProgID, NewCaptures.Cells[6,i]) then continue;
-        if not SameDateTime(RecordStart, StrToDateTime(NewCaptures.Cells[1,i])) then continue;
-        if not SameDateTime(RecordEnd, StrToDateTime(NewCaptures.Cells[2,i])) then continue;
+        if not SameDateTime(RecordStart, StrToDateTimeDef(NewCaptures.Cells[1,i],Now)) then continue;
+        if not SameDateTime(RecordEnd, StrToDateTimeDef(NewCaptures.Cells[2,i],Now)) then continue;
         NewCaptures.RemoveRow(i);
         // Update file
         SaveNewCapturesFile(id);
@@ -832,7 +837,7 @@ procedure TCWRmainFrm.NewCapturesGetCellData(Sender: TObject; ACol,
   ARow: Integer; AField: TField; var AValue: string);
 begin
   if ARow > 0 then
-    if ACol in [1,2] then AValue := FormatDateTime('mm/dd HH:nn', StrToDateTime(AValue));
+    if ACol in [1,2] then AValue := FormatDateTime('mm/dd HH:nn', StrToDateTimeDef(AValue, Now));
 end;
 
 procedure TCWRmainFrm.LogDataRange;
@@ -1107,13 +1112,13 @@ begin
       begin
         if SG = Captures then
         begin
-          st := StrToDateTime(SG.Cells[3,i] + ' ' + SG.Cells[4,i]);
-          et := StrToDateTime(SG.Cells[3,i] + ' ' + SG.Cells[5,i]);
+          st := StrToDateTimeDef(SG.Cells[3,i] + ' ' + SG.Cells[4,i], 0);
+          et := StrToDateTimeDef(SG.Cells[3,i] + ' ' + SG.Cells[5,i], 0);
         end
         else
         begin
-          st := StrToDateTime(SG.Cells[1,i]);
-          et := StrToDateTime(SG.Cells[2,i]);
+          st := StrToDateTimeDef(SG.Cells[1,i], 0);
+          et := StrToDateTimeDef(SG.Cells[2,i], 0);
         end;
         if et < st then et := et + 1;     // wraps midnight
         if et < now then
@@ -1201,8 +1206,8 @@ begin
     end;
     for i := 1 to Pred(HistoryTable.RowCount) do
     begin
-      HistoryTable.Cells[0,i] := Format('%10.3f',[StrToDateTime(HistoryTable.Cells[8,i])]);
-      HistoryTable.Cells[8,i] := FormatDateTime('mm/dd/yy h:nna/p', StrToDateTime(HistoryTable.Cells[8,i]))
+      HistoryTable.Cells[0,i] := Format('%10.3f',[StrToDateTimeDef(HistoryTable.Cells[8,i], 0)]);
+      HistoryTable.Cells[8,i] := FormatDateTime('mm/dd/yy h:nna/p', StrToDateTimeDef(HistoryTable.Cells[8,i],0))
     end;
     HistoryTable.Cells[8,0] := HistoryTable.Cells[8,0] + ' ^'; // Show ascending time sort
     HistoryTableFixedCellClick(Self, 8, 0);  // Change to descending
@@ -1382,7 +1387,7 @@ begin
     DetailsFrm.mmTitle.Text := HistoryTable.Cells[12,ItemNo];
     DetailsFrm.mmSubTitle.Text := HistoryTable.Cells[13,ItemNo];
     DetailsFrm.lb11Time.Caption := HistoryTable.Cells[8,ItemNo]
-       +  FormatDateTime(' -- h:nna/p',StrToDateTime(HistoryTable.Cells[9,ItemNo]));
+       +  FormatDateTime(' -- h:nna/p',StrToDateTimeDef(HistoryTable.Cells[9,ItemNo], 0));
     DetailsFrm.lb10Channel.Caption := HistoryTable.Cells[7,ItemNo];
     x := HistoryTable.Cells[15,ItemNo].Split(['/']);              // Parse 1st-air date
     DetailsFrm.lb09OrigDate.Caption := IfThen(Length(x) = 3,      // Have mm/dd/yyyy
@@ -1484,8 +1489,8 @@ begin
         // So we decode the times from the "Time" field (format: mm/yy HH:nn--HH:nn)
         x := string(DetailsFrm.lb11Time.Caption).Split([' ','--']);
         SchedFrm.lblStartDateValue.Caption := x[0];
-        SchedFrm.tpStartTime.DateTime := StrToDateTime(x[0] + ' ' + x[1]);
-        SchedFrm.tpEndTime.DateTime := StrToDateTime(x[0] + ' ' + x[2]);
+        SchedFrm.tpStartTime.DateTime := StrToDateTimeDef(x[0] + ' ' + x[1], 0);
+        SchedFrm.tpEndTime.DateTime := StrToDateTimeDef(x[0] + ' ' + x[2], 0);
         if SchedFrm.tpEndTime.DateTime < SchedFrm.tpStartTime.DateTime then  // wrapped midnight
           SchedFrm.tpEndTime.DateTime := SchedFrm.tpEndTime.DateTime + 1;
         Log('Finished setting up new form');
@@ -1645,6 +1650,32 @@ begin
       '{"name":"'+ FName + '", "description":"New Captures CSV list"}'));
 
   end;
+end;
+
+procedure TCWRmainFrm.EPGCellClickedEvent(Event: TJSCellClickedEvent);
+begin
+  EPGClickCell(Self, toInteger(Event.Column), toInteger(Event.RowIndex));
+end;
+
+procedure TCWRmainFrm.EPGCellDoubleClickedEvent(Event:
+    TJSCellDoubleClickedEvent);
+begin
+  EPGClickCell(Self, toInteger(Event.Column), toInteger(Event.RowIndex));
+end;
+
+procedure TCWRmainFrm.EPGCellFocusedEvent(Event: TJSCellFocusedEvent);
+begin
+  EPGClickCell(Self, toInteger(Event.Column), toInteger(Event.RowIndex));
+end;
+
+function TCWRmainFrm.EPGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
+begin
+    Result := WIDBCDS.Fields[15].AsString;
+end;
+
+procedure TCWRmainFrm.EPGRowSelected(Event: TJSRowSelectedEvent);
+begin
+  EPGClickCell(Self, 0, toInteger(Event.RowIndex));
 end;
 
 (*

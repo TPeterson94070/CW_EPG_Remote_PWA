@@ -610,32 +610,49 @@ object CWRmainFrm: TCWRmainFrm
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
       Align = alClient
+      Banding.OddRowsColor = clNavy
+      Banding.EvenRowsColor = clNavy
       ColumnDefs = <
         item
           Field = 'PSIP'
           HeaderName = 'Channel'
-          Width = 100
+          ViewModeType = crtText
+          AutoHeight = True
+          AutoHeaderHeight = True
           SelectOptions = <>
         end
         item
           Field = 'Time'
           HeaderName = 'HTPC Local Time'
+          ViewModeType = crtText
+          AutoHeight = True
+          AutoHeaderHeight = True
           SelectOptions = <>
         end
         item
           Field = 'Title'
           HeaderName = 'Program'
+          ViewModeType = crtText
+          AutoHeight = True
+          AutoHeaderHeight = True
           SelectOptions = <>
         end>
+      EditType = retFullRow
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
       Font.Height = -21
       Font.Name = 'Segoe UI'
       Font.Style = []
       MultilevelHeaders = <>
+      RowHeight = 20
       TabOrder = 0
       DataSource = WebDataSource1
       ShowIndicator = True
+      OnGetRowClass = EPGGetRowClass
+      OnRowSelected = EPGRowSelected
+      OnCellClickedEvent = EPGCellClickedEvent
+      OnCellDoubleClickedEvent = EPGCellDoubleClickedEvent
+      OnCellFocusedEvent = EPGCellFocusedEvent
     end
     object pnlFilterSelection: TWebPanel
       Left = 117
@@ -896,7 +913,6 @@ object CWRmainFrm: TCWRmainFrm
     Top = 216
   end
   object WIDBCDS: TWebIndexedDbClientDataset
-    Active = True
     IDBDatabaseName = 'CWRDB-Manual-id'
     IDBObjectStoreName = 'epg'
     IDBKeyFieldName = 'id'
