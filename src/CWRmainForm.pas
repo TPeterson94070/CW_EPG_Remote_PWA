@@ -14,7 +14,7 @@ uses
   System.StrUtils, WEBLib.DBCtrls, WEBLib.FlexControls, WEBLib.WebCtrls,
   WEBLib.REST, Types, WEBLib.Storage, WEBLib.CDS, WEBLib.Auth, WEBLib.JSON,
   WEBLib.WebTools, WEBLib.Google, WEBLib.DataGrid.Common, WEBLib.DataGrid,
-  WEBLib.Buttons, WEBLib.EditAutocomplete;
+  WEBLib.Buttons, WEBLib.EditAutocomplete, libDataGrid, WEBLib.DB.DataGrid;
 
 type
   TGridDrawState = set of (gdSelected, gdFocused, gdFixed, gdRowSelected, gdHotTrack, gdPressed);
@@ -41,7 +41,7 @@ type
   ViewLog1: TMenuItem;
   Settings1: TMenuItem;
   WebGroupBox3: TWebGroupBox;
-  EPG: TWebDBGrid;
+  EPG : TWebDBDataGrid;
   WebDataSource1: TWebDataSource;
   WebButton1: TWebButton;
   WebGridPanel1: TWebGridPanel;
@@ -160,6 +160,12 @@ private
 public
   { Public declarations }
 end;
+type
+  TDataGridBaseHelper = class helper for TDataGridBase
+  public
+    procedure SetCell(ACol, ARow: Integer; const AValue: string);
+    function GetCell(ACol, ARow: Integer): string;
+  end;
 
 var
   CWRmainFrm: TCWRmainFrm;
@@ -193,6 +199,18 @@ const
   CSV_NEWCAPTURES = 'cwr_newcaptures.csv';
   CSV_HISTORY = 'cwr_history.csv';
   TypeClass: array[ProgramTypes] of string = ('green','rose','goldenRod','gray');
+
+{ TDataGridBaseHelper }
+
+procedure TDataGridBaseHelper.SetCell(ACol, ARow: Integer; const AValue: string);
+begin
+  Cells[ARow, ACol] := AValue;
+end;
+
+function TDataGridBaseHelper.GetCell(ACol, ARow: Integer): string;
+begin
+  Result := Cells[ARow, ACol];
+end;
 
 procedure Log(const s: string);
 begin
@@ -894,8 +912,8 @@ begin
   LastID := (FirstID + NUMIDS).ToString;
   WIDBCDS.Filtered := False;
   Log(' WIDBCDS BaseFilter [' + BaseFilter + '] assigned, but not active');
-  EPG.Columns[0].Alignment := taCenter;
-  EPG.Columns[2].Alignment := taLeftJustify;
+//  EPG.ColumnDefs[0].Alignment := taCenter;
+//  EPG.Columns[2].Alignment := taLeftJustify;
   {$IfDef PAS2JS}await{$EndIf}(SetupFilterLists);
   Log('====== SetupEpg finished');
 end;
@@ -978,7 +996,7 @@ begin
   wcbChannels.Hide;
   wcbTypes.Hide;
   weTitleSearch.Hide;
-  EPG.ClearSelection;
+//  EPG.ClearSelection;
   if cb.Items.Count = 0 then Exit;  // Can happen??
 //    SetupFilterLists;
   Log('====== Showing ComboBox');
@@ -1002,12 +1020,12 @@ begin
     {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, 'Short Un') + 'Filtered List'));
   EPG.Hide;
   EPG.BeginUpdate;
-  EPG.Columns[2].Title := IfThen(ByChannel.Checked, wcbChannels.Text + ' ')
+  EPG.ColumnDefs[2].HeaderName := IfThen(ByChannel.Checked, wcbChannels.Text + ' ')
     + IfThen(byType.Checked, '"' + wcbTypes.Text + '" ')
     + IfThen(ByGenre.Checked, wcbGenres.Text + ' ')
     + 'Programs' + IfThen(ByAll.Checked, ' (1st ' + NUMIDS.ToString + ' items)')
     + IfThen(ByTitle.Checked, ' w/Titles:' + QuotedStr('*' + SearchFilter + '*'));
-  EPG.ColWidths[0] := IfThen(ByChannel.Checked, 0, 75);
+  EPG.ColumnDefs[0].Width := IfThen(ByChannel.Checked, 0, 75);
   if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
   WIDBCDS.Filtered := False;
   Log('BaseFilter: ' + BaseFilter);
@@ -1022,7 +1040,7 @@ begin
   Log('Epg Filter: BaseFilter + ' + fltr);
   WIDBCDS.Filter := BaseFilter + fltr;
   WIDBCDS.Filtered := True;
-  {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
+  { $IfDef PAS2JS}EPG.SetSelectedRow(1, True); // := 1;{ $EndIf}
   {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
   WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
   EPG.EndUpdate;
@@ -1214,8 +1232,8 @@ var
   i: Integer;
   SortDir: TGridSortIndicator;
 begin
-  if RightStr(HistoryTable.Cells[ACol,0],1) = '^' then SortDir := siDescending
-  else SortDir := siAscending;
+  if RightStr(HistoryTable.Cells[ACol,0],1) = '^' then SortDir := WEBLib.Grids.siDescending
+  else SortDir := WEBLib.Grids.siAscending;
   Log('HistoryTableFixedCellClick, ACol: '+ACol.ToString+', RowCount: '+HistoryTable.RowCount.ToString);
   i := IfThen(ACol=8, 0, ACol);
   HistoryTable.BeginUpdate;
@@ -1227,7 +1245,7 @@ begin
   if '^v'.Contains(RightStr(HistoryTable.Cells[i,0],1)) then
     HistoryTable.Cells[i,0] := LeftStr(HistoryTable.Cells[i,0],Length(HistoryTable.Cells[i,0])-2);
   // Add current direction flag
-  HistoryTable.Cells[ACol,0] := HistoryTable.Cells[ACol,0] + IfThen(SortDir=siDescending, ' v', ' ^');
+  HistoryTable.Cells[ACol,0] := HistoryTable.Cells[ACol,0] + IfThen(SortDir=WEBLib.Grids.siDescending, ' v', ' ^');
 end;
 
 procedure TCWRmainFrm.HistoryTableGetCellClass(Sender: TObject; ACol,
@@ -1501,7 +1519,7 @@ begin
     // Quit Combobox if still open
     if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
 //    {$IFDEF PAS2JS} await {$ENDIF}
-    (ShowItemDetails(EPG.Cells[3,ARow].ToInteger));
+    (ShowItemDetails(EPG.GetCell(3,ARow).ToInteger));
   finally
 //    EPG.OnClickCell := EPGClickCell;
     Log('========== EPGClickCell() finished');

@@ -68,7 +68,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 727
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -85,13 +85,12 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 1
-    ExplicitHeight = 699
     object WebMemo2: TWebMemo
       AlignWithMargins = True
       Left = 3
       Top = 3
       Width = 422
-      Height = 761
+      Height = 721
       Align = alClient
       Color = clBlack
       ElementClassName = 'white'
@@ -110,14 +109,13 @@ object CWRmainFrm: TCWRmainFrm
       SelStart = 0
       WidthStyle = ssPercent
       WidthPercent = 100.000000000000000000
-      ExplicitHeight = 693
     end
   end
   object pnlWaitPls: TWebPanel
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 727
     ElementClassName = 'container-fluid'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -134,12 +132,11 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 3
-    ExplicitHeight = 699
     object WebGridPanel1: TWebGridPanel
       Left = 0
       Top = 0
       Width = 428
-      Height = 767
+      Height = 727
       WidthStyle = ssPercent
       Align = alClient
       ColumnCollection = <
@@ -177,12 +174,11 @@ object CWRmainFrm: TCWRmainFrm
         item
           Value = 25
         end>
-      ExplicitHeight = 699
       object WebLabel2: TWebLabel
         Left = 2
-        Top = 386
+        Top = 366
         Width = 424
-        Height = 188
+        Height = 178
         Align = alClient
         Alignment = taCenter
         Caption = 'Please Wait...'
@@ -205,9 +201,9 @@ object CWRmainFrm: TCWRmainFrm
       end
       object WebLabel1: TWebLabel
         Left = 2
-        Top = 194
+        Top = 184
         Width = 424
-        Height = 188
+        Height = 178
         Align = alClient
         Alignment = taCenter
         Caption = 'Preparing EPG Listings.'
@@ -233,7 +229,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 2
         Top = 2
         Width = 424
-        Height = 188
+        Height = 178
         Align = alClient
         Caption = '<i class="fa-solid fa-spinner fa-spin"></>'
         Color = clYellow
@@ -259,7 +255,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 727
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -276,12 +272,11 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 0
-    ExplicitHeight = 699
     object HistoryTable: TWebStringGrid
       Left = 0
       Top = 0
       Width = 428
-      Height = 699
+      Height = 727
       Align = alClient
       Color = clDarkslategray
       ColCount = 32
@@ -317,7 +312,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 727
     ElementClassName = 'greenBG'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -335,7 +330,6 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 2
-    ExplicitHeight = 699
     object WebHTMLDiv1: TWebHTMLDiv
       Left = 0
       Top = 266
@@ -487,7 +481,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 727
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -504,7 +498,6 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 4
-    ExplicitHeight = 699
     object WebGroupBox3: TWebGroupBox
       Left = 15
       Top = 16
@@ -562,7 +555,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 727
     ElementClassName = 'greenBG'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -580,10 +573,9 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 5
-    ExplicitHeight = 699
     DesignSize = (
       428
-      767)
+      727)
     object lblEmptyEPG: TWebLabel
       Left = 96
       Top = 58
@@ -610,82 +602,40 @@ object CWRmainFrm: TCWRmainFrm
       WordWrap = True
       WidthPercent = 100.000000000000000000
     end
-    object EPG: TWebDBGrid
+    object EPG: TWebDBDataGrid
       Left = 0
       Top = 0
       Width = 428
-      Height = 767
+      Height = 727
+      HeightPercent = 100.000000000000000000
+      WidthPercent = 100.000000000000000000
       Align = alClient
-      BorderStyle = bsNone
-      Color = clNavy
-      Columns = <
+      ColumnDefs = <
         item
-          Alignment = taCenter
-          AutoFormatDateTime = False
-          DataField = 'PSIP'
-          Title = 'Channel'
-          TitleElementClassName = 'h6'
-          Width = 75
+          Field = 'PSIP'
+          HeaderName = 'Channel'
+          Width = 100
+          SelectOptions = <>
         end
         item
-          Alignment = taCenter
-          AutoFormatDateTime = False
-          DataField = 'Time'
-          Title = 'HTPC Local Time'
-          TitleElementClassName = 'h6'
-          Width = 155
+          Field = 'Time'
+          HeaderName = 'HTPC Local Time'
+          SelectOptions = <>
         end
         item
-          AutoFormatDateTime = False
-          DataField = 'Title'
-          Title = 'Title'
-          TitleElementClassName = 'h6'
-          Width = 300
-        end
-        item
-          AutoFormatDateTime = False
-          DataField = 'id'
-          Editor = geNone
-          Title = 'ID'
-          TitleElementClassName = 'h6'
-          Width = 0
-        end
-        item
-          AutoFormatDateTime = False
-          ElementClassName = 'white'
-          DataField = 'Class'
-          Title = 'Class'
-          TitleElementClassName = 'h6'
-          Width = 0
+          Field = 'Title'
+          HeaderName = 'Program'
+          SelectOptions = <>
         end>
-      DataSource = WebDataSource1
-      ElementFont = efCSS
-      FixedFont.Charset = ANSI_CHARSET
-      FixedFont.Color = clBlack
-      FixedFont.Height = -19
-      FixedFont.Name = 'Arial'
-      FixedFont.Style = []
-      FixedCols = 0
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
       Font.Height = -21
       Font.Name = 'Segoe UI'
       Font.Style = []
-      Options = [goRowSelect]
-      ParentFont = False
+      MultilevelHeaders = <>
       TabOrder = 0
-      HeightPercent = 100.000000000000000000
-      StyleElements = []
-      WidthPercent = 100.000000000000000000
-      OnClickCell = EPGClickCell
-      OnGetCellClass = EPGGetCellClass
-      ExplicitHeight = 699
-      ColWidths = (
-        75
-        155
-        300
-        0
-        0)
+      DataSource = WebDataSource1
+      ShowIndicator = True
     end
     object pnlFilterSelection: TWebPanel
       Left = 117
@@ -726,14 +676,13 @@ object CWRmainFrm: TCWRmainFrm
         ParentFont = False
         WidthStyle = ssAuto
         WidthPercent = 100.000000000000000000
-        ExplicitWidth = 110
       end
       object wcbGenres: TWebComboBox
         AlignWithMargins = True
         Left = 3
         Top = 31
         Width = 144
-        Height = 41
+        Height = 30
         Align = alClient
         ElementClassName = 'form-select'
         ElementFont = efCSS
@@ -758,7 +707,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 3
         Top = 31
         Width = 144
-        Height = 41
+        Height = 30
         Align = alClient
         ElementClassName = 'form-select'
         ElementFont = efCSS
@@ -783,7 +732,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 3
         Top = 31
         Width = 144
-        Height = 41
+        Height = 30
         Align = alClient
         ElementClassName = 'form-select'
         ElementFont = efCSS
@@ -947,6 +896,7 @@ object CWRmainFrm: TCWRmainFrm
     Top = 216
   end
   object WIDBCDS: TWebIndexedDbClientDataset
+    Active = True
     IDBDatabaseName = 'CWRDB-Manual-id'
     IDBObjectStoreName = 'epg'
     IDBKeyFieldName = 'id'
