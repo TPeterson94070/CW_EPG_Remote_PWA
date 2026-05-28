@@ -655,6 +655,7 @@ object CWRmainFrm: TCWRmainFrm
       MultilevelHeaders = <>
       RowHeight = 20
       TabOrder = 0
+      Theming.BuiltInTheme = agThemeMaterial
       Theming.ThemeMode = agDarkMode
       DataSource = WebDataSource1
       ShowIndicator = False
