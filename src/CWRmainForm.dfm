@@ -610,6 +610,7 @@ object CWRmainFrm: TCWRmainFrm
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
       Align = alClient
+      Banding.Enabled = True
       Banding.OddRowsColor = clNavy
       Banding.EvenRowsColor = clNavy
       ColumnDefs = <
@@ -640,6 +641,7 @@ object CWRmainFrm: TCWRmainFrm
         item
           Field = 'Class'
           HeaderName = 'Class'
+          Visible = False
           AutoHeight = True
           AutoHeaderHeight = True
           SelectOptions = <>
@@ -653,8 +655,9 @@ object CWRmainFrm: TCWRmainFrm
       MultilevelHeaders = <>
       RowHeight = 20
       TabOrder = 0
+      Theming.ThemeMode = agDarkMode
       DataSource = WebDataSource1
-      ShowIndicator = True
+      ShowIndicator = False
       OnGetRowClass = EPGGetRowClass
       OnRowSelected = EPGRowSelected
       OnCellClickedEvent = EPGCellClickedEvent
