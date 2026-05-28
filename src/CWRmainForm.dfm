@@ -636,6 +636,13 @@ object CWRmainFrm: TCWRmainFrm
           AutoHeight = True
           AutoHeaderHeight = True
           SelectOptions = <>
+        end
+        item
+          Field = 'Class'
+          HeaderName = 'Class'
+          AutoHeight = True
+          AutoHeaderHeight = True
+          SelectOptions = <>
         end>
       EditType = retFullRow
       Font.Charset = ANSI_CHARSET

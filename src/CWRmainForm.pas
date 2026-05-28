@@ -1670,7 +1670,7 @@ end;
 
 function TCWRmainFrm.EPGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
 begin
-    Result := WIDBCDS.Fields[15].AsString;
+    Result := EPG.Cells[toInteger(Params.RowIndex),3]; // WIDBCDS.Fields[15].AsString;
 end;
 
 procedure TCWRmainFrm.EPGRowSelected(Event: TJSRowSelectedEvent);
