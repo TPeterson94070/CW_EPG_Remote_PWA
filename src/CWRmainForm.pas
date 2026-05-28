@@ -120,13 +120,11 @@ type
       AField: TField; var AValue: string);
     [async] procedure CapturesClickCell(Sender: TObject; ACol, ARow: Integer);
   procedure cbNumHistListChange(Sender: TObject);
-  procedure EPGCellClickedEvent(Event: TJSCellClickedEvent);
-  procedure EPGCellDoubleClickedEvent(Event: TJSCellDoubleClickedEvent);
-  procedure EPGCellFocusedEvent(Event: TJSCellFocusedEvent);
+  [async] procedure EPGCellClickedEvent(Event: TJSCellClickedEvent);
   function EPGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
-  procedure EPGRowSelected(Event: TJSRowSelectedEvent);
     procedure HistoryTableClickCell(Sender: TObject; ACol, ARow: Integer);
     procedure SwipeDownRefresh(Enabled: Boolean);
+  function EPGColumn_PSIPGetCellStyle(Params: TJSCellClassParams): TJSValue;
 private
   { Private declarations }
   [async] procedure LogDataRange;
@@ -309,11 +307,16 @@ begin
     cbNumHistList.ItemIndex := cbNumHistList.Items.IndexOf(TWebLocalStorage.GetValue(NUMHIST));
     WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
   EPG.Hide;
+  EPG.RowHeight := 18;
+  EPG.Font.Height := -17;
+  EPG.ColumnDefs[0].Width := 300;
+  EPG.ColumnDefs[1].Width := 200;
+  EPG.ColumnDefs[2].Width := 300;
+
   {$IfDef PAS2JS}await{$EndIf}(SetupWIDBCDS);
   {$IfDef PAS2JS}await{$EndIf}(RefreshListings);
   Log('========== FormCreate is finished');
 end;
-
 
 procedure TCWRmainFrm.WebTimer1Timer(Sender: TObject);
 // The point of this timer is to disable WIDBCDS controls before the EPG is clicked
@@ -1524,7 +1527,7 @@ begin
     // Quit Combobox if still open
     if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
 //    {$IFDEF PAS2JS} await {$ENDIF}
-    (ShowItemDetails(EPG.GetCell(3,ARow).ToInteger));
+    (ShowItemDetails(EPG.GetCell(4,ARow).ToInteger));
   finally
 //    EPG.OnClickCell := EPGClickCell;
     Log('========== EPGClickCell() finished');
@@ -1652,30 +1655,30 @@ begin
   end;
 end;
 
-procedure TCWRmainFrm.EPGCellClickedEvent(Event: TJSCellClickedEvent);
+function TCWRmainFrm.EPGColumn_PSIPGetCellStyle(Params: TJSCellClassParams): TJSValue;
 begin
-  EPGClickCell(Self, toInteger(Event.Column), toInteger(Event.RowIndex));
-end;
-
-procedure TCWRmainFrm.EPGCellDoubleClickedEvent(Event:
-    TJSCellDoubleClickedEvent);
-begin
-  EPGClickCell(Self, toInteger(Event.Column), toInteger(Event.RowIndex));
-end;
-
-procedure TCWRmainFrm.EPGCellFocusedEvent(Event: TJSCellFocusedEvent);
-begin
-  EPGClickCell(Self, toInteger(Event.Column), toInteger(Event.RowIndex));
+  Result := JS.New(['textAlign', 'right']);
 end;
 
 function TCWRmainFrm.EPGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
 begin
-    Result := EPG.Cells[toInteger(Params.RowIndex),3]; // WIDBCDS.Fields[15].AsString;
+    Result := EPG.Cells[toInteger(Params.RowIndex),3];
 end;
 
-procedure TCWRmainFrm.EPGRowSelected(Event: TJSRowSelectedEvent);
+procedure TCWRmainFrm.EPGCellClickedEvent(Event: TJSCellClickedEvent);
 begin
-  EPGClickCell(Self, 0, toInteger(Event.RowIndex));
+//  EPG.OnRowSelected := nil;
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  try
+    Log('========== EPGCellClickedEvent() called from Row ' + toInteger(Event.RowIndex).ToString);
+    // Quit Combobox if still open
+    if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
+    {$IFDEF PAS2JS} await {$ENDIF}
+    (ShowItemDetails(EPG.GetCell(4,toInteger(Event.RowIndex)).ToInteger));
+  finally
+//    EPG.OnRowSelected := EPGRowSelected;
+    Log('========== EPGCellClickedEvent() finished');
+  end;
 end;
 
 (*

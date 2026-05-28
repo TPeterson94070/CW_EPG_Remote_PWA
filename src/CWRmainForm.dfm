@@ -610,49 +610,63 @@ object CWRmainFrm: TCWRmainFrm
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
       Align = alClient
-      Banding.Enabled = True
       Banding.OddRowsColor = clNavy
       Banding.EvenRowsColor = clNavy
       ColumnDefs = <
         item
           Field = 'PSIP'
           HeaderName = 'Channel'
+          Filter = True
+          EditModeType = cetCombobox
           ViewModeType = crtText
-          AutoHeight = True
-          AutoHeaderHeight = True
-          SelectOptions = <>
+          Sortable = False
+          Width = 200
+          SelectOptions = <
+            item
+              Text = 'KNTV'
+            end
+            item
+              Text = 'KQED'
+            end>
+          OnGetCellStyle = EPGColumn_PSIPGetCellStyle
         end
         item
           Field = 'Time'
           HeaderName = 'HTPC Local Time'
           ViewModeType = crtText
-          AutoHeight = True
-          AutoHeaderHeight = True
           SelectOptions = <>
         end
         item
           Field = 'Title'
           HeaderName = 'Program'
+          Filter = True
           ViewModeType = crtText
-          AutoHeight = True
-          AutoHeaderHeight = True
           SelectOptions = <>
         end
         item
           Field = 'Class'
           HeaderName = 'Class'
           Visible = False
-          AutoHeight = True
-          AutoHeaderHeight = True
+          SelectOptions = <>
+        end
+        item
+          Field = 'id'
+          HeaderName = 'ID'
+          Resizable = False
+          Sortable = False
+          Visible = False
           SelectOptions = <>
         end>
       EditType = retFullRow
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -21
+      Font.Height = -18
       Font.Name = 'Segoe UI'
       Font.Style = []
       MultilevelHeaders = <>
+      Pagination = True
+      PaginationPageSize = 50
+      PaginationPageSizeSelector = '20,50,100'
       RowHeight = 20
       TabOrder = 0
       Theming.BuiltInTheme = agThemeMaterial
@@ -660,10 +674,7 @@ object CWRmainFrm: TCWRmainFrm
       DataSource = WebDataSource1
       ShowIndicator = False
       OnGetRowClass = EPGGetRowClass
-      OnRowSelected = EPGRowSelected
       OnCellClickedEvent = EPGCellClickedEvent
-      OnCellDoubleClickedEvent = EPGCellDoubleClickedEvent
-      OnCellFocusedEvent = EPGCellFocusedEvent
     end
     object pnlFilterSelection: TWebPanel
       Left = 117
