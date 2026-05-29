@@ -14,7 +14,7 @@ uses
   System.StrUtils, WEBLib.DBCtrls, WEBLib.FlexControls, WEBLib.WebCtrls,
   WEBLib.REST, Types, WEBLib.Storage, WEBLib.CDS, WEBLib.Auth, WEBLib.JSON,
   WEBLib.WebTools, WEBLib.Google, WEBLib.DataGrid.Common, libDataGrid, WEBLib.DB.DataGrid, WEBLib.DataGrid,
-  WEBLib.Buttons, WEBLib.EditAutocomplete;
+  WEBLib.Buttons, WEBLib.EditAutocomplete, jsdelphisystem;
 
 type
   TGridDrawState = set of (gdSelected, gdFocused, gdFixed, gdRowSelected, gdHotTrack, gdPressed);
@@ -306,6 +306,7 @@ begin
   if TWebLocalStorage.GetValue(NUMHIST) <> '' then
     cbNumHistList.ItemIndex := cbNumHistList.Items.IndexOf(TWebLocalStorage.GetValue(NUMHIST));
     WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
+  Font.Height := -17;
   EPG.Hide;
   EPG.RowHeight := 18;
   EPG.Font.Height := -17;
@@ -632,14 +633,14 @@ begin
       ja.Free;
       {console.}log('File ID: <' + id + '>');
       if id = '' then exit('');  // Return null string on no ID
-{$IFDef PAS2JS}
+
       rq := TAwait.ExecP<TJSXMLHttpRequest> (WebRESTClient1.httprequest('GET',
         'https://www.googleapis.com/drive/v3/files/'+id+'?alt=media').catch(
         function(AValue: JSValue): JSValue
         begin
-          {console.}log('error here' + TJSONString(AValue).ToString);
+          {console.}log('error here' + toInteger(AValue).ToString);
         end));
-{$ENDIF}
+
       if Assigned(rq) then Result := rq.responseText;
     end;
   end;
@@ -989,6 +990,18 @@ begin
     TLocalStorage.SetValue(cb.Name + 'Items', cb.Items.Text);
   end;
   sl.Free;
+//  EPG.ColumnDefs[0].EditModeType := cetCombobox;
+  EPG.ColumnDefs[0].SelectOptions.Clear;
+  for i := 1 to Pred(wcbChannels.Items.Count) do
+  begin
+    EPG.ColumnDefs[0].SelectOptions.Add;
+    EPG.ColumnDefs[0].SelectOptions[i-1].Text := wcbChannels.Items[i];
+  end;
+  i := EPG.ColumnDefs[0].SelectOptions.Count - 1;
+  TAwait.ExecP<TModalResult> (MessageDlgAsync('Channels combobox list set:'#13
+      + '0: ' + EPG.ColumnDefs[0].SelectOptions.Items[0].Text + #13
+      + i.ToString + ': ' + EPG.ColumnDefs[0].SelectOptions.Items[i].Text + #13
+      + #13,mtInformation, [mbOK]));
   Log('====== Exiting SetupFilterLists');
 end;
 
@@ -1657,7 +1670,7 @@ end;
 
 function TCWRmainFrm.EPGColumn_PSIPGetCellStyle(Params: TJSCellClassParams): TJSValue;
 begin
-  Result := JS.New(['textAlign', 'right']);
+  Result := JS.New(['textAlign', 'center']);
 end;
 
 function TCWRmainFrm.EPGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
@@ -1667,8 +1680,6 @@ end;
 
 procedure TCWRmainFrm.EPGCellClickedEvent(Event: TJSCellClickedEvent);
 begin
-//  EPG.OnRowSelected := nil;
-//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   try
     Log('========== EPGCellClickedEvent() called from Row ' + toInteger(Event.RowIndex).ToString);
     // Quit Combobox if still open
@@ -1676,7 +1687,6 @@ begin
     {$IFDEF PAS2JS} await {$ENDIF}
     (ShowItemDetails(EPG.GetCell(4,toInteger(Event.RowIndex)).ToInteger));
   finally
-//    EPG.OnRowSelected := EPGRowSelected;
     Log('========== EPGCellClickedEvent() finished');
   end;
 end;

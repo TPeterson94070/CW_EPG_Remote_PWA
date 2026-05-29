@@ -564,9 +564,8 @@ object CWRmainFrm: TCWRmainFrm
     ChildOrder = 11
     Color = clBlueviolet
     ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
     Font.Charset = ANSI_CHARSET
-    Font.Color = clBlack
+    Font.Color = clWhite
     Font.Height = -19
     Font.Name = 'Arial'
     Font.Style = []
@@ -620,14 +619,8 @@ object CWRmainFrm: TCWRmainFrm
           EditModeType = cetCombobox
           ViewModeType = crtText
           Sortable = False
-          Width = 200
-          SelectOptions = <
-            item
-              Text = 'KNTV'
-            end
-            item
-              Text = 'KQED'
-            end>
+          SelectOptions = <>
+          LockVisible = False
           OnGetCellStyle = EPGColumn_PSIPGetCellStyle
         end
         item
@@ -664,11 +657,11 @@ object CWRmainFrm: TCWRmainFrm
       Font.Name = 'Segoe UI'
       Font.Style = []
       MultilevelHeaders = <>
-      Pagination = True
       PaginationPageSize = 50
       PaginationPageSizeSelector = '20,50,100'
       RowHeight = 20
       TabOrder = 0
+      Theming.Enabled = False
       Theming.BuiltInTheme = agThemeMaterial
       Theming.ThemeMode = agDarkMode
       DataSource = WebDataSource1
