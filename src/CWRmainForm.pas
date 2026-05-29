@@ -308,11 +308,6 @@ begin
     WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
   Font.Height := -17;
   EPG.Hide;
-  EPG.RowHeight := 18;
-  EPG.Font.Height := -17;
-  EPG.ColumnDefs[0].Width := 300;
-  EPG.ColumnDefs[1].Width := 200;
-  EPG.ColumnDefs[2].Width := 300;
 
   {$IfDef PAS2JS}await{$EndIf}(SetupWIDBCDS);
   {$IfDef PAS2JS}await{$EndIf}(RefreshListings);
@@ -990,18 +985,6 @@ begin
     TLocalStorage.SetValue(cb.Name + 'Items', cb.Items.Text);
   end;
   sl.Free;
-//  EPG.ColumnDefs[0].EditModeType := cetCombobox;
-  EPG.ColumnDefs[0].SelectOptions.Clear;
-  for i := 1 to Pred(wcbChannels.Items.Count) do
-  begin
-    EPG.ColumnDefs[0].SelectOptions.Add;
-    EPG.ColumnDefs[0].SelectOptions[i-1].Text := wcbChannels.Items[i];
-  end;
-  i := EPG.ColumnDefs[0].SelectOptions.Count - 1;
-  TAwait.ExecP<TModalResult> (MessageDlgAsync('Channels combobox list set:'#13
-      + '0: ' + EPG.ColumnDefs[0].SelectOptions.Items[0].Text + #13
-      + i.ToString + ': ' + EPG.ColumnDefs[0].SelectOptions.Items[i].Text + #13
-      + #13,mtInformation, [mbOK]));
   Log('====== Exiting SetupFilterLists');
 end;
 
@@ -1033,6 +1016,7 @@ end;
 
 procedure TCWRmainFrm.SetFilters;
 var
+  i: Integer;
   fltr: string;
 begin
   Log('====== SetFilters called');
@@ -1046,7 +1030,23 @@ begin
     + IfThen(ByGenre.Checked, wcbGenres.Text + ' ')
     + 'Programs' + IfThen(ByAll.Checked, ' (1st ' + NUMIDS.ToString + ' items)')
     + IfThen(ByTitle.Checked, ' w/Titles:' + QuotedStr('*' + SearchFilter + '*'));
-  EPG.ColumnDefs[0].Width := IfThen(ByChannel.Checked, 0, 75);
+  EPG.ColumnDefs[0].Width := IfThen(ByChannel.Checked, 0, 100);
+  EPG.ColumnDefs[1].Width := 140;
+  EPG.ColumnDefs[2].Width := 300;
+  EPG.RowHeight := 18;
+  EPG.Font.Height := -17;
+  EPG.ColumnDefs[0].SelectOptions.Clear;
+  EPG.ColumnDefs[0].EditModeType := cetCombobox;
+  for i := 1 to Pred(wcbChannels.Items.Count) do
+  begin
+    EPG.ColumnDefs[0].SelectOptions.Add;
+    EPG.ColumnDefs[0].SelectOptions[i-1].Text := wcbChannels.Items[i];
+  end;
+//  i := EPG.ColumnDefs[0].SelectOptions.Count - 1;
+//  TAwait.ExecP<TModalResult> (MessageDlgAsync('Channels combobox list set:'#13
+//      + '0: ' + EPG.ColumnDefs[0].SelectOptions.Items[0].Text + #13
+//      + i.ToString + ': ' + EPG.ColumnDefs[0].SelectOptions.Items[i].Text + #13
+//      + #13,mtInformation, [mbOK]));
   if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
   WIDBCDS.Filtered := False;
   Log('BaseFilter: ' + BaseFilter);

@@ -661,7 +661,6 @@ object CWRmainFrm: TCWRmainFrm
       PaginationPageSizeSelector = '20,50,100'
       RowHeight = 20
       TabOrder = 0
-      Theming.Enabled = False
       Theming.BuiltInTheme = agThemeMaterial
       Theming.ThemeMode = agDarkMode
       DataSource = WebDataSource1
