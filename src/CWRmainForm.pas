@@ -14,7 +14,7 @@ uses
   System.StrUtils, WEBLib.DBCtrls, WEBLib.FlexControls, WEBLib.WebCtrls,
   WEBLib.REST, Types, WEBLib.Storage, WEBLib.CDS, WEBLib.Auth, WEBLib.JSON,
   WEBLib.WebTools, WEBLib.Google, WEBLib.DataGrid.Common, libDataGrid, WEBLib.DB.DataGrid, WEBLib.DataGrid,
-  WEBLib.Buttons, WEBLib.EditAutocomplete, jsdelphisystem;
+  WEBLib.Buttons, WEBLib.EditAutocomplete, WEBLib.DataGrid.Options, jsdelphisystem;
 
 type
   TGridDrawState = set of (gdSelected, gdFocused, gdFixed, gdRowSelected, gdHotTrack, gdPressed);
@@ -1018,6 +1018,7 @@ procedure TCWRmainFrm.SetFilters;
 var
   i: Integer;
   fltr: string;
+  item: string;
 begin
   Log('====== SetFilters called');
   ByAll.Checked := not (ByChannel.Checked or ByGenre.Checked or ByTitle.Checked or byType.Checked);
@@ -1035,31 +1036,33 @@ begin
   EPG.ColumnDefs[2].Width := 300;
   EPG.RowHeight := 18;
   EPG.Font.Height := -17;
-  EPG.ColumnDefs[0].SelectOptions.Clear;
-  EPG.ColumnDefs[0].EditModeType := cetCombobox;
-  for i := 1 to Pred(wcbChannels.Items.Count) do
-  begin
-    EPG.ColumnDefs[0].SelectOptions.Add;
-    EPG.ColumnDefs[0].SelectOptions[i-1].Text := wcbChannels.Items[i];
-  end;
-//  i := EPG.ColumnDefs[0].SelectOptions.Count - 1;
-//  TAwait.ExecP<TModalResult> (MessageDlgAsync('Channels combobox list set:'#13
-//      + '0: ' + EPG.ColumnDefs[0].SelectOptions.Items[0].Text + #13
-//      + i.ToString + ': ' + EPG.ColumnDefs[0].SelectOptions.Items[i].Text + #13
-//      + #13,mtInformation, [mbOK]));
   if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
-  WIDBCDS.Filtered := False;
-  Log('BaseFilter: ' + BaseFilter);
-  fltr := '';
-  if ByGenre.Checked then fltr := fltr + ' and genres like '
-    + QuotedStr('%"'+ReplaceStr(wcbGenres.Text, '/', '_')+'"%');
-  if ByTitle.Checked then fltr := fltr + ' and Title like ' + QuotedStr('%' + SearchFilter + '%');
-  if ByChannel.Checked then fltr := fltr + ' and PSIP = ' + QuotedStr(wcbChannels.Text);
-  if ByType.Checked then fltr := fltr + ' and Class = '
-    + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
-  if fltr = '' then fltr := ' and ID < ' + LastID;
-  Log('Epg Filter: BaseFilter + ' + fltr);
-  WIDBCDS.Filter := BaseFilter + fltr;
+//  WIDBCDS.Filtered := False;
+//  Log('BaseFilter: ' + BaseFilter);
+//  fltr := '';
+  if ByGenre.Checked then
+//   fltr := fltr + ' and genres like '
+//    + QuotedStr('%"'+ReplaceStr(wcbGenres.Text, '/', '_')+'"%');
+   EPG.ColumnDefs.FindColumn('genres').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, ReplaceStr(wcbGenres.Text, '/', '_'));
+
+//  if ByTitle.Checked then
+//    fltr := fltr + ' and Title like ' + QuotedStr('%' + SearchFilter + '%');
+//   EPG.ColumnDefs.FindColumn('Title').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, SearchFilter);
+
+  if ByChannel.Checked then
+//    fltr := fltr + ' and PSIP = ' + QuotedStr(wcbChannels.Text);
+   begin
+    EPG.ColumnDefs[0]{.FindColumn('PSIP')}.ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foEqual, wcbChannels.Text);
+//    EPG.ColumnDefs.FindColumn('PSIP').Filter := True;
+   end;
+//  if ByType.Checked then
+//    fltr := fltr + ' and Class = '
+//      + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
+//    EPG.ColumnDefs.FindColumn('genres').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
+
+//  if fltr = '' then fltr := ' and ID < ' + LastID;
+//  Log('Epg Filter: BaseFilter + ' + fltr);
+//  WIDBCDS.Filter := BaseFilter + fltr;
   WIDBCDS.Filtered := True;
   { $IfDef PAS2JS}EPG.SetSelectedRow(1, True); // := 1;{ $EndIf}
   {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
@@ -1068,6 +1071,7 @@ begin
   EPG.Show;
   pnlWaitPls.Hide;
   EPG.BringToFront;
+//  EPG.EnsureLastRowVisible;
   if fltr>'' then pnlFilterSelection.BringToFront;
   Log('====== SetFilters finished');
 end;

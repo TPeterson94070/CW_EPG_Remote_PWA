@@ -616,9 +616,8 @@ object CWRmainFrm: TCWRmainFrm
           Field = 'PSIP'
           HeaderName = 'Channel'
           Filter = True
-          EditModeType = cetCombobox
+          SearchFilter = True
           ViewModeType = crtText
-          Sortable = False
           SelectOptions = <>
           LockVisible = False
           OnGetCellStyle = EPGColumn_PSIPGetCellStyle
