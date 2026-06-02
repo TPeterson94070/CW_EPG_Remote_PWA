@@ -91,7 +91,7 @@ type
   [async] procedure ViewLog1Click(Sender: TObject);
   [async] procedure Settings1Click(Sender: TObject);
   [async]
-  procedure EPGClickCell(Sender: TObject; ACol, ARow: Integer);
+//  procedure EPGClickCell(Sender: TObject; ACol, ARow: Integer);
   procedure HistoryTableGetCellClass(Sender: TObject; ACol, ARow: Integer;
     AField: TField; AValue: string; var AClassName: string);
   [async] procedure ByGenreClick(Sender: TObject);
@@ -752,16 +752,17 @@ begin
             WIDBCDS.Fields[i].Value := BufferGrid.Cells[i-1,j]
           else  // Keep UTC StartTime/EndTime strings
             if TryStrToDateTime(BufferGrid.Cells[i-1,j],t) then
-              WIDBCDS.Fields[i].Value := t;
-        Text := WIDBCDS.Fields[8].AsString; // i.e. ProgramID
+              WIDBCDS.Fields[i].Value := t
+            else WIDBCDS.Fields[i].Value := 0;
+        Text := {WIDBCDS.Fields[8].AsString}BufferGrid.Cells[7,j]; // i.e. ProgramID
         if Text.StartsWith('MV') then  // Movie item
           AColor := {'goldenRod'}TypeClass[Movie]
         else if Text.StartsWith('SH') then  // Generic item
-          AColor := IfThen(WIDBCDS.Fields[14].AsString.Contains('"News"'),
+          AColor := IfThen({WIDBCDS.Fields[14].AsString}BufferGrid.Cells[13,j].Contains('"News"'),
             {'green'}TypeClass[New],  // News genre assumed "new"
             {'gray'}TypeClass[Other])   // Otherwise generic episode is "unknown time"
         else
-          AColor := IfThen(WIDBCDS.Fields[10].AsString <> '',
+          AColor := IfThen({WIDBCDS.Fields[10].AsString}BufferGrid.Cells[9,j] <> '',
             {'green'}TypeClass[New],  // Non-generic episode declared "new"
             {'rose'}TypeClass[Rerun]);  // Otherwise "rerun"
         WIDBCDS.Fields[15].Value := AColor;
@@ -1026,6 +1027,7 @@ begin
     {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, 'Short Un') + 'Filtered List'));
   EPG.Hide;
   EPG.BeginUpdate;
+  EPG.ColumnDefs.ClearFilters;
   EPG.ColumnDefs[2].HeaderName := IfThen(ByChannel.Checked, wcbChannels.Text + ' ')
     + IfThen(byType.Checked, '"' + wcbTypes.Text + '" ')
     + IfThen(ByGenre.Checked, wcbGenres.Text + ' ')
@@ -1052,7 +1054,7 @@ begin
   if ByChannel.Checked then
 //    fltr := fltr + ' and PSIP = ' + QuotedStr(wcbChannels.Text);
    begin
-    EPG.ColumnDefs[0]{.FindColumn('PSIP')}.ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foEqual, wcbChannels.Text);
+    EPG.ColumnDefs.FindColumn('PSIP').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foEqual, wcbChannels.Text);
 //    EPG.ColumnDefs.FindColumn('PSIP').Filter := True;
    end;
 //  if ByType.Checked then
@@ -1471,7 +1473,7 @@ begin
     x := WIDBCDS.Fields[9].AsString.Split(['-']);                 // Parse 1st-air date
     DetailsFrm.lb09OrigDate.Caption := IfThen(Length(x) = 3,      // Have 1st-air date
       '1st Aired ' + x[1] + '/' + x[2] + '/' + RightStr(x[0],2),  // Use 1st-air date
-      IfThen(WIDBCDS.Fields[13].AsString > '',                    // Check Movie year
+      IfThen(WIDBCDS.Fields[8].AsString.StartsWith('MV'),         // Check Movie year
       'Movie Yr ' + WIDBCDS.Fields[13].AsString,''));             // Use Movie year or nil
     DetailsFrm.lb02New.Show;
     SetLabelStyle(DetailsFrm.lb02New, WIDBCDS.Fields[10].AsString <> '');
@@ -1534,22 +1536,22 @@ begin
   end;
 end;
 
-procedure TCWRmainFrm.EPGClickCell(Sender: TObject; ACol, ARow: Integer);
-
-begin
-//  EPG.OnClickCell := nil;
-//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  try
-    Log('========== EPGClickCell() called from Row ' + ARow.ToString);
-    // Quit Combobox if still open
-    if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
-//    {$IFDEF PAS2JS} await {$ENDIF}
-    (ShowItemDetails(EPG.GetCell(4,ARow).ToInteger));
-  finally
-//    EPG.OnClickCell := EPGClickCell;
-    Log('========== EPGClickCell() finished');
-  end;
-end;
+//procedure TCWRmainFrm.EPGClickCell(Sender: TObject; ACol, ARow: Integer);
+//
+//begin
+////  EPG.OnClickCell := nil;
+////  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//  try
+//    Log('========== EPGClickCell() called from Row ' + ARow.ToString);
+//    // Quit Combobox if still open
+//    if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
+////    {$IFDEF PAS2JS} await {$ENDIF}
+//    (ShowItemDetails(EPG.GetCell(4,ARow).ToInteger));
+//  finally
+////    EPG.OnClickCell := EPGClickCell;
+//    Log('========== EPGClickCell() finished');
+//  end;
+//end;
 
 procedure TCWRmainFrm.FetchCapReservations;  // Fetch CW_EPG-saved file
 
