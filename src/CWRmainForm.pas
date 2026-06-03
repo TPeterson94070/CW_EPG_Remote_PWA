@@ -678,7 +678,7 @@ begin
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing ' + Title));
   if application.IsOnline then
   begin
-    try
+//    try
       Log('Requesting: ' + TableFile);
       try
         Reply := TAwait.ExecP<string>(GetGoogleDriveFile(TableFile, id));
@@ -703,9 +703,9 @@ begin
           TAwait.ExecP<TModalResult> (MessageDlgAsync('Cannot refresh EPG data while CW_EPG_Remote is offline', mtInformation, [mbOK]));
         end;
       end;
-    finally
-      Log('ReFreshCSV in finally section');
-    end;
+//    finally
+//      Log('ReFreshCSV in finally section');
+//    end;
   end
   else
   begin
@@ -1045,8 +1045,10 @@ begin
   if ByGenre.Checked then
 //   fltr := fltr + ' and genres like '
 //    + QuotedStr('%"'+ReplaceStr(wcbGenres.Text, '/', '_')+'"%');
-   EPG.ColumnDefs.FindColumn('genres').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, ReplaceStr(wcbGenres.Text, '/', '_'));
-
+  begin
+    EPG.ColumnDefs[0].Filter := True;
+    EPG.ColumnDefs[0]{.FindColumn('genres')}.ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, ReplaceStr(wcbGenres.Text, '/', '_'));
+  end;
 //  if ByTitle.Checked then
 //    fltr := fltr + ' and Title like ' + QuotedStr('%' + SearchFilter + '%');
 //   EPG.ColumnDefs.FindColumn('Title').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, SearchFilter);
@@ -1054,7 +1056,7 @@ begin
   if ByChannel.Checked then
 //    fltr := fltr + ' and PSIP = ' + QuotedStr(wcbChannels.Text);
    begin
-    EPG.ColumnDefs.FindColumn('PSIP').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foEqual, wcbChannels.Text);
+    EPG.ColumnDefs.FindColumn('PSIP').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foEqual, Trim(wcbChannels.Text));
 //    EPG.ColumnDefs.FindColumn('PSIP').Filter := True;
    end;
 //  if ByType.Checked then
@@ -1066,7 +1068,7 @@ begin
 //  Log('Epg Filter: BaseFilter + ' + fltr);
 //  WIDBCDS.Filter := BaseFilter + fltr;
   WIDBCDS.Filtered := True;
-  { $IfDef PAS2JS}EPG.SetSelectedRow(1, True); // := 1;{ $EndIf}
+//  { $IfDef PAS2JS}EPG.SetSelectedRow(1, True); // := 1;{ $EndIf}
   {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
   WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
   EPG.EndUpdate;
@@ -1397,14 +1399,13 @@ begin
       on E:Exception do
       Log('Exception from DetailsFrm.Load: ' + E.Message);
     end;
-    {$IfDef PAS2JS}DetailsFrm.Color := clWheat;
-    DetailsFrm.mmTitle.Color := clChocolate;
-    DetailsFrm.mmSubTitle.Color := clChocolate;
-    DetailsFrm.mmDescription.Color := clChocolate;
-    DetailsFrm.lblTitle.Color := clWheat;
-    DetailsFrm.lblSubTitle.Color := clWheat;
-    DetailsFrm.lblDescription.Color := clWheat;
-    {$EndIf}
+    DetailsFrm.Color := clWebWheat;
+    DetailsFrm.mmTitle.Color := clWebChocolate;
+    DetailsFrm.mmSubTitle.Color := clWebChocolate;
+    DetailsFrm.mmDescription.Color := clWebChocolate;
+    DetailsFrm.lblTitle.Color := clWebWheat;
+    DetailsFrm.lblSubTitle.Color := clWebWheat;
+    DetailsFrm.lblDescription.Color := clWebWheat;
     // init controls after loading
     DetailsFrm.mmTitle.Text := HistoryTable.Cells[12,ItemNo];
     DetailsFrm.mmSubTitle.Text := HistoryTable.Cells[13,ItemNo];
