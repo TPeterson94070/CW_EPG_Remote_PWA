@@ -300,7 +300,7 @@ object CWRmainFrm: TCWRmainFrm
       ChildOrder = 2
       ElementFont = efCSS
       Role = ''
-      object NewCaptures: TWebStringGrid
+      object NewCapturesWSG: TWebStringGrid
         Left = 0
         Top = 0
         Width = 428
@@ -331,8 +331,8 @@ object CWRmainFrm: TCWRmainFrm
         RangeEdit.Step = 1.000000000000000000
         HeightPercent = 100.000000000000000000
         WidthPercent = 100.000000000000000000
-        OnClickCell = NewCapturesClickCell
-        OnGetCellData = NewCapturesGetCellData
+        OnClickCell = NewCapturesWSGClickCell
+        OnGetCellData = NewCapturesWSGGetCellData
       end
     end
     object WebHTMLDiv3: TWebHTMLDiv
@@ -346,7 +346,7 @@ object CWRmainFrm: TCWRmainFrm
       ChildOrder = 2
       ElementFont = efCSS
       Role = ''
-      object Captures: TWebStringGrid
+      object CapturesWSG: TWebStringGrid
         Left = 0
         Top = 0
         Width = 428
@@ -377,8 +377,8 @@ object CWRmainFrm: TCWRmainFrm
         HeightStyle = ssPercent
         HeightPercent = 100.000000000000000000
         WidthPercent = 100.000000000000000000
-        OnClickCell = CapturesClickCell
-        OnGetCellData = CapturesGetCellData
+        OnClickCell = CapturesWSGClickCell
+        OnGetCellData = CapturesWSGGetCellData
       end
     end
     object WebHTMLDiv4: TWebHTMLDiv
@@ -806,7 +806,7 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 0
-    object HistoryTable: TWebStringGrid
+    object HistoryWSG: TWebStringGrid
       Left = 0
       Top = 0
       Width = 428
@@ -826,7 +826,7 @@ object CWRmainFrm: TCWRmainFrm
       ParentFont = False
       TabOrder = 0
       StyleElements = []
-      OnFixedCellClick = HistoryTableFixedCellClick
+      OnFixedCellClick = HistoryWSGFixedCellClick
       ElementFont = efCSS
       FixedFont.Charset = DEFAULT_CHARSET
       FixedFont.Color = clWindowText
@@ -838,8 +838,8 @@ object CWRmainFrm: TCWRmainFrm
       HeightStyle = ssPercent
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
-      OnClickCell = HistoryTableClickCell
-      OnGetCellClass = HistoryTableGetCellClass
+      OnClickCell = HistoryWSGClickCell
+      OnGetCellClass = HistoryWSGGetCellClass
     end
     object HistoryWDG: TWebDataGrid
       Left = 0

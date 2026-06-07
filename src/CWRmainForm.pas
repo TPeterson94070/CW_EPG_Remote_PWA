@@ -20,8 +20,8 @@ type
   TGridDrawState = set of (gdSelected, gdFocused, gdFixed, gdRowSelected, gdHotTrack, gdPressed);
   TCWRmainFrm = class(TWebForm)
   WebMemo2: TWebMemo;
-  Captures: TWebStringGrid;
-  HistoryTable: TWebStringGrid;
+  CapturesWSG: TWebStringGrid;
+  HistoryWSG: TWebStringGrid;
   BufferGrid: TWebStringGrid;
   pnlCaptures: TWebPanel;
   pnlHistory: TWebPanel;
@@ -30,7 +30,7 @@ type
   pnlWaitPls: TWebPanel;
   WebRESTClient1: TWebRESTClient;
   pnlListings: TWebPanel;
-  NewCaptures: TWebStringGrid;
+  NewCapturesWSG: TWebStringGrid;
   pnlMenu: TWebPanel;        // Container for MainMenu
   WebMainMenu1: TWebMainMenu;
   Scheduled: TMenuItem;
@@ -82,7 +82,7 @@ type
   [async] procedure tbCapturesShow;
   procedure AllCapsGridGetCellData(Sender: TObject; ACol, ARow: Integer;
     AField: TField; var AValue: string);
-  procedure HistoryTableFixedCellClick(Sender: TObject; ACol, ARow: Integer);
+  procedure HistoryWSGFixedCellClick(Sender: TObject; ACol, ARow: Integer);
   [async]
   procedure UpdateHistory(Sender: TObject);
   [async]
@@ -93,7 +93,7 @@ type
   [async] procedure Settings1Click(Sender: TObject);
   [async]
 //  procedure EPGClickCell(Sender: TObject; ACol, ARow: Integer);
-  procedure HistoryTableGetCellClass(Sender: TObject; ACol, ARow: Integer;
+  procedure HistoryWSGGetCellClass(Sender: TObject; ACol, ARow: Integer;
     AField: TField; AValue: string; var AClassName: string);
   [async] procedure ByGenreClick(Sender: TObject);
   [async] procedure wcbGenresChange(Sender: TObject);
@@ -102,10 +102,10 @@ type
   [async] procedure ByAllClick(Sender: TObject);
   [async] procedure ByChannelClick(Sender: TObject);
   [async] procedure wcbChannelsChange(Sender: TObject);
-  [async] procedure NewCapturesClickCell(Sender: TObject; ACol, ARow: Integer);
+  [async] procedure NewCapturesWSGClickCell(Sender: TObject; ACol, ARow: Integer);
   [async] procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
       errorName, errorMsg: string);
-    procedure NewCapturesGetCellData(Sender: TObject; ACol, ARow: Integer;
+    procedure NewCapturesWSGGetCellData(Sender: TObject; ACol, ARow: Integer;
       AField: TField; var AValue: string);
     procedure wcbGenresFocusOut(Sender: TObject);
     procedure wcbChannelsFocusOut(Sender: TObject);
@@ -117,13 +117,13 @@ type
     procedure weTitleSearchChange(Sender: TObject);
     procedure WebTimer1Timer(Sender: TObject);
     [async] procedure WebTimer2Timer(Sender: TObject);
-    procedure CapturesGetCellData(Sender: TObject; ACol, ARow: Integer;
+    procedure CapturesWSGGetCellData(Sender: TObject; ACol, ARow: Integer;
       AField: TField; var AValue: string);
-    [async] procedure CapturesClickCell(Sender: TObject; ACol, ARow: Integer);
+    [async] procedure CapturesWSGClickCell(Sender: TObject; ACol, ARow: Integer);
   procedure cbNumHistListChange(Sender: TObject);
   [async] procedure EPGCellClickedEvent(Event: TJSCellClickedEvent);
   function EPGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
-    procedure HistoryTableClickCell(Sender: TObject; ACol, ARow: Integer);
+    procedure HistoryWSGClickCell(Sender: TObject; ACol, ARow: Integer);
     procedure SwipeDownRefresh(Enabled: Boolean);
   function EPGColumn_PSIPGetCellStyle(Params: TJSCellClassParams): TJSValue;
   function HistoryWDGColumn_column8ValueFormatter(Value: TJSValue): TJSValue;
@@ -136,7 +136,7 @@ private
   procedure FetchCapReservations;
   [async]
   procedure FetchNewCapRequests;
-  [async] procedure FillTable(var WSG: TWebStringGrid; rs: string);
+  [async] procedure FillWSG(var WSG: TWebStringGrid; rs: string);
   procedure FillWDG(var WDG: TWebDataGrid; rs: string);
   [async]
   procedure RefreshCSV(TableFile, Title: string; var id: string);
@@ -340,7 +340,7 @@ begin
   Log('########### "Refresh Data" clicked ###########');
   WIDBCDS.Close;
   {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_EPG,'EPG', id));
-  {$IfDef PAS2JS}await{$EndIf}(FillTable(BufferGrid, CSV_EPG));
+  {$IfDef PAS2JS}await{$EndIf}(FillWSG(BufferGrid, CSV_EPG));
   if BufferGrid.RowCount > 0 then
   begin
     Log('********* Starting timer');
@@ -394,8 +394,8 @@ procedure TCWRmainFrm.btnSchdRefrshClick(Sender: TObject);
 begin
   {$IfDef PAS2JS}await{$EndIf}(FetchCapReservations);
   {$IfDef PAS2JS}await{$EndIf}(FetchNewCapRequests);
-  {$IfDef PAS2JS}await{$EndIf}(LoadSG(Captures, CSV_CAPTURES));
-  {$IfDef PAS2JS}await{$EndIf}(LoadSG(NewCaptures, CSV_NEWCAPTURES));
+  {$IfDef PAS2JS}await{$EndIf}(LoadSG(CapturesWSG, CSV_CAPTURES));
+  {$IfDef PAS2JS}await{$EndIf}(LoadSG(NewCapturesWSG, CSV_NEWCAPTURES));
   SetCapturesFormats;
   pnlWaitPls.Hide;
 end;
@@ -502,23 +502,23 @@ begin
   end;
 end;
 
-procedure TCWRmainFrm.CapturesClickCell(Sender: TObject; ACol, ARow: Integer);
+procedure TCWRmainFrm.CapturesWSGClickCell(Sender: TObject; ACol, ARow: Integer);
 var
   st: TDateTime;
   SaveFilter: string;
   SaveFilterState: Boolean;
 
 begin
-  Captures.OnClickCell := nil;
+  CapturesWSG.OnClickCell := nil;
   {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   SaveFilter := WIDBCDS.Filter;
   SaveFilterState := WIDBCDS.Filtered;
   try
     Log('========== CapturesClickCell() called from Row ' + ARow.ToString);
     // Find Capture Item in EPG
-    st := TTimeZone.Local.ToUniversalTime(StrToDateTimeDef(Captures.Cells[3,ARow] + ' ' + Captures.Cells[4,ARow],Now));
+    st := TTimeZone.Local.ToUniversalTime(StrToDateTimeDef(CapturesWSG.Cells[3,ARow] + ' ' + CapturesWSG.Cells[4,ARow],Now));
     WIDBCDS.Filtered := False;
-    WIDBCDS.Filter := 'Title like ' + QuotedStr(Captures.Cells[8,ARow])
+    WIDBCDS.Filter := 'Title like ' + QuotedStr(CapturesWSG.Cells[8,ARow])
       + ' and StartTime > ' + Double(st-15*OneMinute).ToString   // Allow for generous padding
       + ' and StartTime < ' + Double(st+OneMinute).ToString;
     WIDBCDS.Filtered := True;
@@ -528,12 +528,12 @@ begin
     WIDBCDS.Filtered := False;
     WIDBCDS.Filter := SaveFilter;
     WIDBCDS.Filtered := SaveFilterState;
-    Captures.OnClickCell := CapturesClickCell;
+    CapturesWSG.OnClickCell := CapturesClickCell;
     Log('========== EPGClickCell() finished');
   end;
 end;
 
-procedure TCWRmainFrm.CapturesGetCellData(Sender: TObject; ACol, ARow: Integer;
+procedure TCWRmainFrm.CapturesWSGGetCellData(Sender: TObject; ACol, ARow: Integer;
   AField: TField; var AValue: string);
 begin
   if ARow = 0 then Exit;
@@ -685,17 +685,17 @@ begin
     WDG.Show;
   end;
   Log(WDG.Name+'.RowCount: ' + WDG.RowData.Length.ToString);
-  Log('Done loading '+WDG.Name);
+  Log('Done loading ' + WDG.Name);
 
 end;
 
-procedure TCWRmainFrm.FillTable(var WSG: TWebStringGrid; rs: string);
+procedure TCWRmainFrm.FillWSG(var WSG: TWebStringGrid; rs: string);
 var
   Line: string;
   sl: TStrings;
   ReplyArray: TArray<string>;
 begin
-  Log('FillTable called for ' + WSG.Name);
+  Log('FillWSG called for ' + WSG.Name);
   // Fetch string from local storage if not cwr_epg.csv
   if rs <> CSV_EPG then CSVstring := TLocalStorage.GetValue(rs);
   Log(rs + ' length: ' + IntToStr(Length(CSVstring)));
@@ -842,7 +842,7 @@ begin
   end;
 end;
 
-procedure TCWRmainFrm.NewCapturesClickCell(Sender: TObject; ACol,
+procedure TCWRmainFrm.NewCapturesWSGClickCell(Sender: TObject; ACol,
   ARow: Integer);
 var
   PSIP, Title, ProgID, id: string;
@@ -854,34 +854,34 @@ begin
     ,mtConfirmation, [mbYes,mbNo])) = mrYes then
   begin
     // Find & delete matching row in Local Storage
-    PSIP := NewCaptures.Cells[0,ARow];
-    RecordStart := StrToDateTimeDef(NewCaptures.Cells[1,ARow],Now);
-    RecordEnd := StrToDateTimeDef(NewCaptures.Cells[2,ARow],Now);
-    Title := NewCaptures.Cells[3,ARow];
-    ProgID := NewCaptures.Cells[6,ARow];
-    NewCaptures.BeginUpdate;
-    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES,'New Captures', id));
-    {$IfDef PAS2JS}await{$EndIf}(FillTable(NewCaptures, CSV_NEWCAPTURES));
-    Log('NewCaptures Rows: '+NewCaptures.RowCount.ToString);
-    if NewCaptures.RowCount > 1 then // file exists, find matching row
-      for i := 1 to Pred(NewCaptures.RowCount) do
+    PSIP := NewCapturesWSG.Cells[0,ARow];
+    RecordStart := StrToDateTimeDef(NewCapturesWSG.Cells[1,ARow],Now);
+    RecordEnd := StrToDateTimeDef(NewCapturesWSG.Cells[2,ARow],Now);
+    Title := NewCapturesWSG.Cells[3,ARow];
+    ProgID := NewCapturesWSG.Cells[6,ARow];
+    NewCapturesWSG.BeginUpdate;
+    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES,'New CapturesWSG', id));
+    {$IfDef PAS2JS}await{$EndIf}(FillWSG(NewCapturesWSG, CSV_NEWCAPTURES));
+    Log('NewCapturesWSG Rows: '+NewCapturesWSG.RowCount.ToString);
+    if NewCapturesWSG.RowCount > 1 then // file exists, find matching row
+      for i := 1 to Pred(NewCapturesWSG.RowCount) do
       begin
-        if not SameText(PSIP, NewCaptures.Cells[0,i]) then continue;
-        if not SameText(Title, NewCaptures.Cells[3,i]) then continue;
-        if not SameText(ProgID, NewCaptures.Cells[6,i]) then continue;
-        if not SameDateTime(RecordStart, StrToDateTimeDef(NewCaptures.Cells[1,i],Now)) then continue;
-        if not SameDateTime(RecordEnd, StrToDateTimeDef(NewCaptures.Cells[2,i],Now)) then continue;
-        NewCaptures.RemoveRow(i);
+        if not SameText(PSIP, NewCapturesWSG.Cells[0,i]) then continue;
+        if not SameText(Title, NewCapturesWSG.Cells[3,i]) then continue;
+        if not SameText(ProgID, NewCapturesWSG.Cells[6,i]) then continue;
+        if not SameDateTime(RecordStart, StrToDateTimeDef(NewCapturesWSG.Cells[1,i],Now)) then continue;
+        if not SameDateTime(RecordEnd, StrToDateTimeDef(NewCapturesWSG.Cells[2,i],Now)) then continue;
+        NewCapturesWSG.RemoveRow(i);
         // Update file
         SaveNewCapturesFile(id);
         Break;
       end;
-    NewCaptures.EndUpdate;
+    NewCapturesWSG.EndUpdate;
     pnlWaitPls.Hide;
   end;
 end;
 
-procedure TCWRmainFrm.NewCapturesGetCellData(Sender: TObject; ACol,
+procedure TCWRmainFrm.NewCapturesWSGGetCellData(Sender: TObject; ACol,
   ARow: Integer; AField: TField; var AValue: string);
 begin
   if ARow > 0 then
@@ -1175,14 +1175,14 @@ procedure TCWRmainFrm.LoadSG(var SG: TWebStringGrid; LSName: string);
 var i: Integer;
     st, et: TDateTime;
 begin
-  {$IfDef PAS2JS}await{$EndIf}(FillTable(SG, LSName));
-  if (SG.RowCount > 1) and (SG <> HistoryTable) then  // have stored value(s)
+  {$IfDef PAS2JS}await{$EndIf}(FillWSG(SG, LSName));
+  if (SG.RowCount > 1) and (SG <> HistoryWSG) then  // have stored value(s)
   begin
     // Discard stale entries (End DateTime < now)
     for i := SG.RowCount-1 downto 1 do
       if SG.Cells[3,i] > '' then // not null row
       begin
-        if SG = Captures then
+        if SG = CapturesWSG then
         begin
           st := StrToDateTimeDef(SG.Cells[3,i] + ' ' + SG.Cells[4,i], 0);
           et := StrToDateTimeDef(SG.Cells[3,i] + ' ' + SG.Cells[5,i], 0);
@@ -1208,22 +1208,22 @@ const
   WIDTHS: array [0..6] of Integer =  (       75,           95,         95,    150,       400,          0,         0 );
 var i: Integer;
 begin
-  for i := 0 to NewCaptures.ColCount-1 do
+  for i := 0 to NewCapturesWSG.ColCount-1 do
   begin
-    NewCaptures.Cells[i,0] := HEADINGS[i];
-    NewCaptures.ColWidths[i] := WIDTHS[i];
+    NewCapturesWSG.Cells[i,0] := HEADINGS[i];
+    NewCapturesWSG.ColWidths[i] := WIDTHS[i];
   end;
-  for i := 0 to Captures.ColCount-1 do Captures.ColWidths[i] := 0;
-  if Captures.ColCount >= 9 then  // I.e., skip if FNF
+  for i := 0 to CapturesWSG.ColCount-1 do CapturesWSG.ColWidths[i] := 0;
+  if CapturesWSG.ColCount >= 9 then  // I.e., skip if FNF
   begin
-    Captures.ColWidths[1] := 80;  // Computer
-    Captures.ColWidths[2] := 100; // Tuner
-    Captures.ColWidths[3] := 65; // Date
-    Captures.ColWidths[4] := 45; // Start
-    Captures.ColWidths[5] := 45; // End
-    Captures.ColWidths[6] := 70; // Channel
-    Captures.ColWidths[8] := Captures.ClientWidth; // Title
-    for i := 1 to 6 do Captures.ColAlignments[i] := taCenter;
+    CapturesWSG.ColWidths[1] := 80;  // Computer
+    CapturesWSG.ColWidths[2] := 100; // Tuner
+    CapturesWSG.ColWidths[3] := 65; // Date
+    CapturesWSG.ColWidths[4] := 45; // Start
+    CapturesWSG.ColWidths[5] := 45; // End
+    CapturesWSG.ColWidths[6] := 70; // Channel
+    CapturesWSG.ColWidths[8] := CapturesWSG.ClientWidth; // Title
+    for i := 1 to 6 do CapturesWSG.ColAlignments[i] := taCenter;
   end;
 end;
 
@@ -1233,19 +1233,19 @@ var
 
 begin
   btnSchdRefrsh.Show;
-  {$IfDef PAS2JS}await{$EndIf}(LoadSG(Captures, CSV_CAPTURES));
-  {$IfDef PAS2JS}await{$EndIf}(LoadSG(NewCaptures, CSV_NEWCAPTURES));
+  {$IfDef PAS2JS}await{$EndIf}(LoadSG(CapturesWSG, CSV_CAPTURES));
+  {$IfDef PAS2JS}await{$EndIf}(LoadSG(NewCapturesWSG, CSV_NEWCAPTURES));
   SetCapturesFormats;
-  Log('Captures.RowCount after stale check: ' + Captures.RowCount.ToString);
+  Log('CapturesWSG.RowCount after stale check: ' + CapturesWSG.RowCount.ToString);
 
-  if (Captures.RowCount = 2) and (Captures.Cells[25,1] = '-1') then  // Valid list w/no captures, reload??
+  if (CapturesWSG.RowCount = 2) and (CapturesWSG.Cells[25,1] = '-1') then  // Valid list w/no CapturesWSG, reload??
   begin
-    Log('No captures listed, prompting for refresh');
+    Log('No CapturesWSG listed, prompting for refresh');
     UserMsg := 'There were no scheduled items at last fetch.';
   end
-  else if Captures.RowCount < 2 then // Invalid list
+  else if CapturesWSG.RowCount < 2 then // Invalid list
   begin
-    Log('No fresh captures, prompting for refresh');
+    Log('No fresh CapturesWSG, prompting for refresh');
     UserMsg := 'Scheduled list appears to be stale.';
   end else exit;
   if TAwait.ExecP<TModalResult> (MessageDlgAsync(UserMsg
@@ -1259,33 +1259,33 @@ var
 
 begin
   Log('FillHistoryDisplay called');
-  Log('historyTable.BeginUpdate');
-  HistoryTable.BeginUpdate;
+  Log('HistoryWSG.BeginUpdate');
+  HistoryWSG.BeginUpdate;
   try
-    LoadSG(HistoryTable, CSV_HISTORY);
-    HistoryTable.Align := alClient;
-    Log('historyTable.ColCount: ' + historyTable.ColCount.ToString);
-    Log('historyTable.RowCount: ' + historyTable.RowCount.ToString);
-    for i := 0 to Pred(HistoryTable.ColCount) do HistoryTable.ColWidths[i] := 0;
-    if HistoryTable.ColCount >= 14 then
+    LoadSG(HistoryWSG, CSV_HISTORY);
+    HistoryWSG.Align := alClient;
+    Log('HistoryWSG.ColCount: ' + HistoryWSG.ColCount.ToString);
+    Log('HistoryWSG.RowCount: ' + HistoryWSG.RowCount.ToString);
+    for i := 0 to Pred(HistoryWSG.ColCount) do HistoryWSG.ColWidths[i] := 0;
+    if HistoryWSG.ColCount >= 14 then
     begin
-      HistoryTable.ColWidths[8] := 120;
-      HistoryTable.ColWidths[10] := 150;
-      HistoryTable.ColWidths[12] := 250;
-      HistoryTable.ColWidths[13] := 300;
-      HistoryTable.ColAlignments[8] := taCenter;
-      HistoryTable.ColAlignments[10] := taCenter;
+      HistoryWSG.ColWidths[8] := 120;
+      HistoryWSG.ColWidths[10] := 150;
+      HistoryWSG.ColWidths[12] := 250;
+      HistoryWSG.ColWidths[13] := 300;
+      HistoryWSG.ColAlignments[8] := taCenter;
+      HistoryWSG.ColAlignments[10] := taCenter;
     end;
-    for i := 1 to Pred(HistoryTable.RowCount) do
+    for i := 1 to Pred(HistoryWSG.RowCount) do
     begin
-      HistoryTable.Cells[0,i] := Format('%10.3f',[StrToDateTimeDef(HistoryTable.Cells[8,i], 0)]);
-      HistoryTable.Cells[8,i] := FormatDateTime('mm/dd/yy h:nna/p', StrToDateTimeDef(HistoryTable.Cells[8,i],0))
+      HistoryWSG.Cells[0,i] := Format('%10.3f',[StrToDateTimeDef(HistoryWSG.Cells[8,i], 0)]);
+      HistoryWSG.Cells[8,i] := FormatDateTime('mm/dd/yy h:nna/p', StrToDateTimeDef(HistoryWSG.Cells[8,i],0))
     end;
-    HistoryTable.Cells[8,0] := HistoryTable.Cells[8,0] + ' ^'; // Show ascending time sort
+    HistoryWSG.Cells[8,0] := HistoryWSG.Cells[8,0] + ' ^'; // Show ascending time sort
     HistoryTableFixedCellClick(Self, 8, 0);  // Change to descending
-    while HistoryTable.RowCount > StrToInt(cbNumHistList.Text) do HistoryTable.RemoveRow(Pred(HistoryTable.RowCount));
+    while HistoryWSG.RowCount > StrToInt(cbNumHistList.Text) do HistoryWSG.RemoveRow(Pred(HistoryWSG.RowCount));
   finally
-    HistoryTable.EndUpdate;
+    HistoryWSG.EndUpdate;
     Log('FillHistoryDisplay finished');
   end;
 end;
@@ -1297,40 +1297,40 @@ begin
   Log('History visible');
 end;
 
-procedure TCWRmainFrm.HistoryTableClickCell(Sender: TObject; ACol,
+procedure TCWRmainFrm.HistoryWSGClickCell(Sender: TObject; ACol,
   ARow: Integer);
 begin
   ShowHistoryDetails(ARow);
 end;
 
-procedure TCWRmainFrm.HistoryTableFixedCellClick(Sender: TObject; ACol,
+procedure TCWRmainFrm.HistoryWSGFixedCellClick(Sender: TObject; ACol,
   ARow: Integer);
 var
   i: Integer;
   SortDir: TGridSortIndicator;
 begin
-  if RightStr(HistoryTable.Cells[ACol,0],1) = '^' then SortDir := WEBLib.Grids.siDescending
+  if RightStr(HistoryWSG.Cells[ACol,0],1) = '^' then SortDir := WEBLib.Grids.siDescending
   else SortDir := WEBLib.Grids.siAscending;
-  Log('HistoryTableFixedCellClick, ACol: '+ACol.ToString+', RowCount: '+HistoryTable.RowCount.ToString);
+  Log('HistoryTableFixedCellClick, ACol: '+ACol.ToString+', RowCount: '+HistoryWSG.RowCount.ToString);
   i := IfThen(ACol=8, 0, ACol);
-  HistoryTable.BeginUpdate;
-  HistoryTable.Sort(i,SortDir);
-  HistoryTable.EndUpdate;
-  Log('HistoryTableFixedCellClick, after sort, RowCount: '+HistoryTable.RowCount.ToString);
+  HistoryWSG.BeginUpdate;
+  HistoryWSG.Sort(i,SortDir);
+  HistoryWSG.EndUpdate;
+  Log('HistoryTableFixedCellClick, after sort, RowCount: '+HistoryWSG.RowCount.ToString);
   // Remove previous direction flags
-  for i := 0 to HistoryTable.ColCount-1 do
-  if '^v'.Contains(RightStr(HistoryTable.Cells[i,0],1)) then
-    HistoryTable.Cells[i,0] := LeftStr(HistoryTable.Cells[i,0],Length(HistoryTable.Cells[i,0])-2);
+  for i := 0 to HistoryWSG.ColCount-1 do
+  if '^v'.Contains(RightStr(HistoryWSG.Cells[i,0],1)) then
+    HistoryWSG.Cells[i,0] := LeftStr(HistoryWSG.Cells[i,0],Length(HistoryWSG.Cells[i,0])-2);
   // Add current direction flag
-  HistoryTable.Cells[ACol,0] := HistoryTable.Cells[ACol,0] + IfThen(SortDir=WEBLib.Grids.siDescending, ' v', ' ^');
+  HistoryWSG.Cells[ACol,0] := HistoryWSG.Cells[ACol,0] + IfThen(SortDir=WEBLib.Grids.siDescending, ' v', ' ^');
 end;
 
-procedure TCWRmainFrm.HistoryTableGetCellClass(Sender: TObject; ACol,
+procedure TCWRmainFrm.HistoryWSGGetCellClass(Sender: TObject; ACol,
   ARow: Integer; AField: TField; AValue: string; var AClassName: string);
 begin
-  if (ARow > 0) {and (HistoryTable.Cells[8,ARow] > '')} then
+  if (ARow > 0) {and (HistoryWSG.Cells[8,ARow] > '')} then
   begin
-    case HistoryTable.Cells[10,ARow][1] of
+    case HistoryWSG.Cells[10,ARow][1] of
       'E': AClassName := 'green';         // Regular Episode
       'S': AClassName := 'gray';          // Generic Show
       'M': AClassName := 'goldenRod';     // Movie
@@ -1343,21 +1343,21 @@ end;
 procedure TCWRmainFrm.tbHistoryShow;
 begin
   FillWDG(HistoryWDG, CSV_HISTORY);
-//  HistoryTable.Visible := False;
-//  Log('HistoryTable.RowCount: ' + HistoryTable.RowCount.ToString);
-//  if HistoryTable.RowCount <> StrToInt(cbNumHistList.Text) then  // need History data
+//  HistoryWSG.Visible := False;
+//  Log('HistoryWSG.RowCount: ' + HistoryWSG.RowCount.ToString);
+//  if HistoryWSG.RowCount <> StrToInt(cbNumHistList.Text) then  // need History data
 //  begin
 //    {$IfDef PAS2JS}await{$EndIf}(FillHistoryDisplay);
-//    if {still} HistoryTable.RowCount <> StrToInt(cbNumHistList.Text) then  // may need History refresh
+//    if {still} HistoryWSG.RowCount <> StrToInt(cbNumHistList.Text) then  // may need History refresh
 //    begin
 //      Log('The History list is empty/incomplete. Prompt for refresh');
 //      if TAwait.ExecP<TModalResult> (MessageDlgAsync('The History list '
-//       + IfThen(HistoryTable.RowCount < 2,'is empty','may be incomplete')
+//       + IfThen(HistoryWSG.RowCount < 2,'is empty','may be incomplete')
 //        + #13#13'Do you want to refresh it now?',mtConfirmation, [mbYes,mbNo]))
 //        = mrYes then {$IfDef PAS2JS}await{$EndIf}(UpdateHistory(Self));
 //    end;
 //  end;
-//  HistoryTable.Visible := True;
+//  HistoryWSG.Visible := True;
 end;
 
 procedure TCWRmainFrm.SetPage(PageNum: Integer);
@@ -1368,7 +1368,7 @@ begin
       pnlListings.BringToFront;
       pnlListings.Show;
     end;
-    1: begin          {Captures}
+    1: begin          {CapturesWSG}
       pnlCaptures.BringToFront;
       pnlCaptures.Show;
       tbCapturesShow;
@@ -1456,27 +1456,27 @@ begin
     DetailsFrm.lblSubTitle.Color := clWebWheat;
     DetailsFrm.lblDescription.Color := clWebWheat;
     // init controls after loading
-    DetailsFrm.mmTitle.Text := HistoryTable.Cells[12,ItemNo];
-    DetailsFrm.mmSubTitle.Text := HistoryTable.Cells[13,ItemNo];
-    DetailsFrm.lb11Time.Caption := HistoryTable.Cells[8,ItemNo]
-       +  FormatDateTime(' -- h:nna/p',StrToDateTimeDef(HistoryTable.Cells[9,ItemNo], 0));
-    DetailsFrm.lb10Channel.Caption := HistoryTable.Cells[7,ItemNo];
-    x := HistoryTable.Cells[15,ItemNo].Split(['/']);              // Parse 1st-air date
+    DetailsFrm.mmTitle.Text := HistoryWSG.Cells[12,ItemNo];
+    DetailsFrm.mmSubTitle.Text := HistoryWSG.Cells[13,ItemNo];
+    DetailsFrm.lb11Time.Caption := HistoryWSG.Cells[8,ItemNo]
+       +  FormatDateTime(' -- h:nna/p',StrToDateTimeDef(HistoryWSG.Cells[9,ItemNo], 0));
+    DetailsFrm.lb10Channel.Caption := HistoryWSG.Cells[7,ItemNo];
+    x := HistoryWSG.Cells[15,ItemNo].Split(['/']);              // Parse 1st-air date
     DetailsFrm.lb09OrigDate.Caption := IfThen(Length(x) = 3,      // Have mm/dd/yyyy
       '1st Aired ' + x[1] + '/' + x[2] + '/' + RightStr(x[0],2),
       IfThen((Length(x) = 1) and (x[0] > ''),                                       // Have yyyymmdd format
       '1st Aired ' + copy(x[0],5,2) + '/' + copy(x[0],7,2) + '/' + copy(x[0],3,2),
-      IfThen(HistoryTable.Cells[22,ItemNo] > '',                  // Check Movie year
-      'Movie Yr ' + HistoryTable.Cells[22,ItemNo],'')));          // Use Movie year or nil
-    DetailsFrm.lb02New.Caption := HistoryTable.Cells[19,ItemNo];
-    SetLabelStyle(DetailsFrm.lb08CC, HistoryTable.Cells[18,ItemNo].Contains('T'));
-    SetLabelStyle(DetailsFrm.lb03Stereo, HistoryTable.Cells[17,ItemNo].Contains('T'));
-    SetLabelStyle(DetailsFrm.lb07Dolby, HistoryTable.Cells[20,ItemNo].Contains('T'));
-    DetailsFrm.lb04HD.Caption := IfThen(HistoryTable.Cells[16,ItemNo].Contains('T'), 'HD', 'SD');
+      IfThen(HistoryWSG.Cells[22,ItemNo] > '',                  // Check Movie year
+      'Movie Yr ' + HistoryWSG.Cells[22,ItemNo],'')));          // Use Movie year or nil
+    DetailsFrm.lb02New.Caption := HistoryWSG.Cells[19,ItemNo];
+    SetLabelStyle(DetailsFrm.lb08CC, HistoryWSG.Cells[18,ItemNo].Contains('T'));
+    SetLabelStyle(DetailsFrm.lb03Stereo, HistoryWSG.Cells[17,ItemNo].Contains('T'));
+    SetLabelStyle(DetailsFrm.lb07Dolby, HistoryWSG.Cells[20,ItemNo].Contains('T'));
+    DetailsFrm.lb04HD.Caption := IfThen(HistoryWSG.Cells[16,ItemNo].Contains('T'), 'HD', 'SD');
     SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
-    DetailsFrm.mmDescription.Text := HistoryTable.Cells[14,ItemNo]
-      + IfThen(HistoryTable.Cells[28,ItemNo] > '', #13#13'Actors:  ' + ReplaceStr(
-        Copy(HistoryTable.Cells[28,ItemNo],1,Length(HistoryTable.Cells[28,ItemNo])-1)
+    DetailsFrm.mmDescription.Text := HistoryWSG.Cells[14,ItemNo]
+      + IfThen(HistoryWSG.Cells[28,ItemNo] > '', #13#13'Actors:  ' + ReplaceStr(
+        Copy(HistoryWSG.Cells[28,ItemNo],1,Length(HistoryWSG.Cells[28,ItemNo])-1)
         ,';',', '));
     // No capture requests
     DetailsFrm.btnAddCap.Visible := False;
@@ -1619,7 +1619,7 @@ var
   id: string;
 begin
   Log(' ====== FetchNewCapRequests called =========');
-    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES, 'New Captures', id));
+    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES, 'New CapturesWSG', id));
     Log(' ====== FetchNewCapRequests finished =========');
 end;
 
@@ -1640,32 +1640,32 @@ var
   id: string;
 begin
   Log(' ====== UpdateNewCaptures called =========');
-  {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES,'New Captures', id));
-  {$IfDef PAS2JS}await{$EndIf}(FillTable(NewCaptures, CSV_NEWCAPTURES));
-  Log('NewCaptures Rows: '+NewCaptures.RowCount.ToString);
-  if NewCaptures.RowCount = 0 then // fnf, create new one
+  {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES,'New CapturesWSG', id));
+  {$IfDef PAS2JS}await{$EndIf}(FillWSG(NewCapturesWSG, CSV_NEWCAPTURES));
+  Log('NewCapturesWSG Rows: '+NewCapturesWSG.RowCount.ToString);
+  if NewCapturesWSG.RowCount = 0 then // fnf, create new one
   begin
-    NewCaptures.RowCount := 1;
-    NewCaptures.ColCount := 7;
+    NewCapturesWSG.RowCount := 1;
+    NewCapturesWSG.ColCount := 7;
     {$IfDef PAS2JS}await{$EndIf}(CreateGoogleFile(CSV_NEWCAPTURES, id));
   end
   else
-    for i := Pred(NewCaptures.RowCount) downto 1 do // Remove blank rows
-      if NewCaptures.Cells[0,i] = '' then NewCaptures.RemoveRow(i);
+    for i := Pred(NewCapturesWSG.RowCount) downto 1 do // Remove blank rows
+      if NewCapturesWSG.Cells[0,i] = '' then NewCapturesWSG.RemoveRow(i);
   SetCapturesFormats;
 // Add the new capture to the list
-  NewCaptures.RowCount := NewCaptures.RowCount + 1;
-  NewCaptures.Cells[0,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('PSIP').AsString;
-  NewCaptures.Cells[1,NewCaptures.RowCount-1] := FormatDateTime('mm/dd hh:nn',RecordStart);
-  NewCaptures.Cells[2,NewCaptures.RowCount-1] := FormatDateTime('mm/dd hh:nn',RecordEnd);
-  NewCaptures.Cells[3,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('Title').AsString;
-  NewCaptures.Cells[4,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('SubTitle').AsString;
-  NewCaptures.Cells[5,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('Time').AsString.Split(['--'])[0]; // EPG StartTime (HTPC TZ)
-  NewCaptures.Cells[6,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('ProgramID').AsString; // Episode No.
+  NewCapturesWSG.RowCount := NewCapturesWSG.RowCount + 1;
+  NewCapturesWSG.Cells[0,NewCapturesWSG.RowCount-1] := WIDBCDS.FieldByName('PSIP').AsString;
+  NewCapturesWSG.Cells[1,NewCapturesWSG.RowCount-1] := FormatDateTime('mm/dd hh:nn',RecordStart);
+  NewCapturesWSG.Cells[2,NewCapturesWSG.RowCount-1] := FormatDateTime('mm/dd hh:nn',RecordEnd);
+  NewCapturesWSG.Cells[3,NewCapturesWSG.RowCount-1] := WIDBCDS.FieldByName('Title').AsString;
+  NewCapturesWSG.Cells[4,NewCapturesWSG.RowCount-1] := WIDBCDS.FieldByName('SubTitle').AsString;
+  NewCapturesWSG.Cells[5,NewCapturesWSG.RowCount-1] := WIDBCDS.FieldByName('Time').AsString.Split(['--'])[0]; // EPG StartTime (HTPC TZ)
+  NewCapturesWSG.Cells[6,NewCapturesWSG.RowCount-1] := WIDBCDS.FieldByName('ProgramID').AsString; // Episode No.
   {$IfDef PAS2JS}await{$EndIf}(SaveNewCapturesFile(id));
 
   // ==============================
-  Log('Final NewCaptures Table Rows: '+NewCaptures.RowCount.ToString);
+  Log('Final NewCapturesWSG Table Rows: '+NewCapturesWSG.RowCount.ToString);
   Log(' ====== UpdateNewCaptures finished =========');
 end;
 
@@ -1676,7 +1676,7 @@ begin
   // Update the file
   data := TStringList.Create;
   data.LineBreak := #13#10;
-  NewCaptures.SaveToStrings(data, ',', True);
+  NewCapturesWSG.SaveToStrings(data, ',', True);
   console.log('id: '+id);
   {$IfDef PAS2JS}console.log('data.text: ', data.Text);{$EndIf}
   res := TAwait.ExecP<TJSXMLHttpRequest>(WEBRESTClient1.HttpRequest('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data.Text));
@@ -1719,7 +1719,7 @@ begin
     console.log('file ID'+id);
 
     rq := TAwait.ExecP<TJSXMLHttpRequest>(WEBRestClient1.HttpRequest('PATCH','https://www.googleapis.com/drive/v3/files/'+id,
-      '{"name":"'+ FName + '", "description":"New Captures CSV list"}'));
+      '{"name":"'+ FName + '", "description":"New CapturesWSG CSV list"}'));
 
   end;
 end;
@@ -1752,7 +1752,7 @@ function TCWRmainFrm.HistoryWDGColumn_column8ValueFormatter(Value: TJSValue):
 var ADateTime: string;
 begin
   DateTimeToString(ADateTime, 'mm/dd/yy HH:nn', StrToFloat(string(Value)));
-  Result := ADateTime; //datetimetostr({'mm/dd/yy HH:nn',} StrToFloat(string(Value)));
+  Result := ADateTime;
 end;
 
 (*
