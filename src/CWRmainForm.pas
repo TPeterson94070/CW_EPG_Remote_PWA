@@ -528,7 +528,7 @@ begin
     WIDBCDS.Filtered := False;
     WIDBCDS.Filter := SaveFilter;
     WIDBCDS.Filtered := SaveFilterState;
-    CapturesWSG.OnClickCell := CapturesClickCell;
+    CapturesWSG.OnClickCell := CapturesWSGClickCell;
     Log('========== EPGClickCell() finished');
   end;
 end;
@@ -1282,7 +1282,7 @@ begin
       HistoryWSG.Cells[8,i] := FormatDateTime('mm/dd/yy h:nna/p', StrToDateTimeDef(HistoryWSG.Cells[8,i],0))
     end;
     HistoryWSG.Cells[8,0] := HistoryWSG.Cells[8,0] + ' ^'; // Show ascending time sort
-    HistoryTableFixedCellClick(Self, 8, 0);  // Change to descending
+    HistoryWSGFixedCellClick(Self, 8, 0);  // Change to descending
     while HistoryWSG.RowCount > StrToInt(cbNumHistList.Text) do HistoryWSG.RemoveRow(Pred(HistoryWSG.RowCount));
   finally
     HistoryWSG.EndUpdate;
