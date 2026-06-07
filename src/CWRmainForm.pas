@@ -164,6 +164,7 @@ private
   [async] procedure SetupFilterLists;
   [async] procedure ShowItemDetails(ItemNo: Integer; DoCapture: Boolean = True);
   [async] procedure ShowHistoryDetails(ItemNo: Integer);
+  [async] procedure ShowHistoryWDGDetails(ItemNo: Integer);
 public
   { Public declarations }
 end;
@@ -1331,7 +1332,7 @@ end;
 
 procedure TCWRmainFrm.HistoryWDGCellClickedEvent(Event: TJSCellClickedEvent);
 begin
-  ShowHistoryDetails(toInteger(Event.RowIndex));
+  ShowHistoryWDGDetails(toInteger(Event.RowIndex));
 end;
 
 function TCWRmainFrm.HistoryWDGColumn_column8ValueFormatter(Value: TJSValue):
@@ -1458,6 +1459,67 @@ procedure TCWRmainFrm.EPGGetCellClass(Sender: TObject; ACol,
 begin
   if ARow = 0 then exit;
   AClassName := WIDBCDS.Fields[15].AsString
+end;
+
+procedure TCWRmainFrm.ShowHistoryWDGDetails(ItemNo: Integer);
+var
+  DetailsFrm: TDetailsFrm;
+  x: TArray<string>;
+begin
+  try
+    DetailsFrm := TDetailsFrm.Create(Self);
+    Log('========== finished TDetailsFrm.Create(Self) ');
+    DetailsFrm.Popup := True;
+    DetailsFrm.Border := fbSingle;
+    Log('========== starting DetailsFrm.Load ');
+    // load file HTML template + controls
+    try
+      TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load);
+      Log('========== finished DetailsFrm.Load ');
+    except
+      on E:Exception do
+      Log('Exception from DetailsFrm.Load: ' + E.Message);
+    end;
+    DetailsFrm.Color := clWebWheat;
+    DetailsFrm.mmTitle.Color := clWebChocolate;
+    DetailsFrm.mmSubTitle.Color := clWebChocolate;
+    DetailsFrm.mmDescription.Color := clWebChocolate;
+    DetailsFrm.lblTitle.Color := clWebWheat;
+    DetailsFrm.lblSubTitle.Color := clWebWheat;
+    DetailsFrm.lblDescription.Color := clWebWheat;
+    // init controls after loading
+    DetailsFrm.mmTitle.Text := HistoryWDG.GetCell(12,ItemNo);
+    DetailsFrm.mmSubTitle.Text := HistoryWDG.GetCell(13,ItemNo);
+    DetailsFrm.lb11Time.Caption := FormatDateTime('mm/dd/yy H:nn', StrToFloat(HistoryWDG.GetCell(8,ItemNo)))
+       +  FormatDateTime(' -- H:nn', StrToDateTime(HistoryWDG.GetCell(9,ItemNo)));
+    DetailsFrm.lb10Channel.Caption := HistoryWDG.GetCell(7,ItemNo);
+    x := HistoryWDG.GetCell(15,ItemNo).Split(['/']);              // Parse 1st-air date
+    DetailsFrm.lb09OrigDate.Caption := IfThen(Length(x) = 3,      // Have mm/dd/yyyy
+      '1st Aired ' + x[1] + '/' + x[2] + '/' + RightStr(x[0],2),
+      IfThen((Length(x) = 1) and (x[0] > ''),                                       // Have yyyymmdd format
+      '1st Aired ' + copy(x[0],5,2) + '/' + copy(x[0],7,2) + '/' + copy(x[0],3,2),
+      IfThen(HistoryWDG.GetCell(22,ItemNo) > '',                  // Check Movie year
+      'Movie Yr ' + HistoryWDG.GetCell(22,ItemNo),'')));          // Use Movie year or nil
+    DetailsFrm.lb02New.Caption := HistoryWDG.GetCell(19,ItemNo);
+    SetLabelStyle(DetailsFrm.lb08CC, HistoryWDG.GetCell(18,ItemNo).Contains('T'));
+    SetLabelStyle(DetailsFrm.lb03Stereo, HistoryWDG.GetCell(17,ItemNo).Contains('T'));
+    SetLabelStyle(DetailsFrm.lb07Dolby, HistoryWDG.GetCell(20,ItemNo).Contains('T'));
+    DetailsFrm.lb04HD.Caption := IfThen(HistoryWDG.GetCell(16,ItemNo).Contains('T'), 'HD', 'SD');
+    SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
+    DetailsFrm.mmDescription.Text := HistoryWDG.GetCell(14,ItemNo)
+      + IfThen(HistoryWDG.GetCell(28,ItemNo) > '', #13#13'Actors:  ' + ReplaceStr(
+        {Copy(}HistoryWDG.GetCell(28,ItemNo){,1,Length(HistoryWDG.GetCell(28,ItemNo))-1)}
+        ,';',', '));
+    // No capture requests
+    DetailsFrm.btnAddCap.Visible := False;
+    // execute form and wait for close
+    Log('========== starting DetailsFrm.Execute ');
+    TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
+    Log('========== finished DetailsFrm.Execute ');
+  finally
+    Log('========== EPGClickCell() Finished with Details form');
+    DetailsFrm.Free;
+  end;
 end;
 
 procedure TCWRmainFrm.ShowHistoryDetails(ItemNo: Integer);
