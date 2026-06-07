@@ -126,7 +126,9 @@ type
     procedure HistoryWSGClickCell(Sender: TObject; ACol, ARow: Integer);
     procedure SwipeDownRefresh(Enabled: Boolean);
   function EPGColumn_PSIPGetCellStyle(Params: TJSCellClassParams): TJSValue;
+  procedure HistoryWDGCellClickedEvent(Event: TJSCellClickedEvent);
   function HistoryWDGColumn_column8ValueFormatter(Value: TJSValue): TJSValue;
+  function HistoryWDGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
 private
   { Private declarations }
   [async] procedure LogDataRange;
@@ -675,7 +677,9 @@ begin
 
     WDG.LoadFromCSVString(Copy(CSVString,HeaderRowLength + 1), ',', '"', False);
     // dump empty rows (add iff needed)
-    WDG.RowHeight := 17;
+    WDG.RowHeight := 19;
+    WDG.Font.Height := 18;
+
     // Convert Col 8 string (StartTime) to TDateTime string
     for i := 0 to Pred(WDG.RowData.Length) do
       WDG.Cells[i,8] := FloatToStr(StrToDateTimeDef(WDG.Cells[i,8],0));
@@ -1325,6 +1329,33 @@ begin
   HistoryWSG.Cells[ACol,0] := HistoryWSG.Cells[ACol,0] + IfThen(SortDir=WEBLib.Grids.siDescending, ' v', ' ^');
 end;
 
+procedure TCWRmainFrm.HistoryWDGCellClickedEvent(Event: TJSCellClickedEvent);
+begin
+  ShowHistoryDetails(toInteger(Event.RowIndex));
+end;
+
+function TCWRmainFrm.HistoryWDGColumn_column8ValueFormatter(Value: TJSValue):
+    TJSValue;
+var ADateTime: string;
+begin
+  DateTimeToString(ADateTime, 'mm/dd/yy HH:nn', StrToFloat(string(Value)));
+  Result := ADateTime;
+end;
+
+function TCWRmainFrm.HistoryWDGGetRowClass(Params: TJSGetRowClassParams):
+    TJSValue;
+begin
+
+  case HistoryWDG.Cells[toInteger(Params.RowIndex),10][1] of
+    'E': Result := 'greenBGolive';         // Regular Episode
+    'S': Result := 'grayBGolive';          // Generic Show
+    'M': Result := 'yellowBGolive';     // Movie
+  else
+    Result := 'white';              // Huh?
+  end;
+
+end;
+
 procedure TCWRmainFrm.HistoryWSGGetCellClass(Sender: TObject; ACol,
   ARow: Integer; AField: TField; AValue: string; var AClassName: string);
 begin
@@ -1747,13 +1778,7 @@ begin
   end;
 end;
 
-function TCWRmainFrm.HistoryWDGColumn_column8ValueFormatter(Value: TJSValue):
-    TJSValue;
-var ADateTime: string;
-begin
-  DateTimeToString(ADateTime, 'mm/dd/yy HH:nn', StrToFloat(string(Value)));
-  Result := ADateTime;
-end;
+
 
 (*
 Source - https://stackoverflow.com/a/78210803

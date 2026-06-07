@@ -822,6 +822,7 @@ object CWRmainFrm: TCWRmainFrm
       Font.Height = -19
       Font.Name = 'Arial'
       Font.Style = []
+      Font.Quality = fqClearType
       Options = [goRowSelect, goFixedRowClick]
       ParentFont = False
       TabOrder = 0
@@ -856,9 +857,17 @@ object CWRmainFrm: TCWRmainFrm
           Field = 'column2'
           SelectOptions = <>
         end>
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlack
+      Font.Height = 18
+      Font.Name = 'Segoe UI'
+      Font.Style = []
       MultilevelHeaders = <>
       TabOrder = 1
+      Theming.BuiltInTheme = agThemeMaterial
       Visible = False
+      OnGetRowClass = HistoryWDGGetRowClass
+      OnCellClickedEvent = HistoryWDGCellClickedEvent
     end
   end
   object WebMainMenu1: TWebMainMenu
