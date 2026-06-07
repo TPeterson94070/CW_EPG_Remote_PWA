@@ -21,7 +21,6 @@ type
   TCWRmainFrm = class(TWebForm)
   WebMemo2: TWebMemo;
   CapturesWSG: TWebStringGrid;
-  HistoryWSG: TWebStringGrid;
   BufferGrid: TWebStringGrid;
   pnlCaptures: TWebPanel;
   pnlHistory: TWebPanel;
@@ -82,19 +81,16 @@ type
   [async] procedure tbCapturesShow;
   procedure AllCapsGridGetCellData(Sender: TObject; ACol, ARow: Integer;
     AField: TField; var AValue: string);
-  procedure HistoryWSGFixedCellClick(Sender: TObject; ACol, ARow: Integer);
+  [async] procedure HistoryClick(Sender: TObject);
   [async]
   procedure UpdateHistory(Sender: TObject);
   [async]
   procedure ChangeTargetHTPC(Sender: TObject);
-  [async] procedure HistoryClick(Sender: TObject);
   [async] procedure ScheduledClick(Sender: TObject);
   [async] procedure ViewLog1Click(Sender: TObject);
   [async] procedure Settings1Click(Sender: TObject);
   [async]
 //  procedure EPGClickCell(Sender: TObject; ACol, ARow: Integer);
-  procedure HistoryWSGGetCellClass(Sender: TObject; ACol, ARow: Integer;
-    AField: TField; AValue: string; var AClassName: string);
   [async] procedure ByGenreClick(Sender: TObject);
   [async] procedure wcbGenresChange(Sender: TObject);
   [async] procedure ByTitleClick(Sender: TObject);
@@ -123,7 +119,6 @@ type
   procedure cbNumHistListChange(Sender: TObject);
   [async] procedure EPGCellClickedEvent(Event: TJSCellClickedEvent);
   function EPGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
-    procedure HistoryWSGClickCell(Sender: TObject; ACol, ARow: Integer);
     procedure SwipeDownRefresh(Enabled: Boolean);
   function EPGColumn_PSIPGetCellStyle(Params: TJSCellClassParams): TJSValue;
   procedure HistoryWDGCellClickedEvent(Event: TJSCellClickedEvent);
@@ -149,8 +144,6 @@ private
   [async]
   procedure tbHistoryShow;
   [async]
-  procedure FillHistoryDisplay;
-  [async]
   procedure UpdateNewCaptures(RecordStart, RecordEnd: TDateTime);
   [async]
   function GetGoogleDriveFile(TableFile: string; var id: string): string;
@@ -163,7 +156,6 @@ private
   [async] procedure ShowPlsWait(PlsWaitCap: string);
   [async] procedure SetupFilterLists;
   [async] procedure ShowItemDetails(ItemNo: Integer; DoCapture: Boolean = True);
-  [async] procedure ShowHistoryDetails(ItemNo: Integer);
   [async] procedure ShowHistoryWDGDetails(ItemNo: Integer);
 public
   { Public declarations }
@@ -674,6 +666,12 @@ begin
       WDG.ColumnDefs[i].Visible := i in [7, 8, 12, 13];
       WDG.ColumnDefs[i].Sortable := True;
       WDG.ColumnDefs[i].Filter := True;
+      case i of
+        7: WDG.ColumnDefs[i].Width := 120;
+        8: WDG.ColumnDefs[i].Width := 150;
+        12: WDG.ColumnDefs[i].Width := 200;
+        13: WDG.ColumnDefs[i].Width := 300;
+      end;
     end;
 
     WDG.LoadFromCSVString(Copy(CSVString,HeaderRowLength + 1), ',', '"', False);
@@ -1086,42 +1084,44 @@ begin
     + IfThen(ByGenre.Checked, wcbGenres.Text + ' ')
     + 'Programs' + IfThen(ByAll.Checked, ' (1st ' + NUMIDS.ToString + ' items)')
     + IfThen(ByTitle.Checked, ' w/Titles:' + QuotedStr('*' + SearchFilter + '*'));
-  EPG.ColumnDefs[0].Width := IfThen(ByChannel.Checked, 0, 100);
+  EPG.ColumnDefs[0].Visible := not ByChannel.Checked;
+  EPG.ColumnDefs[0].Width := 100;
   EPG.ColumnDefs[1].Width := 140;
   EPG.ColumnDefs[2].Width := 300;
   EPG.RowHeight := 18;
   EPG.Font.Height := -17;
   if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
-//  WIDBCDS.Filtered := False;
-//  Log('BaseFilter: ' + BaseFilter);
-//  fltr := '';
+  WIDBCDS.Filtered := False;
+  Log('BaseFilter: ' + BaseFilter);
+  fltr := '';
   if ByGenre.Checked then
-//   fltr := fltr + ' and genres like '
-//    + QuotedStr('%"'+ReplaceStr(wcbGenres.Text, '/', '_')+'"%');
-  begin
-    EPG.ColumnDefs[0].Filter := True;
-    EPG.ColumnDefs[0]{.FindColumn('genres')}.ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, ReplaceStr(wcbGenres.Text, '/', '_'));
-  end;
+   fltr := fltr + ' and genres like '
+    + QuotedStr('%"'+ReplaceStr(wcbGenres.Text, '/', '_')+'"%');
+//  begin
+//    EPG.ColumnDefs.FindColumn('genres').Filter := True;
+//    EPG.ColumnDefs.FindColumn('genres').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, ReplaceStr(wcbGenres.Text, '/', '_'));
+//  end;
 //  if ByTitle.Checked then
 //    fltr := fltr + ' and Title like ' + QuotedStr('%' + SearchFilter + '%');
 //   EPG.ColumnDefs.FindColumn('Title').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, SearchFilter);
 
   if ByChannel.Checked then
-//    fltr := fltr + ' and PSIP = ' + QuotedStr(wcbChannels.Text);
-   begin
-    EPG.ColumnDefs.FindColumn('PSIP').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foEqual, Trim(wcbChannels.Text));
-//    EPG.ColumnDefs.FindColumn('PSIP').Filter := True;
-   end;
-//  if ByType.Checked then
-//    fltr := fltr + ' and Class = '
-//      + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
+    fltr := fltr + ' and PSIP = ' + QuotedStr(wcbChannels.Text);
+//   begin
+//    EPG.ColumnDefs[0]{.FindColumn('Channel')}.ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foEqual, Trim(wcbChannels.Text));
+//    EPG.ColumnDefs.FindColumn('Channel').Filter := True;
+//   end;
+  if ByType.Checked then
+    fltr := fltr + ' and Class = '
+      + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
 //    EPG.ColumnDefs.FindColumn('genres').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
 
-//  if fltr = '' then fltr := ' and ID < ' + LastID;
-//  Log('Epg Filter: BaseFilter + ' + fltr);
-//  WIDBCDS.Filter := BaseFilter + fltr;
+  if fltr = '' then fltr := ' and ID < ' + LastID;
+  Log('Epg Filter: BaseFilter + ' + fltr);
+  WIDBCDS.Filter := BaseFilter + fltr;
   WIDBCDS.Filtered := True;
-//  { $IfDef PAS2JS}EPG.SetSelectedRow(1, True); // := 1;{ $EndIf}
+  EPG.Refresh;
+  //  { $IfDef PAS2JS}EPG.SetSelectedRow(1, True); // := 1;{ $EndIf}
   {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
   WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
   EPG.EndUpdate;
@@ -1181,7 +1181,7 @@ var i: Integer;
     st, et: TDateTime;
 begin
   {$IfDef PAS2JS}await{$EndIf}(FillWSG(SG, LSName));
-  if (SG.RowCount > 1) and (SG <> HistoryWSG) then  // have stored value(s)
+  if (SG.RowCount > 1) then  // have stored value(s)
   begin
     // Discard stale entries (End DateTime < now)
     for i := SG.RowCount-1 downto 1 do
@@ -1258,76 +1258,11 @@ begin
     = mrYes then btnSchdRefrshClick(Self);
 end;
 
-procedure TCWRmainFrm.FillHistoryDisplay;
-var
-  i: Integer;
-
-begin
-  Log('FillHistoryDisplay called');
-  Log('HistoryWSG.BeginUpdate');
-  HistoryWSG.BeginUpdate;
-  try
-    LoadSG(HistoryWSG, CSV_HISTORY);
-    HistoryWSG.Align := alClient;
-    Log('HistoryWSG.ColCount: ' + HistoryWSG.ColCount.ToString);
-    Log('HistoryWSG.RowCount: ' + HistoryWSG.RowCount.ToString);
-    for i := 0 to Pred(HistoryWSG.ColCount) do HistoryWSG.ColWidths[i] := 0;
-    if HistoryWSG.ColCount >= 14 then
-    begin
-      HistoryWSG.ColWidths[8] := 120;
-      HistoryWSG.ColWidths[10] := 150;
-      HistoryWSG.ColWidths[12] := 250;
-      HistoryWSG.ColWidths[13] := 300;
-      HistoryWSG.ColAlignments[8] := taCenter;
-      HistoryWSG.ColAlignments[10] := taCenter;
-    end;
-    for i := 1 to Pred(HistoryWSG.RowCount) do
-    begin
-      HistoryWSG.Cells[0,i] := Format('%10.3f',[StrToDateTimeDef(HistoryWSG.Cells[8,i], 0)]);
-      HistoryWSG.Cells[8,i] := FormatDateTime('mm/dd/yy h:nna/p', StrToDateTimeDef(HistoryWSG.Cells[8,i],0))
-    end;
-    HistoryWSG.Cells[8,0] := HistoryWSG.Cells[8,0] + ' ^'; // Show ascending time sort
-    HistoryWSGFixedCellClick(Self, 8, 0);  // Change to descending
-    while HistoryWSG.RowCount > StrToInt(cbNumHistList.Text) do HistoryWSG.RemoveRow(Pred(HistoryWSG.RowCount));
-  finally
-    HistoryWSG.EndUpdate;
-    Log('FillHistoryDisplay finished');
-  end;
-end;
-
 procedure TCWRmainFrm.HistoryClick(Sender: TObject);
 begin
   Log('History called');
   {$IfDef PAS2JS}await{$EndIf}(SetPage(2));
   Log('History visible');
-end;
-
-procedure TCWRmainFrm.HistoryWSGClickCell(Sender: TObject; ACol,
-  ARow: Integer);
-begin
-  ShowHistoryDetails(ARow);
-end;
-
-procedure TCWRmainFrm.HistoryWSGFixedCellClick(Sender: TObject; ACol,
-  ARow: Integer);
-var
-  i: Integer;
-  SortDir: TGridSortIndicator;
-begin
-  if RightStr(HistoryWSG.Cells[ACol,0],1) = '^' then SortDir := WEBLib.Grids.siDescending
-  else SortDir := WEBLib.Grids.siAscending;
-  Log('HistoryTableFixedCellClick, ACol: '+ACol.ToString+', RowCount: '+HistoryWSG.RowCount.ToString);
-  i := IfThen(ACol=8, 0, ACol);
-  HistoryWSG.BeginUpdate;
-  HistoryWSG.Sort(i,SortDir);
-  HistoryWSG.EndUpdate;
-  Log('HistoryTableFixedCellClick, after sort, RowCount: '+HistoryWSG.RowCount.ToString);
-  // Remove previous direction flags
-  for i := 0 to HistoryWSG.ColCount-1 do
-  if '^v'.Contains(RightStr(HistoryWSG.Cells[i,0],1)) then
-    HistoryWSG.Cells[i,0] := LeftStr(HistoryWSG.Cells[i,0],Length(HistoryWSG.Cells[i,0])-2);
-  // Add current direction flag
-  HistoryWSG.Cells[ACol,0] := HistoryWSG.Cells[ACol,0] + IfThen(SortDir=WEBLib.Grids.siDescending, ' v', ' ^');
 end;
 
 procedure TCWRmainFrm.HistoryWDGCellClickedEvent(Event: TJSCellClickedEvent);
@@ -1357,39 +1292,21 @@ begin
 
 end;
 
-procedure TCWRmainFrm.HistoryWSGGetCellClass(Sender: TObject; ACol,
-  ARow: Integer; AField: TField; AValue: string; var AClassName: string);
-begin
-  if (ARow > 0) {and (HistoryWSG.Cells[8,ARow] > '')} then
-  begin
-    case HistoryWSG.Cells[10,ARow][1] of
-      'E': AClassName := 'green';         // Regular Episode
-      'S': AClassName := 'gray';          // Generic Show
-      'M': AClassName := 'goldenRod';     // Movie
-    else
-      AClassName := 'white';              // Huh?
-    end;
-  end;
-end;
-
 procedure TCWRmainFrm.tbHistoryShow;
 begin
+  HistoryWDG.Hide;
   FillWDG(HistoryWDG, CSV_HISTORY);
-//  HistoryWSG.Visible := False;
-//  Log('HistoryWSG.RowCount: ' + HistoryWSG.RowCount.ToString);
-//  if HistoryWSG.RowCount <> StrToInt(cbNumHistList.Text) then  // need History data
-//  begin
-//    {$IfDef PAS2JS}await{$EndIf}(FillHistoryDisplay);
-//    if {still} HistoryWSG.RowCount <> StrToInt(cbNumHistList.Text) then  // may need History refresh
-//    begin
-//      Log('The History list is empty/incomplete. Prompt for refresh');
-//      if TAwait.ExecP<TModalResult> (MessageDlgAsync('The History list '
-//       + IfThen(HistoryWSG.RowCount < 2,'is empty','may be incomplete')
-//        + #13#13'Do you want to refresh it now?',mtConfirmation, [mbYes,mbNo]))
-//        = mrYes then {$IfDef PAS2JS}await{$EndIf}(UpdateHistory(Self));
-//    end;
-//  end;
-//  HistoryWSG.Visible := True;
+  Log('HistoryWDG.RowCount: ' + HistoryWDG.RowData.Length.ToString);
+  if HistoryWDG.RowData.Length <> StrToInt(cbNumHistList.Text) then  // need History data
+  begin
+//    FillWDG(HistoryWDG, CSV_HISTORY);
+//    Log('The History list is empty/incomplete. Prompt for refresh');
+//    if TAwait.ExecP<TModalResult> (MessageDlgAsync('The History list '
+//     + IfThen(HistoryWDG.RowData.Length < 2,'is empty','may be incomplete')
+//      + #13#13'Do you want to refresh it now?',mtConfirmation, [mbYes,mbNo]))
+//      = mrYes then {$IfDef PAS2JS}await{$EndIf}(UpdateHistory(Self));
+  end;
+  HistoryWDG.Show;
 end;
 
 procedure TCWRmainFrm.SetPage(PageNum: Integer);
@@ -1522,66 +1439,6 @@ begin
   end;
 end;
 
-procedure TCWRmainFrm.ShowHistoryDetails(ItemNo: Integer);
-var
-  DetailsFrm: TDetailsFrm;
-  x: TArray<string>;
-begin
-  try
-    DetailsFrm := TDetailsFrm.Create(Self);
-    Log('========== finished TDetailsFrm.Create(Self) ');
-    DetailsFrm.Popup := True;
-    DetailsFrm.Border := fbSingle;
-    Log('========== starting DetailsFrm.Load ');
-    // load file HTML template + controls
-    try
-      TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load);
-      Log('========== finished DetailsFrm.Load ');
-    except
-      on E:Exception do
-      Log('Exception from DetailsFrm.Load: ' + E.Message);
-    end;
-    DetailsFrm.Color := clWebWheat;
-    DetailsFrm.mmTitle.Color := clWebChocolate;
-    DetailsFrm.mmSubTitle.Color := clWebChocolate;
-    DetailsFrm.mmDescription.Color := clWebChocolate;
-    DetailsFrm.lblTitle.Color := clWebWheat;
-    DetailsFrm.lblSubTitle.Color := clWebWheat;
-    DetailsFrm.lblDescription.Color := clWebWheat;
-    // init controls after loading
-    DetailsFrm.mmTitle.Text := HistoryWSG.Cells[12,ItemNo];
-    DetailsFrm.mmSubTitle.Text := HistoryWSG.Cells[13,ItemNo];
-    DetailsFrm.lb11Time.Caption := HistoryWSG.Cells[8,ItemNo]
-       +  FormatDateTime(' -- h:nna/p',StrToDateTimeDef(HistoryWSG.Cells[9,ItemNo], 0));
-    DetailsFrm.lb10Channel.Caption := HistoryWSG.Cells[7,ItemNo];
-    x := HistoryWSG.Cells[15,ItemNo].Split(['/']);              // Parse 1st-air date
-    DetailsFrm.lb09OrigDate.Caption := IfThen(Length(x) = 3,      // Have mm/dd/yyyy
-      '1st Aired ' + x[1] + '/' + x[2] + '/' + RightStr(x[0],2),
-      IfThen((Length(x) = 1) and (x[0] > ''),                                       // Have yyyymmdd format
-      '1st Aired ' + copy(x[0],5,2) + '/' + copy(x[0],7,2) + '/' + copy(x[0],3,2),
-      IfThen(HistoryWSG.Cells[22,ItemNo] > '',                  // Check Movie year
-      'Movie Yr ' + HistoryWSG.Cells[22,ItemNo],'')));          // Use Movie year or nil
-    DetailsFrm.lb02New.Caption := HistoryWSG.Cells[19,ItemNo];
-    SetLabelStyle(DetailsFrm.lb08CC, HistoryWSG.Cells[18,ItemNo].Contains('T'));
-    SetLabelStyle(DetailsFrm.lb03Stereo, HistoryWSG.Cells[17,ItemNo].Contains('T'));
-    SetLabelStyle(DetailsFrm.lb07Dolby, HistoryWSG.Cells[20,ItemNo].Contains('T'));
-    DetailsFrm.lb04HD.Caption := IfThen(HistoryWSG.Cells[16,ItemNo].Contains('T'), 'HD', 'SD');
-    SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
-    DetailsFrm.mmDescription.Text := HistoryWSG.Cells[14,ItemNo]
-      + IfThen(HistoryWSG.Cells[28,ItemNo] > '', #13#13'Actors:  ' + ReplaceStr(
-        Copy(HistoryWSG.Cells[28,ItemNo],1,Length(HistoryWSG.Cells[28,ItemNo])-1)
-        ,';',', '));
-    // No capture requests
-    DetailsFrm.btnAddCap.Visible := False;
-    // execute form and wait for close
-    Log('========== starting DetailsFrm.Execute ');
-    TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
-    Log('========== finished DetailsFrm.Execute ');
-  finally
-    Log('========== EPGClickCell() Finished with Details form');
-    DetailsFrm.Free;
-  end;
-end;
 
 procedure TCWRmainFrm.ShowItemDetails(ItemNo: Integer; DoCapture: Boolean = True);
 var
@@ -1678,23 +1535,6 @@ begin
     DetailsFrm.Free;
   end;
 end;
-
-//procedure TCWRmainFrm.EPGClickCell(Sender: TObject; ACol, ARow: Integer);
-//
-//begin
-////  EPG.OnClickCell := nil;
-////  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-//  try
-//    Log('========== EPGClickCell() called from Row ' + ARow.ToString);
-//    // Quit Combobox if still open
-//    if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
-////    {$IFDEF PAS2JS} await {$ENDIF}
-//    (ShowItemDetails(EPG.GetCell(4,ARow).ToInteger));
-//  finally
-////    EPG.OnClickCell := EPGClickCell;
-//    Log('========== EPGClickCell() finished');
-//  end;
-//end;
 
 procedure TCWRmainFrm.FetchCapReservations;  // Fetch CW_EPG-saved file
 

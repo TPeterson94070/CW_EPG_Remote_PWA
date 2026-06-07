@@ -558,7 +558,6 @@ object CWRmainFrm: TCWRmainFrm
         item
           Field = 'PSIP'
           HeaderName = 'Channel'
-          Filter = True
           ViewModeType = crtText
           SelectOptions = <>
           LockVisible = False
@@ -806,42 +805,6 @@ object CWRmainFrm: TCWRmainFrm
     ParentFont = False
     ShowCaption = False
     TabOrder = 0
-    object HistoryWSG: TWebStringGrid
-      Left = 0
-      Top = 0
-      Width = 428
-      Height = 727
-      Align = alClient
-      Color = clDarkslategray
-      ColCount = 32
-      DefaultColWidth = 61
-      DefaultRowHeight = 23
-      FixedCols = 0
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clGray
-      Font.Height = -19
-      Font.Name = 'Arial'
-      Font.Style = []
-      Font.Quality = fqClearType
-      Options = [goRowSelect, goFixedRowClick]
-      ParentFont = False
-      TabOrder = 0
-      StyleElements = []
-      OnFixedCellClick = HistoryWSGFixedCellClick
-      ElementFont = efCSS
-      FixedFont.Charset = DEFAULT_CHARSET
-      FixedFont.Color = clWindowText
-      FixedFont.Height = -21
-      FixedFont.Name = 'Segoe UI'
-      FixedFont.Style = []
-      RangeEdit.Max = 100.000000000000000000
-      RangeEdit.Step = 1.000000000000000000
-      HeightStyle = ssPercent
-      HeightPercent = 100.000000000000000000
-      WidthPercent = 100.000000000000000000
-      OnClickCell = HistoryWSGClickCell
-      OnGetCellClass = HistoryWSGGetCellClass
-    end
     object HistoryWDG: TWebDataGrid
       Left = 0
       Top = 0
@@ -863,7 +826,7 @@ object CWRmainFrm: TCWRmainFrm
       Font.Name = 'Segoe UI'
       Font.Style = []
       MultilevelHeaders = <>
-      TabOrder = 1
+      TabOrder = 0
       Theming.BuiltInTheme = agThemeMaterial
       Visible = False
       OnGetRowClass = HistoryWDGGetRowClass
