@@ -70,6 +70,7 @@ type
     WebTimer1: TWebTimer;
     WebTimer2: TWebTimer;
     WebHTMLForm1: TWebHTMLForm;
+    HistoryWDG: TWebDataGrid;
 //  procedure ClearFilterLists;
   procedure SetCapturesFormats;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
@@ -125,6 +126,7 @@ type
     procedure HistoryTableClickCell(Sender: TObject; ACol, ARow: Integer);
     procedure SwipeDownRefresh(Enabled: Boolean);
   function EPGColumn_PSIPGetCellStyle(Params: TJSCellClassParams): TJSValue;
+  function HistoryWDGColumn_column8ValueFormatter(Value: TJSValue): TJSValue;
 private
   { Private declarations }
   [async] procedure LogDataRange;
@@ -134,8 +136,8 @@ private
   procedure FetchCapReservations;
   [async]
   procedure FetchNewCapRequests;
-  [async]
-  procedure FillTable(var WSG: TWebStringGrid; rs: string);
+  [async] procedure FillTable(var WSG: TWebStringGrid; rs: string);
+  procedure FillWDG(var WDG: TWebDataGrid; rs: string);
   [async]
   procedure RefreshCSV(TableFile, Title: string; var id: string);
   [async]
@@ -639,6 +641,52 @@ begin
       if Assigned(rq) then Result := rq.responseText;
     end;
   end;
+end;
+
+procedure TCWRmainFrm.FillWDG(var WDG: TWebDataGrid; rs: string);
+var
+  HeaderRow: string;
+  i, HeaderRowLength: Integer;
+  HeaderItems: TArray<string>;
+begin
+  Log('FillWDG called for ' + WDG.Name);
+  // Fetch string from local storage if not cwr_epg.csv
+  if rs <> CSV_EPG then CSVstring := TLocalStorage.GetValue(rs);
+  Log(rs + ' length: ' + IntToStr(Length(CSVstring)));
+  WDG.Clear;
+  if CSVstring > '' then
+  begin
+    WDG.BeginUpdate;
+    WDG.ColumnDefs.Clear;
+    // Until LoadFromCSVString(s,',','"',True) is fixed, need to treat Header row explicitly
+    HeaderRowLength := Pos(#13, CSVString) - 1;
+    HeaderRow := Copy(CSVString, 1, HeaderRowLength);
+    HeaderItems := HeaderRow.Split([',']);
+    for i := 0 to Pred(Length(HeaderItems)) do
+    begin
+      WDG.ColumnDefs.Insert(i);
+      WDG.ColumnDefs[i].HeaderName := ReplaceStr(HeaderItems[i], '"', '');
+      WDG.ColumnDefs[i].CellDataType := cdtText;
+      WDG.ColumnDefs[i].Field := ReplaceStr(HeaderItems[i], '"', '');
+      WDG.ColumnDefs[i].Visible := i in [7, 8, 12, 13];
+      WDG.ColumnDefs[i].Sortable := True;
+      WDG.ColumnDefs[i].Filter := True;
+    end;
+
+    WDG.LoadFromCSVString(Copy(CSVString,HeaderRowLength + 1), ',', '"', False);
+    // dump empty rows (add iff needed)
+    WDG.RowHeight := 17;
+    // Convert Col 8 string (StartTime) to TDateTime string
+    for i := 0 to Pred(WDG.RowData.Length) do
+      WDG.Cells[i,8] := FloatToStr(StrToDateTimeDef(WDG.Cells[i,8],0));
+    WDG.ColumnDefs[8].ValueFormatter := HistoryWDGColumn_column8ValueFormatter;
+    WDG.ColumnDefs[8].Filter := False;
+    WDG.EndUpdate;
+    WDG.Show;
+  end;
+  Log(WDG.Name+'.RowCount: ' + WDG.RowData.Length.ToString);
+  Log('Done loading '+WDG.Name);
+
 end;
 
 procedure TCWRmainFrm.FillTable(var WSG: TWebStringGrid; rs: string);
@@ -1294,21 +1342,22 @@ end;
 
 procedure TCWRmainFrm.tbHistoryShow;
 begin
-  HistoryTable.Visible := False;
-  Log('HistoryTable.RowCount: ' + HistoryTable.RowCount.ToString);
-  if HistoryTable.RowCount <> StrToInt(cbNumHistList.Text) then  // need History data
-  begin
-    {$IfDef PAS2JS}await{$EndIf}(FillHistoryDisplay);
-    if {still} HistoryTable.RowCount <> StrToInt(cbNumHistList.Text) then  // may need History refresh
-    begin
-      Log('The History list is empty/incomplete. Prompt for refresh');
-      if TAwait.ExecP<TModalResult> (MessageDlgAsync('The History list '
-       + IfThen(HistoryTable.RowCount < 2,'is empty','may be incomplete')
-        + #13#13'Do you want to refresh it now?',mtConfirmation, [mbYes,mbNo]))
-        = mrYes then {$IfDef PAS2JS}await{$EndIf}(UpdateHistory(Self));
-    end;
-  end;
-  HistoryTable.Visible := True;
+  FillWDG(HistoryWDG, CSV_HISTORY);
+//  HistoryTable.Visible := False;
+//  Log('HistoryTable.RowCount: ' + HistoryTable.RowCount.ToString);
+//  if HistoryTable.RowCount <> StrToInt(cbNumHistList.Text) then  // need History data
+//  begin
+//    {$IfDef PAS2JS}await{$EndIf}(FillHistoryDisplay);
+//    if {still} HistoryTable.RowCount <> StrToInt(cbNumHistList.Text) then  // may need History refresh
+//    begin
+//      Log('The History list is empty/incomplete. Prompt for refresh');
+//      if TAwait.ExecP<TModalResult> (MessageDlgAsync('The History list '
+//       + IfThen(HistoryTable.RowCount < 2,'is empty','may be incomplete')
+//        + #13#13'Do you want to refresh it now?',mtConfirmation, [mbYes,mbNo]))
+//        = mrYes then {$IfDef PAS2JS}await{$EndIf}(UpdateHistory(Self));
+//    end;
+//  end;
+//  HistoryTable.Visible := True;
 end;
 
 procedure TCWRmainFrm.SetPage(PageNum: Integer);
@@ -1696,6 +1745,14 @@ begin
   finally
     Log('========== EPGCellClickedEvent() finished');
   end;
+end;
+
+function TCWRmainFrm.HistoryWDGColumn_column8ValueFormatter(Value: TJSValue):
+    TJSValue;
+var ADateTime: string;
+begin
+  DateTimeToString(ADateTime, 'mm/dd/yy HH:nn', StrToFloat(string(Value)));
+  Result := ADateTime; //datetimetostr({'mm/dd/yy HH:nn',} StrToFloat(string(Value)));
 end;
 
 (*
