@@ -431,6 +431,7 @@ object CWRmainFrm: TCWRmainFrm
       PaginationPageSize = 50
       PaginationPageSizeSelector = '20,50,100'
       RowHeight = 20
+      SuppressMoveWhenColumnDragging = True
       TabOrder = 0
       Theming.BuiltInTheme = agThemeMaterial
       Theming.ThemeMode = agDarkMode
@@ -656,6 +657,7 @@ object CWRmainFrm: TCWRmainFrm
       Font.Name = 'Segoe UI'
       Font.Style = []
       MultilevelHeaders = <>
+      SuppressMoveWhenColumnDragging = True
       TabOrder = 0
       Theming.BuiltInTheme = agThemeMaterial
       Visible = False

@@ -177,19 +177,17 @@ uses
 {$I AppKey.inc}
 var
   ResetPrompt:      string = 'none' ;
+  BaseFilter:       string = 'ID >= 1';
   VisiblePanelNum:  Integer = 0;
   FirstID:          Integer = 1;
   FirstEndDate,
   LastStartDate:    TDate;
   TotalAvailableDays: Integer;
-  CSVString,
-//  LastID,
-  SearchFilter:     string;
-  BaseFilter:       string = 'ID >= 1';
+  CSVString:        string;
 
 type ProgramTypes = (New,Rerun,Movie,Other);
 const
-  NUMIDS = 1000;
+//  NUMIDS = 1000;
   NUMHIST = 'NumHistoryItems';
   EMAILADDR = 'emailAddress';
   CSV_EPG = 'cwr_epg.csv';
@@ -963,7 +961,6 @@ begin
   WIDBCDS.First;
   FirstID := Max(WIDBCDS.Fields[0].AsInteger, 1);
   BaseFilter := 'ID >= ' + FirstID.ToString;
-//  LastID := (FirstID + NUMIDS).ToString;
   WIDBCDS.Filtered := False;
   Log(' WIDBCDS BaseFilter [' + BaseFilter + '] assigned, but not active');
 //  EPG.ColumnDefs[0].Alignment := taCenter;
@@ -1066,22 +1063,19 @@ end;
 
 procedure TCWRmainFrm.SetFilters;
 var
-  i: Integer;
   fltr: string;
   item: string;
 begin
   Log('====== SetFilters called');
-  ByAll.Checked := not (ByChannel.Checked or ByGenre.Checked {or ByTitle.Checked} or byType.Checked);
+  ByAll.Checked := not (ByChannel.Checked or ByGenre.Checked or byType.Checked);
   if not pnlWaitPls.Visible then
-    {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, 'Short Un') + 'Filtered List'));
-  EPG.Hide;
+    {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, 'Un') + 'Filtered List'));
   EPG.BeginUpdate;
   EPG.ColumnDefs.ClearFilters;
-  EPG.ColumnDefs[2].HeaderName := IfThen(ByChannel.Checked, wcbChannels.Text + ' ')
-    + IfThen(byType.Checked, '"' + wcbTypes.Text + '" ')
-    + IfThen(ByGenre.Checked, wcbGenres.Text + ' ')
-    + 'Programs' {+ IfThen(ByAll.Checked, ' (1st ' + NUMIDS.ToString + ' items)')}
-    {+ IfThen(ByTitle.Checked, ' w/Titles:' + QuotedStr('*' + SearchFilter + '*'))};
+  EPG.ColumnDefs[2].HeaderName := IfThen(ByChannel.Checked, wcbChannels.Text)
+    + IfThen(byType.Checked, ' "' + wcbTypes.Text + '"')
+    + IfThen(ByGenre.Checked, ' ' + wcbGenres.Text)
+    + ' Programs';
   EPG.ColumnDefs[0].Visible := not ByChannel.Checked;
   EPG.ColumnDefs[0].Width := 100;
   EPG.ColumnDefs[1].Width := 140;
@@ -1114,20 +1108,14 @@ begin
       + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
 //    EPG.ColumnDefs.FindColumn('genres').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
 
-//  if fltr = '' then fltr := ' and ID < ' + LastID;
   Log('Epg Filter: BaseFilter + ' + fltr);
   WIDBCDS.Filter := BaseFilter + fltr;
   WIDBCDS.Filtered := True;
-  EPG.Refresh;
-  //  { $IfDef PAS2JS}EPG.SetSelectedRow(1, True); // := 1;{ $EndIf}
   {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
   WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
   EPG.EndUpdate;
-  EPG.Show;
   pnlWaitPls.Hide;
-  EPG.BringToFront;
-//  EPG.EnsureLastRowVisible;
-  if fltr>'' then pnlFilterSelection.BringToFront;
+  pnlFilterSelection.Hide;
   Log('====== SetFilters finished');
 end;
 
