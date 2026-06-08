@@ -635,6 +635,7 @@ begin
 end;
 
 procedure TCWRmainFrm.FillWDG(var WDG: TWebDataGrid; rs: string);
+// Could be named FillHistoryWDG, but I may broaden WDG use to Captures, NewCaptures. TBD
 var
   HeaderRow: string;
   i, HeaderRowLength: Integer;
