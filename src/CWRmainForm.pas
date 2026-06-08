@@ -51,7 +51,6 @@ type
   ByAll: TMenuItem;
   ByChannel: TMenuItem;
   ByGenre: TMenuItem;
-  ByTitle: TMenuItem;
   wcbChannels: TWebComboBox;
     WebHTMLDiv1: TWebHTMLDiv;
     WebHTMLDiv2: TWebHTMLDiv;
@@ -67,7 +66,6 @@ type
     wcbTypes: TWebComboBox;
     weTitleSearch: TWebEdit;
     WebTimer1: TWebTimer;
-    WebTimer2: TWebTimer;
     WebHTMLForm1: TWebHTMLForm;
     HistoryWDG: TWebDataGrid;
 //  procedure ClearFilterLists;
@@ -93,7 +91,7 @@ type
 //  procedure EPGClickCell(Sender: TObject; ACol, ARow: Integer);
   [async] procedure ByGenreClick(Sender: TObject);
   [async] procedure wcbGenresChange(Sender: TObject);
-  [async] procedure ByTitleClick(Sender: TObject);
+//  [async] procedure ByTitleClick(Sender: TObject);
   [async] procedure byTypeClick(Sender: TObject);
   [async] procedure ByAllClick(Sender: TObject);
   [async] procedure ByChannelClick(Sender: TObject);
@@ -110,9 +108,9 @@ type
   [async] procedure btnRefreshDataClick(Sender: TObject);
     procedure wcbTypesChange(Sender: TObject);
     procedure wcbTypesFocusOut(Sender: TObject);
-    procedure weTitleSearchChange(Sender: TObject);
+//    procedure weTitleSearchChange(Sender: TObject);
     procedure WebTimer1Timer(Sender: TObject);
-    [async] procedure WebTimer2Timer(Sender: TObject);
+//    [async] procedure WebTimer2Timer(Sender: TObject);
     procedure CapturesWSGGetCellData(Sender: TObject; ACol, ARow: Integer;
       AField: TField; var AValue: string);
     [async] procedure CapturesWSGClickCell(Sender: TObject; ACol, ARow: Integer);
@@ -185,7 +183,7 @@ var
   LastStartDate:    TDate;
   TotalAvailableDays: Integer;
   CSVString,
-  LastID,
+//  LastID,
   SearchFilter:     string;
   BaseFilter:       string = 'ID >= 1';
 
@@ -244,24 +242,24 @@ begin
   wcbTypes.Hide;
 end;
 
-procedure TCWRmainFrm.WebTimer2Timer(Sender: TObject);
-begin
-  WebTimer2.Enabled := False;
-  if weTitleSearch.Text = '' then Exit;
-  if not ByTitle.Checked then Exit;
-  Log('weTitleSearch.Text: ' + weTitleSearch.Text);
-  SearchFilter := weTitleSearch.Text;
-  {$IfDef PAS2JS}await{$EndIf}(SetFilters);
-  weTitleSearch.SetFocus;
-end;
+//procedure TCWRmainFrm.WebTimer2Timer(Sender: TObject);
+//begin
+//  WebTimer2.Enabled := False;
+//  if weTitleSearch.Text = '' then Exit;
+//  if not ByTitle.Checked then Exit;
+//  Log('weTitleSearch.Text: ' + weTitleSearch.Text);
+//  SearchFilter := weTitleSearch.Text;
+//  {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+//  weTitleSearch.SetFocus;
+//end;
 
-procedure TCWRmainFrm.weTitleSearchChange(Sender: TObject);
-begin
-  ByTitle.Checked := True;
-  WebTimer2.Interval := 2000;
-  WebTimer2.Enabled := False; // Restart timeout
-  WebTimer2.Enabled := True;
-end;
+//procedure TCWRmainFrm.weTitleSearchChange(Sender: TObject);
+//begin
+//  ByTitle.Checked := True;
+//  WebTimer2.Interval := 2000;
+//  WebTimer2.Enabled := False; // Restart timeout
+//  WebTimer2.Enabled := True;
+//end;
 
 procedure TCWRmainFrm.wcbChannelsChange(Sender: TObject);
 begin
@@ -281,7 +279,7 @@ var
   AppVersion: string;
 begin
   Log('========== FormCreate is called');
-  LastID := NUMIDS.ToString;  // Make sure it's not '' for filter
+//  LastID := NUMIDS.ToString;  // Make sure it's not '' for filter
 //  WebMainMenu1.Height := 20;   // Works someday, I hope
 {$IFDEF PAS2JS}
   asm
@@ -401,7 +399,7 @@ begin
   ByAll.OnClick := nil;
   try
     ByGenre.Checked := False;
-    ByTitle.Checked := False;
+//    ByTitle.Checked := False;
     byType.Checked := False;
     ByChannel.Checked := False;
     pnlFilterSelection.Hide;
@@ -449,35 +447,35 @@ begin
   end;
 end;
 
-procedure TCWRmainFrm.ByTitleClick(Sender: TObject);
-begin
-  Log('byTitleClick called');
-  ByTitle.OnClick := nil;
-  try
-    if ByTitle.Checked then // Toggle off this filter
-    begin
-      ByTitle.Checked := False;
-      pnlFilterSelection.Hide;
-      weTitleSearch.Hide;
-      {$IfDef PAS2JS}await{$EndIf}(SetFilters);
-    end else
-    begin
-      wcbGenres.Hide;
-      wcbChannels.Hide;
-      wcbTypes.Hide;
-      lblFilterSelect.Caption := 'Show Titles with:';
-      if VisiblePanelNum <> 0 then {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
-      pnlFilterSelection.BringToFront;
-      pnlFilterSelection.Show;
-      weTitleSearch.Clear;
-      weTitleSearch.BringToFront;
-      weTitleSearch.Show;
-    end;
-  finally
-    ByTitle.OnClick := ByTitleClick;
-    Log('byTitleClick finished');
-  end;
-end;
+//procedure TCWRmainFrm.ByTitleClick(Sender: TObject);
+//begin
+//  Log('byTitleClick called');
+//  ByTitle.OnClick := nil;
+//  try
+//    if ByTitle.Checked then // Toggle off this filter
+//    begin
+//      ByTitle.Checked := False;
+//      pnlFilterSelection.Hide;
+//      weTitleSearch.Hide;
+//      {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+//    end else
+//    begin
+//      wcbGenres.Hide;
+//      wcbChannels.Hide;
+//      wcbTypes.Hide;
+//      lblFilterSelect.Caption := 'Show Titles with:';
+//      if VisiblePanelNum <> 0 then {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
+//      pnlFilterSelection.BringToFront;
+//      pnlFilterSelection.Show;
+//      weTitleSearch.Clear;
+//      weTitleSearch.BringToFront;
+//      weTitleSearch.Show;
+//    end;
+//  finally
+//    ByTitle.OnClick := ByTitleClick;
+//    Log('byTitleClick finished');
+//  end;
+//end;
 
 procedure TCWRmainFrm.byTypeClick(Sender: TObject);
 begin
@@ -965,7 +963,7 @@ begin
   WIDBCDS.First;
   FirstID := Max(WIDBCDS.Fields[0].AsInteger, 1);
   BaseFilter := 'ID >= ' + FirstID.ToString;
-  LastID := (FirstID + NUMIDS).ToString;
+//  LastID := (FirstID + NUMIDS).ToString;
   WIDBCDS.Filtered := False;
   Log(' WIDBCDS BaseFilter [' + BaseFilter + '] assigned, but not active');
 //  EPG.ColumnDefs[0].Alignment := taCenter;
@@ -1073,7 +1071,7 @@ var
   item: string;
 begin
   Log('====== SetFilters called');
-  ByAll.Checked := not (ByChannel.Checked or ByGenre.Checked or ByTitle.Checked or byType.Checked);
+  ByAll.Checked := not (ByChannel.Checked or ByGenre.Checked {or ByTitle.Checked} or byType.Checked);
   if not pnlWaitPls.Visible then
     {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, 'Short Un') + 'Filtered List'));
   EPG.Hide;
@@ -1082,8 +1080,8 @@ begin
   EPG.ColumnDefs[2].HeaderName := IfThen(ByChannel.Checked, wcbChannels.Text + ' ')
     + IfThen(byType.Checked, '"' + wcbTypes.Text + '" ')
     + IfThen(ByGenre.Checked, wcbGenres.Text + ' ')
-    + 'Programs' + IfThen(ByAll.Checked, ' (1st ' + NUMIDS.ToString + ' items)')
-    + IfThen(ByTitle.Checked, ' w/Titles:' + QuotedStr('*' + SearchFilter + '*'));
+    + 'Programs' {+ IfThen(ByAll.Checked, ' (1st ' + NUMIDS.ToString + ' items)')}
+    {+ IfThen(ByTitle.Checked, ' w/Titles:' + QuotedStr('*' + SearchFilter + '*'))};
   EPG.ColumnDefs[0].Visible := not ByChannel.Checked;
   EPG.ColumnDefs[0].Width := 100;
   EPG.ColumnDefs[1].Width := 140;
@@ -1116,7 +1114,7 @@ begin
       + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
 //    EPG.ColumnDefs.FindColumn('genres').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
 
-  if fltr = '' then fltr := ' and ID < ' + LastID;
+//  if fltr = '' then fltr := ' and ID < ' + LastID;
   Log('Epg Filter: BaseFilter + ' + fltr);
   WIDBCDS.Filter := BaseFilter + fltr;
   WIDBCDS.Filtered := True;
@@ -1312,6 +1310,8 @@ end;
 procedure TCWRmainFrm.SetPage(PageNum: Integer);
 
 begin
+  EPG.Visible := PageNum = 0;
+  HistoryWDG.Visible := PageNum = 2;
   case PageNum of
     0: begin          {Listings page}
       pnlListings.BringToFront;
