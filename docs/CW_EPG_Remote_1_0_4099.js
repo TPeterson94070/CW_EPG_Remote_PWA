@@ -46641,9 +46641,6 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
         this.FLoaded = true;
       };
     };
-    this.Refresh = function () {
-      this._Glue_LoadGridData("Refresh",true);
-    };
     rtl.addIntf(this,pas["WEBLib.Controls"].IControl);
     rtl.addIntf(this,pas.System.IUnknown);
   });
@@ -49191,11 +49188,10 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       var fltr = "";
       $impl.Log("====== SetFilters called");
       this.ByAll.SetChecked(!(this.ByChannel.FChecked || this.ByGenre.FChecked || this.byType.FChecked));
-      if (!this.pnlWaitPls.FVisible) await this.ShowPlsWait("Preparing " + pas.StrUtils.IfThen(this.ByAll.FChecked,"Short Un","") + "Filtered List");
-      this.EPG.Hide();
+      if (!this.pnlWaitPls.FVisible) await this.ShowPlsWait("Preparing " + pas.StrUtils.IfThen(this.ByAll.FChecked,"Un","") + "Filtered List");
       this.EPG.BeginUpdate();
       this.EPG.GetColumnDefs().ClearFilters();
-      this.EPG.GetColumnDefs().GetItem$2(2).SetHeaderName(pas.StrUtils.IfThen(this.ByChannel.FChecked,this.wcbChannels.GetText() + " ","") + pas.StrUtils.IfThen(this.byType.FChecked,'"' + this.wcbTypes.GetText() + '" ',"") + pas.StrUtils.IfThen(this.ByGenre.FChecked,this.wcbGenres.GetText() + " ","") + "Programs");
+      this.EPG.GetColumnDefs().GetItem$2(2).SetHeaderName(pas.StrUtils.IfThen(this.ByChannel.FChecked,this.wcbChannels.GetText(),"") + pas.StrUtils.IfThen(this.byType.FChecked,' "' + this.wcbTypes.GetText() + '"',"") + pas.StrUtils.IfThen(this.ByGenre.FChecked," " + this.wcbGenres.GetText(),"") + " Programs");
       this.EPG.GetColumnDefs().GetItem$2(0).SetVisible(!this.ByChannel.FChecked);
       this.EPG.GetColumnDefs().GetItem$2(0).SetWidth(100);
       this.EPG.GetColumnDefs().GetItem$2(1).SetWidth(140);
@@ -49212,14 +49208,11 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log("Epg Filter: BaseFilter + " + fltr);
       this.WIDBCDS.SetFilterText($impl.BaseFilter + fltr);
       this.WIDBCDS.SetFiltered(true);
-      this.EPG.Refresh();
       await this.WIDBCDS.EnableControls();
       this.WebTimer1.SetEnabled(true);
       this.EPG.EndUpdate();
-      this.EPG.Show();
       this.pnlWaitPls.Hide();
-      this.EPG.BringToFront();
-      if (fltr > "") this.pnlFilterSelection.BringToFront();
+      this.pnlFilterSelection.Hide();
       $impl.Log("====== SetFilters finished");
     };
     this.ShowPlsWait = async function (PlsWaitCap) {
@@ -49992,6 +49985,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.EPG.SetPaginationPageSize(50);
         this.EPG.SetPaginationPageSizeSelector("20,50,100");
         this.EPG.SetRowHeight(20);
+        this.EPG.SetSuppressMoveWhenColumnDragging(true);
         this.EPG.SetTabOrder(0);
         this.EPG.FTheming.SetBuiltInTheme(2);
         this.EPG.FTheming.SetThemeMode(1);
@@ -50217,6 +50211,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.HistoryWDG.FFont.SetHeight(18);
         this.HistoryWDG.FFont.SetName("Segoe UI");
         this.HistoryWDG.FFont.SetStyle({});
+        this.HistoryWDG.SetSuppressMoveWhenColumnDragging(true);
         this.HistoryWDG.SetTabOrder(0);
         this.HistoryWDG.FTheming.SetBuiltInTheme(2);
         this.HistoryWDG.SetVisible(false);
@@ -50647,13 +50642,13 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
   $mod.$implcode = function () {
     $impl.CLIENT_APP_KEY = "654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com";
     $impl.ResetPrompt = "none";
+    $impl.BaseFilter = "ID >= 1";
     $impl.VisiblePanelNum = 0;
     $impl.FirstID = 1;
     $impl.FirstEndDate = 0.0;
     $impl.LastStartDate = 0.0;
     $impl.TotalAvailableDays = 0;
     $impl.CSVString = "";
-    $impl.BaseFilter = "ID >= 1";
     $impl.ProgramTypes = {"0": "New", New: 0, "1": "Rerun", Rerun: 1, "2": "Movie", Movie: 2, "3": "Other", Other: 3};
     $mod.$rtti.$Enum("ProgramTypes",{minvalue: 0, maxvalue: 3, ordtype: 1, enumtype: $impl.ProgramTypes});
     $impl.NUMHIST = "NumHistoryItems";
