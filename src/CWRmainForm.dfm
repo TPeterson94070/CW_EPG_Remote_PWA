@@ -670,7 +670,7 @@ object CWRmainFrm: TCWRmainFrm
     Top = 50
     Width = 428
     Height = 727
-    ElementClassName = 'greenBG'
+    ElementClassName = 'greenBGolive'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
     Align = alClient
@@ -692,15 +692,14 @@ object CWRmainFrm: TCWRmainFrm
       Top = 266
       Width = 428
       Height = 35
-      ElementClassName = 'greenBG'
+      ElementClassName = 'greenBGolive'
       Align = alTop
       ChildOrder = 1
       ElementFont = efCSS
       HTML.Strings = (
         
-          '<FONT color="#FFFFFF" ><P align="center">Programs to be Schedule' +
-          'd </FONT><FONT color="#F00000" >on Next CW_EPG Run </P> '
-        '</FONT>')
+          '<P align="center">Programs to be Scheduled <B>on Next CW_EPG Run' +
+          '</B></P')
       Role = ''
     end
     object WebHTMLDiv2: TWebHTMLDiv
@@ -720,7 +719,7 @@ object CWRmainFrm: TCWRmainFrm
         Width = 428
         Height = 231
         Align = alClient
-        Color = 212724686
+        Color = clDarkolivegreen
         ColCount = 7
         DefaultRowHeight = 22
         FixedColor = clGreen
@@ -734,7 +733,7 @@ object CWRmainFrm: TCWRmainFrm
         ParentFont = False
         TabOrder = 0
         StyleElements = []
-        ElementClassName = 'yellowBG'
+        ElementClassName = 'yellowBGolive'
         ElementFont = efCSS
         FixedFont.Charset = ANSI_CHARSET
         FixedFont.Color = clBlack
@@ -779,7 +778,7 @@ object CWRmainFrm: TCWRmainFrm
         ParentFont = False
         TabOrder = 0
         StyleElements = []
-        ElementClassName = 'whiteBG'
+        ElementClassName = 'whiteBGolive'
         ElementFont = efCSS
         FixedFont.Charset = ANSI_CHARSET
         FixedFont.Color = clBlack
@@ -800,29 +799,27 @@ object CWRmainFrm: TCWRmainFrm
       Top = 0
       Width = 428
       Height = 35
-      ElementClassName = 'greenBG'
+      ElementClassName = 'greenBGolive'
       Align = alTop
       ChildOrder = 3
       ElementFont = efCSS
       HTML.Strings = (
-        
-          '<FONT color="#FFFFFF" ><P align="center">Programs currently Sche' +
-          'duled</P></FONT>')
+        '<P align="center">Programs currently Scheduled</P>')
       Role = ''
     end
     object btnSchdRefrsh: TWebButton
       AlignWithMargins = True
-      Left = 125
+      Left = 200
       Top = 535
-      Width = 178
+      Width = 28
       Height = 33
-      Margins.Left = 125
-      Margins.Right = 125
+      Margins.Left = 200
+      Margins.Right = 200
       Margins.Bottom = 50
       Align = alTop
       Caption = 'Refresh'
       ChildOrder = 4
-      ElementClassName = 'btn btn-light'
+      ElementClassName = 'btn btn-outline-secondary greenBGolive'
       Font.Charset = ANSI_CHARSET
       Font.Color = clBlack
       Font.Height = -12

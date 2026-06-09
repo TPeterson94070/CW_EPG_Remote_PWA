@@ -120,7 +120,7 @@ type
     procedure SwipeDownRefresh(Enabled: Boolean);
   function EPGColumn_PSIPGetCellStyle(Params: TJSCellClassParams): TJSValue;
   procedure HistoryWDGCellClickedEvent(Event: TJSCellClickedEvent);
-  function HistoryWDGColumn_column8ValueFormatter(Value: TJSValue): TJSValue;
+  function WDGColumn_TDateTimeValueFormatter(Value: TJSValue): TJSValue;
   function HistoryWDGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
 private
   { Private declarations }
@@ -679,7 +679,7 @@ begin
     // Convert Col 8 string (StartTime) to TDateTime string
     for i := 0 to Pred(WDG.RowData.Length) do
       WDG.Cells[i,8] := FloatToStr(StrToDateTimeDef(WDG.Cells[i,8],0));
-    WDG.ColumnDefs[8].ValueFormatter := HistoryWDGColumn_column8ValueFormatter;
+    WDG.ColumnDefs[8].ValueFormatter := WDGColumn_TDateTimeValueFormatter;
     WDG.ColumnDefs[8].Filter := False;
     WDG.EndUpdate;
     WDG.Show;
@@ -1257,7 +1257,7 @@ begin
   ShowHistoryWDGDetails(toInteger(Event.RowIndex));
 end;
 
-function TCWRmainFrm.HistoryWDGColumn_column8ValueFormatter(Value: TJSValue):
+function TCWRmainFrm.WDGColumn_TDateTimeValueFormatter(Value: TJSValue):
     TJSValue;
 var ADateTime: string;
 begin
