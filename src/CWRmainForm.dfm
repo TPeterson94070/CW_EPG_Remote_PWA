@@ -49,12 +49,15 @@ object CWRmainFrm: TCWRmainFrm
     Top = 0
     Width = 428
     Height = 50
-    ElementClassName = 'container'
+    ParentCustomHint = False
+    ElementClassName = 'container yellowBGslate'
     WidthStyle = ssPercent
     Align = alTop
-    BorderStyle = bsNone
     Caption = 'pnlMenu'
     ChildOrder = 12
+    Color = clBtnText
+    ElementBodyClassName = 'whiteBGslate'
+    ElementFont = efCSS
     Font.Charset = ANSI_CHARSET
     Font.Color = clBlack
     Font.Height = -19
@@ -330,7 +333,7 @@ object CWRmainFrm: TCWRmainFrm
     Top = 50
     Width = 428
     Height = 727
-    ElementClassName = 'greenBG'
+    ElementClassName = 'greenBGnavy'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
     Align = alClient
@@ -431,7 +434,6 @@ object CWRmainFrm: TCWRmainFrm
       PaginationPageSize = 50
       PaginationPageSizeSelector = '20,50,100'
       RowHeight = 20
-      SuppressMoveWhenColumnDragging = True
       TabOrder = 0
       Theming.BuiltInTheme = agThemeMaterial
       Theming.ThemeMode = agDarkMode
@@ -445,7 +447,7 @@ object CWRmainFrm: TCWRmainFrm
       Top = 153
       Width = 150
       Height = 75
-      ElementClassName = 'card'
+      ElementClassName = 'card yellowBGslate'
       ChildOrder = 5
       ElementBodyClassName = 'card-body'
       ElementFont = efCSS
@@ -487,7 +489,8 @@ object CWRmainFrm: TCWRmainFrm
         Width = 144
         Height = 30
         Align = alClient
-        ElementClassName = 'form-select'
+        Color = clDarkslateblue
+        ElementClassName = 'form-select whiteBGslate'
         ElementFont = efCSS
         Font.Charset = ANSI_CHARSET
         Font.Color = clBlack
@@ -512,7 +515,8 @@ object CWRmainFrm: TCWRmainFrm
         Width = 144
         Height = 30
         Align = alClient
-        ElementClassName = 'form-select'
+        Color = clDarkslateblue
+        ElementClassName = 'form-select whiteBGslate'
         ElementFont = efCSS
         Font.Charset = ANSI_CHARSET
         Font.Color = clBlack
@@ -537,7 +541,8 @@ object CWRmainFrm: TCWRmainFrm
         Width = 144
         Height = 30
         Align = alClient
-        ElementClassName = 'form-select'
+        Color = clDarkslateblue
+        ElementClassName = 'form-select whiteBGslate'
         ElementFont = efCSS
         Font.Charset = ANSI_CHARSET
         Font.Color = clBlack
@@ -660,6 +665,7 @@ object CWRmainFrm: TCWRmainFrm
       SuppressMoveWhenColumnDragging = True
       TabOrder = 0
       Theming.BuiltInTheme = agThemeMaterial
+      Theming.ThemeMode = agDarkMode
       Visible = False
       OnGetRowClass = HistoryWDGGetRowClass
       OnCellClickedEvent = HistoryWDGCellClickedEvent
@@ -832,11 +838,14 @@ object CWRmainFrm: TCWRmainFrm
     end
   end
   object WebMainMenu1: TWebMainMenu
-    Appearance.BackgroundColor = clSilver
+    Appearance.BackgroundColor = clDarkslateblue
     Appearance.HamburgerMenu.Caption = 'Menu'
+    Appearance.HamburgerMenu.CaptionColor = clYellow
+    Appearance.HamburgerMenu.BackgroundColor = clDarkblue
     Appearance.HamburgerMenu.Visible = hmAlways
     Appearance.HamburgerMenu.ResponsiveMaxWidth = 300
-    Appearance.HoverFontColor = clWhite
+    Appearance.HoverColor = clCornflowerblue
+    Appearance.HoverFontColor = clYellow
     Appearance.ImageSize = 8
     Appearance.SubmenuIndicator = '&#9658;'
     Container = pnlMenu
@@ -892,6 +901,7 @@ object CWRmainFrm: TCWRmainFrm
       end
       object Settings1: TMenuItem
         Caption = 'Settings'
+        Visible = False
         OnClick = Settings1Click
       end
     end
