@@ -55,7 +55,7 @@ object CWRmainFrm: TCWRmainFrm
     Align = alTop
     Caption = 'pnlMenu'
     ChildOrder = 12
-    Color = clBtnText
+    Color = clGrayText
     ElementBodyClassName = 'whiteBGslate'
     ElementFont = efCSS
     Font.Charset = ANSI_CHARSET
@@ -328,298 +328,6 @@ object CWRmainFrm: TCWRmainFrm
       end
     end
   end
-  object pnlListings: TWebPanel
-    Left = 0
-    Top = 50
-    Width = 428
-    Height = 727
-    ElementClassName = 'greenBGnavy'
-    HeightStyle = ssPercent
-    WidthStyle = ssPercent
-    Align = alClient
-    Caption = 'pnlListings'
-    ChildOrder = 11
-    Color = clBlueviolet
-    ElementBodyClassName = 'card-body'
-    Font.Charset = ANSI_CHARSET
-    Font.Color = clWhite
-    Font.Height = -19
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-    ShowCaption = False
-    TabOrder = 5
-    DesignSize = (
-      428
-      727)
-    object lblEmptyEPG: TWebLabel
-      Left = 96
-      Top = 58
-      Width = 329
-      Height = 44
-      Alignment = taCenter
-      Anchors = [akLeft, akTop, akRight]
-      Caption = 
-        'There are no current listings to see.(Try "Options|Refresh EPG" ' +
-        'to update)'
-      Color = clBlack
-      ElementClassName = 'form-label'
-      ElementFont = efCSS
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clWhite
-      Font.Height = -19
-      Font.Name = 'Arial'
-      Font.Style = []
-      HeightStyle = ssAuto
-      HeightPercent = 100.000000000000000000
-      ParentFont = False
-      Transparent = False
-      Visible = False
-      WordWrap = True
-      WidthPercent = 100.000000000000000000
-    end
-    object EPG: TWebDBDataGrid
-      Left = 0
-      Top = 0
-      Width = 428
-      Height = 727
-      HeightPercent = 100.000000000000000000
-      WidthPercent = 100.000000000000000000
-      Align = alClient
-      Banding.OddRowsColor = clNavy
-      Banding.EvenRowsColor = clNavy
-      ColumnDefs = <
-        item
-          Field = 'PSIP'
-          HeaderName = 'Channel'
-          ViewModeType = crtText
-          SelectOptions = <>
-          LockVisible = False
-          OnGetCellStyle = EPGColumn_PSIPGetCellStyle
-        end
-        item
-          Field = 'Time'
-          HeaderName = 'HTPC Local Time'
-          ViewModeType = crtText
-          SelectOptions = <>
-        end
-        item
-          Field = 'Title'
-          HeaderName = 'Program'
-          Filter = True
-          ViewModeType = crtText
-          SelectOptions = <>
-        end
-        item
-          Field = 'Class'
-          HeaderName = 'Class'
-          Visible = False
-          SelectOptions = <>
-        end
-        item
-          Field = 'id'
-          HeaderName = 'ID'
-          Resizable = False
-          Sortable = False
-          Visible = False
-          SelectOptions = <>
-        end>
-      EditType = retFullRow
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -18
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      MultilevelHeaders = <>
-      PaginationPageSize = 50
-      PaginationPageSizeSelector = '20,50,100'
-      RowHeight = 20
-      TabOrder = 0
-      Theming.BuiltInTheme = agThemeMaterial
-      Theming.ThemeMode = agDarkMode
-      DataSource = WebDataSource1
-      ShowIndicator = False
-      OnGetRowClass = EPGGetRowClass
-      OnCellClickedEvent = EPGCellClickedEvent
-    end
-    object pnlFilterSelection: TWebPanel
-      Left = 117
-      Top = 153
-      Width = 150
-      Height = 75
-      ElementClassName = 'card yellowBGslate'
-      ChildOrder = 5
-      ElementBodyClassName = 'card-body'
-      ElementFont = efCSS
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clBlack
-      Font.Height = -19
-      Font.Name = 'Arial'
-      Font.Style = []
-      ParentFont = False
-      ShowCaption = False
-      TabOrder = 1
-      Visible = False
-      object lblFilterSelect: TWebLabel
-        AlignWithMargins = True
-        Left = 3
-        Top = 3
-        Width = 144
-        Height = 22
-        Align = alTop
-        Alignment = taCenter
-        Caption = 'Choose Item'
-        ElementClassName = 'form-label'
-        ElementFont = efCSS
-        Font.Charset = ANSI_CHARSET
-        Font.Color = clBlack
-        Font.Height = -19
-        Font.Name = 'Arial'
-        Font.Style = []
-        HeightStyle = ssAuto
-        HeightPercent = 100.000000000000000000
-        ParentFont = False
-        WidthStyle = ssAuto
-        WidthPercent = 100.000000000000000000
-      end
-      object wcbGenres: TWebComboBox
-        AlignWithMargins = True
-        Left = 3
-        Top = 31
-        Width = 144
-        Height = 30
-        Align = alClient
-        Color = clDarkslateblue
-        ElementClassName = 'form-select whiteBGslate'
-        ElementFont = efCSS
-        Font.Charset = ANSI_CHARSET
-        Font.Color = clBlack
-        Font.Height = -19
-        Font.Name = 'Arial'
-        Font.Style = []
-        HeightStyle = ssAuto
-        HeightPercent = 100.000000000000000000
-        ParentFont = False
-        Role = 'combobox'
-        Visible = False
-        WidthStyle = ssPercent
-        WidthPercent = 100.000000000000000000
-        OnChange = wcbGenresChange
-        OnFocusOut = wcbGenresFocusOut
-        ItemIndex = -1
-      end
-      object wcbChannels: TWebComboBox
-        AlignWithMargins = True
-        Left = 3
-        Top = 31
-        Width = 144
-        Height = 30
-        Align = alClient
-        Color = clDarkslateblue
-        ElementClassName = 'form-select whiteBGslate'
-        ElementFont = efCSS
-        Font.Charset = ANSI_CHARSET
-        Font.Color = clBlack
-        Font.Height = -19
-        Font.Name = 'Arial'
-        Font.Style = []
-        HeightStyle = ssAuto
-        HeightPercent = 100.000000000000000000
-        ParentFont = False
-        Role = 'combobox'
-        Visible = False
-        WidthStyle = ssPercent
-        WidthPercent = 100.000000000000000000
-        OnChange = wcbChannelsChange
-        OnFocusOut = wcbChannelsFocusOut
-        ItemIndex = -1
-      end
-      object wcbTypes: TWebComboBox
-        AlignWithMargins = True
-        Left = 3
-        Top = 31
-        Width = 144
-        Height = 30
-        Align = alClient
-        Color = clDarkslateblue
-        ElementClassName = 'form-select whiteBGslate'
-        ElementFont = efCSS
-        Font.Charset = ANSI_CHARSET
-        Font.Color = clBlack
-        Font.Height = -19
-        Font.Name = 'Arial'
-        Font.Style = []
-        HeightStyle = ssAuto
-        HeightPercent = 100.000000000000000000
-        ParentFont = False
-        Role = 'combobox'
-        Visible = False
-        WidthStyle = ssPercent
-        WidthPercent = 100.000000000000000000
-        OnChange = wcbTypesChange
-        OnFocusOut = wcbTypesFocusOut
-        ItemIndex = -1
-        Items.Strings = (
-          'New'
-          'Rerun'
-          'Movie'
-          'Other')
-      end
-      object WebHTMLForm1: TWebHTMLForm
-        Left = 0
-        Top = 28
-        Width = 150
-        Height = 47
-        Action = ''
-        Align = alClient
-        ElementFont = efCSS
-        object weTitleSearch: TWebEdit
-          Left = 0
-          Top = 0
-          Width = 150
-          Height = 47
-          Align = alClient
-          AutoCompletion = acNone
-          AutoFocus = True
-          AutoSelect = False
-          ChildOrder = 6
-          EditType = weSearch
-          ElementClassName = 'form-control'
-          ElementFont = efCSS
-          HeightStyle = ssAuto
-          HeightPercent = 100.000000000000000000
-          HideSelection = False
-          Visible = False
-          WidthPercent = 100.000000000000000000
-        end
-      end
-    end
-    object btnRefreshData: TWebSpeedButton
-      Left = 120
-      Top = 150
-      Width = 144
-      Height = 52
-      Caption = 'Refresh Data'
-      Color = clNone
-      ElementClassName = 'btn btn-warning'
-      ElementFont = efCSS
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clDarkorange
-      Font.Height = -19
-      Font.Name = 'Arial'
-      Font.Style = []
-      HeightStyle = ssAuto
-      HeightPercent = 100.000000000000000000
-      MaterialGlyph = 'update'
-      MaterialGlyphColor = clDarkorange
-      MaterialGlyphSize = 25
-      ParentFont = False
-      TabOrder = 2
-      Visible = False
-      WidthPercent = 100.000000000000000000
-      OnClick = btnRefreshDataClick
-    end
-  end
   object pnlHistory: TWebPanel
     Left = 0
     Top = 50
@@ -815,14 +523,13 @@ object CWRmainFrm: TCWRmainFrm
     end
     object btnSchdRefrsh: TWebButton
       AlignWithMargins = True
-      Left = 200
+      Left = 120
       Top = 535
-      Width = 28
+      Width = 140
       Height = 33
       Margins.Left = 200
       Margins.Right = 200
       Margins.Bottom = 50
-      Align = alTop
       Caption = 'Refresh'
       ChildOrder = 4
       ElementClassName = 'btn btn-outline-secondary greenBGolive'
@@ -835,6 +542,308 @@ object CWRmainFrm: TCWRmainFrm
       ParentFont = False
       WidthPercent = 100.000000000000000000
       OnClick = btnSchdRefrshClick
+    end
+  end
+  object pnlListings: TWebPanel
+    Left = 0
+    Top = 50
+    Width = 428
+    Height = 727
+    ElementClassName = 'greenBGnavy'
+    HeightStyle = ssPercent
+    WidthStyle = ssPercent
+    Align = alClient
+    Caption = 'pnlListings'
+    ChildOrder = 11
+    Color = clBlueviolet
+    ElementBodyClassName = 'card-body'
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWhite
+    Font.Height = -19
+    Font.Name = 'Arial'
+    Font.Style = []
+    ParentFont = False
+    ShowCaption = False
+    TabOrder = 5
+    DesignSize = (
+      428
+      727)
+    object lblEmptyEPG: TWebLabel
+      Left = 96
+      Top = 58
+      Width = 329
+      Height = 44
+      Alignment = taCenter
+      Anchors = [akLeft, akTop, akRight]
+      Caption = 
+        'There are no current listings to see.(Try "Options|Refresh EPG" ' +
+        'to update)'
+      Color = clBlack
+      ElementClassName = 'form-label'
+      ElementFont = efCSS
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWhite
+      Font.Height = -19
+      Font.Name = 'Arial'
+      Font.Style = []
+      HeightStyle = ssAuto
+      HeightPercent = 100.000000000000000000
+      ParentFont = False
+      Transparent = False
+      Visible = False
+      WordWrap = True
+      WidthPercent = 100.000000000000000000
+    end
+    object EPG: TWebDBDataGrid
+      Left = 0
+      Top = 0
+      Width = 428
+      Height = 727
+      HeightPercent = 100.000000000000000000
+      WidthPercent = 100.000000000000000000
+      Align = alClient
+      Banding.OddRowsColor = clNavy
+      Banding.EvenRowsColor = clNavy
+      ColumnDefs = <
+        item
+          Field = 'PSIP'
+          HeaderName = 'Channel'
+          ViewModeType = crtText
+          SelectOptions = <>
+          SuppressMovable = True
+          LockVisible = False
+          OnGetCellStyle = EPGColumn_PSIPGetCellStyle
+        end
+        item
+          Field = 'Time'
+          HeaderName = 'HTPC Local Time'
+          ViewModeType = crtText
+          SelectOptions = <>
+          SuppressMovable = True
+        end
+        item
+          Field = 'Title'
+          HeaderName = 'Program'
+          Filter = True
+          ViewModeType = crtText
+          SelectOptions = <>
+          SuppressMovable = True
+        end
+        item
+          Field = 'Class'
+          HeaderName = 'Class'
+          Visible = False
+          SelectOptions = <>
+        end
+        item
+          Field = 'id'
+          HeaderName = 'ID'
+          Resizable = False
+          Sortable = False
+          Visible = False
+          SelectOptions = <>
+        end
+        item
+          Field = 'SubTitle'
+          HeaderName = 'Sub Title'
+          Filter = True
+          SelectOptions = <>
+          SuppressMovable = True
+        end>
+      EditType = retFullRow
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -18
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      MultilevelHeaders = <>
+      PaginationPageSize = 50
+      PaginationPageSizeSelector = '20,50,100'
+      RowHeight = 20
+      TabOrder = 0
+      Theming.BuiltInTheme = agThemeMaterial
+      Theming.ThemeMode = agDarkMode
+      DataSource = WebDataSource1
+      ShowIndicator = False
+      OnGetRowClass = EPGGetRowClass
+      OnCellClickedEvent = EPGCellClickedEvent
+    end
+    object pnlFilterSelection: TWebPanel
+      Left = 117
+      Top = 153
+      Width = 150
+      Height = 75
+      ElementClassName = 'card yellowBGslate'
+      ChildOrder = 5
+      ElementBodyClassName = 'card-body'
+      ElementFont = efCSS
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -19
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+      ShowCaption = False
+      TabOrder = 1
+      Visible = False
+      object lblFilterSelect: TWebLabel
+        AlignWithMargins = True
+        Left = 3
+        Top = 3
+        Width = 144
+        Height = 22
+        Align = alTop
+        Alignment = taCenter
+        Caption = 'Choose Item'
+        ElementClassName = 'form-label'
+        ElementFont = efCSS
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clBlack
+        Font.Height = -19
+        Font.Name = 'Arial'
+        Font.Style = []
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        ParentFont = False
+        WidthStyle = ssAuto
+        WidthPercent = 100.000000000000000000
+      end
+      object wcbGenres: TWebComboBox
+        AlignWithMargins = True
+        Left = 3
+        Top = 31
+        Width = 144
+        Height = 30
+        Align = alClient
+        Color = clDarkslateblue
+        ElementClassName = 'form-select whiteBGslate'
+        ElementFont = efCSS
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clBlack
+        Font.Height = -19
+        Font.Name = 'Arial'
+        Font.Style = []
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        ParentFont = False
+        Role = 'combobox'
+        Visible = False
+        WidthStyle = ssPercent
+        WidthPercent = 100.000000000000000000
+        OnChange = wcbGenresChange
+        OnFocusOut = wcbGenresFocusOut
+        ItemIndex = -1
+      end
+      object wcbChannels: TWebComboBox
+        AlignWithMargins = True
+        Left = 3
+        Top = 31
+        Width = 144
+        Height = 30
+        Align = alClient
+        Color = clDarkslateblue
+        ElementClassName = 'form-select whiteBGslate'
+        ElementFont = efCSS
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clBlack
+        Font.Height = -19
+        Font.Name = 'Arial'
+        Font.Style = []
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        ParentFont = False
+        Role = 'combobox'
+        Visible = False
+        WidthStyle = ssPercent
+        WidthPercent = 100.000000000000000000
+        OnChange = wcbChannelsChange
+        OnFocusOut = wcbChannelsFocusOut
+        ItemIndex = -1
+      end
+      object wcbTypes: TWebComboBox
+        AlignWithMargins = True
+        Left = 3
+        Top = 31
+        Width = 144
+        Height = 30
+        Align = alClient
+        Color = clDarkslateblue
+        ElementClassName = 'form-select whiteBGslate'
+        ElementFont = efCSS
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clBlack
+        Font.Height = -19
+        Font.Name = 'Arial'
+        Font.Style = []
+        HeightStyle = ssAuto
+        HeightPercent = 100.000000000000000000
+        ParentFont = False
+        Role = 'combobox'
+        Visible = False
+        WidthStyle = ssPercent
+        WidthPercent = 100.000000000000000000
+        OnChange = wcbTypesChange
+        OnFocusOut = wcbTypesFocusOut
+        ItemIndex = -1
+        Items.Strings = (
+          'New'
+          'Rerun'
+          'Movie'
+          'Other')
+      end
+      object WebHTMLForm1: TWebHTMLForm
+        Left = 0
+        Top = 28
+        Width = 150
+        Height = 47
+        Action = ''
+        Align = alClient
+        ElementFont = efCSS
+        object weTitleSearch: TWebEdit
+          Left = 0
+          Top = 0
+          Width = 150
+          Height = 47
+          Align = alClient
+          AutoCompletion = acNone
+          AutoFocus = True
+          AutoSelect = False
+          ChildOrder = 6
+          EditType = weSearch
+          ElementClassName = 'form-control'
+          ElementFont = efCSS
+          HeightStyle = ssAuto
+          HeightPercent = 100.000000000000000000
+          HideSelection = False
+          Visible = False
+          WidthPercent = 100.000000000000000000
+        end
+      end
+    end
+    object btnRefreshData: TWebSpeedButton
+      Left = 120
+      Top = 150
+      Width = 144
+      Height = 52
+      Caption = 'Refresh Data'
+      Color = clNone
+      ElementClassName = 'btn btn-warning'
+      ElementFont = efCSS
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clDarkorange
+      Font.Height = -19
+      Font.Name = 'Arial'
+      Font.Style = []
+      HeightStyle = ssAuto
+      HeightPercent = 100.000000000000000000
+      MaterialGlyph = 'update'
+      MaterialGlyphColor = clDarkorange
+      MaterialGlyphSize = 25
+      ParentFont = False
+      TabOrder = 2
+      Visible = False
+      WidthPercent = 100.000000000000000000
+      OnClick = btnRefreshDataClick
     end
   end
   object WebMainMenu1: TWebMainMenu
