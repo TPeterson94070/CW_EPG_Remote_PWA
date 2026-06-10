@@ -13884,10 +13884,13 @@ rtl.module("WEBLib.Graphics",["System","Classes","Types","UITypes","Web","JS"],f
   this.clWindow = 0xFEFEFE;
   this.clHighlight = 0xD77800;
   this.clHighlightText = 0x30303;
+  this.clBtnText = 0;
   this.clWebChocolate = 0x1E69D2;
   this.clWebWheat = 0xB3DEF5;
   this.clBlueviolet = 0xE22B8A;
   this.clBurlywood = 0x87B8DE;
+  this.clCornflowerblue = 0xED9564;
+  this.clDarkblue = 0x8B0000;
   this.clDarkgreen = 0x6400;
   this.clDarkolivegreen = 0x2F6B55;
   this.clDarkorange = 0x8CFF;
@@ -48668,7 +48671,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     this.HistoryWDGCellClickedEvent = function (Event) {
       this.ShowHistoryWDGDetails(pas.JS.toInteger(Event.rowIndex));
     };
-    this.HistoryWDGColumn_column8ValueFormatter = function (Value) {
+    this.WDGColumn_TDateTimeValueFormatter = function (Value) {
       var Result = undefined;
       var ADateTime = "";
       pas.SysUtils.DateTimeToString({get: function () {
@@ -48870,7 +48873,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           i = $l1;
           WDG.get().SetCells(i,8,pas.SysUtils.FloatToStr(pas.SysUtils.StrToDateTimeDef(WDG.get().GetCells(i,8),0)));
         };
-        WDG.get().FColumnDefs.GetItem$1(8).SetValueFormatter(rtl.createCallback(this,"HistoryWDGColumn_column8ValueFormatter"));
+        WDG.get().FColumnDefs.GetItem$1(8).SetValueFormatter(rtl.createCallback(this,"WDGColumn_TDateTimeValueFormatter"));
         WDG.get().FColumnDefs.GetItem$1(8).SetFilter(false);
         WDG.get().EndUpdate();
         WDG.get().Show();
@@ -49622,12 +49625,14 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlMenu.SetTop(0);
         this.pnlMenu.SetWidth(428);
         this.pnlMenu.SetHeight(50);
-        this.pnlMenu.SetElementClassName("container");
+        this.pnlMenu.SetElementClassName("container yellowBGslate");
         this.pnlMenu.SetWidthStyle(0);
         this.pnlMenu.SetAlign(1);
-        this.pnlMenu.SetBorderStyle(0);
         this.pnlMenu.SetCaption("pnlMenu");
         this.pnlMenu.SetChildOrderEx(12);
+        this.pnlMenu.SetColor(0);
+        this.pnlMenu.FElementBodyClassName = "whiteBGslate";
+        this.pnlMenu.SetElementFont(1);
         this.pnlMenu.FFont.FCharset = 0;
         this.pnlMenu.FFont.SetColor(0);
         this.pnlMenu.FFont.SetHeight(-19);
@@ -49899,7 +49904,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlListings.SetTop(50);
         this.pnlListings.SetWidth(428);
         this.pnlListings.SetHeight(727);
-        this.pnlListings.SetElementClassName("greenBG");
+        this.pnlListings.SetElementClassName("greenBGnavy");
         this.pnlListings.SetHeightStyle(0);
         this.pnlListings.SetWidthStyle(0);
         this.pnlListings.SetAlign(5);
@@ -49985,7 +49990,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.EPG.SetPaginationPageSize(50);
         this.EPG.SetPaginationPageSizeSelector("20,50,100");
         this.EPG.SetRowHeight(20);
-        this.EPG.SetSuppressMoveWhenColumnDragging(true);
         this.EPG.SetTabOrder(0);
         this.EPG.FTheming.SetBuiltInTheme(2);
         this.EPG.FTheming.SetThemeMode(1);
@@ -49999,7 +50003,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlFilterSelection.SetTop(153);
         this.pnlFilterSelection.SetWidth(150);
         this.pnlFilterSelection.SetHeight(75);
-        this.pnlFilterSelection.SetElementClassName("card");
+        this.pnlFilterSelection.SetElementClassName("card yellowBGslate");
         this.pnlFilterSelection.SetChildOrderEx(5);
         this.pnlFilterSelection.FElementBodyClassName = "card-body";
         this.pnlFilterSelection.SetElementFont(1);
@@ -50042,7 +50046,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.wcbGenres.SetWidth(144);
         this.wcbGenres.SetHeight(30);
         this.wcbGenres.SetAlign(5);
-        this.wcbGenres.SetElementClassName("form-select");
+        this.wcbGenres.SetColor(9125192);
+        this.wcbGenres.SetElementClassName("form-select whiteBGslate");
         this.wcbGenres.SetElementFont(1);
         this.wcbGenres.FFont.FCharset = 0;
         this.wcbGenres.FFont.SetColor(0);
@@ -50067,7 +50072,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.wcbChannels.SetWidth(144);
         this.wcbChannels.SetHeight(30);
         this.wcbChannels.SetAlign(5);
-        this.wcbChannels.SetElementClassName("form-select");
+        this.wcbChannels.SetColor(9125192);
+        this.wcbChannels.SetElementClassName("form-select whiteBGslate");
         this.wcbChannels.SetElementFont(1);
         this.wcbChannels.FFont.FCharset = 0;
         this.wcbChannels.FFont.SetColor(0);
@@ -50092,7 +50098,8 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.wcbTypes.SetWidth(144);
         this.wcbTypes.SetHeight(30);
         this.wcbTypes.SetAlign(5);
-        this.wcbTypes.SetElementClassName("form-select");
+        this.wcbTypes.SetColor(9125192);
+        this.wcbTypes.SetElementClassName("form-select whiteBGslate");
         this.wcbTypes.SetElementFont(1);
         this.wcbTypes.FFont.FCharset = 0;
         this.wcbTypes.FFont.SetColor(0);
@@ -50214,6 +50221,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.HistoryWDG.SetSuppressMoveWhenColumnDragging(true);
         this.HistoryWDG.SetTabOrder(0);
         this.HistoryWDG.FTheming.SetBuiltInTheme(2);
+        this.HistoryWDG.FTheming.SetThemeMode(1);
         this.HistoryWDG.SetVisible(false);
         this.SetEvent$1(this.HistoryWDG,this,"OnGetRowClass","HistoryWDGGetRowClass");
         this.SetEvent$1(this.HistoryWDG,this,"OnCellClickedEvent","HistoryWDGCellClickedEvent");
@@ -50223,7 +50231,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlCaptures.SetTop(50);
         this.pnlCaptures.SetWidth(428);
         this.pnlCaptures.SetHeight(727);
-        this.pnlCaptures.SetElementClassName("greenBG");
+        this.pnlCaptures.SetElementClassName("greenBGolive");
         this.pnlCaptures.SetHeightStyle(0);
         this.pnlCaptures.SetWidthStyle(0);
         this.pnlCaptures.SetAlign(5);
@@ -50246,15 +50254,14 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebHTMLDiv1.SetTop(266);
         this.WebHTMLDiv1.SetWidth(428);
         this.WebHTMLDiv1.SetHeight(35);
-        this.WebHTMLDiv1.SetElementClassName("greenBG");
+        this.WebHTMLDiv1.SetElementClassName("greenBGolive");
         this.WebHTMLDiv1.SetAlign(1);
         this.WebHTMLDiv1.SetChildOrderEx(1);
         this.WebHTMLDiv1.SetElementFont(1);
         this.WebHTMLDiv1.FHTML.BeginUpdate();
         try {
           this.WebHTMLDiv1.FHTML.Clear();
-          this.WebHTMLDiv1.FHTML.Add('<FONT color="#FFFFFF" ><P align="center">Programs to be Scheduled </FONT><FONT color="#F00000" >on Next CW_EPG Run </P> ');
-          this.WebHTMLDiv1.FHTML.Add("</FONT>");
+          this.WebHTMLDiv1.FHTML.Add('<P align="center">Programs to be Scheduled <B>on Next CW_EPG Run</B></P');
         } finally {
           this.WebHTMLDiv1.FHTML.EndUpdate();
         };
@@ -50278,7 +50285,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.NewCapturesWSG.SetWidth(428);
         this.NewCapturesWSG.SetHeight(231);
         this.NewCapturesWSG.SetAlign(5);
-        this.NewCapturesWSG.SetColor(212724686);
+        this.NewCapturesWSG.SetColor(3107669);
         this.NewCapturesWSG.SetColCount(7);
         this.NewCapturesWSG.SetDefaultRowHeight(22);
         this.NewCapturesWSG.SetFixedColor(32768);
@@ -50292,7 +50299,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.NewCapturesWSG.SetParentFont(false);
         this.NewCapturesWSG.SetTabOrder(0);
         this.NewCapturesWSG.FStyleElements = {};
-        this.NewCapturesWSG.SetElementClassName("yellowBG");
+        this.NewCapturesWSG.SetElementClassName("yellowBGolive");
         this.NewCapturesWSG.SetElementFont(1);
         this.NewCapturesWSG.FFixedFont.FCharset = 0;
         this.NewCapturesWSG.FFixedFont.SetColor(0);
@@ -50337,7 +50344,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.CapturesWSG.SetParentFont(false);
         this.CapturesWSG.SetTabOrder(0);
         this.CapturesWSG.FStyleElements = {};
-        this.CapturesWSG.SetElementClassName("whiteBG");
+        this.CapturesWSG.SetElementClassName("whiteBGolive");
         this.CapturesWSG.SetElementFont(1);
         this.CapturesWSG.FFixedFont.FCharset = 0;
         this.CapturesWSG.FFixedFont.SetColor(0);
@@ -50357,14 +50364,14 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebHTMLDiv4.SetTop(0);
         this.WebHTMLDiv4.SetWidth(428);
         this.WebHTMLDiv4.SetHeight(35);
-        this.WebHTMLDiv4.SetElementClassName("greenBG");
+        this.WebHTMLDiv4.SetElementClassName("greenBGolive");
         this.WebHTMLDiv4.SetAlign(1);
         this.WebHTMLDiv4.SetChildOrderEx(3);
         this.WebHTMLDiv4.SetElementFont(1);
         this.WebHTMLDiv4.FHTML.BeginUpdate();
         try {
           this.WebHTMLDiv4.FHTML.Clear();
-          this.WebHTMLDiv4.FHTML.Add('<FONT color="#FFFFFF" ><P align="center">Programs currently Scheduled</P></FONT>');
+          this.WebHTMLDiv4.FHTML.Add('<P align="center">Programs currently Scheduled</P>');
         } finally {
           this.WebHTMLDiv4.FHTML.EndUpdate();
         };
@@ -50372,17 +50379,17 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.btnSchdRefrsh.SetParentComponent(this.pnlCaptures);
         this.btnSchdRefrsh.SetName("btnSchdRefrsh");
         this.btnSchdRefrsh.SetAlignWithMargins(true);
-        this.btnSchdRefrsh.SetLeft(125);
+        this.btnSchdRefrsh.SetLeft(200);
         this.btnSchdRefrsh.SetTop(535);
-        this.btnSchdRefrsh.SetWidth(178);
+        this.btnSchdRefrsh.SetWidth(28);
         this.btnSchdRefrsh.SetHeight(33);
-        this.btnSchdRefrsh.FMargins.SetLeft(125);
-        this.btnSchdRefrsh.FMargins.SetRight(125);
+        this.btnSchdRefrsh.FMargins.SetLeft(200);
+        this.btnSchdRefrsh.FMargins.SetRight(200);
         this.btnSchdRefrsh.FMargins.SetBottom(50);
         this.btnSchdRefrsh.SetAlign(1);
         this.btnSchdRefrsh.SetCaption("Refresh");
         this.btnSchdRefrsh.SetChildOrderEx(4);
-        this.btnSchdRefrsh.SetElementClassName("btn btn-light");
+        this.btnSchdRefrsh.SetElementClassName("btn btn-outline-secondary greenBGolive");
         this.btnSchdRefrsh.FFont.FCharset = 0;
         this.btnSchdRefrsh.FFont.SetColor(0);
         this.btnSchdRefrsh.FFont.SetHeight(-12);
@@ -50394,11 +50401,14 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.SetEvent$1(this.btnSchdRefrsh,this,"OnClick","btnSchdRefrshClick");
         this.WebMainMenu1.SetParentComponent(this);
         this.WebMainMenu1.SetName("WebMainMenu1");
-        this.WebMainMenu1.FAppearance.SetBackgroundColor(12632256);
+        this.WebMainMenu1.FAppearance.SetBackgroundColor(9125192);
         this.WebMainMenu1.FAppearance.FHamburgerMenu.SetCaption("Menu");
+        this.WebMainMenu1.FAppearance.FHamburgerMenu.SetCaptionColor(65535);
+        this.WebMainMenu1.FAppearance.FHamburgerMenu.SetBackgroundColor(9109504);
         this.WebMainMenu1.FAppearance.FHamburgerMenu.SetVisible(0);
         this.WebMainMenu1.FAppearance.FHamburgerMenu.SetResponsiveMaxWidth(300);
-        this.WebMainMenu1.FAppearance.SetHoverFontColor(16777215);
+        this.WebMainMenu1.FAppearance.SetHoverColor(15570276);
+        this.WebMainMenu1.FAppearance.SetHoverFontColor(65535);
         this.WebMainMenu1.FAppearance.SetImageSize(8);
         this.WebMainMenu1.FAppearance.SetSubmenuIndicator("&#9658;");
         this.WebMainMenu1.FContainer$1 = this.pnlMenu;
@@ -50456,6 +50466,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.Settings1.SetParentComponent(this.Options);
         this.Settings1.SetName("Settings1");
         this.Settings1.SetCaption("Settings");
+        this.Settings1.FVisible = false;
         this.SetEvent$1(this.Settings1,this,"OnClick","Settings1Click");
         this.WebRESTClient1.SetParentComponent(this);
         this.WebRESTClient1.SetName("WebRESTClient1");
@@ -50628,7 +50639,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $r.addMethod("SwipeDownRefresh",0,[["Enabled",rtl.boolean]],4);
     $r.addMethod("EPGColumn_PSIPGetCellStyle",1,[["Params",pas.libdatagrid.$rtti["TJSCellClassParams"]]],4,rtl.jsvalue);
     $r.addMethod("HistoryWDGCellClickedEvent",0,[["Event",pas.libdatagrid.$rtti["TJSCellClickedEvent"]]],4);
-    $r.addMethod("HistoryWDGColumn_column8ValueFormatter",1,[["Value",rtl.jsvalue]],4,rtl.jsvalue);
+    $r.addMethod("WDGColumn_TDateTimeValueFormatter",1,[["Value",rtl.jsvalue]],4,rtl.jsvalue);
     $r.addMethod("HistoryWDGGetRowClass",1,[["Params",pas.libdatagrid.$rtti["TJSGetRowClassParams"]]],4,rtl.jsvalue);
   });
   rtl.createHelper(this,"TDataGridBaseHelper",null,function () {
