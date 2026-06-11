@@ -48774,6 +48774,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           WDG.get().FColumnDefs.GetItem$1(i).SetVisible(i in rtl.createSet(7,8,12,13));
           WDG.get().FColumnDefs.GetItem$1(i).SetSortable(true);
           WDG.get().FColumnDefs.GetItem$1(i).SetFilter(true);
+          WDG.get().FColumnDefs.GetItem$1(i).SetSuppressMovable(true);
           var $tmp = i;
           if ($tmp === 7) {
             WDG.get().FColumnDefs.GetItem$1(i).SetWidth(120)}
@@ -49849,7 +49850,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.HistoryWDG.FFont.SetHeight(18);
         this.HistoryWDG.FFont.SetName("Segoe UI");
         this.HistoryWDG.FFont.SetStyle({});
-        this.HistoryWDG.SetSuppressMoveWhenColumnDragging(true);
         this.HistoryWDG.SetTabOrder(0);
         this.HistoryWDG.FTheming.SetBuiltInTheme(2);
         this.HistoryWDG.FTheming.SetThemeMode(1);
