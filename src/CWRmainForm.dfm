@@ -370,7 +370,6 @@ object CWRmainFrm: TCWRmainFrm
       Font.Name = 'Segoe UI'
       Font.Style = []
       MultilevelHeaders = <>
-      SuppressMoveWhenColumnDragging = True
       TabOrder = 0
       Theming.BuiltInTheme = agThemeMaterial
       Theming.ThemeMode = agDarkMode
@@ -653,7 +652,7 @@ object CWRmainFrm: TCWRmainFrm
       EditType = retFullRow
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
-      Font.Height = -18
+      Font.Height = -15
       Font.Name = 'Segoe UI'
       Font.Style = []
       MultilevelHeaders = <>
@@ -669,9 +668,9 @@ object CWRmainFrm: TCWRmainFrm
       OnCellClickedEvent = EPGCellClickedEvent
     end
     object pnlFilterSelection: TWebPanel
-      Left = 117
+      Left = 100
       Top = 153
-      Width = 150
+      Width = 175
       Height = 75
       ElementClassName = 'card yellowBGslate'
       ChildOrder = 5
@@ -690,7 +689,7 @@ object CWRmainFrm: TCWRmainFrm
         AlignWithMargins = True
         Left = 3
         Top = 3
-        Width = 144
+        Width = 169
         Height = 22
         Align = alTop
         Alignment = taCenter
@@ -710,10 +709,12 @@ object CWRmainFrm: TCWRmainFrm
       end
       object wcbGenres: TWebComboBox
         AlignWithMargins = True
-        Left = 3
+        Left = 5
         Top = 31
-        Width = 144
+        Width = 165
         Height = 30
+        Margins.Left = 5
+        Margins.Right = 5
         Align = alClient
         Color = clDarkslateblue
         ElementClassName = 'form-select whiteBGslate'
@@ -729,17 +730,19 @@ object CWRmainFrm: TCWRmainFrm
         Role = 'combobox'
         Visible = False
         WidthStyle = ssPercent
-        WidthPercent = 100.000000000000000000
+        WidthPercent = 95.000000000000000000
         OnChange = wcbGenresChange
         OnFocusOut = wcbGenresFocusOut
         ItemIndex = -1
       end
       object wcbChannels: TWebComboBox
         AlignWithMargins = True
-        Left = 3
+        Left = 5
         Top = 31
-        Width = 144
+        Width = 165
         Height = 30
+        Margins.Left = 5
+        Margins.Right = 5
         Align = alClient
         Color = clDarkslateblue
         ElementClassName = 'form-select whiteBGslate'
@@ -755,17 +758,19 @@ object CWRmainFrm: TCWRmainFrm
         Role = 'combobox'
         Visible = False
         WidthStyle = ssPercent
-        WidthPercent = 100.000000000000000000
+        WidthPercent = 95.000000000000000000
         OnChange = wcbChannelsChange
         OnFocusOut = wcbChannelsFocusOut
         ItemIndex = -1
       end
       object wcbTypes: TWebComboBox
         AlignWithMargins = True
-        Left = 3
+        Left = 5
         Top = 31
-        Width = 144
+        Width = 165
         Height = 30
+        Margins.Left = 5
+        Margins.Right = 5
         Align = alClient
         Color = clDarkslateblue
         ElementClassName = 'form-select whiteBGslate'
@@ -781,7 +786,7 @@ object CWRmainFrm: TCWRmainFrm
         Role = 'combobox'
         Visible = False
         WidthStyle = ssPercent
-        WidthPercent = 100.000000000000000000
+        WidthPercent = 95.000000000000000000
         OnChange = wcbTypesChange
         OnFocusOut = wcbTypesFocusOut
         ItemIndex = -1
@@ -790,34 +795,6 @@ object CWRmainFrm: TCWRmainFrm
           'Rerun'
           'Movie'
           'Other')
-      end
-      object WebHTMLForm1: TWebHTMLForm
-        Left = 0
-        Top = 28
-        Width = 150
-        Height = 47
-        Action = ''
-        Align = alClient
-        ElementFont = efCSS
-        object weTitleSearch: TWebEdit
-          Left = 0
-          Top = 0
-          Width = 150
-          Height = 47
-          Align = alClient
-          AutoCompletion = acNone
-          AutoFocus = True
-          AutoSelect = False
-          ChildOrder = 6
-          EditType = weSearch
-          ElementClassName = 'form-control'
-          ElementFont = efCSS
-          HeightStyle = ssAuto
-          HeightPercent = 100.000000000000000000
-          HideSelection = False
-          Visible = False
-          WidthPercent = 100.000000000000000000
-        end
       end
     end
     object btnRefreshData: TWebSpeedButton

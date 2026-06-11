@@ -64,9 +64,7 @@ type
     btnRefreshData: TWebSpeedButton;
     byType: TMenuItem;
     wcbTypes: TWebComboBox;
-    weTitleSearch: TWebEdit;
     WebTimer1: TWebTimer;
-    WebHTMLForm1: TWebHTMLForm;
     HistoryWDG: TWebDataGrid;
 //  procedure ClearFilterLists;
   procedure SetCapturesFormats;
@@ -660,9 +658,10 @@ begin
       WDG.ColumnDefs[i].HeaderName := ReplaceStr(HeaderItems[i], '"', '');
       WDG.ColumnDefs[i].CellDataType := cdtText;
       WDG.ColumnDefs[i].Field := ReplaceStr(HeaderItems[i], '"', '');
-      WDG.ColumnDefs[i].Visible := i in [7, 8, 12, 13];
+      WDG.ColumnDefs[i].Visible := i in [7, 8, 12, 13]; // i.e., Channel, StartTime, Title, SubTitle
       WDG.ColumnDefs[i].Sortable := True;
       WDG.ColumnDefs[i].Filter := True;
+      WDG.ColumnDefs[i].SuppressMovable := True;
       case i of
         7: WDG.ColumnDefs[i].Width := 120;
         8: WDG.ColumnDefs[i].Width := 150;
@@ -1047,8 +1046,6 @@ begin
   wcbGenres.Hide;
   wcbChannels.Hide;
   wcbTypes.Hide;
-  weTitleSearch.Hide;
-//  EPG.ClearSelection;
   if cb.Items.Count = 0 then Exit;  // Can happen??
 //    SetupFilterLists;
   Log('====== Showing ComboBox');
