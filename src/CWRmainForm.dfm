@@ -371,7 +371,6 @@ object CWRmainFrm: TCWRmainFrm
       Font.Style = []
       MultilevelHeaders = <>
       TabOrder = 0
-      Theming.BuiltInTheme = agThemeMaterial
       Theming.ThemeMode = agDarkMode
       Visible = False
       OnGetRowClass = HistoryWDGGetRowClass
@@ -549,13 +548,14 @@ object CWRmainFrm: TCWRmainFrm
     Width = 428
     Height = 727
     ElementClassName = 'greenBGnavy'
+    ElementID = 'pnlListings'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
     Align = alClient
     Caption = 'pnlListings'
     ChildOrder = 11
     Color = clBlueviolet
-    ElementBodyClassName = 'card-body'
+    ElementBodyClassName = 'card-body '
     Font.Charset = ANSI_CHARSET
     Font.Color = clWhite
     Font.Height = -19
@@ -598,6 +598,7 @@ object CWRmainFrm: TCWRmainFrm
       Top = 0
       Width = 428
       Height = 727
+      ElementID = 'EPGWDBG'
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
       Align = alClient
@@ -651,7 +652,7 @@ object CWRmainFrm: TCWRmainFrm
         end>
       EditType = retFullRow
       Font.Charset = ANSI_CHARSET
-      Font.Color = clWindowText
+      Font.Color = clSaddlebrown
       Font.Height = -15
       Font.Name = 'Segoe UI'
       Font.Style = []
@@ -660,7 +661,6 @@ object CWRmainFrm: TCWRmainFrm
       PaginationPageSizeSelector = '20,50,100'
       RowHeight = 20
       TabOrder = 0
-      Theming.BuiltInTheme = agThemeMaterial
       Theming.ThemeMode = agDarkMode
       DataSource = WebDataSource1
       ShowIndicator = False

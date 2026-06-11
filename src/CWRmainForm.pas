@@ -300,6 +300,7 @@ begin
   Font.Height := -17;
   EPG.Hide;
 
+
   {$IfDef PAS2JS}await{$EndIf}(SetupWIDBCDS);
   {$IfDef PAS2JS}await{$EndIf}(RefreshListings);
   Log('========== FormCreate is finished');
@@ -1062,7 +1063,6 @@ end;
 procedure TCWRmainFrm.SetFilters;
 var
   fltr: string;
-  item: string;
 begin
   Log('====== SetFilters called');
   ByAll.Checked := not (ByChannel.Checked or ByGenre.Checked or byType.Checked);
