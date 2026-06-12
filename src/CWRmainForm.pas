@@ -676,9 +676,10 @@ begin
     WDG.RowHeight := 19;
     WDG.Font.Height := 18;
 
-    // Convert Col 8 string (StartTime) to TDateTime string
+    // Convert Col 8 string (StartTime) to TDateTime double {string}
+    WDG.ColumnDefs[8].CellDataType := cdtNumber;
     for i := 0 to Pred(WDG.RowData.Length) do
-      WDG.Cells[i,8] := FloatToStr(StrToDateTimeDef(WDG.Cells[i,8],0));
+      WDG.Floats[i,8] := StrToDateTimeDef(WDG.Cells[i,8],0);
     WDG.ColumnDefs[8].ValueFormatter := WDGColumn_TDateTimeValueFormatter;
     WDG.ColumnDefs[8].Filter := False;
     WDG.EndUpdate;
@@ -1258,7 +1259,7 @@ function TCWRmainFrm.WDGColumn_TDateTimeValueFormatter(Value: TJSValue):
     TJSValue;
 var ADateTime: string;
 begin
-  DateTimeToString(ADateTime, 'mm/dd/yy HH:nn', StrToFloat(string(Value)));
+  DateTimeToString(ADateTime, 'mm/dd/yy HH:nn', double(Value));
   Result := ADateTime;
 end;
 

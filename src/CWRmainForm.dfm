@@ -359,10 +359,20 @@ object CWRmainFrm: TCWRmainFrm
         item
           Field = 'column1'
           SelectOptions = <>
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
+          Font.Style = []
         end
         item
           Field = 'column2'
           SelectOptions = <>
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
+          Font.Style = []
         end>
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
@@ -613,6 +623,11 @@ object CWRmainFrm: TCWRmainFrm
           SuppressMovable = True
           LockVisible = False
           OnGetCellStyle = EPGColumn_PSIPGetCellStyle
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
+          Font.Style = []
         end
         item
           Field = 'Time'
@@ -620,6 +635,11 @@ object CWRmainFrm: TCWRmainFrm
           ViewModeType = crtText
           SelectOptions = <>
           SuppressMovable = True
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
+          Font.Style = []
         end
         item
           Field = 'Title'
@@ -628,12 +648,22 @@ object CWRmainFrm: TCWRmainFrm
           ViewModeType = crtText
           SelectOptions = <>
           SuppressMovable = True
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
+          Font.Style = []
         end
         item
           Field = 'Class'
           HeaderName = 'Class'
           Visible = False
           SelectOptions = <>
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
+          Font.Style = []
         end
         item
           Field = 'id'
@@ -642,6 +672,11 @@ object CWRmainFrm: TCWRmainFrm
           Sortable = False
           Visible = False
           SelectOptions = <>
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
+          Font.Style = []
         end
         item
           Field = 'SubTitle'
@@ -649,6 +684,11 @@ object CWRmainFrm: TCWRmainFrm
           Filter = True
           SelectOptions = <>
           SuppressMovable = True
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
+          Font.Style = []
         end>
       EditType = retFullRow
       Font.Charset = ANSI_CHARSET
