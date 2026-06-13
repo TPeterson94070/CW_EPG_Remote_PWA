@@ -13884,19 +13884,19 @@ rtl.module("WEBLib.Graphics",["System","Classes","Types","UITypes","Web","JS"],f
   this.clWindow = 0xFEFEFE;
   this.clHighlight = 0xD77800;
   this.clHighlightText = 0x30303;
-  this.clGrayText = 0x6D6D6D;
   this.clWebChocolate = 0x1E69D2;
   this.clWebWheat = 0xB3DEF5;
   this.clBlueviolet = 0xE22B8A;
   this.clBurlywood = 0x87B8DE;
   this.clCornflowerblue = 0xED9564;
-  this.clDarkblue = 0x8B0000;
   this.clDarkgreen = 0x6400;
   this.clDarkolivegreen = 0x2F6B55;
   this.clDarkorange = 0x8CFF;
   this.clDarkseagreen = 0x8FBC8F;
   this.clDarkslateblue = 0x8B3D48;
   this.clHoneydew = 0xF0FFF0;
+  this.clSaddlebrown = 0x13458B;
+  this.clSlategray = 0x908070;
   this.ANSI_CHARSET = 0;
   this.DEFAULT_CHARSET = 1;
   this.$rtti.$inherited("TColor",rtl.nativeint,{});
@@ -29657,15 +29657,18 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
     this.$init = function () {
       pas["WEBLib.Menus"].TWebCustomControl.$init.call(this);
       this.FChecked = false;
+      this.FHasFocus = false;
       this.FState = 0;
       this.FElementButtonClassName = "";
       this.FElementLabelClassName = "";
       this.FOnCheckClick = null;
       this.FAlignment = 0;
       this.FAllowGrayed = false;
+      this.FCheckElement = null;
     };
     this.$final = function () {
       this.FOnCheckClick = undefined;
+      this.FCheckElement = undefined;
       pas["WEBLib.Menus"].TWebCustomControl.$final.call(this);
     };
     this.SetAlignment = function (Value) {
@@ -29784,7 +29787,10 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
       lbl.setAttribute("value",this.GetID());
       Result.appendChild(btn);
       Result.appendChild(lbl);
+      this.FCheckElement = btn;
       rtl.asExt(btn,HTMLInputElement).onclick = rtl.createSafeCallback(this,"HandleCheckClick");
+      rtl.asExt(btn,HTMLInputElement).onfocus = rtl.createSafeCallback(this,"HandleCheckFocus");
+      rtl.asExt(btn,HTMLInputElement).onblur = rtl.createSafeCallback(this,"HandleCheckBlur");
       return Result;
     };
     this.SetChecked = function (AValue) {
@@ -29888,9 +29894,26 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
       Result = true;
       return Result;
     };
+    this.HandleCheckBlur = function (Event) {
+      var Result = false;
+      Result = true;
+      return Result;
+    };
+    this.HandleCheckFocus = function (Event) {
+      var Result = false;
+      this.GetElementHandle().focus();
+      Result = true;
+      return Result;
+    };
+    this.HandleDoExit = function (Event) {
+      var Result = false;
+      if (Event.relatedTarget !== this.FCheckElement) {
+        Result = pas["WEBLib.Controls"].TControl.HandleDoExit.apply(this,arguments)}
+       else Result = true;
+      return Result;
+    };
     this.Click = function () {
       var chk = null;
-      pas["WEBLib.Controls"].TControl.Click.call(this);
       if (!this.GetIsLinked()) {
         if (this.FAllowGrayed && this.FEnabled) {
           if (this.FState === 2) {
@@ -29911,11 +29934,20 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
           chk.checked = !chk.checked;
         };
       };
+      if (this.FOnClick != null) this.FOnClick(this);
       this.DoCheckClick();
       this.SetFocus();
     };
     this.DoCheckClick = function () {
       if (this.FOnCheckClick != null) this.FOnCheckClick(this);
+    };
+    this.DoEnter = function () {
+      if (!this.FHasFocus) pas["WEBLib.Controls"].TControl.DoEnter.call(this);
+      this.FHasFocus = true;
+    };
+    this.DoExit = function () {
+      this.FHasFocus = false;
+      pas["WEBLib.Controls"].TControl.DoExit.call(this);
     };
     this.GetCheckElement = function () {
       var Result = null;
@@ -38868,11 +38900,11 @@ rtl.module("WEBLib.DataGrid.libjs",["System","WEBLib.DataGrid.Common","Classes",
       var htmlDocument = null;
       if (InDesigner) {
         innerObjectElement = document.getElementById("projecthtml");
-        if ($mod._NotNullOrUndefined(innerObjectElement)) {
+        if ($mod._NotNullOrUndefined$1(innerObjectElement)) {
           htmlDocument = innerObjectElement.ownerDocument;
-          if ($mod._NotNullOrUndefined(htmlDocument)) {
+          if ($mod._NotNullOrUndefined$1(htmlDocument)) {
             headElement = htmlDocument.head;
-            if ($mod._NotNullOrUndefined(headElement)) {
+            if ($mod._NotNullOrUndefined$1(headElement)) {
               Result = headElement;
               return Result;
             };
@@ -39030,10 +39062,22 @@ rtl.module("WEBLib.DataGrid.libjs",["System","WEBLib.DataGrid.Common","Classes",
       };
     };
   });
+  rtl.createClassExt(this,"TJSDateEx",Date,"",function () {
+    this.$init = function () {
+    };
+    this.$final = function () {
+    };
+  });
   this._NotNullOrUndefined = function (Value) {
     var Result = false;
     Result = false;
     if ((typeof(Value) !== "undefined") && (Value != null)) Result = true;
+    return Result;
+  };
+  this._NotNullOrUndefined$1 = function (Value) {
+    var Result = false;
+    Result = false;
+    if ((typeof(Value) !== "undefined") && (Value !== null)) Result = true;
     return Result;
   };
 });
@@ -40797,7 +40841,6 @@ rtl.module("WEBLib.DataGrid.CellComponents",["System","Classes","Web","JS","WEBL
       S = S + "    init(params) {" + "\r\n";
       S = S + "        var _a;" + "\r\n";
       S = S + "        super.init(params);" + "\r\n";
-      S = S + '        console.log("TcrLocaleDateStringRendererComponent");' + "\r\n";
       S = S + '        this.gui.classList.add("cr-localedatestring");' + "\r\n";
       S = S + '        var result = "-";' + "\r\n";
       S = S + "        try {" + "\r\n";
@@ -40815,7 +40858,6 @@ rtl.module("WEBLib.DataGrid.CellComponents",["System","Classes","Web","JS","WEBL
       S = S + "    init(params) {" + "\r\n";
       S = S + "        var _a;" + "\r\n";
       S = S + "        super.init(params);" + "\r\n";
-      S = S + '        console.log("TcrLocaleNumberRendererComponent");' + "\r\n";
       S = S + '        this.gui.classList.add("cr-localenumber");' + "\r\n";
       S = S + '        var result = "-";' + "\r\n";
       S = S + "        try {" + "\r\n";
@@ -40968,14 +41010,12 @@ rtl.module("WEBLib.DataGrid.CellComponents",["System","Classes","Web","JS","WEBL
       S = S + "        return this.gui;" + "\r\n";
       S = S + "    }" + "\r\n";
       S = S + "    getValue() {" + "\r\n";
-      S = S + '        console.log("***** EditorComponentInputBase.getValue()");' + "\r\n";
       S = S + "        return (this.gui.value);" + "\r\n";
       S = S + "    }" + "\r\n";
       S = S + "    afterGuiAttached() {" + "\r\n";
       S = S + "        this.gui.focus();" + "\r\n";
       S = S + "    }" + "\r\n";
       S = S + "    isCancelBeforeStart() {" + "\r\n";
-      S = S + '        console.log("***** EditorComponentInputBase.isCancelBeforeStart()");' + "\r\n";
       S = S + "        return (false);" + "\r\n";
       S = S + "    }" + "\r\n";
       S = S + "}" + "\r\n";
@@ -41030,7 +41070,6 @@ rtl.module("WEBLib.DataGrid.CellComponents",["System","Classes","Web","JS","WEBL
       S = S + "        super.postInit(params);" + "\r\n";
       S = S + "    }" + "\r\n";
       S = S + "    getValue() {" + "\r\n";
-      S = S + '        console.log("***** TceNumberEditorComponent.getValue()");' + "\r\n";
       S = S + "        return (parseInt(this.gui.value));" + "\r\n";
       S = S + "    }" + "\r\n";
       S = S + "}" + "\r\n";
@@ -41391,6 +41430,8 @@ rtl.module("WEBLib.DataGrid.Options",["System","WEBLib.DataGrid.Common","WEBLib.
   this.$rtti.$MethodVar("TDGCustomCellRender",{procsig: rtl.newTIProcSig([["Params",pas.libdatagrid.$rtti["TJSCellRendererParam"]]],rtl.jsvalue), methodkind: 1});
   this.$rtti.$MethodVar("TDGCellClassFunc",{procsig: rtl.newTIProcSig([["Params",pas.libdatagrid.$rtti["TJSCellClassParams"]]],rtl.jsvalue), methodkind: 1});
   this.$rtti.$MethodVar("TDGCellStyleFunc",{procsig: rtl.newTIProcSig([["Params",pas.libdatagrid.$rtti["TJSCellClassParams"]]],rtl.jsvalue), methodkind: 1});
+  this.TDGTextAlign = {"0": "gtaDefault", gtaDefault: 0, "1": "gtaLeft", gtaLeft: 1, "2": "gtaCenter", gtaCenter: 2, "3": "gtaRight", gtaRight: 3};
+  this.$rtti.$Enum("TDGTextAlign",{minvalue: 0, maxvalue: 3, ordtype: 1, enumtype: this.TDGTextAlign});
   rtl.createClass(this,"TDGFreeNotifier",pas.Classes.TComponent,function () {
     this.$init = function () {
       pas.Classes.TComponent.$init.call(this);
@@ -41738,6 +41779,11 @@ rtl.module("WEBLib.DataGrid.Options",["System","WEBLib.DataGrid.Common","WEBLib.
       this.FViewModeFormat = null;
       this.FOnSortCompare = null;
       this.FReadOnly = false;
+      this.FColor = 0;
+      this.FFont = null;
+      this.FTextAlign = 0;
+      this.FCSSClass = "";
+      this.FUseFont = false;
       this.FField = "";
       this.FFreeNotifier = null;
     };
@@ -41753,6 +41799,7 @@ rtl.module("WEBLib.DataGrid.Options",["System","WEBLib.DataGrid.Common","WEBLib.
       this.FParent = undefined;
       this.FViewModeFormat = undefined;
       this.FOnSortCompare = undefined;
+      this.FFont = undefined;
       this.FFreeNotifier = undefined;
       $mod.TDGCollectionItem.$final.call(this);
     };
@@ -42021,6 +42068,73 @@ rtl.module("WEBLib.DataGrid.Options",["System","WEBLib.DataGrid.Common","WEBLib.
       this.FReadOnly = Value;
       this.DoChange();
     };
+    this.GetAgGrid = function () {
+      var Result = null;
+      var Owner = null;
+      var Grid = null;
+      Result = null;
+      Owner = this.GetOwner();
+      if ((Owner != null) && Owner.$class.InheritsFrom($mod.TDGColumnDefsCollection)) {
+        Owner = Owner.Owner();
+        if ((Owner != null) && Owner.$class.InheritsFrom(pas["WEBLib.DataGrid"].TDataGridCustom)) {
+          Grid = Owner;
+          Result = Grid.FAGGrid;
+        };
+      };
+      return Result;
+    };
+    this.HandleGetCellClass = function (Params) {
+      var Result = undefined;
+      Result = null;
+      if (this.FOnGetCellClass != null) {
+        Result = this.FOnGetCellClass(Params);
+      };
+      if (this.FCSSClass !== "") {
+        if (Result == null) {
+          Result = this.FCSSClass;
+        } else if (typeof(Result) === "string") {
+          Result = "" + Result + " " + this.FCSSClass;
+        };
+      };
+      return Result;
+    };
+    this.HandleGetCellStyle = function (Params) {
+      var Result = undefined;
+      var UseCellStyle = false;
+      var NewResult = null;
+      Result = null;
+      UseCellStyle = false;
+      if (this.FOnGetCellStyle != null) {
+        NewResult = this.FOnGetCellStyle(Params);
+        UseCellStyle = true;
+      };
+      if ((typeof(NewResult) !== "object") || (NewResult === null)) NewResult = pas.JS.New([]);
+      if ((this.FTextAlign !== 0) && (typeof(NewResult["textAlign"]) === "undefined")) {
+        var $tmp = this.FTextAlign;
+        if ($tmp === 1) {
+          NewResult["textAlign"] = "left"}
+         else if ($tmp === 2) {
+          NewResult["textAlign"] = "center"}
+         else if ($tmp === 3) NewResult["textAlign"] = "right";
+        UseCellStyle = true;
+      };
+      if ((this.FColor !== -1) && (typeof(NewResult["background-color"]) === "undefined")) {
+        NewResult["background-color"] = "#" + $mod.TDGUtils.TColorToHex(this.FColor);
+        UseCellStyle = true;
+      };
+      if ((this.FFont !== null) && this.FUseFont) {
+        if (typeof(NewResult["font-family"]) === "undefined") {
+          NewResult["font-family"] = this.FFont.FName;
+          if (typeof(NewResult["color"]) === "undefined") NewResult["color"] = "#" + $mod.TDGUtils.TColorToHex(this.FFont.FColor);
+          if (typeof(NewResult["font-size"]) === "undefined") NewResult["font-size"] = pas.SysUtils.IntToStr(this.FFont.FSize) + "px";
+          UseCellStyle = true;
+        };
+      };
+      if (UseCellStyle) {
+        Result = NewResult;
+      };
+      return Result;
+    };
     this.Create$1 = function (ACollection) {
       pas.Classes.TCollectionItem.Create$1.apply(this,arguments);
       this.FVisible = true;
@@ -42040,6 +42154,9 @@ rtl.module("WEBLib.DataGrid.Options",["System","WEBLib.DataGrid.Common","WEBLib.
       this.FViewModeType = 0;
       this.FEditModeType = 0;
       this.SetViewModeFormat(null);
+      this.FTextAlign = 0;
+      this.FColor = -1;
+      this.FFont = pas["WEBLib.Graphics"].TFont.$create("Create$1");
       return this;
     };
     this.Destroy = function () {
@@ -42053,6 +42170,11 @@ rtl.module("WEBLib.DataGrid.Options",["System","WEBLib.DataGrid.Common","WEBLib.
         }, set: function (v) {
           this.p.FSelectOptions = v;
         }});
+      if (this.FFont != null) pas.SysUtils.FreeAndNil({p: this, get: function () {
+          return this.p.FFont;
+        }, set: function (v) {
+          this.p.FFont = v;
+        }});
       pas.Classes.TCollectionItem.Destroy.call(this);
     };
     this.Assign = function (Source) {
@@ -42063,6 +42185,20 @@ rtl.module("WEBLib.DataGrid.Options",["System","WEBLib.DataGrid.Common","WEBLib.
         this.FHeaderName = SourceItem.FHeaderName;
       };
     };
+    this.ClearFilter = function () {
+      var AGGrid = null;
+      var FilterModel = null;
+      AGGrid = this.GetAgGrid();
+      if ((AGGrid !== null) && (this.FField !== "")) {
+        FilterModel = AGGrid.getFilterModel();
+        if (typeof(FilterModel) === "object") {
+          if (typeof(FilterModel[this.FField]) !== "undefined") {
+            pas.JS.JSDelete(FilterModel,this.FField);
+            AGGrid.setFilterModel(FilterModel);
+          };
+        };
+      };
+    };
     this.GetAsJSObject = function () {
       var $Self = this;
       var Result = null;
@@ -42071,6 +42207,8 @@ rtl.module("WEBLib.DataGrid.Options",["System","WEBLib.DataGrid.Common","WEBLib.
       var Owner = null;
       var Grid = null;
       var SortComparator = null;
+      var CellClassFunc = null;
+      var CellStyleFunc = null;
       Owner = this.GetOwner();
       Grid = null;
       if ((Owner != null) && Owner.$class.InheritsFrom($mod.TDGColumnDefsCollection)) {
@@ -42210,8 +42348,10 @@ rtl.module("WEBLib.DataGrid.Options",["System","WEBLib.DataGrid.Common","WEBLib.
         if (this.FValueGetter != null) Props.Add$5("valueGetter",this.FValueGetter,"FValueGetter");
         if (this.FCheckboxSelection) Props.Add$1("checkboxSelection",this.FCheckboxSelection,false);
         if (this.FEnableCellChangeFlash) Props.Add$1("enableCellChangeFlash",this.FEnableCellChangeFlash,false);
-        Props.Add$5("cellStyle",this.FOnGetCellStyle,null);
-        Props.Add$5("cellClass",this.FOnGetCellClass,null);
+        CellStyleFunc = rtl.createCallback($Self,"HandleGetCellStyle");
+        Props.Add$5("cellStyle",CellStyleFunc,null);
+        CellClassFunc = rtl.createCallback($Self,"HandleGetCellClass");
+        Props.Add$5("cellClass",CellClassFunc,null);
         if (this.FFlex > 0) Props.Add$3("flex",this.FFlex,0);
         if (this.FWrapText) Props.Add$1("wrapText",this.FWrapText,false);
         if (this.FAutoHeight) Props.Add$1("autoHeight",this.FAutoHeight,false);
@@ -42255,6 +42395,11 @@ rtl.module("WEBLib.DataGrid.Options",["System","WEBLib.DataGrid.Common","WEBLib.
     $r.addProperty("OnGetCellStyle",2,$mod.$rtti["TDGCellStyleFunc"],"FOnGetCellStyle","SetOnGetCellStyle");
     $r.addProperty("OnGetCellClass",2,$mod.$rtti["TDGCellClassFunc"],"FOnGetCellClass","SetOnGetCellClass");
     $r.addProperty("OnSortCompare",2,$mod.$rtti["TDGColumnSortComparison"],"FOnSortCompare","SetOnSortCompare");
+    $r.addProperty("Color",0,pas["WEBLib.Graphics"].$rtti["TColor"],"FColor","FColor",4,{Default: -1});
+    $r.addProperty("CSSClass",0,rtl.string,"FCSSClass","FCSSClass");
+    $r.addProperty("Font",0,pas["WEBLib.Graphics"].$rtti["TFont"],"FFont","FFont");
+    $r.addProperty("TextAlign",0,$mod.$rtti["TDGTextAlign"],"FTextAlign","FTextAlign",4,{Default: $mod.TDGTextAlign.gtaDefault});
+    $r.addProperty("UseFont",0,rtl.boolean,"FUseFont","FUseFont",4,{Default: false});
   });
   rtl.createClass(this,"TDGColumnDefsCollectionItem",this.TDGColumnDefsCollectionItemBase,function () {
   });
@@ -42281,16 +42426,6 @@ rtl.module("WEBLib.DataGrid.Options",["System","WEBLib.DataGrid.Common","WEBLib.
     this.Update = function (Item) {
       pas.Classes.TCollection.Update.apply(this,arguments);
       if ((this.Owner() != null) && !(0 in this.Owner().FComponentState)) this.DoChange();
-    };
-    this.GetAgGrid = function () {
-      var Result = null;
-      var Grid = null;
-      Result = null;
-      if ((this.Owner() != null) && this.Owner().$class.InheritsFrom(pas["WEBLib.DataGrid"].TDataGrid)) {
-        Grid = this.Owner();
-        Result = Grid.FAGGrid;
-      };
-      return Result;
     };
     this.Create$3 = function (AOwner) {
       pas.Classes.TOwnedCollection.Create$2.call(this,AOwner,$mod.TDGColumnDefsCollectionItem);
@@ -42324,13 +42459,6 @@ rtl.module("WEBLib.DataGrid.Options",["System","WEBLib.DataGrid.Common","WEBLib.
         };
       };
       return Result;
-    };
-    this.ClearFilters = function () {
-      var AGGrid = null;
-      AGGrid = this.GetAgGrid();
-      if (AGGrid !== null) {
-        AGGrid.setFilterModel(null);
-      };
     };
   });
   rtl.createClass(this,"TDGDefaultColDef",this.TDGPersistent,function () {
@@ -42493,22 +42621,20 @@ rtl.module("WEBLib.DataGrid.Options",["System","WEBLib.DataGrid.Common","WEBLib.
     this.GetThemeClass = function () {
       var Result = "";
       Result = "";
-      if (this.FEnabled) {
-        var $tmp = this.FBuiltInTheme;
-        if ($tmp === 0) {
-          Result = "ag-theme-alpine"}
-         else if ($tmp === 1) {
-          Result = "ag-theme-balham"}
-         else if ($tmp === 2) {
-          Result = "ag-theme-material"}
-         else if ($tmp === 3) {
-          Result = "ag-theme-quartz"}
-         else if ($tmp === 4) Result = "ag-theme-custom";
-        var $tmp1 = this.FThemeMode;
-        if ($tmp1 === 1) {
-          Result = Result + "-dark"}
-         else if ($tmp1 === 2) Result = Result + "-auto-dark";
-      };
+      var $tmp = this.FBuiltInTheme;
+      if ($tmp === 0) {
+        Result = "ag-theme-alpine"}
+       else if ($tmp === 1) {
+        Result = "ag-theme-balham"}
+       else if ($tmp === 2) {
+        Result = "ag-theme-material"}
+       else if ($tmp === 3) {
+        Result = "ag-theme-quartz"}
+       else if ($tmp === 4) Result = "ag-theme-custom";
+      var $tmp1 = this.FThemeMode;
+      if ($tmp1 === 1) {
+        Result = Result + "-dark"}
+       else if ($tmp1 === 2) Result = Result + "-auto-dark";
       return Result;
     };
     var $r = this.$rtti;
@@ -42922,7 +43048,6 @@ rtl.module("WEBLib.DataGrid.Injections",["System","Classes","Web","JS","WEBLib.C
       S = S + "    }" + "\r\n";
       S = S + "    override_onMouseDown(params, mouseEvent) {" + "\r\n";
       S = S + "        var _a, _b;" + "\r\n";
-      S = S + '        console.log("override_onMouseDown(" + mouseEvent.x + ", " + mouseEvent.y + ")");' + "\r\n";
       S = S + "        if (!this.useOverride) {" + "\r\n";
       S = S + "            return (this.orig_onMouseDown(params, mouseEvent));" + "\r\n";
       S = S + "        }" + "\r\n";
@@ -42966,7 +43091,6 @@ rtl.module("WEBLib.DataGrid.Injections",["System","Classes","Web","JS","WEBLib.C
       S = S + '        dragOverlayDiv.style.pointerEvents = "none";' + "\r\n";
       S = S + "        document.body.appendChild(dragOverlayDiv);" + "\r\n";
       S = S + "        const _mouseMove = (mouseEvent) => {" + "\r\n";
-      S = S + '            console.log("override_onMouseMove(" + mouseEvent.x + ", " + mouseEvent.y + ")");' + "\r\n";
       S = S + "            if ((mouseEvent.buttons & 0x00000001) != 1) {" + "\r\n";
       S = S + "                that.onMouseUp(mouseEvent, params.eElement);" + "\r\n";
       S = S + "                if (dragOverlayDiv) {" + "\r\n";
@@ -42980,7 +43104,6 @@ rtl.module("WEBLib.DataGrid.Injections",["System","Classes","Web","JS","WEBLib.C
       S = S + "            }" + "\r\n";
       S = S + "        };" + "\r\n";
       S = S + "        const _mouseUp = (mouseEvent) => {" + "\r\n";
-      S = S + '            console.log("override_onMouseUp(" + mouseEvent.x + ", " + mouseEvent.y + ")");' + "\r\n";
       S = S + "            if (dragOverlayDiv) {" + "\r\n";
       S = S + "                dragOverlayDiv.remove();" + "\r\n";
       S = S + "                dragOverlayDiv = null;" + "\r\n";
@@ -43064,7 +43187,7 @@ rtl.module("WEBLib.DataGrid.Injections",["System","Classes","Web","JS","WEBLib.C
     pas["WEBLib.DataGrid.libjs"].TTMSModuleLoader.RegisterEmbeddedJavaScript($mod.TDGGridInjections.$create("Create"));
   };
 });
-rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web","JS","WEBLib.Controls","WEBLib.Graphics","SysUtils","libaggrid","WEBLib.DataGrid.liblocale","WEBLib.RegularExpressions","Generics.Collections","Generics.Defaults","WEBLib.StdCtrls","WEBLib.Menus","WEBLib.DataGrid.Options","WEBLib.DataGrid.DataAdapter.Base","WEBLib.DataGrid.Injections","Math","libdatagrid","Types","lib.propertyserializer","WEBLib.DataGrid.libjs"],function () {
+rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","StrUtils","Classes","Web","JS","WEBLib.Controls","WEBLib.Graphics","SysUtils","libaggrid","WEBLib.DataGrid.liblocale","WEBLib.RegularExpressions","Generics.Collections","Generics.Defaults","WEBLib.StdCtrls","WEBLib.Menus","WEBLib.DataGrid.Options","WEBLib.DataGrid.DataAdapter.Base","WEBLib.DataGrid.Injections","Math","libdatagrid","Types","lib.propertyserializer","WEBLib.DataGrid.libjs"],function () {
   "use strict";
   var $mod = this;
   var $impl = $mod.$impl;
@@ -43072,6 +43195,7 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
   this.$rtti.$MethodVar("TDGCellEditingEvent",{procsig: rtl.newTIProcSig([["Params",pas.libdatagrid.$rtti["TJSCellEditingEvent"]]]), methodkind: 0});
   this.$rtti.$MethodVar("TDGRowEditingEvent",{procsig: rtl.newTIProcSig([["Params",pas.libdatagrid.$rtti["TJSRowEditingEvent"]]]), methodkind: 0});
   this.$rtti.$MethodVar("TDGTabToNextCellEvent",{procsig: rtl.newTIProcSig([["Params",pas.libdatagrid.$rtti["TJSTabToNextCellParams"]]],rtl.jsvalue), methodkind: 1});
+  this.$rtti.$MethodVar("TDGPaginationChangedEvent",{procsig: rtl.newTIProcSig([["Event",pas.libdatagrid.$rtti["TJSPaginationChangedEvent"]]]), methodkind: 0});
   this.$rtti.$MethodVar("TDGSelectionChangedEvent",{procsig: rtl.newTIProcSig([["Event",pas.libdatagrid.$rtti["TJSSelectionChangedEvent"]]]), methodkind: 0});
   this.$rtti.$MethodVar("TDGGetRowStyleCallback",{procsig: rtl.newTIProcSig([["Params",pas.libdatagrid.$rtti["TJSGetRowStyleParams"]]],pas.JS.$rtti["TJSObject"]), methodkind: 1});
   this.$rtti.$MethodVar("TDGGetRowClassCallback",{procsig: rtl.newTIProcSig([["Params",pas.libdatagrid.$rtti["TJSGetRowClassParams"]]],rtl.jsvalue), methodkind: 1});
@@ -43084,6 +43208,7 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
   this.$rtti.$MethodVar("TDGGetLocaleTextCallBack",{procsig: rtl.newTIProcSig([["Params",pas.libdatagrid.$rtti["TJSGetLocaleTextParams"]]],rtl.string), methodkind: 1});
   rtl.createClass(this,"TDGDataLoadedParams",pas.System.TObject,function () {
   });
+  this.$rtti.$MethodVar("TDGLoadColumnValueEvent",{procsig: rtl.newTIProcSig([["FieldName",rtl.string],["Value",rtl.jsvalue],["Column",pas["WEBLib.DataGrid.Options"].$rtti["TDGColumnDefsCollectionItem"]],["Handled",rtl.boolean,1],["AssignResultValue",rtl.boolean,1]],rtl.jsvalue), methodkind: 1});
   this.TDGRowSelectionType = {"0": "rsSingle", rsSingle: 0, "1": "rsMultiple", rsMultiple: 1};
   this.$rtti.$Enum("TDGRowSelectionType",{minvalue: 0, maxvalue: 1, ordtype: 1, enumtype: this.TDGRowSelectionType});
   this.TDGRowEditType = {"0": "retCell", retCell: 0, "1": "retFullRow", retFullRow: 1};
@@ -43342,8 +43467,8 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
         if (FieldName.length > 0) {
           if (typeof(DisplayedRowIndex) !== "number") throw pas.SysUtils.Exception.$create("Create$1",["Error: DisplayedRowIndex must be numeric."]);
           RowNode = this.FAGGrid.getDisplayedRowAtIndex(rtl.trunc(DisplayedRowIndex));
-          if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(RowNode) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(RowNode.data)) {
-            if (typeof(RowNode.data[FieldName]) !== "undefined") {
+          if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(RowNode) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(RowNode.data)) {
+            if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(RowNode.data[FieldName])) {
               Result = RowNode.data[FieldName]}
              else throw pas.SysUtils.Exception.$create("Create$1",["Error: Invalid FieldName provided."]);
           } else throw pas.SysUtils.Exception.$create("Create$1",["Error: Invalid DisplayedRowIndex!"]);
@@ -43358,7 +43483,7 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
           if (this.FColumnDefs.FindColumnIndex(FieldName) === -1) throw pas.SysUtils.Exception.$create("Create$1",["Error: Invalid FieldName!"]);
           if (typeof(DisplayedRowIndex) !== "number") throw pas.SysUtils.Exception.$create("Create$1",["Error: DisplayedRowIndex must be numeric."]);
           RowNode = this.FAGGrid.getDisplayedRowAtIndex(rtl.trunc(DisplayedRowIndex));
-          if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(RowNode) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(RowNode.data)) {
+          if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(RowNode) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(RowNode.data)) {
             RowNode.setDataValue(FieldName,Value);
           } else throw pas.SysUtils.Exception.$create("Create$1",["Error: Invalid DisplayedRowIndex!"]);
         } else throw pas.SysUtils.Exception.$create("Create$1",["Error: Invalid FieldName provided."]);
@@ -43405,7 +43530,7 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
       if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(CellValue)) Result = "" + CellValue;
       return Result;
     };
-    this.SetCells = function (DisplayedRowIndex, ColumnIndex, Value) {
+    this.SetFloats = function (DisplayedRowIndex, ColumnIndex, Value) {
       this.SetCellByDisplayedRowIndex(DisplayedRowIndex,ColumnIndex,Value);
     };
     this.AddRootHeaderObject = function (ToArr, RootHeader) {
@@ -43413,7 +43538,7 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
       var I = 0;
       var Found = false;
       Result = false;
-      if (Array.isArray(ToArr) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(RootHeader)) {
+      if (Array.isArray(ToArr) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(RootHeader)) {
         Found = false;
         for (var $l = 0, $end = ToArr.length - 1; $l <= $end; $l++) {
           I = $l;
@@ -43797,7 +43922,7 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
     this.SetRowData = function (Value) {
       if ((this.FAGGrid != null) && (Value != null)) this.FAGGrid.setGridOption("rowData",Value);
     };
-    this.OnPaginationChanged = function (Event) {
+    this.DoOnPaginationChanged = function (Event) {
       var pageSize = 0;
       var currentPage = 0;
       if ((this.FAGGrid != null) && (this.FServerDataAdapter !== null)) {
@@ -43820,7 +43945,6 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
     this.OnThemingChanged = function (Sender) {
       var DivElement = null;
       var SubDivElement = null;
-      var StyleClass = "";
       var Theming = null;
       if ((this.FAGGrid != null) && (Sender != null) && (this.GetElementHandle() != null)) {
         Theming = pas["WEBLib.DataGrid.Options"].TDGUtils.AsType$$$G$$WEBLib$DataGrid$Options$$TDGTheming(Sender);
@@ -43829,9 +43953,11 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
           if (DivElement != null) {
             SubDivElement = this.FindFirstChildElement("DIV",DivElement);
             if (SubDivElement != null) {
-              StyleClass = "";
-              if (this.FTheming.FEnabled) StyleClass = this.FTheming.GetThemeClass();
-              if (StyleClass !== "") SubDivElement.setAttribute("class",StyleClass);
+              if (this.FTheming.FEnabled) {
+                SubDivElement.setAttribute("class",this.FTheming.GetThemeClass());
+              } else {
+                SubDivElement.removeAttribute("class");
+              };
             };
           };
         };
@@ -43893,7 +44019,7 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
       var $Self = this;
       if (this.FOnCellEditingEnded != null) this.FOnCellEditingEnded(Params);
       if ((this.FEditType === 0) && (this.FServerDataAdapter != null) && (Params.data != null)) {
-        if (typeof(Params.newValue) === "undefined") {}
+        if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(Params.newValue)) {}
         else if (Params.oldValue !== Params.newValue) {
           this.FServerDataAdapter.UpdateRow($Self,Params.data,function (RowData) {
             if ($Self.FAGGrid != null) $Self.FAGGrid.refreshInfiniteCache();
@@ -43953,7 +44079,7 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
       };
     };
     this.HandleOnPaginationChanged = function (Event) {
-      this.OnPaginationChanged(Event);
+      this.DoOnPaginationChanged(Event);
       if (this.FOnPaginationChanged != null) this.FOnPaginationChanged(Event);
     };
     this.HandleOnRowEditingStarted = function (Params) {
@@ -43997,7 +44123,7 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
         Result = this.FOnTabToNextCell(Params)}
        else {
         Result = false;
-        if ((typeof(Params) !== "undefined") && (typeof(Params.nextCellPosition) !== "undefined") && (Params.nextCellPosition !== null)) {
+        if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(Params) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(Params.nextCellPosition)) {
           NewCellPos = pas.libdatagrid.TJSCellPosition.$create("Create");
           NewCellPos.column = Params.nextCellPosition.column;
           NewCellPos.rowIndex = Params.nextCellPosition.rowIndex;
@@ -44015,7 +44141,6 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
     };
     this.DoOnDataLoaded = function () {
       this.FOnDataLoadedCount = 0;
-      window.console.error("*** Fire OnDataLoaded....");
       if (this.FOnDataLoaded != null) this.FOnDataLoaded(null);
     };
     this.CreateElement = function () {
@@ -44068,7 +44193,7 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
             Style = Style + ".ag-row-odd { background-color: #" + pas["WEBLib.DataGrid.Options"].TDGUtils.TColorToHex(this.FBanding.FOddRowsColor) + "; }" + "\r\n" + ".ag-row-even { background-color: #" + pas["WEBLib.DataGrid.Options"].TDGUtils.TColorToHex(this.FBanding.FEvenRowsColor) + "; } " + "\r\n";
           };
           if ((this.FTheming != null) && this.FTheming.FEnabled) {
-            Style = Style + "." + this.FTheming.GetThemeClass() + " {" + "\r\n" + "  --ag-font-family: " + this.FFont.FName + "\r\n" + "}" + "\r\n";
+            Style = Style + "." + this.FTheming.GetThemeClass() + " {" + "\r\n" + "  --ag-font-family: " + this.FFont.FName + "\r\n" + "  --ag-font-size: " + pas.SysUtils.IntToStr(-this.FFont.FSize) + "px" + "\r\n" + "}" + "\r\n";
           };
           StyleElement.innerHTML = Style;
         };
@@ -44133,15 +44258,15 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
               CurrentHeaderItem = HeaderItem;
               PrevHeaderItem = null;
               while (true) {
-                if (!pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(CurrentHeaderItem.FInternalParentObject)) {
+                if (!pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(CurrentHeaderItem.FInternalParentObject)) {
                   CurrentHeaderItem.FInternalParentObject = pas.JS.New(["headerName",CurrentHeaderItem.FName,"children",Array.of()]);
                 };
-                if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(CurrentHeaderItem.FInternalParentObject) && Array.isArray(CurrentHeaderItem.FInternalParentObject["children"])) {
+                if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(CurrentHeaderItem.FInternalParentObject) && Array.isArray(CurrentHeaderItem.FInternalParentObject["children"])) {
                   Children = CurrentHeaderItem.FInternalParentObject["children"];
                   if (CurrentHeaderItem === HeaderItem) {
                     Children.push(Collection.GetItem$1(I).GetAsJSObject());
                   } else {
-                    if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(PrevHeaderItem) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(PrevHeaderItem.FInternalParentObject)) {
+                    if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(PrevHeaderItem) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(PrevHeaderItem.FInternalParentObject)) {
                       Found = false;
                       for (var $l1 = 0, $end1 = Children.length - 1; $l1 <= $end1; $l1++) {
                         J = $l1;
@@ -44223,36 +44348,6 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
         };
       };
       return Result;
-    };
-    this.SetRowCount = function (Value) {
-      var CurrentRowCount = 0;
-      var DiffCount = 0;
-      var I = 0;
-      var NewRowData = null;
-      if (this.FServerDataAdapter != null) {
-        throw pas.SysUtils.Exception.$create("Create$1",["Error: Unable to set RowCount when ServerDataAdapter has been assigned!"]);
-      };
-      CurrentRowCount = 0;
-      if (Array.isArray(this.GetRowData())) CurrentRowCount = this.GetRowData().length;
-      DiffCount = Value - CurrentRowCount;
-      if (DiffCount > 0) {
-        for (var $l = 0, $end = DiffCount - 1; $l <= $end; $l++) {
-          I = $l;
-          if (Array.isArray(this.GetRowData())) {
-            NewRowData = this.GetRowData();
-            NewRowData.push(pas.JS.New([]));
-            this.SetRowData(NewRowData);
-          } else {
-            this.SetRowData(new Array(pas.JS.New([])));
-          };
-        };
-      } else if (DiffCount < 0) {
-        if (Array.isArray(this.GetRowData())) {
-          NewRowData = this.GetRowData();
-          NewRowData.splice(DiffCount);
-          this.SetRowData(NewRowData);
-        };
-      };
     };
     this.ConvertLocaleToBCP47Tag = function (Locale) {
       var Result = "";
@@ -44346,7 +44441,7 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
           WrapperId = this.GetElementID();
           if (pas.SysUtils.Trim(DivElement.id) === "") DivElement.id = WrapperId;
           FirstChildElement = this.FindFirstChildElement("DIV",DivElement);
-          if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(FirstChildElement)) DivElement = DivElement.firstElementChild;
+          if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(FirstChildElement)) DivElement = DivElement.firstElementChild;
           NewElement = document.createElement("DIV");
           DivElement.appendChild(NewElement);
           PS = pas["lib.propertyserializer"].TJSPropertySerializer.$create("Create$1");
@@ -44438,6 +44533,25 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
       this.FDelimiter = "\x00";
       this.FQuoteChar = "\x00";
       this.FFirstRowColumnLabels = false;
+      this.FOnLoadColumnValue = null;
+    };
+    this.$final = function () {
+      this.FOnLoadColumnValue = undefined;
+      $mod.TDataGridBase.$final.call(this);
+    };
+    this.IsValidDate = function (Value) {
+      var Result = false;
+      var date = null;
+      Result = false;
+      try {
+        date = new Date("" + Value);
+        Result = !isNaN(date.getTime());
+      } catch ($e) {
+        if (pas.SysUtils.Exception.isPrototypeOf($e)) {
+          var E = $e;
+        } else throw $e
+      };
+      return Result;
     };
     this.LoadFromStringList = function (AStrings) {
       var r = 0;
@@ -44447,9 +44561,11 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
       var RowArr = null;
       var ColArr = null;
       var ColDef = null;
+      var Key = "";
       var Value = "";
       var Line = "";
       var Buffer = "";
+      var LabelName = "";
       var CH = "\x00";
       var I = 0;
       var LineCount = 0;
@@ -44458,8 +44574,13 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
       var ContainsQuotes = false;
       var LineArr = null;
       var JSBuffer = null;
+      var Handled = false;
+      var AssignRetVal = false;
+      var RetValue = undefined;
+      var AutoPopulate = false;
       RowArr = Array.of();
       ColCount = this.FColumnDefs.GetCount();
+      AutoPopulate = this.FColumnDefs.GetCount() === 0;
       for (var $l = 0, $end = AStrings.GetCount() - 1; $l <= $end; $l++) {
         r = $l;
         LineArr = Array.of();
@@ -44498,12 +44619,24 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
           };
         };
         if (this.FFirstRowColumnLabels && (r === 0)) {
-          this.FColumnDefs.Clear();
           MaxCol = LineArr.length;
           for (var $l3 = 0, $end3 = MaxCol - 1; $l3 <= $end3; $l3++) {
             c = $l3;
-            ColDef = this.FColumnDefs.Add$1();
-            ColDef.SetField("" + LineArr[c]);
+            if (c < (this.FColumnDefs.GetCount() - 1)) {
+              ColDef = this.FColumnDefs.GetItem$1(c);
+            } else {
+              if (AutoPopulate) {
+                ColDef = this.FColumnDefs.Add$1();
+              } else {
+                continue;
+              };
+            };
+            LabelName = "" + LineArr[c];
+            if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(ColDef.FField) || (ColDef.FField === "")) {
+              ColDef.SetField(LabelName);
+            } else if (ColDef.FField !== LabelName) {
+              if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(ColDef.FHeaderName) || (ColDef.FHeaderName === "")) ColDef.SetHeaderName(LabelName);
+            };
           };
           ColCount = this.FColumnDefs.GetCount();
           continue;
@@ -44516,52 +44649,65 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
           for (var $l4 = 0, $end4 = MaxCol - 1; $l4 <= $end4; $l4++) {
             c = $l4;
             if (c < this.FColumnDefs.GetCount()) {
-              ColArr.push(this.FColumnDefs.GetItem$1(c).FField);
+              ColDef = this.FColumnDefs.GetItem$1(c);
+              Key = ColDef.FField;
               Value = "" + LineArr[c];
-              try {
-                var $tmp = this.FColumnDefs.GetItem$1(c).FCellDataType;
-                if ($tmp === 1) {
-                  if (pas.SysUtils.TStringHelper.Contains.call({get: function () {
-                      return Value;
-                    }, set: function (v) {
-                      Value = v;
-                    }},".") && pas.SysUtils.TStringHelper.Contains.call({get: function () {
-                      return Value;
-                    }, set: function (v) {
-                      Value = v;
-                    }},",")) {
-                    ColArr.push(pas.SysUtils.StrToFloat(Value))}
-                   else if (pas.SysUtils.TStringHelper.Contains.call({get: function () {
-                      return Value;
-                    }, set: function (v) {
-                      Value = v;
-                    }},".")) {
-                    ColArr.push(parseFloat(Value))}
-                   else if (pas.SysUtils.TStringHelper.Contains.call({get: function () {
-                      return Value;
-                    }, set: function (v) {
-                      Value = v;
-                    }},",")) {
-                    ColArr.push(pas.SysUtils.StrToFloat(Value))}
-                   else ColArr.push(parseInt(Value));
-                } else if ($tmp === 2) {
-                  if (Value !== "") {
-                    if ((pas.SysUtils.LowerCase(Value) === "true") || (pas.SysUtils.LowerCase(Value) === "t") || (pas.SysUtils.LowerCase(Value) === "y") || (Value === "1")) {
-                      ColArr.push(true)}
-                     else if ((pas.SysUtils.LowerCase(Value) === "false") || (pas.SysUtils.LowerCase(Value) === "f") || (pas.SysUtils.LowerCase(Value) === "n") || (Value === "0")) {
-                      ColArr.push(false)}
+              ColArr.push(Key);
+              Handled = false;
+              AssignRetVal = false;
+              if (this.FOnLoadColumnValue != null) {
+                RetValue = this.FOnLoadColumnValue(Key,Value,ColDef,{get: function () {
+                    return Handled;
+                  }, set: function (v) {
+                    Handled = v;
+                  }},{get: function () {
+                    return AssignRetVal;
+                  }, set: function (v) {
+                    AssignRetVal = v;
+                  }});
+                if (AssignRetVal) {
+                  ColArr.push(RetValue);
+                  Handled = true;
+                };
+              };
+              if (!Handled) {
+                try {
+                  var $tmp = this.FColumnDefs.GetItem$1(c).FCellDataType;
+                  if ($tmp === 1) {
+                    if (pas.SysUtils.TStringHelper.Contains.call({get: function () {
+                        return Value;
+                      }, set: function (v) {
+                        Value = v;
+                      }},".") || pas.SysUtils.TStringHelper.Contains.call({get: function () {
+                        return Value;
+                      }, set: function (v) {
+                        Value = v;
+                      }},",")) {
+                      ColArr.push(pas.SysUtils.StrToFloat(Value))}
+                     else ColArr.push(parseInt(Value));
+                  } else if ($tmp === 2) {
+                    if (Value !== "") {
+                      if ((pas.SysUtils.LowerCase(Value) === "true") || (pas.SysUtils.LowerCase(Value) === "t") || (pas.SysUtils.LowerCase(Value) === "y") || (Value === "1")) {
+                        ColArr.push(true)}
+                       else if ((pas.SysUtils.LowerCase(Value) === "false") || (pas.SysUtils.LowerCase(Value) === "f") || (pas.SysUtils.LowerCase(Value) === "n") || (Value === "0")) {
+                        ColArr.push(false)}
+                       else ColArr.push(null);
+                    } else {
+                      ColArr.push(null);
+                    };
+                  } else if ($tmp === 3) {
+                    if (this.IsValidDate(Value)) {
+                      ColArr.push(new Date(Value))}
                      else ColArr.push(null);
                   } else {
-                    ColArr.push(null);
+                    ColArr.push(Value);
                   };
-                } else {
-                  ColArr.push(Value);
+                } catch ($e) {
+                  if (pas.SysUtils.Exception.isPrototypeOf($e)) {
+                    var E = $e;
+                    { debugger; };
+                  } else throw $e
                 };
-              } catch ($e) {
-                if (pas.SysUtils.Exception.isPrototypeOf($e)) {
-                  var E = $e;
-                  { debugger; };
-                } else throw $e
               };
             };
           };
@@ -44631,6 +44777,7 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
     $r.addProperty("OnGetRowStyle",0,$mod.$rtti["TDGGetRowStyleCallback"],"FOnGetRowStyle","FOnGetRowStyle");
     $r.addProperty("OnGetRowClass",0,$mod.$rtti["TDGGetRowClassCallback"],"FOnGetRowClass","FOnGetRowClass");
     $r.addProperty("OnGetRowHeight",0,$mod.$rtti["TDGGetRowHeightCallback"],"FOnGetRowHeight","FOnGetRowHeight");
+    $r.addProperty("OnPaginationChanged",0,$mod.$rtti["TDGPaginationChangedEvent"],"FOnPaginationChanged","FOnPaginationChanged");
     $r.addProperty("OnRowSelected",0,$mod.$rtti["TDGRowSelectedCallBack"],"FOnRowSelected","FOnRowSelected");
     $r.addProperty("OnRowUnselected",0,$mod.$rtti["TDGRowSelectedCallBack"],"FOnRowUnselected","FOnRowUnselected");
     $r.addProperty("OnCellEditingStarted",0,$mod.$rtti["TDGCellEditingEvent"],"FOnCellEditingStarted","FOnCellEditingStarted");
@@ -44643,13 +44790,13 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","Classes","Web",
     $r.addProperty("OnCellMouseOverEvent",0,$mod.$rtti["TDGCellMouseOverEvent"],"FOnCellMouseOverEvent","FOnCellMouseOverEvent");
     $r.addProperty("OnCellMouseDown",0,$mod.$rtti["TDGCellMouseDown"],"FOnCellMouseDown","FOnCellMouseDown");
     $r.addProperty("OnGetLocaleText",2,$mod.$rtti["TDGGetLocaleTextCallBack"],"FOnGetLocaleText","SetOnGetLocaleText");
+    $r.addProperty("OnLoadColumnValue",0,$mod.$rtti["TDGLoadColumnValueEvent"],"FOnLoadColumnValue","FOnLoadColumnValue");
     $r.addProperty("Center",0,pas["WEBLib.Controls"].$rtti["TCenter"],"FCenter","");
     $r.addProperty("ElementID",3,pas["WEBLib.Controls"].$rtti["TElementID"],"GetID","SetID");
     $r.addProperty("HeightStyle",2,pas["WEBLib.Controls"].$rtti["TSizeStyle"],"FHeightStyle","SetHeightStyle",4,{Default: pas["WEBLib.Controls"].TSizeStyle.ssAbsolute});
     $r.addProperty("HeightPercent",2,rtl.double,"FHeightPercent","SetHeightPercent",4,{Default: 100});
     $r.addProperty("WidthStyle",2,pas["WEBLib.Controls"].$rtti["TSizeStyle"],"FWidthStyle","SetWidthStyle",4,{Default: pas["WEBLib.Controls"].TSizeStyle.ssAbsolute});
     $r.addProperty("WidthPercent",2,rtl.double,"FWidthPercent","SetWidthPercent",4,{Default: 100});
-    $r.addProperty("RowCount",3,rtl.longint,"GetRowCount","SetRowCount");
   });
   $mod.$implcode = function () {
     rtl.createClass($impl,"TDGLocalizationInternal",pas["WEBLib.DataGrid.Options"].TDGLocalization,function () {
@@ -45208,10 +45355,10 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
           this.FDataCache.splice(InsertIndex,0,RowObject);
           this.FIndexCache.splice(InsertIndex,0,-1);
         } else {
-          if (typeof(this.FDataCache[RecIndex]) !== "undefined") {
+          if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(this.FDataCache[RecIndex])) {
             if (!this.FDataSource.FDataSet.FFiltered) {
               this.FDataCache[RecIndex] = RowObject;
-              if (this.FPrevDataSetHasUpdated && (this.FPrevDataSetState === 3) && (this.FDataSource.FDataSet.FState === 1) && (typeof(this.FIndexCache[RecIndex]) !== "undefined")) {
+              if (this.FPrevDataSetHasUpdated && (this.FPrevDataSetState === 3) && (this.FDataSource.FDataSet.FState === 1) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(this.FIndexCache[RecIndex])) {
                 this._Cache_PatchIndex();
               };
             };
@@ -45461,7 +45608,7 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
       var KeyField = null;
       var KeyValue = undefined;
       var SetFieldValueHandled = false;
-      if ((this.FDataLink != null) && this.FDataLink.GetActive() && (this.FDataLink.GetDataSetState() in rtl.createSet(3,2)) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(Params.newValue) && (this.FEditType === 0)) {
+      if ((this.FDataLink != null) && this.FDataLink.GetActive() && (this.FDataLink.GetDataSetState() in rtl.createSet(3,2)) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(Params.newValue) && (this.FEditType === 0)) {
         Fields = this.FDataLink.FDataSource.FDataSet.FFieldList;
         Field = Fields.FindField(Params.column.colId);
         if (Field != null) {
@@ -45520,9 +45667,9 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
       var I = 0;
       var J = 0;
       if ((this.FAGGrid != null) && (this.FDataLink != null) && (this.FDataLink.GetDataset() != null) && this.FDataLink.GetDataset().GetActive()) {
-        if ((typeof(Params.node) !== "undefined") && (typeof(Params.node.id) !== "undefined")) {
+        if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(Params.node) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(Params.node.id)) {
           FocusedCell = this.FAGGrid.getFocusedCell();
-          if (((typeof(FocusedCell) !== "undefined") && (FocusedCell.column === Params.column)) || (this.FEditType === 0)) {
+          if ((pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(FocusedCell) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(FocusedCell.column) && (FocusedCell.column === Params.column)) || (this.FEditType === 0)) {
             if (this.FCellLoadingInProgress) {
               this.FCellLoadingInProgress = false;
               return;
@@ -45539,7 +45686,7 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
               this.FPauseLoadData = false;
               this._RefreshNode(Params.node);
             };
-            if (typeof(this.GetElementHandle()) !== "undefined") {
+            if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(this.GetElementHandle())) {
               InlineEditingCells = this.GetElementHandle().getElementsByClassName("ag-cell-inline-editing");
               for (var $l = 0, $end = InlineEditingCells.length - 1; $l <= $end; $l++) {
                 I = $l;
@@ -45572,9 +45719,9 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
       var RowId = 0;
       var Fields = null;
       var Field = null;
-      if ((this.FAGGrid != null) && (this.FDataLink != null) && (this.FDataLink.GetDataset() != null) && this.FDataLink.GetDataset().GetActive() && (typeof(Params.node) !== "undefined") && (typeof(Params.node.id) !== "undefined")) {
+      if ((this.FAGGrid != null) && (this.FDataLink != null) && (this.FDataLink.GetDataset() != null) && this.FDataLink.GetDataset().GetActive() && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(Params.node) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(Params.node.id)) {
         FocusedCell = this.FAGGrid.getFocusedCell();
-        if (((typeof(FocusedCell) !== "undefined") && (FocusedCell.column === Params.column)) || (this.FEditType === 0)) {
+        if ((pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(FocusedCell) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(FocusedCell.column) && (FocusedCell.column === Params.column)) || (this.FEditType === 0)) {
           IsInsert = (this.FDataLink.FDataSource.FDataSet.FState === 3) || (this.FRowInserted !== null);
           IsCancelled = this.FStopEditCancelRequest;
           if (this.FStopEditRequest) {
@@ -45585,7 +45732,7 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
           if (this.FCellLoadingInProgress) return;
           if ((this.FDataLink != null) && (this.FDataLink.FDataSource != null) && (this.FDataLink.FDataSource.FDataSet != null) && this.FDataLink.FDataSource.FDataSet.GetActive()) {
             if (this.FDataLink.FDataSource.FDataSet.FState in rtl.createSet(3,2)) {
-              if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(Params.newValue)) {
+              if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(Params.newValue)) {
                 if (this.FEditType === 1) {}
                 else {
                   RowNode = this.FAGGrid.getDisplayedRowAtIndex(FocusedCell.rowIndex);
@@ -45653,11 +45800,11 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
       var Result = undefined;
       var NewCellPos = null;
       NewCellPos = pas.libdatagrid.TJSCellPosition.$create("Create");
-      if ((typeof(Params) !== "undefined") && (typeof(Params.previousCellPosition) !== "undefined") && (typeof(Params.nextCellPosition) !== "undefined")) {
-        if ((Params.previousCellPosition.column != null) && (Params.previousCellPosition.column.colDef != null) && Params.previousCellPosition.column.colDef.editable) {
+      if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(Params) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(Params.previousCellPosition) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(Params.nextCellPosition)) {
+        if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(Params.previousCellPosition.column) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(Params.previousCellPosition.column.colDef) && Params.previousCellPosition.column.colDef.editable) {
           this.FLastValidCellPosition = Params.previousCellPosition;
         };
-        if ((Params.nextCellPosition != null) && (Params.nextCellPosition.rowIndex === Params.previousCellPosition.rowIndex)) {
+        if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(Params.nextCellPosition) && (Params.nextCellPosition.rowIndex === Params.previousCellPosition.rowIndex)) {
           NewCellPos.column = Params.nextCellPosition.column;
           NewCellPos.rowIndex = Params.nextCellPosition.rowIndex;
           NewCellPos.rowPinned = Params.nextCellPosition.rowPinned;
@@ -46174,7 +46321,7 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
           this.FAGGrid.deselectAll();
           NewNode.setSelected(true);
           RefreshNodes = Array.of();
-          if (typeof(CurrentNode) !== "undefined") RefreshNodes.push(CurrentNode);
+          if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(CurrentNode)) RefreshNodes.push(CurrentNode);
           RefreshNodes.push(NewNode);
           this.FAGGrid.refreshCells(pas.JS.New(["force",true,"rowNodes",RefreshNodes,"columns",new Array("_indicator_")]));
           this.FRowInserted = NewNode;
@@ -46191,7 +46338,7 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
       if (this.FAGGrid != null) {
         this._StopEdit(true);
         DeleteNode = this.FAGGrid.getRowNode(RowIndex);
-        if ((typeof(DeleteNode) !== "undefined") && (DeleteNode != null)) {
+        if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(DeleteNode)) {
           RowNodeTransaction = this.FAGGrid.applyTransaction(pas.JS.New(["remove",new Array(DeleteNode.data)]));
           if (rtl.length(RowNodeTransaction.remove) > 0) ;
           this._Glue_LoadGridData("_AGGrid_DeleteRow",false);
@@ -46207,7 +46354,7 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
       };
       this._AGGrid_LoadRow(this.FDataLink.GetRecNo(),"_AGGrid_Cancel");
       RowNode = this.FAGGrid.getRowNode(RowIndex);
-      if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(RowNode)) this._RefreshNode(RowNode);
+      if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(RowNode)) this._RefreshNode(RowNode);
     };
     this._AGGrid_LoadRow = function (ARecNo, Source) {
       var DS = null;
@@ -46224,7 +46371,7 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
       if (this.FAGGrid != null) {
         RowIndex = ARecNo - 1;
         RowNode = this.FAGGrid.getRowNode(RowIndex);
-        if (typeof(RowNode) !== "undefined") {
+        if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(RowNode)) {
           FocusedColId = this._GetFocusedColumnId();
           IsEditing = this._IsRowEditing(RowIndex);
           if (this.SetRowDataFromCurrentDSRow(RowNode.data,true)) {
@@ -46259,7 +46406,7 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
         };
         if (this.FAGGrid.paginationGetRowCount() > 0) TotalRows = this.FAGGrid.paginationGetRowCount();
         RowNode = this.FAGGrid.getRowNode(RowIndex);
-        if (typeof(RowNode) !== "undefined") {
+        if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(RowNode)) {
           SelectedNodes = this.FAGGrid.getSelectedNodes();
           if ((rtl.length(SelectedNodes) === 1) && (SelectedNodes[0] === RowNode)) return;
           RowNode.setSelected(true);
@@ -46314,7 +46461,7 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
       var FocusedCell = null;
       Result = "";
       FocusedCell = this.FAGGrid.getFocusedCell();
-      if ((typeof(FocusedCell) !== "undefined") && (FocusedCell.column != null)) {
+      if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(FocusedCell) && (FocusedCell.column != null)) {
         Result = FocusedCell.column.colId;
       };
       return Result;
@@ -46327,7 +46474,7 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
       Result = false;
       EditingCells = this.FAGGrid.getEditingCells();
       RowNode = this.FAGGrid.getRowNode(RowIndex);
-      if ((rtl.length(EditingCells) > 0) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(RowNode)) {
+      if ((rtl.length(EditingCells) > 0) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(RowNode)) {
         for (var $l = 0, $end = rtl.length(EditingCells) - 1; $l <= $end; $l++) {
           I = $l;
           if (EditingCells[I].rowIndex === RowNode.rowIndex) {
@@ -46342,7 +46489,7 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
       var PageSize = 0;
       var CurrentPage = 0;
       var SelectPage = 0;
-      if ((this.FAGGrid != null) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined(RowNode)) {
+      if ((this.FAGGrid != null) && pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(RowNode)) {
         if (!(this.FServerDataAdapter != null)) {
           PageSize = this.FAGGrid.paginationGetPageSize();
           CurrentPage = this.FAGGrid.paginationGetCurrentPage();
@@ -46607,6 +46754,7 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
     $r.addProperty("OnGetRowStyle",0,pas["WEBLib.DataGrid"].$rtti["TDGGetRowStyleCallback"],"FOnGetRowStyle","FOnGetRowStyle");
     $r.addProperty("OnGetRowClass",0,pas["WEBLib.DataGrid"].$rtti["TDGGetRowClassCallback"],"FOnGetRowClass","FOnGetRowClass");
     $r.addProperty("OnGetRowHeight",0,pas["WEBLib.DataGrid"].$rtti["TDGGetRowHeightCallback"],"FOnGetRowHeight","FOnGetRowHeight");
+    $r.addProperty("OnPaginationChanged",0,pas["WEBLib.DataGrid"].$rtti["TDGPaginationChangedEvent"],"FOnPaginationChanged","FOnPaginationChanged");
     $r.addProperty("OnRowSelected",0,pas["WEBLib.DataGrid"].$rtti["TDGRowSelectedCallBack"],"FOnRowSelected","FOnRowSelected");
     $r.addProperty("OnRowUnselected",0,pas["WEBLib.DataGrid"].$rtti["TDGRowSelectedCallBack"],"FOnRowUnselected","FOnRowUnselected");
     $r.addProperty("OnCellEditingStarted",0,pas["WEBLib.DataGrid"].$rtti["TDGCellEditingEvent"],"FOnCellEditingStarted","FOnCellEditingStarted");
@@ -48595,7 +48743,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
           return ADateTime;
         }, set: function (v) {
           ADateTime = v;
-        }},"mm/dd/yy HH:nn",pas.SysUtils.StrToFloat("" + Value));
+        }},"mm/dd/yy HH:nn",rtl.getNumber(Value));
       Result = ADateTime;
       return Result;
     };
@@ -48787,9 +48935,10 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         WDG.get().LoadFromCSVString(pas.System.Copy$1($impl.CSVString,HeaderRowLength + 1),",",'"',false);
         WDG.get().SetRowHeight(19);
         WDG.get().FFont.SetHeight(18);
+        WDG.get().FColumnDefs.GetItem$1(8).SetCellDataType(1);
         for (var $l1 = 0, $end1 = WDG.get().GetRowData().length - 1; $l1 <= $end1; $l1++) {
           i = $l1;
-          WDG.get().SetCells(i,8,pas.SysUtils.FloatToStr(pas.SysUtils.StrToDateTimeDef(WDG.get().GetCells(i,8),0)));
+          WDG.get().SetFloats(i,8,pas.SysUtils.StrToDateTimeDef(WDG.get().GetCells(i,8),0));
         };
         WDG.get().FColumnDefs.GetItem$1(8).SetValueFormatter(rtl.createCallback(this,"WDGColumn_TDateTimeValueFormatter"));
         WDG.get().FColumnDefs.GetItem$1(8).SetFilter(false);
@@ -49105,12 +49254,16 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       $impl.Log("====== Exiting PopupFilterList");
     };
     this.SetFilters = async function () {
+      var i = 0;
       var fltr = "";
       $impl.Log("====== SetFilters called");
       this.ByAll.SetChecked(!(this.ByChannel.FChecked || this.ByGenre.FChecked || this.byType.FChecked));
       if (!this.pnlWaitPls.FVisible) await this.ShowPlsWait("Preparing " + pas.StrUtils.IfThen(this.ByAll.FChecked,"Un","") + "Filtered List");
       this.EPG.BeginUpdate();
-      this.EPG.GetColumnDefs().ClearFilters();
+      for (var $l = 0, $end = this.EPG.GetColumnDefs().GetCount() - 1; $l <= $end; $l++) {
+        i = $l;
+        this.EPG.GetColumnDefs().GetItem$2(i).ClearFilter();
+      };
       this.EPG.GetColumnDefs().GetItem$2(2).SetHeaderName(pas.StrUtils.IfThen(this.ByChannel.FChecked,this.wcbChannels.GetText(),"") + pas.StrUtils.IfThen(this.byType.FChecked,' "' + this.wcbTypes.GetText() + '"',"") + pas.StrUtils.IfThen(this.ByGenre.FChecked," " + this.wcbGenres.GetText(),"") + " Programs");
       this.EPG.GetColumnDefs().GetItem$2(0).SetVisible(!this.ByChannel.FChecked);
       this.EPG.GetColumnDefs().GetItem$2(0).SetWidth(100);
@@ -49413,9 +49566,9 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       this.CapturesWSG = pas["WEBLib.Grids"].TStringGrid.$create("Create$1",[this]);
       this.WebHTMLDiv4 = pas["WEBLib.WebCtrls"].THTMLDiv.$create("Create$1",[this]);
       this.btnSchdRefrsh = pas["WEBLib.StdCtrls"].TButton.$create("Create$1",[this]);
-      this.pnlListings = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
+      this.pnlListings = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$2",["pnlListings"]);
       this.lblEmptyEPG = pas["WEBLib.StdCtrls"].TLabel.$create("Create$1",[this]);
-      this.EPG = pas["WEBLib.DB.DataGrid"].TDBDataGrid.$create("Create$1",[this]);
+      this.EPG = pas["WEBLib.DB.DataGrid"].TDBDataGrid.$create("Create$2",["EPGWDBG"]);
       this.pnlFilterSelection = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
       this.lblFilterSelect = pas["WEBLib.StdCtrls"].TLabel.$create("Create$1",[this]);
       this.wcbGenres = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
@@ -49543,7 +49696,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlMenu.SetAlign(1);
         this.pnlMenu.SetCaption("pnlMenu");
         this.pnlMenu.SetChildOrderEx(12);
-        this.pnlMenu.SetColor(7171437);
+        this.pnlMenu.SetColor(16512);
         this.pnlMenu.FElementBodyClassName = "whiteBGslate";
         this.pnlMenu.SetElementFont(1);
         this.pnlMenu.FFont.FCharset = 0;
@@ -49843,15 +49996,24 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.HistoryWDG.FColumnDefs.Clear();
         var $with8 = this.HistoryWDG.FColumnDefs.Add$1();
         $with8.SetField("column1");
+        $with8.FFont.FCharset = 1;
+        $with8.FFont.SetColor(65793);
+        $with8.FFont.SetHeight(-12);
+        $with8.FFont.SetName("Segoe UI");
+        $with8.FFont.SetStyle({});
         var $with9 = this.HistoryWDG.FColumnDefs.Add$1();
         $with9.SetField("column2");
+        $with9.FFont.FCharset = 1;
+        $with9.FFont.SetColor(65793);
+        $with9.FFont.SetHeight(-12);
+        $with9.FFont.SetName("Segoe UI");
+        $with9.FFont.SetStyle({});
         this.HistoryWDG.FFont.FCharset = 1;
         this.HistoryWDG.FFont.SetColor(0);
         this.HistoryWDG.FFont.SetHeight(18);
         this.HistoryWDG.FFont.SetName("Segoe UI");
         this.HistoryWDG.FFont.SetStyle({});
         this.HistoryWDG.SetTabOrder(0);
-        this.HistoryWDG.FTheming.SetBuiltInTheme(2);
         this.HistoryWDG.FTheming.SetThemeMode(1);
         this.HistoryWDG.SetVisible(false);
         this.SetEvent$1(this.HistoryWDG,this,"OnGetRowClass","HistoryWDGGetRowClass");
@@ -50042,7 +50204,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.pnlListings.SetCaption("pnlListings");
         this.pnlListings.SetChildOrderEx(11);
         this.pnlListings.SetColor(14822282);
-        this.pnlListings.FElementBodyClassName = "card-body";
+        this.pnlListings.FElementBodyClassName = "card-body ";
         this.pnlListings.FFont.FCharset = 0;
         this.pnlListings.FFont.SetColor(16777215);
         this.pnlListings.FFont.SetHeight(-19);
@@ -50094,35 +50256,78 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         $with10.SetSuppressMovable(true);
         $with10.SetLockVisible(false);
         $with10.SetEvent(this,"OnGetCellStyle","EPGColumn_PSIPGetCellStyle");
+        $with10.FFont.FCharset = 1;
+        $with10.FFont.SetColor(65793);
+        $with10.FFont.SetHeight(-12);
+        $with10.FFont.SetName("Segoe UI");
+        $with10.FFont.SetStyle({});
         var $with11 = this.EPG.GetColumnDefs().Add$2();
         $with11.SetField("Time");
         $with11.SetHeaderName("HTPC Local Time");
         $with11.SetViewModeType(1);
         $with11.SetSuppressMovable(true);
+        $with11.FFont.FCharset = 1;
+        $with11.FFont.SetColor(65793);
+        $with11.FFont.SetHeight(-12);
+        $with11.FFont.SetName("Segoe UI");
+        $with11.FFont.SetStyle({});
         var $with12 = this.EPG.GetColumnDefs().Add$2();
         $with12.SetField("Title");
         $with12.SetHeaderName("Program");
         $with12.SetFilter(true);
         $with12.SetViewModeType(1);
         $with12.SetSuppressMovable(true);
+        $with12.FFont.FCharset = 1;
+        $with12.FFont.SetColor(65793);
+        $with12.FFont.SetHeight(-12);
+        $with12.FFont.SetName("Segoe UI");
+        $with12.FFont.SetStyle({});
         var $with13 = this.EPG.GetColumnDefs().Add$2();
         $with13.SetField("Class");
         $with13.SetHeaderName("Class");
         $with13.SetVisible(false);
+        $with13.SetSuppressMovable(true);
+        $with13.FFont.FCharset = 1;
+        $with13.FFont.SetColor(65793);
+        $with13.FFont.SetHeight(-12);
+        $with13.FFont.SetName("Segoe UI");
+        $with13.FFont.SetStyle({});
         var $with14 = this.EPG.GetColumnDefs().Add$2();
         $with14.SetField("id");
         $with14.SetHeaderName("ID");
         $with14.SetResizable(false);
         $with14.SetSortable(false);
         $with14.SetVisible(false);
+        $with14.SetSuppressMovable(true);
+        $with14.FFont.FCharset = 1;
+        $with14.FFont.SetColor(65793);
+        $with14.FFont.SetHeight(-12);
+        $with14.FFont.SetName("Segoe UI");
+        $with14.FFont.SetStyle({});
         var $with15 = this.EPG.GetColumnDefs().Add$2();
         $with15.SetField("SubTitle");
         $with15.SetHeaderName("Sub Title");
         $with15.SetFilter(true);
         $with15.SetSuppressMovable(true);
+        $with15.FFont.FCharset = 1;
+        $with15.FFont.SetColor(65793);
+        $with15.FFont.SetHeight(-12);
+        $with15.FFont.SetName("Segoe UI");
+        $with15.FFont.SetStyle({});
+        var $with16 = this.EPG.GetColumnDefs().Add$2();
+        $with16.SetField("genres");
+        $with16.SetFilter(true);
+        $with16.SetSortable(false);
+        $with16.SetVisible(false);
+        $with16.SetSuppressMovable(true);
+        $with16.FFont.FCharset = 1;
+        $with16.FFont.SetColor(65793);
+        $with16.FFont.SetHeight(-12);
+        $with16.FFont.SetName("Segoe UI");
+        $with16.FFont.SetStyle({});
         this.EPG.SetEditType(1);
         this.EPG.FFont.FCharset = 0;
-        this.EPG.FFont.SetColor(65793);
+        this.EPG.FFont.SetColor(1262987);
         this.EPG.FFont.SetHeight(-15);
         this.EPG.FFont.SetName("Segoe UI");
         this.EPG.FFont.SetStyle({});
@@ -50130,7 +50335,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.EPG.SetPaginationPageSizeSelector("20,50,100");
         this.EPG.SetRowHeight(20);
         this.EPG.SetTabOrder(0);
-        this.EPG.FTheming.SetBuiltInTheme(2);
         this.EPG.FTheming.SetThemeMode(1);
         this.EPG.SetDataSource(this.WebDataSource1);
         this.EPG.SetShowIndicator(false);
@@ -50301,7 +50505,7 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.WebMainMenu1.FAppearance.SetBackgroundColor(9125192);
         this.WebMainMenu1.FAppearance.FHamburgerMenu.SetCaption("Menu");
         this.WebMainMenu1.FAppearance.FHamburgerMenu.SetCaptionColor(65535);
-        this.WebMainMenu1.FAppearance.FHamburgerMenu.SetBackgroundColor(9109504);
+        this.WebMainMenu1.FAppearance.FHamburgerMenu.SetBackgroundColor(9470064);
         this.WebMainMenu1.FAppearance.FHamburgerMenu.SetVisible(0);
         this.WebMainMenu1.FAppearance.FHamburgerMenu.SetResponsiveMaxWidth(300);
         this.WebMainMenu1.FAppearance.SetHoverColor(15570276);
@@ -50322,7 +50526,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
         this.ByAll.SetName("ByAll");
         this.ByAll.SetCaption("All Listings");
         this.ByAll.SetChecked(true);
-        this.ByAll.FDefault = true;
         this.ByAll.FRadioItem = true;
         this.SetEvent$1(this.ByAll,this,"OnClick","ByAllClick");
         this.ByGenre.SetParentComponent(this.WebMainMenu1);
