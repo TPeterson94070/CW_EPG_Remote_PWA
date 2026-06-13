@@ -676,7 +676,7 @@ begin
     WDG.RowHeight := 19;
     WDG.Font.Height := 18;
 
-    // Convert Col 8 string (StartTime) to TDateTime double {string}
+    // Convert Col 8 string (StartTime) to TDateTime double
     WDG.ColumnDefs[8].CellDataType := cdtNumber;
     for i := 0 to Pred(WDG.RowData.Length) do
       WDG.Floats[i,8] := StrToDateTimeDef(WDG.Cells[i,8],0);
@@ -1063,6 +1063,7 @@ end;
 
 procedure TCWRmainFrm.SetFilters;
 var
+  i: Integer;
   fltr: string;
 begin
   Log('====== SetFilters called');
@@ -1070,7 +1071,9 @@ begin
   if not pnlWaitPls.Visible then
     {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, 'Un') + 'Filtered List'));
   EPG.BeginUpdate;
-  EPG.ColumnDefs.ClearFilters;
+//  EPG.ColumnDefs.ClearFilters; {NOT WORKING}
+  for i := 0 to Pred(EPG.ColumnDefs.Count) do
+    EPG.ColumnDefs[i].ClearFilter;
   EPG.ColumnDefs[2].HeaderName := IfThen(ByChannel.Checked, wcbChannels.Text)
     + IfThen(byType.Checked, ' "' + wcbTypes.Text + '"')
     + IfThen(ByGenre.Checked, ' ' + wcbGenres.Text)
@@ -1086,26 +1089,17 @@ begin
   Log('BaseFilter: ' + BaseFilter);
   fltr := '';
   if ByGenre.Checked then
-   fltr := fltr + ' and genres like '
-    + QuotedStr('%"'+ReplaceStr(wcbGenres.Text, '/', '_')+'"%');
-//  begin
-//    EPG.ColumnDefs.FindColumn('genres').Filter := True;
+   fltr := fltr + ' and genres like ' + QuotedStr('%"'+ReplaceStr(wcbGenres.Text, '/', '_')+'"%');
 //    EPG.ColumnDefs.FindColumn('genres').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, ReplaceStr(wcbGenres.Text, '/', '_'));
-//  end;
-//  if ByTitle.Checked then
+//  if ByTitle.Checked then {Superseded by EPG UI filtering}
 //    fltr := fltr + ' and Title like ' + QuotedStr('%' + SearchFilter + '%');
 //   EPG.ColumnDefs.FindColumn('Title').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, SearchFilter);
-
   if ByChannel.Checked then
     fltr := fltr + ' and PSIP = ' + QuotedStr(wcbChannels.Text);
-//   begin
-//    EPG.ColumnDefs[0]{.FindColumn('Channel')}.ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foEqual, Trim(wcbChannels.Text));
-//    EPG.ColumnDefs.FindColumn('Channel').Filter := True;
-//   end;
+//    EPG.ColumnDefs[0]{.FindColumn('PSIP')}.ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foEqual, Trim(wcbChannels.Text));
   if ByType.Checked then
-    fltr := fltr + ' and Class = '
-      + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
-//    EPG.ColumnDefs.FindColumn('genres').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
+    fltr := fltr + ' and Class = ' + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
+//    EPG.ColumnDefs.FindColumn('Class').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
 
   Log('Epg Filter: BaseFilter + ' + fltr);
   WIDBCDS.Filter := BaseFilter + fltr;

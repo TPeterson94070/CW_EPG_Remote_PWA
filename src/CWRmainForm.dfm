@@ -55,7 +55,7 @@ object CWRmainFrm: TCWRmainFrm
     Align = alTop
     Caption = 'pnlMenu'
     ChildOrder = 12
-    Color = clGrayText
+    Color = 16512
     ElementBodyClassName = 'whiteBGslate'
     ElementFont = efCSS
     Font.Charset = ANSI_CHARSET
@@ -659,6 +659,7 @@ object CWRmainFrm: TCWRmainFrm
           HeaderName = 'Class'
           Visible = False
           SelectOptions = <>
+          SuppressMovable = True
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -12
@@ -672,6 +673,7 @@ object CWRmainFrm: TCWRmainFrm
           Sortable = False
           Visible = False
           SelectOptions = <>
+          SuppressMovable = True
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -12
@@ -682,6 +684,19 @@ object CWRmainFrm: TCWRmainFrm
           Field = 'SubTitle'
           HeaderName = 'Sub Title'
           Filter = True
+          SelectOptions = <>
+          SuppressMovable = True
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
+          Font.Style = []
+        end
+        item
+          Field = 'genres'
+          Filter = True
+          Sortable = False
+          Visible = False
           SelectOptions = <>
           SuppressMovable = True
           Font.Charset = DEFAULT_CHARSET
@@ -867,7 +882,7 @@ object CWRmainFrm: TCWRmainFrm
     Appearance.BackgroundColor = clDarkslateblue
     Appearance.HamburgerMenu.Caption = 'Menu'
     Appearance.HamburgerMenu.CaptionColor = clYellow
-    Appearance.HamburgerMenu.BackgroundColor = clDarkblue
+    Appearance.HamburgerMenu.BackgroundColor = clSlategray
     Appearance.HamburgerMenu.Visible = hmAlways
     Appearance.HamburgerMenu.ResponsiveMaxWidth = 300
     Appearance.HoverColor = clCornflowerblue
@@ -887,7 +902,6 @@ object CWRmainFrm: TCWRmainFrm
     object ByAll: TMenuItem
       Caption = 'All Listings'
       Checked = True
-      Default = True
       RadioItem = True
       OnClick = ByAllClick
     end
