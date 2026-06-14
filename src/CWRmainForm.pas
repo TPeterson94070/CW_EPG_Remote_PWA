@@ -958,15 +958,8 @@ begin
   if WIDBCDS.Filtered then WIDBCDS.Filtered := False;
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
   Log('First record EndTime (UTC) >= ' + DateTimeToStr(FirstEndTime));
-  WIDBCDS.Filter := 'EndTime >= ' + Double(FirstEndTime).ToString;
-  WIDBCDS.Filtered := True;
-  WIDBCDS.First;
-  FirstID := Max(WIDBCDS.Fields[0].AsInteger, 1);
-  BaseFilter := 'ID >= ' + FirstID.ToString;
-  WIDBCDS.Filtered := False;
+  BaseFilter := 'EndTime >= ' + Double(FirstEndTime).ToString;
   Log(' WIDBCDS BaseFilter [' + BaseFilter + '] assigned, but not active');
-//  EPG.ColumnDefs[0].Alignment := taCenter;
-//  EPG.Columns[2].Alignment := taLeftJustify;
   {$IfDef PAS2JS}await{$EndIf}(SetupFilterLists);
   Log('====== SetupEpg finished');
 end;
