@@ -634,7 +634,7 @@ begin
 end;
 
 procedure TCWRmainFrm.FillWDG(var WDG: TWebDataGrid; rs: string);
-// Could be named FillHistoryWDG, but I may broaden WDG use to Captures, NewCaptures. TBD
+// Could be named FillHistoryWDG, but I may broaden WDG use to Captures & NewCaptures. TBD
 var
   HeaderRow: string;
   i, HeaderRowLength: Integer;
@@ -649,7 +649,7 @@ begin
   begin
     WDG.BeginUpdate;
     WDG.ColumnDefs.Clear;
-    // Until LoadFromCSVString(s,',','"',True) is fixed, need to treat Header row explicitly
+    // Need to treat Header row explicitly to define columns
     HeaderRowLength := Pos(#13, CSVString) - 1;
     HeaderRow := Copy(CSVString, 1, HeaderRowLength);
     HeaderItems := HeaderRow.Split([',']);
@@ -660,8 +660,8 @@ begin
       WDG.ColumnDefs[i].CellDataType := cdtText;
       WDG.ColumnDefs[i].Field := ReplaceStr(HeaderItems[i], '"', '');
       WDG.ColumnDefs[i].Visible := i in [7, 8, 12, 13]; // i.e., Channel, StartTime, Title, SubTitle
-      WDG.ColumnDefs[i].Sortable := True;
-      WDG.ColumnDefs[i].Filter := True;
+      WDG.ColumnDefs[i].Sortable := i in [7, 8, 12, 13];
+      WDG.ColumnDefs[i].Filter := i in [7, 8, 12, 13];
       WDG.ColumnDefs[i].SuppressMovable := True;
       case i of
         7: WDG.ColumnDefs[i].Width := 120;
@@ -671,6 +671,7 @@ begin
       end;
     end;
 
+    // Could tell LoadFromCSVString to ignore first row, but since we've already parsed it....
     WDG.LoadFromCSVString(Copy(CSVString,HeaderRowLength + 1), ',', '"', False);
     // dump empty rows (add iff needed)
     WDG.RowHeight := 19;
@@ -959,6 +960,7 @@ begin
   FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
   Log('First record EndTime (UTC) >= ' + DateTimeToStr(FirstEndTime));
   BaseFilter := 'EndTime >= ' + Double(FirstEndTime).ToString;
+  WIDBCDS.Filter := BaseFilter;
   Log(' WIDBCDS BaseFilter [' + BaseFilter + '] assigned, but not active');
   {$IfDef PAS2JS}await{$EndIf}(SetupFilterLists);
   Log('====== SetupEpg finished');
