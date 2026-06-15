@@ -679,14 +679,14 @@ begin
 
     // Convert Col 8 string (StartTime) to TDateTime double
     WDG.ColumnDefs[8].CellDataType := cdtNumber;
-    for i := 0 to Pred(WDG.RowData.Length) do
+    for i := 0 to Pred(WDG.RowCount) do
       WDG.Floats[i,8] := StrToDateTimeDef(WDG.Cells[i,8],0);
     WDG.ColumnDefs[8].ValueFormatter := WDGColumn_TDateTimeValueFormatter;
     WDG.ColumnDefs[8].Filter := False;
     WDG.EndUpdate;
     WDG.Show;
   end;
-  Log(WDG.Name+'.RowCount: ' + WDG.RowData.Length.ToString);
+  Log(WDG.Name+'.RowCount: ' + WDG.RowCount.ToString);
   Log('Done loading ' + WDG.Name);
 
 end;
@@ -1266,16 +1266,16 @@ procedure TCWRmainFrm.tbHistoryShow;
 begin
   HistoryWDG.Hide;
   FillWDG(HistoryWDG, CSV_HISTORY);
-  Log('HistoryWDG.RowCount: ' + HistoryWDG.RowData.Length.ToString);
-  if HistoryWDG.RowData.Length <> StrToInt(cbNumHistList.Text) then  // need History data
-  begin
+//  Log('HistoryWDG.RowCount: ' + HistoryWDG.RowCount.ToString);
+//  if HistoryWDG.RowCount <> StrToInt(cbNumHistList.Text) then  // need History data
+//  begin
 //    FillWDG(HistoryWDG, CSV_HISTORY);
 //    Log('The History list is empty/incomplete. Prompt for refresh');
 //    if TAwait.ExecP<TModalResult> (MessageDlgAsync('The History list '
-//     + IfThen(HistoryWDG.RowData.Length < 2,'is empty','may be incomplete')
+//     + IfThen(HistoryWDG.RowCount < 2,'is empty','may be incomplete')
 //      + #13#13'Do you want to refresh it now?',mtConfirmation, [mbYes,mbNo]))
 //      = mrYes then {$IfDef PAS2JS}await{$EndIf}(UpdateHistory(Self));
-  end;
+//  end;
   HistoryWDG.Show;
 end;
 
