@@ -49217,20 +49217,11 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
       if (this.WIDBCDS.FFiltered) this.WIDBCDS.SetFiltered(false);
       FirstEndTime = pas.DateUtils.TTimeZone.GetLocal().ToUniversalTime(pas.SysUtils.Now(),false);
       $impl.Log("First record EndTime (UTC) >= " + pas.SysUtils.DateTimeToStr(FirstEndTime,false));
-      this.WIDBCDS.SetFilterText("EndTime >= " + pas.SysUtils.TDoubleHelper.ToString$3.call({get: function () {
+      $impl.BaseFilter = "EndTime >= " + pas.SysUtils.TDoubleHelper.ToString$3.call({get: function () {
           return FirstEndTime;
         }, set: function (v) {
           FirstEndTime = v;
-        }}));
-      this.WIDBCDS.SetFiltered(true);
-      this.WIDBCDS.First();
-      $impl.FirstID = Math.max(this.WIDBCDS.FFieldList.GetField(0).GetAsInteger(),1);
-      $impl.BaseFilter = "ID >= " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: $impl, get: function () {
-          return this.p.FirstID;
-        }, set: function (v) {
-          this.p.FirstID = v;
         }});
-      this.WIDBCDS.SetFiltered(false);
       $impl.Log(" WIDBCDS BaseFilter [" + $impl.BaseFilter + "] assigned, but not active");
       await this.SetupFilterLists();
       $impl.Log("====== SetupEpg finished");
@@ -50751,7 +50742,6 @@ rtl.module("CWRmainForm",["System","JSONDataset","SysUtils","Classes","WEBLib.Gr
     $impl.ResetPrompt = "none";
     $impl.BaseFilter = "ID >= 1";
     $impl.VisiblePanelNum = 0;
-    $impl.FirstID = 1;
     $impl.FirstEndDate = 0.0;
     $impl.LastStartDate = 0.0;
     $impl.TotalAvailableDays = 0;
