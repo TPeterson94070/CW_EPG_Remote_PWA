@@ -728,34 +728,30 @@ begin
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing ' + Title));
   if application.IsOnline then
   begin
-//    try
-      Log('Requesting: ' + TableFile);
-      try
-        Reply := TAwait.ExecP<string>(GetGoogleDriveFile(TableFile, id));
-        if Reply > '' then  // Got a response
-        begin
-          // Reshow message in case lost during OAuth
-          {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing ' + Title));
-          Log(TableFile + ' starts: ' + copy(Reply,1,50));
-        end
-        else
-          Log(TableFile + ' fetch failed.');
-        // cw_epg.csv can be >2MB and Safari cannot tolerate that in LocalStorage
-        if TableFile = CSV_EPG then // park result in global variable
-          CSVString := Reply
-        else // Save the csv (or '') as string in local storage
-          TLocalStorage.SetValue(TableFile, Reply);
-        Log('ReFreshCSV, ' + TableFile + ' Length: ' + IntToStr(Length(Reply)));
-      except
-        on E:Exception do
-        begin
-          Log('HttpRequest Exception: ' + E.Message);
-          TAwait.ExecP<TModalResult> (MessageDlgAsync('Cannot refresh EPG data while CW_EPG_Remote is offline', mtInformation, [mbOK]));
-        end;
+    Log('Requesting: ' + TableFile);
+    try
+      Reply := TAwait.ExecP<string>(GetGoogleDriveFile(TableFile, id));
+      if Reply > '' then  // Got a response
+      begin
+        // Reshow message in case lost during OAuth
+        {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing ' + Title));
+        Log(TableFile + ' starts: ' + copy(Reply,1,50));
+      end
+      else
+        Log(TableFile + ' fetch failed.');
+      // cw_epg.csv can be >2MB and Safari cannot tolerate that in LocalStorage
+      if TableFile = CSV_EPG then // park result in global variable
+        CSVString := Reply
+      else // Save the csv (or '') as string in local storage
+        TLocalStorage.SetValue(TableFile, Reply);
+      Log('ReFreshCSV, ' + TableFile + ' Length: ' + IntToStr(Length(Reply)));
+    except
+      on E:Exception do
+      begin
+        Log('HttpRequest Exception: ' + E.Message);
+        TAwait.ExecP<TModalResult> (MessageDlgAsync('Cannot refresh EPG data while CW_EPG_Remote is offline', mtInformation, [mbOK]));
       end;
-//    finally
-//      Log('ReFreshCSV in finally section');
-//    end;
+    end;
   end
   else
   begin
