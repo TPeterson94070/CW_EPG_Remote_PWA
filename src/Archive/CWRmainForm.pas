@@ -1,0 +1,1654 @@
+﻿unit CWRmainForm;
+
+                       { TODO : Add search function to Listings (and History?) }
+                       { TODO : Add item deletion to Scheduled list }
+                       { DONE : Add one-off scheduling of Listing item }
+interface
+
+uses
+  JSONDataSet,
+  System.SysUtils, System.Classes, WEBLib.Graphics, WEBLib.Forms, Vcl.StdCtrls,
+  WEBLib.StdCtrls, Vcl.Controls, WEBLib.Dialogs, Vcl.Imaging.pngimage,
+  WEBLib.ExtCtrls, WEBLib.Controls, Web, JS, WebLib.DB, WEBLib.IndexedDb,
+  Vcl.Menus, WEBLib.Menus, WEBLib.ComCtrls, WEBLib.Grids, DB, Vcl.Grids,
+  System.StrUtils, WEBLib.DBCtrls, WEBLib.FlexControls, WEBLib.WebCtrls,
+  WEBLib.REST, Types, WEBLib.Storage, WEBLib.CDS, WEBLib.Auth, WEBLib.JSON,
+  WEBLib.WebTools, WEBLib.Google, WEBLib.DataGrid.Common, WEBLib.DataGrid,
+  WEBLib.Buttons, WEBLib.EditAutocomplete;
+
+type
+  TGridDrawState = set of (gdSelected, gdFocused, gdFixed, gdRowSelected, gdHotTrack, gdPressed);
+  TCWRmainFrm = class(TWebForm)
+  WebMemo2: TWebMemo;
+  Captures: TWebStringGrid;
+  HistoryTable: TWebStringGrid;
+  BufferGrid: TWebStringGrid;
+  pnlCaptures: TWebPanel;
+  pnlHistory: TWebPanel;
+  pnlLog: TWebPanel;
+  pnlOptions: TWebPanel;
+  pnlWaitPls: TWebPanel;
+  WebRESTClient1: TWebRESTClient;
+  pnlListings: TWebPanel;
+  NewCaptures: TWebStringGrid;
+  pnlMenu: TWebPanel;        // Container for MainMenu
+  WebMainMenu1: TWebMainMenu;
+  Scheduled: TMenuItem;
+  History: TMenuItem;
+  Options: TMenuItem;
+  RefreshEPG: TMenuItem;
+  ChangeHTPC1: TMenuItem;
+  ViewLog1: TMenuItem;
+  Settings1: TMenuItem;
+  WebGroupBox3: TWebGroupBox;
+  EPG: TWebDBGrid;
+  WebDataSource1: TWebDataSource;
+  WebButton1: TWebButton;
+  WebGridPanel1: TWebGridPanel;
+  WebLabel1: TWebLabel;
+  WebLabel2: TWebLabel;
+  wcbGenres: TWebComboBox;
+  lblEmptyEPG: TWebLabel;
+  ByAll: TMenuItem;
+  ByChannel: TMenuItem;
+  ByGenre: TMenuItem;
+  ByTitle: TMenuItem;
+  wcbChannels: TWebComboBox;
+    WebHTMLDiv1: TWebHTMLDiv;
+    WebHTMLDiv2: TWebHTMLDiv;
+    WebHTMLDiv3: TWebHTMLDiv;
+    pnlFilterSelection: TWebPanel;
+    lblFilterSelect: TWebLabel;
+    WebHTMLDiv4: TWebHTMLDiv;
+    cbNumHistList: TWebComboBox;
+    WIDBCDS: TWebIndexedDbClientDataset;
+    btnSchdRefrsh: TWebButton;
+    btnRefreshData: TWebSpeedButton;
+    byType: TMenuItem;
+    wcbTypes: TWebComboBox;
+    weTitleSearch: TWebEdit;
+    WebTimer1: TWebTimer;
+    WebTimer2: TWebTimer;
+    WebHTMLForm1: TWebHTMLForm;
+//  procedure ClearFilterLists;
+  procedure SetCapturesFormats;
+  procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
+    AField: TField; AValue: string; var AClassName: string);
+  [async] procedure SaveNewCapturesFile(id: string);
+  [async] procedure LoadWIDBCDS;
+  [async] procedure RefreshData(Sender: TObject);
+  [async] procedure WebFormCreate(Sender: TObject);
+  [async] procedure tbCapturesShow;
+  procedure AllCapsGridGetCellData(Sender: TObject; ACol, ARow: Integer;
+    AField: TField; var AValue: string);
+  procedure HistoryTableFixedCellClick(Sender: TObject; ACol, ARow: Integer);
+  [async]
+  procedure UpdateHistory(Sender: TObject);
+  [async]
+  procedure ChangeTargetHTPC(Sender: TObject);
+  [async] procedure HistoryClick(Sender: TObject);
+  [async] procedure ScheduledClick(Sender: TObject);
+  [async] procedure ViewLog1Click(Sender: TObject);
+  [async] procedure Settings1Click(Sender: TObject);
+  [async]
+  procedure EPGClickCell(Sender: TObject; ACol, ARow: Integer);
+  procedure HistoryTableGetCellClass(Sender: TObject; ACol, ARow: Integer;
+    AField: TField; AValue: string; var AClassName: string);
+  [async] procedure ByGenreClick(Sender: TObject);
+  [async] procedure wcbGenresChange(Sender: TObject);
+  [async] procedure ByTitleClick(Sender: TObject);
+  [async] procedure byTypeClick(Sender: TObject);
+  [async] procedure ByAllClick(Sender: TObject);
+  [async] procedure ByChannelClick(Sender: TObject);
+  [async] procedure wcbChannelsChange(Sender: TObject);
+  [async] procedure NewCapturesClickCell(Sender: TObject; ACol, ARow: Integer);
+  [async] procedure WIDBCDSIDBError(DataSet: TDataSet; opCode: TIndexedDbOpCode;
+      errorName, errorMsg: string);
+    procedure NewCapturesGetCellData(Sender: TObject; ACol, ARow: Integer;
+      AField: TField; var AValue: string);
+    procedure wcbGenresFocusOut(Sender: TObject);
+    procedure wcbChannelsFocusOut(Sender: TObject);
+//  [async] procedure btnOptOKClick(Sender: TObject);
+  [async] procedure btnSchdRefrshClick(Sender: TObject);
+  [async] procedure btnRefreshDataClick(Sender: TObject);
+    procedure wcbTypesChange(Sender: TObject);
+    procedure wcbTypesFocusOut(Sender: TObject);
+    procedure weTitleSearchChange(Sender: TObject);
+    procedure WebTimer1Timer(Sender: TObject);
+    [async] procedure WebTimer2Timer(Sender: TObject);
+    procedure CapturesGetCellData(Sender: TObject; ACol, ARow: Integer;
+      AField: TField; var AValue: string);
+    [async] procedure CapturesClickCell(Sender: TObject; ACol, ARow: Integer);
+  procedure cbNumHistListChange(Sender: TObject);
+    procedure HistoryTableClickCell(Sender: TObject; ACol, ARow: Integer);
+    procedure SwipeDownRefresh(Enabled: Boolean);
+private
+  { Private declarations }
+  [async] procedure LogDataRange;
+  [async] procedure LoadSG(var SG: TWebStringGrid; LSName: string);
+  [async] procedure SetPage(PageNum: Integer);
+  [async]
+  procedure FetchCapReservations;
+  [async]
+  procedure FetchNewCapRequests;
+  [async]
+  procedure FillTable(var WSG: TWebStringGrid; rs: string);
+  [async]
+  procedure RefreshCSV(TableFile, Title: string; var id: string);
+  [async]
+  procedure FetchHistory;
+  [async]
+  procedure ReFreshListings;
+  [async]
+  procedure tbHistoryShow;
+  [async]
+  procedure FillHistoryDisplay;
+  [async]
+  procedure UpdateNewCaptures(RecordStart, RecordEnd: TDateTime);
+  [async]
+  function GetGoogleDriveFile(TableFile: string; var id: string): string;
+  [async]
+  procedure CreateGoogleFile(FName: string; var id: string);
+  [async] procedure SetupWIDBCDS;
+  [async] procedure SetupEpg;
+  [async] procedure PopupFilterList(cb: TWebComboBox; fn: string);
+  [async] procedure SetFilters;
+  [async] procedure ShowPlsWait(PlsWaitCap: string);
+  [async] procedure SetupFilterLists;
+  [async] procedure ShowItemDetails(ItemNo: Integer; DoCapture: Boolean = True);
+  [async] procedure ShowHistoryDetails(ItemNo: Integer);
+public
+  { Public declarations }
+end;
+
+var
+  CWRmainFrm: TCWRmainFrm;
+
+implementation
+
+uses
+  TypInfo, System.Math, System.Variants, DateUtils, SchedUnit2, Details;
+
+{$R *.dfm}
+{$I AppKey.inc}
+var
+  ResetPrompt:      string = 'none' ;
+  VisiblePanelNum:  Integer = 0;
+  FirstID:          Integer = 1;
+  FirstEndDate,
+  LastStartDate:    TDate;
+  TotalAvailableDays: Integer;
+  CSVString,
+  LastID,
+  SearchFilter:     string;
+  BaseFilter:       string = 'ID >= 1';
+
+type ProgramTypes = (New,Rerun,Movie,Other);
+const
+  NUMIDS = 1000;
+  NUMHIST = 'NumHistoryItems';
+  EMAILADDR = 'emailAddress';
+  CSV_EPG = 'cwr_epg.csv';
+  CSV_CAPTURES = 'cwr_captures.csv';
+  CSV_NEWCAPTURES = 'cwr_newcaptures.csv';
+  CSV_HISTORY = 'cwr_history.csv';
+  TypeClass: array[ProgramTypes] of string = ('green','rose','goldenRod','gray');
+
+procedure Log(const s: string);
+begin
+  CWRmainFrm.WebMemo2.Lines.Add(DateTimeToStr(now) + '--' + s);
+  console.log(DateTimeToStr(now) + '--' + s);
+end;
+
+procedure TCWRmainFrm.wcbGenresChange(Sender: TObject);
+begin
+  Log('wcbGenres.Text: ' + wcbGenres.Text);
+  ByGenre.Checked := wcbGenres.Text <> 'All';
+  SetFilters;
+end;
+
+procedure TCWRmainFrm.wcbGenresFocusOut(Sender: TObject);
+begin
+  pnlFilterSelection.Hide;
+  wcbGenres.Hide;
+end;
+
+procedure TCWRmainFrm.wcbTypesChange(Sender: TObject);
+begin
+  Log('wcbTypes.Text: ' + wcbTypes.Text);
+  ByType.Checked := wcbTypes.Text <> 'All';
+  SetFilters;
+end;
+
+procedure TCWRmainFrm.wcbTypesFocusOut(Sender: TObject);
+begin
+  pnlFilterSelection.Hide;
+  wcbTypes.Hide;
+end;
+
+procedure TCWRmainFrm.WebTimer2Timer(Sender: TObject);
+begin
+  WebTimer2.Enabled := False;
+  if weTitleSearch.Text = '' then Exit;
+  if not ByTitle.Checked then Exit;
+  Log('weTitleSearch.Text: ' + weTitleSearch.Text);
+  SearchFilter := weTitleSearch.Text;
+  {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+  weTitleSearch.SetFocus;
+end;
+
+procedure TCWRmainFrm.weTitleSearchChange(Sender: TObject);
+begin
+  ByTitle.Checked := True;
+  WebTimer2.Interval := 2000;
+  WebTimer2.Enabled := False; // Restart timeout
+  WebTimer2.Enabled := True;
+end;
+
+procedure TCWRmainFrm.wcbChannelsChange(Sender: TObject);
+begin
+  Log('wcbChannels.Text: ' + wcbChannels.Text);
+  ByChannel.Checked := wcbChannels.Text <> 'All';
+  SetFilters;
+end;
+
+procedure TCWRmainFrm.wcbChannelsFocusOut(Sender: TObject);
+begin
+  pnlFilterSelection.Hide;
+  wcbChannels.Hide;
+end;
+
+procedure TCWRmainFrm.WebFormCreate(Sender: TObject);
+var
+  AppVersion: string;
+begin
+  Log('========== FormCreate is called');
+  LastID := NUMIDS.ToString;  // Make sure it's not '' for filter
+//  WebMainMenu1.Height := 20;   // Works someday, I hope
+{$IFDEF PAS2JS}
+  asm
+    console.log('Starting ' + ProjectName);
+// Define sleep function used to allow screen updates
+    window.sleep = async function(msecs) {return new Promise((resolve) => setTimeout(resolve, msecs)); }
+// Retrieve JS version info in Delphi variable
+    AppVersion = ProjectName;
+// Discover if installed ("standalone") : Does not work!!
+//   IsInstalled = (window.matchMedia('(display-mode: standalone)').matches) ||
+//                 ('standalone' in window.navigator);
+  end;
+{$ENDIF}
+  {$IFDef PAS2JS} await {$ENDIF}(ShowPlsWait('Preparing Database'));
+  // Log Version Information
+  Log('Running version:  ' + AppVersion);
+  Log('App is ' + IfThen(not Application.IsOnline, 'NOT ') + 'online');
+  WebRESTClient1.ReadTokens; // retrieve previous access token
+  if TWebLocalStorage.GetValue(NUMHIST) <> '' then
+    cbNumHistList.ItemIndex := cbNumHistList.Items.IndexOf(TWebLocalStorage.GetValue(NUMHIST));
+    WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
+  EPG.Hide;
+  {$IfDef PAS2JS}await{$EndIf}(SetupWIDBCDS);
+  {$IfDef PAS2JS}await{$EndIf}(RefreshListings);
+  Log('========== FormCreate is finished');
+end;
+
+
+procedure TCWRmainFrm.WebTimer1Timer(Sender: TObject);
+// The point of this timer is to disable WIDBCDS controls before the EPG is clicked
+// This should defeat the long delay in Android FF in "seeing" those clicks
+begin
+  WebTimer1.Enabled := False;
+  WIDBCDS.DisableControls;
+end;
+
+procedure TCWRmainFrm.WIDBCDSIDBError(DataSet: TDataSet;
+  opCode: TIndexedDbOpCode; errorName, errorMsg: string);
+begin
+  TAwait.ExecP<TModalResult> (MessageDlgAsync(DataSet.Name + ' error: ' + errorName + ', msg: ' + errorMsg
+    ,mtInformation, [mbOK]))
+end;
+
+procedure TCWRmainFrm.RefreshData(Sender: TObject);
+var
+  id: string; {param used only by UpdateNewcaptures}
+  StartT: TDateTime;
+  TotalEPGRecordCount: Integer;
+begin
+  Log('########### "Refresh Data" clicked ###########');
+  WIDBCDS.Close;
+  {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_EPG,'EPG', id));
+  {$IfDef PAS2JS}await{$EndIf}(FillTable(BufferGrid, CSV_EPG));
+  if BufferGrid.RowCount > 0 then
+  begin
+    Log('********* Starting timer');
+    StartT := Now;
+    {$IfDef PAS2JS}await{$EndIf}(LoadWIDBCDS);
+    // Save unfiltered record count (now that TMS Web Core honors filtering)
+    if WIDBCDS.Filtered then WIDBCDS.Filtered := False;
+    TotalEPGRecordCount := WIDBCDS.RecordCount;
+    {$IfDef PAS2JS}await{$EndIf}(FetchCapReservations);
+    {$IfDef PAS2JS}await{$EndIf}(FetchNewCapRequests);
+    {$IfDef PAS2JS}await{$EndIf}(FetchHistory);
+  end
+  else
+  begin
+    TAwait.ExecP<TModalResult> (MessageDlgAsync('The data update failed!'#13'Please make sure that the HTPC'
+      + #13' is connected to Google Drive',mtInformation, [mbOK]))
+  end;
+  if VisiblePanelNum <> 3 then {$IfDef PAS2JS}await{$EndIf}(ReFreshListings)
+  else {$IfDef PAS2JS}await{$EndIf}(SetupEpg);
+  Log('*********** Delta t (sec): ' + SecondsBetween(Now, StartT).ToString);
+  Log('*********** Rate (ms/rec): ' + (MilliSecondsBetween(Now, StartT)/TotalEPGRecordCount).ToString);
+  if pnlWaitPls.Visible then pnlWaitPls.Hide;
+end;
+
+procedure TCWRmainFrm.UpdateHistory(Sender: TObject);
+begin
+  {$IfDef PAS2JS}await{$EndIf}(FetchHistory);
+  {$IfDef PAS2JS}await{$EndIf}(SetPage(2));
+end;
+
+procedure TCWRmainFrm.ChangeTargetHTPC(Sender: TObject);
+begin
+  Log('Server reset requested');
+  if TAwait.ExecP<TModalResult> (MessageDlgAsync('Current HTPC account: '
+    + TWebLocalStorage.GetValue(EMAILADDR)
+    + #13#13'Do you want to change it?',
+    mtConfirmation, [mbYes,mbNo])) = mrYes then
+  begin
+    ResetPrompt := 'select_account';
+    {$IfDef PAS2JS}await{$EndIf}(RefreshData(Sender));
+  end;
+end;
+
+procedure TCWRmainFrm.btnRefreshDataClick(Sender: TObject);
+begin
+  btnRefreshData.Hide;
+  RefreshData(Self);
+end;
+
+procedure TCWRmainFrm.btnSchdRefrshClick(Sender: TObject);
+begin
+  {$IfDef PAS2JS}await{$EndIf}(FetchCapReservations);
+  {$IfDef PAS2JS}await{$EndIf}(FetchNewCapRequests);
+  {$IfDef PAS2JS}await{$EndIf}(LoadSG(Captures, CSV_CAPTURES));
+  {$IfDef PAS2JS}await{$EndIf}(LoadSG(NewCaptures, CSV_NEWCAPTURES));
+  SetCapturesFormats;
+  pnlWaitPls.Hide;
+end;
+
+procedure TCWRmainFrm.ByAllClick(Sender: TObject);
+begin
+  Log('ByAllClick called');
+  ByAll.OnClick := nil;
+  try
+    ByGenre.Checked := False;
+    ByTitle.Checked := False;
+    byType.Checked := False;
+    ByChannel.Checked := False;
+    pnlFilterSelection.Hide;
+    {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
+    {$IfDef PAS2JS}await{$EndIf}(SetFilters)
+  finally
+    ByAll.OnClick := ByAllClick;
+    Log('ByAllClick finished');
+  end;
+end;
+
+procedure TCWRmainFrm.ByChannelClick(Sender: TObject);
+begin
+  Log('ByChannelClick called');
+  ByChannel.OnClick := nil;
+  try
+    if ByChannel.Checked then // Toggle off this filter
+    begin
+      ByChannel.Checked := False;
+      wcbChannels.ItemIndex := -1;
+      {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+    end else
+      {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbChannels, 'PSIP'));
+  finally
+    Log('ByChannelClick finished');
+    ByChannel.OnClick := ByChannelClick;
+  end;
+end;
+
+procedure TCWRmainFrm.ByGenreClick(Sender: TObject);
+begin
+  Log('ByGenreClick called');
+  ByGenre.OnClick := nil;
+  try
+    if ByGenre.Checked then // Toggle off this filter
+    begin
+      ByGenre.Checked := False;
+      wcbGenres.ItemIndex := -1;
+      {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+    end else
+      {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbGenres, 'genres'));
+  finally
+    Log('ByGenreClick finished');
+    ByGenre.OnClick := ByGenreClick;
+  end;
+end;
+
+procedure TCWRmainFrm.ByTitleClick(Sender: TObject);
+begin
+  Log('byTitleClick called');
+  ByTitle.OnClick := nil;
+  try
+    if ByTitle.Checked then // Toggle off this filter
+    begin
+      ByTitle.Checked := False;
+      pnlFilterSelection.Hide;
+      weTitleSearch.Hide;
+      {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+    end else
+    begin
+      wcbGenres.Hide;
+      wcbChannels.Hide;
+      wcbTypes.Hide;
+      lblFilterSelect.Caption := 'Show Titles with:';
+      if VisiblePanelNum <> 0 then {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
+      pnlFilterSelection.BringToFront;
+      pnlFilterSelection.Show;
+      weTitleSearch.Clear;
+      weTitleSearch.BringToFront;
+      weTitleSearch.Show;
+    end;
+  finally
+    ByTitle.OnClick := ByTitleClick;
+    Log('byTitleClick finished');
+  end;
+end;
+
+procedure TCWRmainFrm.byTypeClick(Sender: TObject);
+begin
+  Log('byTypeClick called');
+  byType.OnClick := nil;
+  try
+    if byType.Checked then // Toggle off this filter
+    begin
+      byType.Checked := False;
+      wcbTypes.ItemIndex := -1;
+      {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+    end else
+      {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTypes, 'Type'));
+  finally
+    byType.OnClick := byTypeClick;
+    Log('byTypeClick finished');
+  end;
+end;
+
+procedure TCWRmainFrm.CapturesClickCell(Sender: TObject; ACol, ARow: Integer);
+var
+  st: TDateTime;
+  SaveFilter: string;
+  SaveFilterState: Boolean;
+
+begin
+  Captures.OnClickCell := nil;
+  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  SaveFilter := WIDBCDS.Filter;
+  SaveFilterState := WIDBCDS.Filtered;
+  try
+    Log('========== CapturesClickCell() called from Row ' + ARow.ToString);
+    // Find Capture Item in EPG
+    st := TTimeZone.Local.ToUniversalTime(StrToDateTime(Captures.Cells[3,ARow] + ' ' + Captures.Cells[4,ARow]));
+    WIDBCDS.Filtered := False;
+    WIDBCDS.Filter := 'Title like ' + QuotedStr(Captures.Cells[8,ARow])
+      + ' and StartTime > ' + Double(st-15*OneMinute).ToString   // Allow for generous padding
+      + ' and StartTime < ' + Double(st+OneMinute).ToString;
+    WIDBCDS.Filtered := True;
+    WIDBCDS.FindFirst;
+    {$IFDEF PAS2JS} await {$ENDIF}(ShowItemDetails(WIDBCDS.RecNo, False)); // Call w/invisible Add Capture button
+  finally
+    WIDBCDS.Filtered := False;
+    WIDBCDS.Filter := SaveFilter;
+    WIDBCDS.Filtered := SaveFilterState;
+    Captures.OnClickCell := CapturesClickCell;
+    Log('========== EPGClickCell() finished');
+  end;
+end;
+
+procedure TCWRmainFrm.CapturesGetCellData(Sender: TObject; ACol, ARow: Integer;
+  AField: TField; var AValue: string);
+begin
+  if ARow = 0 then Exit;
+  if ACol = 2 then AValue := Copy(AValue,4,10);
+  if ACol = 3 then AValue := IfThen(AValue > '', FormatDateTime('mm/dd', StrToDateDef(AValue, 0)));
+end;
+
+function TCWRmainFrm.GetGoogleDriveFile(TableFile: string; var id: string): string;
+var
+  q, AResponse: string;
+  rq: TJSXMLHttpRequest;
+  jso: TJSONObject;
+  ja: TJSONArray;
+  i: integer;
+
+  [async]
+  function TryLogIn: TJSXMLHttpRequest;
+  begin
+    console.log('AccessToken: ' + WebRESTClient1.AccessToken);
+    if WebRESTClient1.AccessToken = '' then ResetPrompt := 'select_account';
+    WebRESTClient1.App.Key := CLIENT_APP_KEY;
+    if window.location.href.Contains('?') then  // browser has "parameters" that need to be removed
+    begin
+      WebRESTClient1.App.CallbackURL := LeftStr(window.location.href, Pred(Pos('?',window.location.href)));
+      Log('window.location.href: ' + window.location.href);
+    end
+    else WEBRESTClient1.App.CallBackURL := window.location.href;
+    Log('WEBRESTClient1.App.CallBackURL: ' + WEBRESTClient1.App.CallbackURL);
+    WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth'
+      + '?client_id=' + WebRESTCLient1.App.Key
+      + '&include_granted_scopes'
+      + '&scope=https://www.googleapis.com/auth/drive'
+      + '&state=bf'
+      + '&response_type=token'
+      + '&redirect_uri=' + WEBRESTClient1.App.CallbackURL
+      + '&prompt=' + ResetPrompt;
+    if (WebRESTClient1.AccessToken = '') or (ResetPrompt <> 'none') then
+    begin
+      console.log('Performing OAuth');
+      {$IFDef PAS2JS} await {$ENDIF}(ShowPlsWait('Select Login Credentials'));
+      TAwait.ExecP<TJSPromiseResolver> (WebRESTClient1.Authenticate);
+      {$IFDef PAS2JS} await {$ENDIF}(ShowPlsWait('Refreshing Selected DB'));
+    end;
+    rq := TAwait.ExecP<TJSXMLHttpRequest> (WebRESTClient1.httprequest('GET','https://www.googleapis.com/drive/v3/about/?fields=kind,user'));
+    if rq.Status = 200 then
+    begin
+//      console.log('rq.responseText:', rq.responseText);
+      jso := TJSONOBJect(TJSONObject.ParseJSONValue(rq.responseText));
+      jso := TJSONObject(jso.GetValue('user'));
+      TWebLocalStorage.SetValue(EMAILADDR, string(jso.GetJSONValue('emailAddress')));
+//      console.log('jso:',jso);
+      WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
+    end;
+    ResetPrompt := 'none';
+    q :='name = ''' + TableFile + ''' and trashed = false';
+
+    Result := TAwait.ExecP<TJSXMLHttpRequest> (WEBRESTClient1.HttpRequest('GET',
+      'https://www.googleapis.com/drive/v3/files?q='+WEBRestClient1.URLEncode(q)));
+  end;
+
+begin
+  Result := '';
+  rq := TAwait.ExecP<TJSXMLHttpRequest> (TryLogIn);
+  if Assigned(rq) then
+  begin
+    // Check for error
+    if rq.Status <> 200 then // Set up a retry
+    begin
+// if rq.Status = 401 then Access token expired, but <>200 is enough for a retry
+      {console.}log('Bad Request Status: ' +  rq.Status.ToString);
+      WebRESTClient1.ClearTokens;
+      {console.}log('Retrying login');
+      rq := TAwait.ExecP<TJSXMLHttpRequest> (TryLogIn);
+      {console.}log('Retry Request Status: ' +  rq.Status.ToString);
+      if rq.Status <> 200 then exit('');   // Return null string on failure
+    end;
+    AResponse := rq.responseText;
+    console.log(rq.responseText);
+
+    jso := TJSONObject(TJSONObject.ParseJSONValue(AResponse));
+
+    if Assigned(jso) then
+    begin
+      ja := TJSONArray(jso.GetValue('files'));
+      Log(ja.count.tostring + ' files found');
+      for i := 0 to ja.Count - 1 do
+      begin
+        jso := TJSONObject(ja.Items[i]);
+        Log('File[' + i.ToString + '] name: ' + jso.GetJSONValue('name'));
+        if jso.GetJSONValue('name') = TableFile then
+          id := string(jso.GetJSONValue('id'));
+      end;
+      jso.Free;
+      ja.Free;
+      {console.}log('File ID: <' + id + '>');
+      if id = '' then exit('');  // Return null string on no ID
+{$IFDef PAS2JS}
+      rq := TAwait.ExecP<TJSXMLHttpRequest> (WebRESTClient1.httprequest('GET',
+        'https://www.googleapis.com/drive/v3/files/'+id+'?alt=media').catch(
+        function(AValue: JSValue): JSValue
+        begin
+          {console.}log('error here' + TJSONString(AValue).ToString);
+        end));
+{$ENDIF}
+      if Assigned(rq) then Result := rq.responseText;
+    end;
+  end;
+end;
+
+procedure TCWRmainFrm.FillTable(var WSG: TWebStringGrid; rs: string);
+var
+  Line: string;
+  sl: TStrings;
+  ReplyArray: TArray<string>;
+begin
+  Log('FillTable called for ' + WSG.Name);
+  // Fetch string from local storage if not cwr_epg.csv
+  if rs <> CSV_EPG then CSVstring := TLocalStorage.GetValue(rs);
+  Log(rs + ' length: ' + IntToStr(Length(CSVstring)));
+  if CSVstring > '' then
+  begin
+    sl := TStringList.Create;
+    ReplyArray := CSVstring.Split([#13#10],TStringSplitOptions.ExcludeEmpty);
+    Log('Begin extract ' + IntToStr(Length(ReplyArray)) + ' strings');
+    for Line in ReplyArray do sl.Add(Line);
+    WSG.BeginUpdate;
+    WSG.LoadFromStrings(sl, ',', True);
+    // dump empty rows
+    while WSG.Cells[0,Pred(WSG.RowCount)] = '' do WSG.RowCount := Pred(WSG.RowCount);
+    WSG.EndUpdate;
+  end
+  else WSG.RowCount := 0;
+  Log(WSG.Name+'.RowCount: ' + WSG.RowCount.ToString);
+  Log('Done loading '+WSG.Name);
+  sl.Free; // := nil;
+
+end;
+
+procedure TCWRmainFrm.RefreshCSV(TableFile, Title: string; var id: string);
+var
+  Reply: string;
+begin
+  Log('ReFreshCSV called for ' + TableFile);
+  {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing ' + Title));
+  if application.IsOnline then
+  begin
+    try
+      Log('Requesting: ' + TableFile);
+      try
+        Reply := TAwait.ExecP<string>(GetGoogleDriveFile(TableFile, id));
+        if Reply > '' then  // Got a response
+        begin
+          // Reshow message in case lost during OAuth
+          {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Refreshing ' + Title));
+          Log(TableFile + ' starts: ' + copy(Reply,1,50));
+        end
+        else
+          Log(TableFile + ' fetch failed.');
+        // cw_epg.csv can be >2MB and Safari cannot tolerate that in LocalStorage
+        if TableFile = CSV_EPG then // park result in global variable
+          CSVString := Reply
+        else // Save the csv (or '') as string in local storage
+          TLocalStorage.SetValue(TableFile, Reply);
+        Log('ReFreshCSV, ' + TableFile + ' Length: ' + IntToStr(Length(Reply)));
+      except
+        on E:Exception do
+        begin
+          Log('HttpRequest Exception: ' + E.Message);
+          TAwait.ExecP<TModalResult> (MessageDlgAsync('Cannot refresh EPG data while CW_EPG_Remote is offline', mtInformation, [mbOK]));
+        end;
+      end;
+    finally
+      Log('ReFreshCSV in finally section');
+    end;
+  end
+  else
+  begin
+    TAwait.ExecP<TModalResult> (MessageDlgAsync('Cannot refresh EPG data while CW_EPG_Remote is offline', mtInformation, [mbOK]));
+    Log('No LAN connection');
+  end;
+end;
+
+procedure TCWRmainFrm.LoadWIDBCDS;
+var
+  i,j: Integer;
+  t: TDateTime;
+  AColor: string;
+  Text: string;
+begin
+  Log('======= Starting LoadWIDBCDS, DB is ' + IfThen(not WIDBCDS.Active, 'not ') + 'Active');
+  {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Loading EPG DB'));
+  if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
+  WIDBCDS.Filtered := False;
+  Log('WIDBCDS is ' + IfThen(not WIDBCDS.Filtered, 'UN') + 'filtered');
+  WIDBCDS.Close;
+  TLocalStorage.RemoveKey('wcbGenresItems');  // Dump any saved values
+  TLocalStorage.RemoveKey('wcbChannelsItems');
+  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
+  try
+    if WIDBCDS.Active and (BufferGrid.RowCount > 1) then
+    begin
+      Log('LoadWIDBCDS, WIDBCDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
+      Log('LoadWIDBCDS, Buffer Row Count: ' + BufferGrid.RowCount.ToString);
+      if WIDBCDS.RecordCount > 0 then
+      begin
+        WIDBCDS.Edit;
+        {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EmptyDataSet);
+        Log('LoadWIDBCDS, After EmptyDataSet CDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
+        WebDataSource1.DataSet := WIDBCDS;
+        Log('LoadWIDBCDS, Reconnected DataSource');
+      end;
+      for j := 1 to BufferGrid.RowCount - 1 do
+      try
+        WIDBCDS.Append;
+        WIDBCDS.Fields[0].Value := j;
+        for i := 1 to BufferGrid.ColCount do
+          if WIDBCDS.Fields[i].DataType = ftString then
+            WIDBCDS.Fields[i].Value := BufferGrid.Cells[i-1,j]
+          else  // Keep UTC StartTime/EndTime strings
+            if TryStrToDateTime(BufferGrid.Cells[i-1,j],t) then
+              WIDBCDS.Fields[i].Value := t;
+        Text := WIDBCDS.Fields[8].AsString; // i.e. ProgramID
+        if Text.StartsWith('MV') then  // Movie item
+          AColor := {'goldenRod'}TypeClass[Movie]
+        else if Text.StartsWith('SH') then  // Generic item
+          AColor := IfThen(WIDBCDS.Fields[14].AsString.Contains('"News"'),
+            {'green'}TypeClass[New],  // News genre assumed "new"
+            {'gray'}TypeClass[Other])   // Otherwise generic episode is "unknown time"
+        else
+          AColor := IfThen(WIDBCDS.Fields[10].AsString <> '',
+            {'green'}TypeClass[New],  // Non-generic episode declared "new"
+            {'rose'}TypeClass[Rerun]);  // Otherwise "rerun"
+        WIDBCDS.Fields[15].Value := AColor;
+        TAwait.ExecP<Boolean>(WIDBCDS.PostAsync);
+      except
+        on E:Exception do
+        begin
+          Log('WIDBCDS Append Exception: ' + E.Message);
+          if TAwait.ExecP<TModalResult>(MessageDlgAsync('Error: ' + E.Message
+            + #13'Trying to write WIDBCDS data for record ' + j.ToString
+            + #13#13'Do you want to abort updating?', mtConfirmation, [mbYes,mbNo])) = mrYes then
+            Break;
+        end;
+      end;
+      Log('Finished editing WIDBCDS, RecordCount: ' + WIDBCDS.RecordCount.ToString);
+    end
+    else
+    begin
+      Log('LoadWIDBCDS, skipped WIDBCDS update because' + IfThen(not WIDBCDS.Active, ' CDS not active')
+        + IfThen(BufferGrid.RowCount < 2, ' BufferGrid empty'));
+    end;
+  finally
+    Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
+    {$IfDef PAS2JS}await{$EndIf}(LogDataRange);
+    Log('WIDBCDS Controls are ' + IfThen(WIDBCDS.ControlsDisabled,'NOT ') + 'Enabled');
+    Log('WIDBCDS RecordCount: ' + WIDBCDS.RecordCount.ToString);
+    Log('========= Finished LoadWIDBCDS');
+
+  end;
+end;
+
+procedure TCWRmainFrm.NewCapturesClickCell(Sender: TObject; ACol,
+  ARow: Integer);
+var
+  PSIP, Title, ProgID, id: string;
+  RecordStart, RecordEnd: TDateTime;
+  i: Integer;
+begin
+  if ARow = 0 then exit;
+  if TAwait.ExecP<TModalResult> (MessageDlgAsync('Remove selected program?'
+    ,mtConfirmation, [mbYes,mbNo])) = mrYes then
+  begin
+    // Find & delete matching row in Local Storage
+    PSIP := NewCaptures.Cells[0,ARow];
+    RecordStart := StrToDateTime(NewCaptures.Cells[1,ARow]);
+    RecordEnd := StrToDateTime(NewCaptures.Cells[2,ARow]);
+    Title := NewCaptures.Cells[3,ARow];
+    ProgID := NewCaptures.Cells[6,ARow];
+    NewCaptures.BeginUpdate;
+    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES,'New Captures', id));
+    {$IfDef PAS2JS}await{$EndIf}(FillTable(NewCaptures, CSV_NEWCAPTURES));
+    Log('NewCaptures Rows: '+NewCaptures.RowCount.ToString);
+    if NewCaptures.RowCount > 1 then // file exists, find matching row
+      for i := 1 to Pred(NewCaptures.RowCount) do
+      begin
+        if not SameText(PSIP, NewCaptures.Cells[0,i]) then continue;
+        if not SameText(Title, NewCaptures.Cells[3,i]) then continue;
+        if not SameText(ProgID, NewCaptures.Cells[6,i]) then continue;
+        if not SameDateTime(RecordStart, StrToDateTime(NewCaptures.Cells[1,i])) then continue;
+        if not SameDateTime(RecordEnd, StrToDateTime(NewCaptures.Cells[2,i])) then continue;
+        NewCaptures.RemoveRow(i);
+        // Update file
+        SaveNewCapturesFile(id);
+        Break;
+      end;
+    NewCaptures.EndUpdate;
+    pnlWaitPls.Hide;
+  end;
+end;
+
+procedure TCWRmainFrm.NewCapturesGetCellData(Sender: TObject; ACol,
+  ARow: Integer; AField: TField; var AValue: string);
+begin
+  if AValue = '' then exit;
+  if ARow > 0 then
+    if ACol in [1,2] then AValue := FormatDateTime('mm/dd HH:nn', StrToDateTime(AValue));
+end;
+
+procedure TCWRmainFrm.LogDataRange;
+begin
+  Log('WIDBCDS.RecordCount:  ' + WIDBCDS.RecordCount.ToString);
+  if WIDBCDS.RecordCount > 0 then
+  begin
+    if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
+    WIDBCDS.Filtered := False;
+    WIDBCDS.First;
+    FirstEndDate := WIDBCDS.{FieldByName('EndTime')}Fields[7].AsDateTime;
+    Log('FirstEndDate (UTC) (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(FirstEndDate));
+    WIDBCDS.Last;
+    LastStartDate := WIDBCDS.{FieldByName('StartTime')}Fields[6].AsDateTime;
+    Log('LastStartDate (UTC) (Rec. ' + WIDBCDS.RecNo.ToString + '): ' + DateToStr(LastStartDate));
+    Log('LastStartDate - Now: ' + Double(LastStartDate - TTimeZone.Local.ToUniversalTime(Now)).ToString);
+    TotalAvailableDays := Trunc(LastStartDate - TTimeZone.Local.ToUniversalTime(Now));
+  end else TotalAvailableDays := 0;
+end;
+
+procedure TCWRmainFrm.SetupWIDBCDS;
+var
+  DbField: string;
+const
+  DBFIELDS: array[0..14] of string = ('PSIP', 'Time', 'Title', 'SubTitle',
+  'Description', 'StartTime', 'EndTime', 'programID', 'originalAirDate', 'new',
+  'audioProperties', 'videoProperties', 'movieYear', 'genres', 'Class');
+begin
+  Log('Setting up to (re)open WIDBCDS');
+  if WIDBCDS.FieldCount = 0 then
+  begin
+    WIDBCDS.FieldDefs.Clear;
+    // add key field
+    WIDBCDS.FieldDefs.Add('id', ftInteger, 0, True);
+    // add normal fields
+    for DbField in DBFIELDS do
+    begin
+      if (DbField = 'StartTime') or (DbField = 'EndTime') then
+        WIDBCDS.FieldDefs.Add(DbField, ftDateTime)
+      else
+        WIDBCDS.FieldDefs.Add(DbField, ftString);
+    end;
+    TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
+  end;
+  Log('WIDBCDS is ' + IfThen(not WIDBCDS.Active, 'not ')
+    + 'Active and ' + IfThen(not WIDBCDS.IsEmpty, 'not ') + 'Empty');
+  {$IfDef PAS2JS}await{$EndIf}(LogDataRange);
+  Log('Notify user if refresh WIDBCDS needed');
+  btnRefreshData.Show;
+  if TTimeZone.Local.ToUniversalTime(Now) > LastStartDate then
+    TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'#13'Please make sure that the HTPC'
+      + #13' is connected to Google Drive',mtInformation, [mbOK]))
+  else if TTimeZone.Local.ToUniversalTime(Now) - FirstEndDate > 3 then
+    TAwait.ExecP<TModalResult> (MessageDlgAsync('The current dataset was fetched over 3 days ago'
+      + #13'and there are only about ' + Round(LastStartDate - TTimeZone.Local.ToUniversalTime(Now)).ToString + ' days now available.'
+      + #13#13'To update, please use the Refresh Data button.',mtInformation, [mbOK]))
+  else btnRefreshData.Hide;
+  Log('Finished opening WIDBCDS');
+end;
+
+procedure TCWRmainFrm.SetupEpg;
+var
+  FirstEndTime: TDateTime;
+
+begin
+  Log('====== SetupEpg called');
+  if (WIDBCDS.RecordCount = 0) or (TotalAvailableDays < 0) then Exit;
+  {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing Stored Data'));
+  if WIDBCDS.Filtered then WIDBCDS.Filtered := False;
+  FirstEndTime := TTimeZone.Local.ToUniversalTime(Now);
+  Log('First record EndTime (UTC) >= ' + DateTimeToStr(FirstEndTime));
+  WIDBCDS.Filter := 'EndTime >= ' + Double(FirstEndTime).ToString;
+  WIDBCDS.Filtered := True;
+  WIDBCDS.First;
+  FirstID := Max(WIDBCDS.Fields[0].AsInteger, 1);
+  BaseFilter := 'ID >= ' + FirstID.ToString;
+  LastID := (FirstID + NUMIDS).ToString;
+  WIDBCDS.Filtered := False;
+  Log(' WIDBCDS BaseFilter [' + BaseFilter + '] assigned, but not active');
+  EPG.Columns[0].Alignment := taCenter;
+  EPG.Columns[2].Alignment := taLeftJustify;
+  {$IfDef PAS2JS}await{$EndIf}(SetupFilterLists);
+  Log('====== SetupEpg finished');
+end;
+
+procedure TCWRmainFrm.SetupFilterLists;
+
+var
+  fn, i: Integer;
+  x, y: string;
+  sl: TStringList;
+  cb: TWebComboBox;
+begin
+  Log('====== SetupFilterLists started');
+  sl := TStringList.Create;
+  for i := 1 to 2 do
+  begin
+    case i of
+      1:  begin
+            fn := 14;
+            cb := wcbGenres;
+          end;
+      2:  begin
+            fn := 1;
+            cb := wcbChannels;
+          end;
+    end;
+    if TLocalStorage.GetValue(cb.Name + 'Items') > '' then // Reload saved list
+    begin
+      cb.Items.AddStrings(TLocalStorage.GetValue(cb.Name + 'Items').Split([#10], TStringSplitOptions.ExcludeEmpty));
+      Continue;  // Skip looping
+    end;
+    if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
+    if not WIDBCDS.Filtered then WIDBCDS.Filtered := True;   // Take the hit now
+    cb.ItemIndex := -1;
+    cb.Items.Clear;
+    Log('Adding first '+cb.Name+' Item: "All"');
+    cb.Items.Add('All');
+    sl.Clear;
+    sl.Sorted := True;
+    sl.Duplicates := dupIgnore;
+    sl.BeginUpdate;
+    WIDBCDS.First;
+    Log('Looping over Epg for ' + cb.Name + ' Items');
+    while not WIDBCDS.Eof do
+    begin
+      x := WIDBCDS.Fields[fn].AsString;
+      if cb = wcbGenres then
+      begin
+        y := ReplaceStr(x, '\', ''); // Remove escape "\" char
+        // Split the genres string 'xxx;yyy;zzz' into array xxx, yyy, zzz
+        // ignoring JSON "punctuation" around items
+        for x in y.Split([';','[',']','"',','], TStringSplitOptions.ExcludeEmpty) do
+          sl.Add(x);
+      end
+      else sl.Add(x);
+      WIDBCDS.Next;
+    end;
+    Log('====== Finished Epg DB scan');
+    sl.EndUpdate;
+    cb.BeginUpdate;
+    cb.Items.AddStrings(sl);
+    cb.EndUpdate;
+    Log('Added ' + cb.Items.Count.ToString + ' to ' + cb.Name);
+    // Save list to speed restart
+    TLocalStorage.SetValue(cb.Name + 'Items', cb.Items.Text);
+  end;
+  sl.Free;
+  Log('====== Exiting SetupFilterLists');
+end;
+
+procedure TCWRmainFrm.PopupFilterList(cb: TWebComboBox; fn: string);
+begin
+  Log('====== PopupFilterList started');
+  lblFilterSelect.Caption := 'Choose '
+    + IfThen(fn='genres', 'Genre',
+      IfThen(fn='PSIP', 'Channel',
+      IfThen(fn='Title', 'Title', 'Type')));
+  ByAll.Checked := False;
+  wcbGenres.Hide;
+  wcbChannels.Hide;
+  wcbTypes.Hide;
+  weTitleSearch.Hide;
+  EPG.ClearSelection;
+  if cb.Items.Count = 0 then Exit;  // Can happen??
+//    SetupFilterLists;
+  Log('====== Showing ComboBox');
+  pnlFilterSelection.BringToFront;
+  pnlFilterSelection.Show;
+  cb.ItemIndex := -1;
+  cb.BringToFront;
+  cb.Show;
+  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+  if VisiblePanelNum <> 0 then {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
+  Log('====== Exiting PopupFilterList');
+end;
+
+procedure TCWRmainFrm.SetFilters;
+var
+  fltr: string;
+begin
+  Log('====== SetFilters called');
+  ByAll.Checked := not (ByChannel.Checked or ByGenre.Checked or ByTitle.Checked or byType.Checked);
+  if not pnlWaitPls.Visible then
+    {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + IfThen(ByAll.Checked, 'Short Un') + 'Filtered List'));
+  EPG.Hide;
+  EPG.BeginUpdate;
+  EPG.Columns[2].Title := IfThen(ByChannel.Checked, wcbChannels.Text + ' ')
+    + IfThen(byType.Checked, '"' + wcbTypes.Text + '" ')
+    + IfThen(ByGenre.Checked, wcbGenres.Text + ' ')
+    + 'Programs' + IfThen(ByAll.Checked, ' (1st ' + NUMIDS.ToString + ' items)')
+    + IfThen(ByTitle.Checked, ' w/Titles:' + QuotedStr('*' + SearchFilter + '*'));
+  EPG.ColWidths[0] := IfThen(ByChannel.Checked, 0, 75);
+  if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
+  WIDBCDS.Filtered := False;
+  Log('BaseFilter: ' + BaseFilter);
+  fltr := '';
+  if ByGenre.Checked then fltr := fltr + ' and genres like '
+    + QuotedStr('%"'+ReplaceStr(wcbGenres.Text, '/', '_')+'"%');
+  if ByTitle.Checked then fltr := fltr + ' and Title like ' + QuotedStr('%' + SearchFilter + '%');
+  if ByChannel.Checked then fltr := fltr + ' and PSIP = ' + QuotedStr(wcbChannels.Text);
+  if ByType.Checked then fltr := fltr + ' and Class = '
+    + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
+  if fltr = '' then fltr := ' and ID < ' + LastID;
+  Log('Epg Filter: BaseFilter + ' + fltr);
+  WIDBCDS.Filter := BaseFilter + fltr;
+  WIDBCDS.Filtered := True;
+  {$IfDef PAS2JS}EPG.Row := 1;{$EndIf}
+  {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
+  WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
+  EPG.EndUpdate;
+  EPG.Show;
+  pnlWaitPls.Hide;
+  EPG.BringToFront;
+  if fltr>'' then pnlFilterSelection.BringToFront;
+  Log('====== SetFilters finished');
+end;
+
+procedure TCWRmainFrm.ShowPlsWait(PlsWaitCap: string);
+
+begin
+  if VisiblePanelNum <> 3 then  // Show overlay
+  begin
+    WebLabel1.Caption := PlsWaitCap;
+    pnlWaitPls.BringToFront;
+    pnlWaitPls.Show;
+    {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+  end;
+  {else }Log('### Showing panel ### ' + PlsWaitCap);   // make log entry
+end;
+
+procedure TCWRmainFrm.ReFreshListings;
+begin
+  Log(' ======== RefreshListings is called.');
+  EPG.Hide;
+  {$IfDef PAS2JS}await{$EndIf}(SetupEpg);
+//  Log('Days to Display, Available: ' + cbNumDisplayDays.Text + ', ' + TotalAvailableDays.ToString);
+
+  if (WIDBCDS.RecordCount > 0) and (TotalAvailableDays >= 0) then
+  begin
+//    {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Preparing ' + Min(StrToIntDef(cbNumDisplayDays.Text, 1), TotalAvailableDays).ToString + '-day Listing.'));
+    {$IfDef PAS2JS}await{$EndIf}(ByAllClick(Self));
+    if not EPG.Visible then EPG.Show;
+  end
+  else TAwait.ExecP<TModalResult> (MessageDlgAsync('There are no current data!'
+      + #13#13'To update, use the Refresh Data button.'
+      + #13#13'To watch the Log, first switch to'
+      + #13'View Log and then use Refresh Data.'
+      + #13'(Recommended _only_ in case of severe hang issue)',mtInformation, [mbOK]));
+  pnlListings.BringToFront;
+  Log(' ======== RefreshListings finished');
+end;
+
+procedure TCWRmainFrm.ScheduledClick(Sender: TObject);
+begin
+  Log('Scheduled called');
+  {$IfDef PAS2JS}await{$EndIf}(SetPage(1));
+  Log('Scheduled visible');
+end;
+
+
+procedure TCWRmainFrm.LoadSG(var SG: TWebStringGrid; LSName: string);
+var i: Integer;
+    st, et: TDateTime;
+begin
+  {$IfDef PAS2JS}await{$EndIf}(FillTable(SG, LSName));
+  if (SG.RowCount > 1) and (SG <> HistoryTable) then  // have stored value(s)
+  begin
+    // Discard stale entries (End DateTime < now)
+    for i := SG.RowCount-1 downto 1 do
+      if SG.Cells[3,i] > '' then // not null row
+      begin
+        if SG = Captures then
+        begin
+          st := StrToDateTime(SG.Cells[3,i] + ' ' + SG.Cells[4,i]);
+          et := StrToDateTime(SG.Cells[3,i] + ' ' + SG.Cells[5,i]);
+        end
+        else
+        begin
+          st := StrToDateTime(SG.Cells[1,i]);
+          et := StrToDateTime(SG.Cells[2,i]);
+        end;
+        if et < st then et := et + 1;     // wraps midnight
+        if et < now then
+        begin
+          Log('Removing stale entry, endtime: ' + DateTimeToStr(et));
+          SG.RemoveRow(i);
+        end;
+      end;
+  end;
+end;
+
+procedure TCWRmainFrm.SetCapturesFormats;
+const
+  HEADINGS: array [0..6] of string = ('Ch Name','RecordStart','RecordEnd','Title','SubTitle','StartTime','ProgramID');
+  WIDTHS: array [0..6] of Integer =  (       75,           95,         95,    150,       400,          0,         0 );
+var i: Integer;
+begin
+  for i := 0 to NewCaptures.ColCount-1 do
+  begin
+    NewCaptures.Cells[i,0] := HEADINGS[i];
+    NewCaptures.ColWidths[i] := WIDTHS[i];
+  end;
+  for i := 0 to Captures.ColCount-1 do Captures.ColWidths[i] := 0;
+  if Captures.ColCount >= 9 then  // I.e., skip if FNF
+  begin
+    Captures.ColWidths[1] := 80;  // Computer
+    Captures.ColWidths[2] := 100; // Tuner
+    Captures.ColWidths[3] := 65; // Date
+    Captures.ColWidths[4] := 45; // Start
+    Captures.ColWidths[5] := 45; // End
+    Captures.ColWidths[6] := 70; // Channel
+    Captures.ColWidths[8] := Captures.ClientWidth; // Title
+    for i := 1 to 6 do Captures.ColAlignments[i] := taCenter;
+  end;
+end;
+
+procedure TCWRmainFrm.tbCapturesShow;
+var
+  UserMsg: string;
+
+begin
+  btnSchdRefrsh.Show;
+  {$IfDef PAS2JS}await{$EndIf}(LoadSG(Captures, CSV_CAPTURES));
+  {$IfDef PAS2JS}await{$EndIf}(LoadSG(NewCaptures, CSV_NEWCAPTURES));
+  SetCapturesFormats;
+  Log('Captures.RowCount after stale check: ' + Captures.RowCount.ToString);
+
+  if (Captures.RowCount = 2) and (Captures.Cells[25,1] = '-1') then  // Valid list w/no captures, reload??
+  begin
+    Log('No captures listed, prompting for refresh');
+    UserMsg := 'There were no scheduled items at last fetch.';
+  end
+  else if Captures.RowCount < 2 then // Invalid list
+  begin
+    Log('No fresh captures, prompting for refresh');
+    UserMsg := 'Scheduled list appears to be stale.';
+  end else exit;
+  if TAwait.ExecP<TModalResult> (MessageDlgAsync(UserMsg
+    + #13#13'Do you want to refresh?',mtConfirmation, [mbYes,mbNo]))
+    = mrYes then btnSchdRefrshClick(Self);
+end;
+
+procedure TCWRmainFrm.FillHistoryDisplay;
+var
+  i: Integer;
+
+begin
+  Log('FillHistoryDisplay called');
+  Log('historyTable.BeginUpdate');
+  HistoryTable.BeginUpdate;
+  try
+    LoadSG(HistoryTable, CSV_HISTORY);
+    HistoryTable.Align := alClient;
+    Log('historyTable.ColCount: ' + historyTable.ColCount.ToString);
+    Log('historyTable.RowCount: ' + historyTable.RowCount.ToString);
+    for i := 0 to Pred(HistoryTable.ColCount) do HistoryTable.ColWidths[i] := 0;
+    if HistoryTable.ColCount >= 14 then
+    begin
+      HistoryTable.ColWidths[8] := 120;
+      HistoryTable.ColWidths[10] := 150;
+      HistoryTable.ColWidths[12] := 250;
+      HistoryTable.ColWidths[13] := 300;
+      HistoryTable.ColAlignments[8] := taCenter;
+      HistoryTable.ColAlignments[10] := taCenter;
+    end;
+    for i := 1 to Pred(HistoryTable.RowCount) do
+    begin
+      HistoryTable.Cells[0,i] := Format('%10.3f',[StrToDateTime(HistoryTable.Cells[8,i])]);
+      HistoryTable.Cells[8,i] := FormatDateTime('mm/dd/yy h:nna/p', StrToDateTime(HistoryTable.Cells[8,i]))
+    end;
+    HistoryTable.Cells[8,0] := HistoryTable.Cells[8,0] + ' ^'; // Show ascending time sort
+    HistoryTableFixedCellClick(Self, 8, 0);  // Change to descending
+    while HistoryTable.RowCount > StrToInt(cbNumHistList.Text) do HistoryTable.RemoveRow(Pred(HistoryTable.RowCount));
+  finally
+    HistoryTable.EndUpdate;
+    Log('FillHistoryDisplay finished');
+  end;
+end;
+
+procedure TCWRmainFrm.HistoryClick(Sender: TObject);
+begin
+  Log('History called');
+  {$IfDef PAS2JS}await{$EndIf}(SetPage(2));
+  Log('History visible');
+end;
+
+procedure TCWRmainFrm.HistoryTableClickCell(Sender: TObject; ACol,
+  ARow: Integer);
+begin
+  ShowHistoryDetails(ARow);
+end;
+
+procedure TCWRmainFrm.HistoryTableFixedCellClick(Sender: TObject; ACol,
+  ARow: Integer);
+var
+  i: Integer;
+  SortDir: TGridSortIndicator;
+begin
+  if RightStr(HistoryTable.Cells[ACol,0],1) = '^' then SortDir := siDescending
+  else SortDir := siAscending;
+  Log('HistoryTableFixedCellClick, ACol: '+ACol.ToString+', RowCount: '+HistoryTable.RowCount.ToString);
+  i := IfThen(ACol=8, 0, ACol);
+  HistoryTable.BeginUpdate;
+  HistoryTable.Sort(i,SortDir);
+  HistoryTable.EndUpdate;
+  Log('HistoryTableFixedCellClick, after sort, RowCount: '+HistoryTable.RowCount.ToString);
+  // Remove previous direction flags
+  for i := 0 to HistoryTable.ColCount-1 do
+  if '^v'.Contains(RightStr(HistoryTable.Cells[i,0],1)) then
+    HistoryTable.Cells[i,0] := LeftStr(HistoryTable.Cells[i,0],Length(HistoryTable.Cells[i,0])-2);
+  // Add current direction flag
+  HistoryTable.Cells[ACol,0] := HistoryTable.Cells[ACol,0] + IfThen(SortDir=siDescending, ' v', ' ^');
+end;
+
+procedure TCWRmainFrm.HistoryTableGetCellClass(Sender: TObject; ACol,
+  ARow: Integer; AField: TField; AValue: string; var AClassName: string);
+begin
+  if (ARow > 0) {and (HistoryTable.Cells[8,ARow] > '')} then
+  begin
+    case HistoryTable.Cells[10,ARow][1] of
+      'E': AClassName := 'green';         // Regular Episode
+      'S': AClassName := 'gray';          // Generic Show
+      'M': AClassName := 'goldenRod';     // Movie
+    else
+      AClassName := 'white';              // Huh?
+    end;
+  end;
+end;
+
+procedure TCWRmainFrm.tbHistoryShow;
+begin
+  HistoryTable.Visible := False;
+  Log('HistoryTable.RowCount: ' + HistoryTable.RowCount.ToString);
+  if HistoryTable.RowCount <> StrToInt(cbNumHistList.Text) then  // need History data
+  begin
+    {$IfDef PAS2JS}await{$EndIf}(FillHistoryDisplay);
+    if {still} HistoryTable.RowCount <> StrToInt(cbNumHistList.Text) then  // may need History refresh
+    begin
+      Log('The History list is empty/incomplete. Prompt for refresh');
+      if TAwait.ExecP<TModalResult> (MessageDlgAsync('The History list '
+       + IfThen(HistoryTable.RowCount < 2,'is empty','may be incomplete')
+        + #13#13'Do you want to refresh it now?',mtConfirmation, [mbYes,mbNo]))
+        = mrYes then {$IfDef PAS2JS}await{$EndIf}(UpdateHistory(Self));
+    end;
+  end;
+  HistoryTable.Visible := True;
+end;
+
+procedure TCWRmainFrm.SetPage(PageNum: Integer);
+
+begin
+  case PageNum of
+    0: begin          {Listings page}
+      pnlListings.BringToFront;
+      pnlListings.Show;
+    end;
+    1: begin          {Captures}
+      pnlCaptures.BringToFront;
+      pnlCaptures.Show;
+      tbCapturesShow;
+    end;
+    2: begin {History}
+      pnlHistory.BringToFront;
+      pnlHistory.Show;
+      tbHistoryShow;
+    end;
+    3: begin  {Log}
+      pnlLog.BringToFront;
+      pnlLog.Show;
+    end;
+    4: begin {Options}
+      if TWebLocalStorage.GetValue(NUMHIST) <> '' then
+        cbNumHistList.ItemIndex := cbNumHistList.Items.IndexOf(TWebLocalStorage.GetValue(NUMHIST));
+      pnlOptions.BringToFront;
+      pnlOptions.Show;
+    end;
+  end;
+  VisiblePanelNum := PageNum;
+end;
+
+procedure TCWRmainFrm.Settings1Click(Sender: TObject);
+begin
+  Log('Settings called');
+  {$IfDef PAS2JS}await{$EndIf}(SetPage(4));
+  Log('Settings visible');
+end;
+
+procedure SetLabelStyle(lbl: TWebLabel; State: Boolean);
+//  Show detail items in red (on) or lt. gray (off)
+begin
+  lbl.Font.Color := IfThen(State, clRed, clLtGray);
+end;
+
+procedure TCWRmainFrm.AllCapsGridGetCellData(Sender: TObject; ACol,
+  ARow: Integer; AField: TField; var AValue: string);
+begin
+  if ARow > 0 then
+  case ACol of
+  1: if Length(AValue) > 10 then
+     AValue := LeftStr(AValue,4) + '...' + RightStr(AValue,3);
+  2: AValue := copy(AValue,4,10);
+  end;
+end;
+
+procedure TCWRmainFrm.cbNumHistListChange(Sender: TObject);
+begin
+  TWebLocalStorage.SetValue(NUMHIST, cbNumHistList.Text);
+end;
+
+procedure TCWRmainFrm.EPGGetCellClass(Sender: TObject; ACol,
+  ARow: Integer; AField: TField; AValue: string; var AClassName: string);
+{ show listings row in color coded for type based on current IDB record }
+begin
+  if ARow = 0 then exit;
+  if WIDBCDS.FieldCount < 16 then exit;
+  AClassName := EPG.Cells[3,ARow]; //} WIDBCDS.FieldByName('Class').AsString; // WIDBCDS.Fields[15].AsString;
+end;
+
+procedure TCWRmainFrm.ShowHistoryDetails(ItemNo: Integer);
+var
+  DetailsFrm: TDetailsFrm;
+  x: TArray<string>;
+begin
+  try
+    DetailsFrm := TDetailsFrm.Create(Self);
+    Log('========== finished TDetailsFrm.Create(Self) ');
+    DetailsFrm.Popup := True;
+    DetailsFrm.Border := fbSingle;
+    Log('========== starting DetailsFrm.Load ');
+    // load file HTML template + controls
+    try
+      TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load);
+      Log('========== finished DetailsFrm.Load ');
+    except
+      on E:Exception do
+      Log('Exception from DetailsFrm.Load: ' + E.Message);
+    end;
+    {$IfDef PAS2JS}DetailsFrm.Color := clWheat;
+    DetailsFrm.mmTitle.Color := clChocolate;
+    DetailsFrm.mmSubTitle.Color := clChocolate;
+    DetailsFrm.mmDescription.Color := clChocolate;
+    DetailsFrm.lblTitle.Color := clWheat;
+    DetailsFrm.lblSubTitle.Color := clWheat;
+    DetailsFrm.lblDescription.Color := clWheat;
+    {$EndIf}
+    // init controls after loading
+    DetailsFrm.mmTitle.Text := HistoryTable.Cells[12,ItemNo];
+    DetailsFrm.mmSubTitle.Text := HistoryTable.Cells[13,ItemNo];
+    DetailsFrm.lb11Time.Caption := HistoryTable.Cells[8,ItemNo]
+       +  FormatDateTime(' -- h:nna/p',StrToDateTime(HistoryTable.Cells[9,ItemNo]));
+    DetailsFrm.lb10Channel.Caption := HistoryTable.Cells[7,ItemNo];
+    x := HistoryTable.Cells[15,ItemNo].Split(['/']);              // Parse 1st-air date
+    DetailsFrm.lb09OrigDate.Caption := IfThen(Length(x) = 3,      // Have mm/dd/yyyy
+      '1st Aired ' + x[1] + '/' + x[2] + '/' + RightStr(x[0],2),
+      IfThen((Length(x) = 1) and (x[0] > ''),                                       // Have yyyymmdd format
+      '1st Aired ' + copy(x[0],5,2) + '/' + copy(x[0],7,2) + '/' + copy(x[0],3,2),
+      IfThen(HistoryTable.Cells[22,ItemNo] > '',                  // Check Movie year
+      'Movie Yr ' + HistoryTable.Cells[22,ItemNo],'')));          // Use Movie year or nil
+    DetailsFrm.lb02New.Caption := HistoryTable.Cells[19,ItemNo];
+    SetLabelStyle(DetailsFrm.lb08CC, HistoryTable.Cells[18,ItemNo].Contains('T'));
+    SetLabelStyle(DetailsFrm.lb03Stereo, HistoryTable.Cells[17,ItemNo].Contains('T'));
+    SetLabelStyle(DetailsFrm.lb07Dolby, HistoryTable.Cells[20,ItemNo].Contains('T'));
+    DetailsFrm.lb04HD.Caption := IfThen(HistoryTable.Cells[16,ItemNo].Contains('T'), 'HD', 'SD');
+    SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
+    DetailsFrm.mmDescription.Text := HistoryTable.Cells[14,ItemNo]
+      + IfThen(HistoryTable.Cells[28,ItemNo] > '', #13#13'Actors:  ' + ReplaceStr(
+        Copy(HistoryTable.Cells[28,ItemNo],1,Length(HistoryTable.Cells[28,ItemNo])-1)
+        ,';',', '));
+    // No capture requests
+    DetailsFrm.btnAddCap.Visible := False;
+    // execute form and wait for close
+    Log('========== starting DetailsFrm.Execute ');
+    TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
+    Log('========== finished DetailsFrm.Execute ');
+  finally
+    Log('========== EPGClickCell() Finished with Details form');
+    DetailsFrm.Free;
+  end;
+end;
+
+procedure TCWRmainFrm.ShowItemDetails(ItemNo: Integer; DoCapture: Boolean = True);
+var
+  DetailsFrm: TDetailsFrm;
+  SchedFrm: TSchedForm;
+  x: TArray<string>;
+begin
+  // Speed up form opening
+  if not WIDBCDS.ControlsDisabled then {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.DisableControls);
+  Log('========== finished WIDBCDS.DisableControls ');
+  WIDBCDS.RecNo := ItemNo;
+  Log('========== Set WIDBCDS RecNo: ' + ItemNo.ToString);
+  try
+    DetailsFrm := TDetailsFrm.Create(Self);
+    Log('========== finished TDetailsFrm.Create(Self) ');
+    DetailsFrm.Popup := True;
+    DetailsFrm.Border := fbSingle;
+    Log('========== starting DetailsFrm.Load ');
+    // load file HTML template + controls
+    try
+      TAwait.ExecP<TDetailsFrm>(DetailsFrm.Load);
+      Log('========== finished DetailsFrm.Load ');
+    except
+      on E:Exception do
+      Log('Exception from DetailsFrm.Load: ' + E.Message);
+    end;
+    // init controls after loading
+    DetailsFrm.mmTitle.Text := WIDBCDS.Fields[3].AsString;
+    DetailsFrm.mmSubTitle.Text := WIDBCDS.Fields[4].AsString;
+    DetailsFrm.lb11Time.Caption := WIDBCDS.Fields[2].AsString;
+    DetailsFrm.lb10Channel.Caption := WIDBCDS.Fields[1].AsString;
+    x := WIDBCDS.Fields[9].AsString.Split(['-']);                 // Parse 1st-air date
+    DetailsFrm.lb09OrigDate.Caption := IfThen(Length(x) = 3,      // Have 1st-air date
+      '1st Aired ' + x[1] + '/' + x[2] + '/' + RightStr(x[0],2),  // Use 1st-air date
+      IfThen(WIDBCDS.Fields[13].AsString > '',                    // Check Movie year
+      'Movie Yr ' + WIDBCDS.Fields[13].AsString,''));             // Use Movie year or nil
+    DetailsFrm.lb02New.Show;
+    SetLabelStyle(DetailsFrm.lb02New, WIDBCDS.Fields[10].AsString <> '');
+    SetLabelStyle(DetailsFrm.lb08CC, WIDBCDS.Fields[11].AsString.Contains('cc'));
+    SetLabelStyle(DetailsFrm.lb03Stereo, WIDBCDS.Fields[11].AsString.Contains('stereo'));
+    SetLabelStyle(DetailsFrm.lb07Dolby, WIDBCDS.Fields[11].AsString.Contains('DD'));
+    DetailsFrm.lb04HD.Caption := 'SD';
+    if WIDBCDS.Fields[12].AsString > '' then
+      DetailsFrm.lb04HD.Caption := WIDBCDS.Fields[12].AsString.Split(['["HD ','"'])[1];
+    SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
+    DetailsFrm.mmDescription.Text := WIDBCDS.Fields[5].AsString;
+    // Allow capture request only for EPG
+    DetailsFrm.btnAddCap.Visible := DoCapture;
+    // execute form and wait for close
+    Log('========== starting DetailsFrm.Execute ');
+    TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
+    Log('========== finished DetailsFrm.Execute ');
+    if DetailsFrm.ModalResult = mrOk then  // Only poss if DoCapture=True
+    begin
+      SchedFrm := TSchedForm.Create(Self);
+      Log('========== finished TSchedForm.Create(nil)');
+      SchedFrm.Caption := 'Schedule Capture Event';
+      SchedFrm.Popup := True;
+      SchedFrm.Border := fbSingle;
+      try
+        // load file HTML template + controls
+        TAwait.ExecP<TSchedForm>(SchedFrm.Load());
+        Log('========== finished SchedFrm.Load() ');
+      // init controls after loading
+        SchedFrm.mmTitle.Text := DetailsFrm.mmTitle.Text;
+        SchedFrm.mmSubTitle.Text := DetailsFrm.mmSubTitle.Text;
+        SchedFrm.mmDescription.Text := DetailsFrm.mmDescription.Text;
+        SchedFrm.lblChannelValue.Caption := DetailsFrm.lb10Channel.Caption;
+        // N.B.:  WIDBCDS DateTimes are UTC, but we need to specify HTPC's TZ for capture!
+        // So we decode the times from the "Time" field (format: mm/yy HH:nn--HH:nn)
+        x := string(DetailsFrm.lb11Time.Caption).Split([' ','--']);
+        SchedFrm.lblStartDateValue.Caption := x[0];
+        SchedFrm.tpStartTime.DateTime := StrToDateTime(x[0] + ' ' + x[1]);
+        SchedFrm.tpEndTime.DateTime := StrToDateTime(x[0] + ' ' + x[2]);
+        if SchedFrm.tpEndTime.DateTime < SchedFrm.tpStartTime.DateTime then  // wrapped midnight
+          SchedFrm.tpEndTime.DateTime := SchedFrm.tpEndTime.DateTime + 1;
+        Log('Finished setting up new form');
+        // execute form and wait for close
+        TAwait.ExecP<TModalResult>(SchedFrm.Execute);
+        Log('========== finished SchedFrm.Execute ');
+        if SchedFrm.ModalResult = mrOk then
+        begin
+          {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Saving Capture Request.'));
+          {$IfDef PAS2JS}await{$EndIf} (UpdateNewCaptures(SchedFrm.tpStartTime.DateTime, SchedFrm.tpEndTime.DateTime));
+          pnlWaitPls.Hide;
+        end;
+      finally
+        Log('========== EPGClickCell() Finished with Schedule form');
+        SchedFrm.Free;
+      end;
+    end;
+  finally
+    Log('========== EPGClickCell() Finished with Details form');
+    DetailsFrm.Free;
+  end;
+end;
+
+procedure TCWRmainFrm.EPGClickCell(Sender: TObject; ACol, ARow: Integer);
+
+begin
+//  EPG.OnClickCell := nil;
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+  try
+    Log('========== EPGClickCell() called from Row ' + ARow.ToString);
+    // Quit Combobox if still open
+    if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
+//    {$IFDEF PAS2JS} await {$ENDIF}
+    (ShowItemDetails(EPG.Cells[3,ARow].ToInteger));
+  finally
+//    EPG.OnClickCell := EPGClickCell;
+    Log('========== EPGClickCell() finished');
+  end;
+end;
+
+procedure TCWRmainFrm.FetchCapReservations;  // Fetch CW_EPG-saved file
+
+var
+  id: string;
+begin
+  Log(' ====== FetchCapReservations called =========');
+    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_CAPTURES, 'Scheduled', id));
+    Log(' ====== FetchCapReservations finished =========');
+end;
+
+procedure TCWRmainFrm.FetchNewCapRequests;  // Fetch CW_EPG-saved file
+
+var
+  id: string;
+begin
+  Log(' ====== FetchNewCapRequests called =========');
+    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES, 'New Captures', id));
+    Log(' ====== FetchNewCapRequests finished =========');
+end;
+
+procedure TCWRmainFrm.FetchHistory;
+
+var
+  id: string;
+begin
+  Log(' ====== FetchHistory called =========');
+  {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_HISTORY,'History', id));
+  HistoryTable.RowCount := 1;  // Force reload on next History view
+  Log(' ====== FetchHistory finished =========');
+end;
+
+procedure TCWRmainFrm.UpdateNewCaptures(RecordStart, RecordEnd: TDateTime);
+
+var
+  i: Integer;
+  id: string;
+begin
+  Log(' ====== UpdateNewCaptures called =========');
+  {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES,'New Captures', id));
+  {$IfDef PAS2JS}await{$EndIf}(FillTable(NewCaptures, CSV_NEWCAPTURES));
+  Log('NewCaptures Rows: '+NewCaptures.RowCount.ToString);
+  if NewCaptures.RowCount = 0 then // fnf, create new one
+  begin
+    NewCaptures.RowCount := 1;
+    NewCaptures.ColCount := 7;
+    {$IfDef PAS2JS}await{$EndIf}(CreateGoogleFile(CSV_NEWCAPTURES, id));
+  end
+  else
+    for i := Pred(NewCaptures.RowCount) downto 1 do // Remove blank rows
+      if NewCaptures.Cells[0,i] = '' then NewCaptures.RemoveRow(i);
+  SetCapturesFormats;
+// Add the new capture to the list
+  NewCaptures.RowCount := NewCaptures.RowCount + 1;
+  NewCaptures.Cells[0,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('PSIP').AsString;
+  NewCaptures.Cells[1,NewCaptures.RowCount-1] := FormatDateTime('mm/dd hh:nn',RecordStart);
+  NewCaptures.Cells[2,NewCaptures.RowCount-1] := FormatDateTime('mm/dd hh:nn',RecordEnd);
+  NewCaptures.Cells[3,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('Title').AsString;
+  NewCaptures.Cells[4,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('SubTitle').AsString;
+  NewCaptures.Cells[5,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('Time').AsString.Split(['--'])[0]; // EPG StartTime (HTPC TZ)
+  NewCaptures.Cells[6,NewCaptures.RowCount-1] := WIDBCDS.FieldByName('ProgramID').AsString; // Episode No.
+  {$IfDef PAS2JS}await{$EndIf}(SaveNewCapturesFile(id));
+
+  // ==============================
+  Log('Final NewCaptures Table Rows: '+NewCaptures.RowCount.ToString);
+  Log(' ====== UpdateNewCaptures finished =========');
+end;
+
+procedure TCWRmainFrm.SaveNewCapturesFile(id: string);
+var data: TStrings;
+  res: TJSXMLHttpRequest;
+begin
+  // Update the file
+  data := TStringList.Create;
+  data.LineBreak := #13#10;
+  NewCaptures.SaveToStrings(data, ',', True);
+  console.log('id: '+id);
+  {$IfDef PAS2JS}console.log('data.text: ', data.Text);{$EndIf}
+  res := TAwait.ExecP<TJSXMLHttpRequest>(WEBRESTClient1.HttpRequest('PATCH','https://www.googleapis.com/upload/drive/v3/files/'+id, data.Text));
+  console.log(res);
+  if res.Status = 200 then
+  begin
+    TAwait.ExecP<TModalResult> (MessageDlgAsync('Request successfully updated.'
+      + #13#13'N.B.:  NOT scheduled until CW_EPG''s next run.', mtInformation, [mbOK]));
+    TLocalStorage.SetValue(CSV_NEWCAPTURES, data.Text);
+  end
+  else
+    TAwait.ExecP<TModalResult> (MessageDlgAsync('Request submission FAILED.'
+      + #13#13'If this is the first failure, please retry.', mtInformation, [mbOK]));
+
+end;
+
+
+procedure TCWRmainFrm.ViewLog1Click(Sender: TObject);
+begin
+  Log('ViewLog called');
+  {$IfDef PAS2JS}await{$EndIf}(SetPage(3));
+  Log('Log visible');
+end;
+
+procedure TCWRmainFrm.CreateGoogleFile(FName: string; var id: string);
+var
+  rq: TJSXMLHttpRequest;
+  jso: TJSONObject;
+begin
+
+  rq := TAwait.ExecP<TJSXMLHttpRequest>(WEBRestClient1.HttpRequest('POST','https://www.googleapis.com/upload/drive/v3/files'));
+
+  console.log(rq);
+
+  jso := TJSONObject(TJSONObject.ParseJSONValue(rq.responseText));
+
+  if Assigned(jso) then
+  begin
+    id := string(jso.GetJSONValue('id'));
+    console.log('file ID'+id);
+
+    rq := TAwait.ExecP<TJSXMLHttpRequest>(WEBRestClient1.HttpRequest('PATCH','https://www.googleapis.com/drive/v3/files/'+id,
+      '{"name":"'+ FName + '", "description":"New Captures CSV list"}'));
+
+  end;
+end;
+
+(*
+Source - https://stackoverflow.com/a/78210803
+Posted by Shaun Roselt
+Retrieved 2025-11-08, License - CC BY-SA 4.0
+*)
+
+procedure TCWRmainFrm.SwipeDownRefresh(Enabled: Boolean);
+begin
+  if Enabled then
+  begin
+    TJSHTMLElement(document.body).style.removeProperty('overscroll-behavior-y');
+    TJSHTMLElement(document.body.parentElement).style.removeProperty('overscroll-behavior-y');
+  end else
+  begin
+    TJSHTMLElement(document.body).style.setProperty('overscroll-behavior-y','contain');
+    TJSHTMLElement(document.body.parentElement).style.setProperty('overscroll-behavior-y','contain');
+  end;
+end;
+
+end.
