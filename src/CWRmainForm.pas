@@ -74,7 +74,7 @@ type
   [async] procedure LoadWIDBCDS;
   [async] procedure RefreshData(Sender: TObject);
   [async] procedure WebFormCreate(Sender: TObject);
-  [async] procedure tbCapturesShow;
+  [async] procedure CapturesShow;
   procedure AllCapsGridGetCellData(Sender: TObject; ACol, ARow: Integer;
     AField: TField; var AValue: string);
   [async] procedure HistoryClick(Sender: TObject);
@@ -130,7 +130,7 @@ private
   [async]
   procedure FetchNewCapRequests;
   [async] procedure FillWSG(var WSG: TWebStringGrid; rs: string);
-  procedure FillWDG(var WDG: TWebDataGrid; rs: string);
+  procedure FillHistoryWDG(var WDG: TWebDataGrid; rs: string);
   [async]
   procedure RefreshCSV(TableFile, Title: string; var id: string);
   [async]
@@ -138,7 +138,7 @@ private
   [async]
   procedure ReFreshListings;
   [async]
-  procedure tbHistoryShow;
+  procedure HistoryShow;
   [async]
   procedure UpdateNewCaptures(RecordStart, RecordEnd: TDateTime);
   [async]
@@ -330,11 +330,11 @@ begin
   Log('########### "Refresh Data" clicked ###########');
   WIDBCDS.Close;
   {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_EPG,'EPG', id));
-  {$IfDef PAS2JS}await{$EndIf}(FillWSG(BufferGrid, CSV_EPG));
-  if BufferGrid.RowCount > 0 then
+  if Length(CSVString) > 0 then
   begin
     Log('********* Starting timer');
     StartT := Now;
+    {$IfDef PAS2JS}await{$EndIf}(FillWSG(BufferGrid, CSV_EPG));
     {$IfDef PAS2JS}await{$EndIf}(LoadWIDBCDS);
     // Save unfiltered record count (now that TMS Web Core honors filtering)
     if WIDBCDS.Filtered then WIDBCDS.Filtered := False;
@@ -633,14 +633,14 @@ begin
   end;
 end;
 
-procedure TCWRmainFrm.FillWDG(var WDG: TWebDataGrid; rs: string);
-// Could be named FillHistoryWDG, but I may broaden WDG use to Captures & NewCaptures. TBD
+procedure TCWRmainFrm.FillHistoryWDG(var WDG: TWebDataGrid; rs: string);
+// Could be named FillWDG if broaden to Captures & NewCaptures. TBD
 var
   HeaderRow: string;
   i, HeaderRowLength: Integer;
   HeaderItems: TArray<string>;
 begin
-  Log('FillWDG called for ' + WDG.Name);
+  Log('FillHistoryWDG called for ' + WDG.Name);
   // Fetch string from local storage if not cwr_epg.csv
   if rs <> CSV_EPG then CSVstring := TLocalStorage.GetValue(rs);
   Log(rs + ' length: ' + IntToStr(Length(CSVstring)));
@@ -684,7 +684,6 @@ begin
     WDG.ColumnDefs[8].ValueFormatter := WDGColumn_TDateTimeValueFormatter;
     WDG.ColumnDefs[8].Filter := False;
     WDG.EndUpdate;
-    WDG.Show;
   end;
   Log(WDG.Name+'.RowCount: ' + WDG.RowCount.ToString);
   Log('Done loading ' + WDG.Name);
@@ -1202,7 +1201,7 @@ begin
   end;
 end;
 
-procedure TCWRmainFrm.tbCapturesShow;
+procedure TCWRmainFrm.CapturesShow;
 var
   UserMsg: string;
 
@@ -1262,20 +1261,10 @@ begin
 
 end;
 
-procedure TCWRmainFrm.tbHistoryShow;
+procedure TCWRmainFrm.HistoryShow;
 begin
   HistoryWDG.Hide;
-  FillWDG(HistoryWDG, CSV_HISTORY);
-//  Log('HistoryWDG.RowCount: ' + HistoryWDG.RowCount.ToString);
-//  if HistoryWDG.RowCount <> StrToInt(cbNumHistList.Text) then  // need History data
-//  begin
-//    FillWDG(HistoryWDG, CSV_HISTORY);
-//    Log('The History list is empty/incomplete. Prompt for refresh');
-//    if TAwait.ExecP<TModalResult> (MessageDlgAsync('The History list '
-//     + IfThen(HistoryWDG.RowCount < 2,'is empty','may be incomplete')
-//      + #13#13'Do you want to refresh it now?',mtConfirmation, [mbYes,mbNo]))
-//      = mrYes then {$IfDef PAS2JS}await{$EndIf}(UpdateHistory(Self));
-//  end;
+  FillHistoryWDG(HistoryWDG, CSV_HISTORY);
   HistoryWDG.Show;
 end;
 
@@ -1292,12 +1281,12 @@ begin
     1: begin          {CapturesWSG}
       pnlCaptures.BringToFront;
       pnlCaptures.Show;
-      tbCapturesShow;
+      CapturesShow;
     end;
     2: begin {History}
       pnlHistory.BringToFront;
       pnlHistory.Show;
-      tbHistoryShow;
+      HistoryShow;
     end;
     3: begin  {Log}
       pnlLog.BringToFront;
