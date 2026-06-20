@@ -71,7 +71,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 747
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -118,7 +118,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 747
     ElementClassName = 'container-fluid'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -258,7 +258,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 747
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -332,7 +332,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 747
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -391,7 +391,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 747
     ElementClassName = 'greenBGolive'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -556,7 +556,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 767
+    Height = 747
     ElementClassName = 'greenBGnavy'
     ElementID = 'pnlListings'
     HeightStyle = ssPercent
@@ -576,7 +576,7 @@ object CWRmainFrm: TCWRmainFrm
     TabOrder = 5
     DesignSize = (
       428
-      767)
+      747)
     object lblEmptyEPG: TWebLabel
       Left = 96
       Top = 58
@@ -607,7 +607,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 767
+      Height = 747
       ElementID = 'EPGWDBG'
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
@@ -795,7 +795,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 5
         Top = 31
         Width = 165
-        Height = 30
+        Height = 41
         Margins.Left = 5
         Margins.Right = 5
         Align = alClient
@@ -823,7 +823,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 5
         Top = 31
         Width = 165
-        Height = 30
+        Height = 41
         Margins.Left = 5
         Margins.Right = 5
         Align = alClient

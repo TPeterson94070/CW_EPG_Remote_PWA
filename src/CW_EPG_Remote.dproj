@@ -2,7 +2,7 @@
     <PropertyGroup>
         <Base>True</Base>
         <AppType>Application</AppType>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <FrameworkType>VCL</FrameworkType>
         <MainSource>CW_EPG_Remote.dpr</MainSource>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -50,7 +50,7 @@
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <TMSPWAManifestFile>Manifest.json</TMSPWAManifestFile>
-        <TMSVersion>1.0.4188</TMSVersion>
+        <TMSVersion>1.0.4193</TMSVersion>
         <TMSVersionAuto>2</TMSVersionAuto>
         <TMSWebHTMLFile>index.html</TMSWebHTMLFile>
         <TMSWebPWA>2</TMSWebPWA>
@@ -116,7 +116,7 @@
         <TMSApplicationDescription>Companion app for CW_EPG to view EPG, scheduled captures, and History remotely</TMSApplicationDescription>
         <TMSPWABackgroundColor>teal</TMSPWABackgroundColor>
         <TMSUseJSDebugger>2</TMSUseJSDebugger>
-        <TMSWebBrowser>5</TMSWebBrowser>
+        <TMSWebBrowser>1</TMSWebBrowser>
         <TMSWebObfuscation>1</TMSWebObfuscation>
         <TMSWebSingleInstance>1</TMSWebSingleInstance>
         <TMSWebSingleJS>2</TMSWebSingleJS>
