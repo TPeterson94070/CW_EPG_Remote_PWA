@@ -13,37 +13,6 @@ object CWRmainFrm: TCWRmainFrm
   Menu = WebMainMenu1
   ParentFont = False
   OnCreate = WebFormCreate
-  object BufferGrid: TWebStringGrid
-    Left = 96
-    Top = 632
-    Width = 257
-    Height = 50
-    ColCount = 14
-    DefaultColWidth = 61
-    DefaultRowHeight = 23
-    FixedCols = 0
-    RowCount = 1
-    FixedRows = 0
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -21
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    Options = []
-    ParentFont = False
-    TabOrder = 7
-    Visible = False
-    StyleElements = []
-    FixedFont.Charset = DEFAULT_CHARSET
-    FixedFont.Color = clWindowText
-    FixedFont.Height = -21
-    FixedFont.Name = 'Segoe UI'
-    FixedFont.Style = []
-    RangeEdit.Max = 100.000000000000000000
-    RangeEdit.Step = 1.000000000000000000
-    HeightPercent = 100.000000000000000000
-    WidthPercent = 100.000000000000000000
-  end
   object pnlMenu: TWebPanel
     Left = 0
     Top = 0
@@ -905,7 +874,7 @@ object CWRmainFrm: TCWRmainFrm
         Font.Style = []
       end>
     MultilevelHeaders = <>
-    TabOrder = 8
+    TabOrder = 7
     Visible = False
   end
   object WebMainMenu1: TWebMainMenu
