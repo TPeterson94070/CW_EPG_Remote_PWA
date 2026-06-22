@@ -24,7 +24,6 @@ type
   pnlCaptures: TWebPanel;
   pnlHistory: TWebPanel;
   pnlLog: TWebPanel;
-  pnlOptions: TWebPanel;
   pnlWaitPls: TWebPanel;
   WebRESTClient1: TWebRESTClient;
   pnlListings: TWebPanel;
@@ -38,7 +37,6 @@ type
   ChangeHTPC1: TMenuItem;
   ViewLog1: TMenuItem;
   Settings1: TMenuItem;
-  WebGroupBox3: TWebGroupBox;
   EPG : TWebDBDataGrid;
   WebDataSource1: TWebDataSource;
   WebButton1: TWebButton;
@@ -57,7 +55,6 @@ type
     pnlFilterSelection: TWebPanel;
     lblFilterSelect: TWebLabel;
     WebHTMLDiv4: TWebHTMLDiv;
-    cbNumHistList: TWebComboBox;
     WIDBCDS: TWebIndexedDbClientDataset;
     btnSchdRefrsh: TWebButton;
     btnRefreshData: TWebSpeedButton;
@@ -110,7 +107,7 @@ type
     procedure CapturesWSGGetCellData(Sender: TObject; ACol, ARow: Integer;
       AField: TField; var AValue: string);
     [async] procedure CapturesWSGClickCell(Sender: TObject; ACol, ARow: Integer);
-  procedure cbNumHistListChange(Sender: TObject);
+//  procedure cbNumHistListChange(Sender: TObject);
   procedure EPGCellDoubleClickedEvent(Event: TJSCellDoubleClickedEvent);
   function EPGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
     procedure SwipeDownRefresh(Enabled: Boolean);
@@ -183,8 +180,6 @@ var
 
 type ProgramTypes = (New,Rerun,Movie,Other);
 const
-//  NUMIDS = 1000;
-  NUMHIST = 'NumHistoryItems';
   EMAILADDR = 'emailAddress';
   CSV_EPG = 'cwr_epg.csv';
   CSV_CAPTURES = 'cwr_captures.csv';
@@ -292,9 +287,7 @@ begin
   Log('Running version:  ' + AppVersion);
   Log('App is ' + IfThen(not Application.IsOnline, 'NOT ') + 'online');
   WebRESTClient1.ReadTokens; // retrieve previous access token
-  if TWebLocalStorage.GetValue(NUMHIST) <> '' then
-    cbNumHistList.ItemIndex := cbNumHistList.Items.IndexOf(TWebLocalStorage.GetValue(NUMHIST));
-    WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
+  WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
   Font.Height := -17;
   EPG.Hide;
   {$IfDef PAS2JS}await{$EndIf}(SetupWIDBCDS);
@@ -1305,12 +1298,6 @@ begin
       pnlLog.BringToFront;
       pnlLog.Show;
     end;
-    4: begin {Options}
-      if TWebLocalStorage.GetValue(NUMHIST) <> '' then
-        cbNumHistList.ItemIndex := cbNumHistList.Items.IndexOf(TWebLocalStorage.GetValue(NUMHIST));
-      pnlOptions.BringToFront;
-      pnlOptions.Show;
-    end;
   end;
   VisiblePanelNum := PageNum;
 end;
@@ -1337,11 +1324,6 @@ begin
      AValue := LeftStr(AValue,4) + '...' + RightStr(AValue,3);
   2: AValue := copy(AValue,4,10);
   end;
-end;
-
-procedure TCWRmainFrm.cbNumHistListChange(Sender: TObject);
-begin
-  TWebLocalStorage.SetValue(NUMHIST, cbNumHistList.Text);
 end;
 
 procedure TCWRmainFrm.EPGGetCellClass(Sender: TObject; ACol,

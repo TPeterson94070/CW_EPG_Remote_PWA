@@ -34,7 +34,7 @@ object CWRmainFrm: TCWRmainFrm
     Font.Style = []
     ParentFont = False
     ShowCaption = False
-    TabOrder = 6
+    TabOrder = 5
   end
   object pnlLog: TWebPanel
     Left = 0
@@ -220,80 +220,6 @@ object CWRmainFrm: TCWRmainFrm
         Role = 'button'
         WidthStyle = ssPercent
         WidthPercent = 100.000000000000000000
-      end
-    end
-  end
-  object pnlOptions: TWebPanel
-    Left = 0
-    Top = 50
-    Width = 428
-    Height = 727
-    ElementClassName = 'card'
-    HeightStyle = ssPercent
-    WidthStyle = ssPercent
-    Align = alClient
-    Caption = 'pnlOptions'
-    ChildOrder = 9
-    ElementBodyClassName = 'card-body'
-    ElementFont = efCSS
-    Font.Charset = ANSI_CHARSET
-    Font.Color = clBlack
-    Font.Height = -19
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-    ShowCaption = False
-    TabOrder = 4
-    object WebGroupBox3: TWebGroupBox
-      Left = 15
-      Top = 16
-      Width = 264
-      Height = 104
-      ElementClassName = 'btn-group'
-      WidthPercent = 25.000000000000000000
-      Align = alCustom
-      BorderColor = clSilver
-      Caption = 'History Events Displayed'
-      Color = clAqua
-      ElementFont = efCSS
-      ElementLegendClassName = 'h6'
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clBlack
-      Font.Height = -19
-      Font.Name = 'Arial'
-      Font.Style = []
-      ParentFont = False
-      object cbNumHistList: TWebComboBox
-        Left = 81
-        Top = 40
-        Width = 100
-        Height = 30
-        ElementClassName = 'form-select'
-        ElementFont = efCSS
-        Font.Charset = ANSI_CHARSET
-        Font.Color = clBlack
-        Font.Height = -19
-        Font.Name = 'Arial'
-        Font.Style = []
-        HeightStyle = ssAuto
-        HeightPercent = 100.000000000000000000
-        ParentFont = False
-        Role = 'combobox'
-        Text = '200'
-        WidthPercent = 100.000000000000000000
-        OnChange = cbNumHistListChange
-        ItemIndex = 1
-        Items.Strings = (
-          '100'
-          '200'
-          '300'
-          '400'
-          '500'
-          '600'
-          '700'
-          '800'
-          '900'
-          '1000')
       end
     end
   end
@@ -545,7 +471,7 @@ object CWRmainFrm: TCWRmainFrm
     Font.Style = []
     ParentFont = False
     ShowCaption = False
-    TabOrder = 5
+    TabOrder = 4
     DesignSize = (
       428
       727)
@@ -880,7 +806,7 @@ object CWRmainFrm: TCWRmainFrm
         Font.Style = []
       end>
     MultilevelHeaders = <>
-    TabOrder = 7
+    TabOrder = 6
     Visible = False
   end
   object WebMainMenu1: TWebMainMenu
