@@ -282,7 +282,7 @@ object CWRmainFrm: TCWRmainFrm
       Theming.ThemeMode = agDarkMode
       Visible = False
       OnGetRowClass = HistoryWDGGetRowClass
-      OnCellDoubleClickedEvent = HistoryWDGCellDoubleClickedEvent
+      OnCellClickedEvent = HistoryWDGCellClickedEvent
     end
   end
   object pnlCaptures: TWebPanel
@@ -623,7 +623,7 @@ object CWRmainFrm: TCWRmainFrm
       DataSource = WebDataSource1
       ShowIndicator = False
       OnGetRowClass = EPGGetRowClass
-      OnCellDoubleClickedEvent = EPGCellDoubleClickedEvent
+      OnCellClickedEvent = EPGCellClickedEvent
     end
     object pnlFilterSelection: TWebPanel
       Left = 100

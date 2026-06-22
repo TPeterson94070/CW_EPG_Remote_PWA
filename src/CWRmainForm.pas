@@ -107,11 +107,13 @@ type
     procedure CapturesWSGGetCellData(Sender: TObject; ACol, ARow: Integer;
       AField: TField; var AValue: string);
     [async] procedure CapturesWSGClickCell(Sender: TObject; ACol, ARow: Integer);
+  procedure EPGCellClickedEvent(Event: TJSCellClickedEvent);
 //  procedure cbNumHistListChange(Sender: TObject);
   procedure EPGCellDoubleClickedEvent(Event: TJSCellDoubleClickedEvent);
   function EPGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
     procedure SwipeDownRefresh(Enabled: Boolean);
   function EPGColumn_PSIPGetCellStyle(Params: TJSCellClassParams): TJSValue;
+  procedure HistoryWDGCellClickedEvent(Event: TJSCellClickedEvent);
   procedure HistoryWDGCellDoubleClickedEvent(Event: TJSCellDoubleClickedEvent);
   function WDGColumn_TDateTimeValueFormatter(Value: TJSValue): TJSValue;
   function HistoryWDGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
@@ -1242,6 +1244,13 @@ begin
   Log('History visible');
 end;
 
+procedure TCWRmainFrm.HistoryWDGCellClickedEvent(Event: TJSCellClickedEvent);
+begin
+  Log('========== HistoryWDGCellClickedEvent() called from Row ' + toInteger(Event.RowIndex).ToString);
+  ShowHistoryWDGDetails(toInteger(Event.RowIndex));
+  Log('========== HistoryWDGCellClickedEvent() finished');
+end;
+
 procedure TCWRmainFrm.HistoryWDGCellDoubleClickedEvent(Event: TJSCellDoubleClickedEvent);
 begin
   Log('========== HistoryWDGCellDoubleClickedEvent() called from Row ' + toInteger(Event.RowIndex).ToString);
@@ -1623,24 +1632,30 @@ begin
     Result := EPG.Cells[toInteger(Params.RowIndex),3];
 end;
 
-procedure TCWRmainFrm.EPGCellDoubleClickedEvent(Event: TJSCellDoubleClickedEvent);
+procedure TCWRmainFrm.EPGCellClickedEvent(Event: TJSCellClickedEvent);
 begin
-    Log('========== EPGCellDoubleClickedEvent() called from Row ' + toInteger(Event.RowIndex).ToString);
-    // Quit Combobox if still open
-    if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
-    ShowItemDetails(EPG.GetCell(4,toInteger(Event.RowIndex)).ToInteger);
-    Log('========== EPGCellDoubleClickedEvent() finished');
+  Log('========== EPGCellClickedEvent() called from Row ' + toInteger(Event.RowIndex).ToString);
+  // Quit Combobox if still open
+  if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
+  EPG.SetSelectedRow(toInteger(Event.RowIndex), True);
+  ShowItemDetails(EPG.GetCell(4,toInteger(Event.RowIndex)).ToInteger);
+  Log('========== EPGCellClickedEvent() finished');
 end;
 
-
-
+procedure TCWRmainFrm.EPGCellDoubleClickedEvent(Event: TJSCellDoubleClickedEvent);
+begin
+  Log('========== EPGCellDoubleClickedEvent() called from Row ' + toInteger(Event.RowIndex).ToString);
+  // Quit Combobox if still open
+  if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
+  ShowItemDetails(EPG.GetCell(4,toInteger(Event.RowIndex)).ToInteger);
+  Log('========== EPGCellDoubleClickedEvent() finished');
+end;
 
 (*
 Source - https://stackoverflow.com/a/78210803
 Posted by Shaun Roselt
 Retrieved 2025-11-08, License - CC BY-SA 4.0
 *)
-
 procedure TCWRmainFrm.SwipeDownRefresh(Enabled: Boolean);
 begin
   if Enabled then
