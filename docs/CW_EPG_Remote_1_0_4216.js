@@ -48176,7 +48176,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       pas["WEBLib.Forms"].TForm.$init.call(this);
       this.WebMemo2 = null;
       this.CapturesWSG = null;
-      this.BufferGrid = null;
       this.pnlCaptures = null;
       this.pnlHistory = null;
       this.pnlLog = null;
@@ -48221,11 +48220,11 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       this.wcbTypes = null;
       this.WebTimer1 = null;
       this.HistoryWDG = null;
+      this.BufferWDG = null;
     };
     this.$final = function () {
       this.WebMemo2 = undefined;
       this.CapturesWSG = undefined;
-      this.BufferGrid = undefined;
       this.pnlCaptures = undefined;
       this.pnlHistory = undefined;
       this.pnlLog = undefined;
@@ -48270,6 +48269,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       this.wcbTypes = undefined;
       this.WebTimer1 = undefined;
       this.HistoryWDG = undefined;
+      this.BufferWDG = undefined;
       pas["WEBLib.Forms"].TForm.$final.call(this);
     };
     var HEADINGS = ["Ch Name","RecordStart","RecordEnd","Title","SubTitle","StartTime","ProgramID"];
@@ -48331,16 +48331,27 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       pas["WEBLib.Storage"].TLocalStorage.RemoveKey("wcbChannelsItems");
       await this.WIDBCDS.OpenAsync();
       try {
-        if (this.WIDBCDS.GetActive() && (this.BufferGrid.FRowCount > 1)) {
+        this.FillBufferWDG();
+        $impl.Log("BufferWDG RowCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.BufferWDG.GetRowCount(), get: function () {
+            return this.p;
+          }, set: function (v) {
+            this.p = v;
+          }}));
+        $impl.Log("BufferWDG ColCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.BufferWDG.FColumnDefs.GetCount(), get: function () {
+            return this.p;
+          }, set: function (v) {
+            this.p = v;
+          }}));
+        if (this.WIDBCDS.GetActive() && (this.BufferWDG.GetRowCount() > 1)) {
           $impl.Log("LoadWIDBCDS, WIDBCDS.RecordCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
               return this.p;
             }, set: function (v) {
               this.p = v;
             }}));
-          $impl.Log("LoadWIDBCDS, Buffer Row Count: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.BufferGrid, get: function () {
-              return this.p.FRowCount;
+          $impl.Log("LoadWIDBCDS, Buffer Row Count: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.BufferWDG.GetRowCount(), get: function () {
+              return this.p;
             }, set: function (v) {
-              this.p.FRowCount = v;
+              this.p = v;
             }}));
           if (this.WIDBCDS.GetRecordCount() > 0) {
             this.WIDBCDS.Edit();
@@ -48353,16 +48364,16 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
             this.WebDataSource1.SetDataSet(this.WIDBCDS);
             $impl.Log("LoadWIDBCDS, Reconnected DataSource");
           };
-          for (var $l = 1, $end = this.BufferGrid.FRowCount - 1; $l <= $end; $l++) {
+          for (var $l = 1, $end = this.BufferWDG.GetRowCount() - 1; $l <= $end; $l++) {
             j = $l;
             try {
               this.WIDBCDS.Append();
               this.WIDBCDS.FFieldList.GetField(0).SetAsJSValue(j);
-              for (var $l1 = 1, $end1 = this.BufferGrid.FColCount; $l1 <= $end1; $l1++) {
+              for (var $l1 = 1, $end1 = this.BufferWDG.FColumnDefs.GetCount(); $l1 <= $end1; $l1++) {
                 i = $l1;
                 if (this.WIDBCDS.FFieldList.GetField(i).FDataType === 1) {
-                  this.WIDBCDS.FFieldList.GetField(i).SetAsJSValue(this.BufferGrid.GetCells(i - 1,j))}
-                 else if (pas.SysUtils.TryStrToDateTime(this.BufferGrid.GetCells(i - 1,j),{get: function () {
+                  this.WIDBCDS.FFieldList.GetField(i).SetAsJSValue(this.BufferWDG.GetCells(j,i - 1))}
+                 else if (pas.SysUtils.TryStrToDateTime(this.BufferWDG.GetCells(j,i - 1),{get: function () {
                     return t;
                   }, set: function (v) {
                     t = v;
@@ -48370,7 +48381,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
                   this.WIDBCDS.FFieldList.GetField(i).SetAsJSValue(t)}
                  else this.WIDBCDS.FFieldList.GetField(i).SetAsJSValue(0);
               };
-              Text = this.BufferGrid.GetCells(7,j);
+              Text = this.BufferWDG.GetCells(j,7);
               if (pas.SysUtils.TStringHelper.StartsWith.call({get: function () {
                   return Text;
                 }, set: function (v) {
@@ -48382,12 +48393,12 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
                 }, set: function (v) {
                   Text = v;
                 }},"SH")) {
-                AColor = pas.StrUtils.IfThen(pas.SysUtils.TStringHelper.Contains.call({p: this.BufferGrid.GetCells(13,j), get: function () {
+                AColor = pas.StrUtils.IfThen(pas.SysUtils.TStringHelper.Contains.call({p: this.BufferWDG.GetCells(j,13), get: function () {
                     return this.p;
                   }, set: function (v) {
                     this.p = v;
                   }},'"News"'),$impl.TypeClass[0],$impl.TypeClass[3])}
-               else AColor = pas.StrUtils.IfThen(this.BufferGrid.GetCells(9,j) !== "",$impl.TypeClass[0],$impl.TypeClass[1]);
+               else AColor = pas.StrUtils.IfThen(this.BufferWDG.GetCells(j,9) !== "",$impl.TypeClass[0],$impl.TypeClass[1]);
               this.WIDBCDS.FFieldList.GetField(15).SetAsJSValue(AColor);
               await this.WIDBCDS.PostAsync();
             } catch ($e) {
@@ -48408,7 +48419,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
               this.p = v;
             }}));
         } else {
-          $impl.Log("LoadWIDBCDS, skipped WIDBCDS update because" + pas.StrUtils.IfThen(!this.WIDBCDS.GetActive()," CDS not active","") + pas.StrUtils.IfThen(this.BufferGrid.FRowCount < 2," BufferGrid empty",""));
+          $impl.Log("LoadWIDBCDS, skipped WIDBCDS update because" + pas.StrUtils.IfThen(!this.WIDBCDS.GetActive()," CDS not active","") + pas.StrUtils.IfThen(this.BufferWDG.GetRowCount() < 2," BufferWDG empty",""));
         };
       } finally {
         $impl.Log("WIDBCDS is " + pas.StrUtils.IfThen(this.WIDBCDS.GetActive(),"NOT ","") + "closed");
@@ -48436,11 +48447,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       if ($impl.CSVString.length > 0) {
         $impl.Log("********* Starting timer");
         StartT = pas.SysUtils.Now();
-        await this.FillWSG({p: this, get: function () {
-            return this.p.BufferGrid;
-          }, set: function (v) {
-            this.p.BufferGrid = v;
-          }},$impl.CSV_EPG);
         await this.LoadWIDBCDS();
         if (this.WIDBCDS.FFiltered) this.WIDBCDS.SetFiltered(false);
         TotalEPGRecordCount = this.WIDBCDS.GetRecordCount();
@@ -48955,6 +48961,18 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         }}));
       $impl.Log("Done loading " + WSG.get().FName);
       sl = rtl.freeLoc(sl);
+    };
+    this.FillBufferWDG = function () {
+      $impl.Log("FillBufferWDG called");
+      $impl.Log("CSVString length: " + pas.SysUtils.IntToStr($impl.CSVString.length));
+      this.BufferWDG.Clear();
+      if ($impl.CSVString > "") {
+        this.BufferWDG.BeginUpdate();
+        this.BufferWDG.FColumnDefs.Clear();
+        this.BufferWDG.LoadFromCSVString($impl.CSVString,",",'"',true);
+        this.BufferWDG.EndUpdate();
+      };
+      $impl.Log("Done loading BufferWDG");
     };
     this.FillHistoryWDG = function (WDG, rs) {
       var HeaderRow = "";
@@ -49591,7 +49609,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
     };
     this.LoadDFMValues = function () {
       pas["WEBLib.Forms"].TCustomForm.LoadDFMValues.call(this);
-      this.BufferGrid = pas["WEBLib.Grids"].TStringGrid.$create("Create$1",[this]);
       this.pnlMenu = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
       this.pnlLog = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
       this.WebMemo2 = pas["WEBLib.StdCtrls"].TMemo.$create("Create$2",["content"]);
@@ -49622,6 +49639,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       this.wcbChannels = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
       this.wcbTypes = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
       this.btnRefreshData = pas["WEBLib.Buttons"].TSpeedButton.$create("Create$1",[this]);
+      this.BufferWDG = pas["WEBLib.DataGrid"].TDataGrid.$create("Create$1",[this]);
       this.WebMainMenu1 = pas["WEBLib.Menus"].TMainMenu.$create("Create$1",[this]);
       this.ByAll = pas["WEBLib.Menus"].TMenuItem.$create("Create$1",[this]);
       this.ByGenre = pas["WEBLib.Menus"].TMenuItem.$create("Create$1",[this]);
@@ -49638,7 +49656,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       this.WebDataSource1 = pas.DB.TDataSource.$create("Create$1",[this]);
       this.WIDBCDS = pas["WEBLib.IndexedDb"].TIndexedDbClientDataset.$create("Create$1",[this]);
       this.WebTimer1 = pas["WEBLib.ExtCtrls"].TTimer.$create("Create$1",[this]);
-      this.BufferGrid.BeforeLoadDFMValues();
       this.pnlMenu.BeforeLoadDFMValues();
       this.pnlLog.BeforeLoadDFMValues();
       this.WebMemo2.BeforeLoadDFMValues();
@@ -49669,6 +49686,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       this.wcbChannels.BeforeLoadDFMValues();
       this.wcbTypes.BeforeLoadDFMValues();
       this.btnRefreshData.BeforeLoadDFMValues();
+      this.BufferWDG.BeforeLoadDFMValues();
       this.WebMainMenu1.BeforeLoadDFMValues();
       this.ByAll.BeforeLoadDFMValues();
       this.ByGenre.BeforeLoadDFMValues();
@@ -49701,37 +49719,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.FMenu = this.WebMainMenu1;
         this.SetParentFont(false);
         this.SetEvent(this,"OnCreate","WebFormCreate");
-        this.BufferGrid.SetParentComponent(this);
-        this.BufferGrid.SetName("BufferGrid");
-        this.BufferGrid.SetLeft(96);
-        this.BufferGrid.SetTop(632);
-        this.BufferGrid.SetWidth(257);
-        this.BufferGrid.SetHeight(50);
-        this.BufferGrid.SetColCount(14);
-        this.BufferGrid.SetDefaultColWidth(61);
-        this.BufferGrid.SetDefaultRowHeight(23);
-        this.BufferGrid.SetFixedCols(0);
-        this.BufferGrid.SetRowCount(1);
-        this.BufferGrid.SetFixedRows(0);
-        this.BufferGrid.FFont.FCharset = 1;
-        this.BufferGrid.FFont.SetColor(65793);
-        this.BufferGrid.FFont.SetHeight(-21);
-        this.BufferGrid.FFont.SetName("Segoe UI");
-        this.BufferGrid.FFont.SetStyle({});
-        this.BufferGrid.FOptions = {};
-        this.BufferGrid.SetParentFont(false);
-        this.BufferGrid.SetTabOrder(7);
-        this.BufferGrid.SetVisible(false);
-        this.BufferGrid.FStyleElements = {};
-        this.BufferGrid.FFixedFont.FCharset = 1;
-        this.BufferGrid.FFixedFont.SetColor(65793);
-        this.BufferGrid.FFixedFont.SetHeight(-21);
-        this.BufferGrid.FFixedFont.SetName("Segoe UI");
-        this.BufferGrid.FFixedFont.SetStyle({});
-        this.BufferGrid.FRange.FMax = 100.000000000000000000;
-        this.BufferGrid.FRange.FStep = 1.000000000000000000;
-        this.BufferGrid.SetHeightPercent(100.000000000000000000);
-        this.BufferGrid.SetWidthPercent(100.000000000000000000);
         this.pnlMenu.SetParentComponent(this);
         this.pnlMenu.SetName("pnlMenu");
         this.pnlMenu.SetLeft(0);
@@ -50549,6 +50536,29 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.btnRefreshData.SetVisible(false);
         this.btnRefreshData.SetWidthPercent(100.000000000000000000);
         this.SetEvent$1(this.btnRefreshData,this,"OnClick","btnRefreshDataClick");
+        this.BufferWDG.SetParentComponent(this);
+        this.BufferWDG.SetName("BufferWDG");
+        this.BufferWDG.SetLeft(16);
+        this.BufferWDG.SetTop(256);
+        this.BufferWDG.SetWidth(400);
+        this.BufferWDG.SetHeight(300);
+        this.BufferWDG.FColumnDefs.Clear();
+        var $with17 = this.BufferWDG.FColumnDefs.Add$1();
+        $with17.SetField("column1");
+        $with17.FFont.FCharset = 1;
+        $with17.FFont.SetColor(65793);
+        $with17.FFont.SetHeight(-12);
+        $with17.FFont.SetName("Segoe UI");
+        $with17.FFont.SetStyle({});
+        var $with18 = this.BufferWDG.FColumnDefs.Add$1();
+        $with18.SetField("column2");
+        $with18.FFont.FCharset = 1;
+        $with18.FFont.SetColor(65793);
+        $with18.FFont.SetHeight(-12);
+        $with18.FFont.SetName("Segoe UI");
+        $with18.FFont.SetStyle({});
+        this.BufferWDG.SetTabOrder(7);
+        this.BufferWDG.SetVisible(false);
         this.WebMainMenu1.SetParentComponent(this);
         this.WebMainMenu1.SetName("WebMainMenu1");
         this.WebMainMenu1.FAppearance.SetBackgroundColor(9125192);
@@ -50647,7 +50657,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.WebTimer1.SetLeft(200);
         this.WebTimer1.SetTop(392);
       } finally {
-        this.BufferGrid.AfterLoadDFMValues();
         this.pnlMenu.AfterLoadDFMValues();
         this.pnlLog.AfterLoadDFMValues();
         this.WebMemo2.AfterLoadDFMValues();
@@ -50678,6 +50687,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.wcbChannels.AfterLoadDFMValues();
         this.wcbTypes.AfterLoadDFMValues();
         this.btnRefreshData.AfterLoadDFMValues();
+        this.BufferWDG.AfterLoadDFMValues();
         this.WebMainMenu1.AfterLoadDFMValues();
         this.ByAll.AfterLoadDFMValues();
         this.ByGenre.AfterLoadDFMValues();
@@ -50701,7 +50711,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
     var $r = this.$rtti;
     $r.addField("WebMemo2",pas["WEBLib.StdCtrls"].$rtti["TMemo"],4);
     $r.addField("CapturesWSG",pas["WEBLib.Grids"].$rtti["TStringGrid"],4);
-    $r.addField("BufferGrid",pas["WEBLib.Grids"].$rtti["TStringGrid"],4);
     $r.addField("pnlCaptures",pas["WEBLib.ExtCtrls"].$rtti["TPanel"],4);
     $r.addField("pnlHistory",pas["WEBLib.ExtCtrls"].$rtti["TPanel"],4);
     $r.addField("pnlLog",pas["WEBLib.ExtCtrls"].$rtti["TPanel"],4);
@@ -50746,6 +50755,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
     $r.addField("wcbTypes",pas["WEBLib.StdCtrls"].$rtti["TComboBox"],4);
     $r.addField("WebTimer1",pas["WEBLib.ExtCtrls"].$rtti["TTimer"],4);
     $r.addField("HistoryWDG",pas["WEBLib.DataGrid"].$rtti["TDataGrid"],4);
+    $r.addField("BufferWDG",pas["WEBLib.DataGrid"].$rtti["TDataGrid"],4);
     $r.addMethod("SetCapturesFormats",0,[],4);
     $r.addMethod("EPGGetCellClass",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint],["AField",pas.DB.$rtti["TField"]],["AValue",rtl.string],["AClassName",rtl.string,1]],4);
     $r.addMethod("SaveNewCapturesFile",0,[["id",rtl.string]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
