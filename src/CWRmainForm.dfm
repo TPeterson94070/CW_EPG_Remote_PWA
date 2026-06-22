@@ -71,7 +71,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 747
+    Height = 727
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -93,7 +93,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 3
       Top = 3
       Width = 422
-      Height = 761
+      Height = 721
       Align = alClient
       Color = clBlack
       ElementClassName = 'white'
@@ -118,7 +118,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 747
+    Height = 727
     ElementClassName = 'container-fluid'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -139,7 +139,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 767
+      Height = 727
       WidthStyle = ssPercent
       Align = alClient
       ColumnCollection = <
@@ -179,9 +179,9 @@ object CWRmainFrm: TCWRmainFrm
         end>
       object WebLabel2: TWebLabel
         Left = 2
-        Top = 386
+        Top = 366
         Width = 424
-        Height = 188
+        Height = 178
         Align = alClient
         Alignment = taCenter
         Caption = 'Please Wait...'
@@ -204,9 +204,9 @@ object CWRmainFrm: TCWRmainFrm
       end
       object WebLabel1: TWebLabel
         Left = 2
-        Top = 194
+        Top = 184
         Width = 424
-        Height = 188
+        Height = 178
         Align = alClient
         Alignment = taCenter
         Caption = 'Preparing EPG Listings.'
@@ -232,7 +232,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 2
         Top = 2
         Width = 424
-        Height = 188
+        Height = 178
         Align = alClient
         Caption = '<i class="fa-solid fa-spinner fa-spin"></>'
         Color = clYellow
@@ -258,7 +258,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 747
+    Height = 727
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -332,7 +332,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 747
+    Height = 727
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -391,7 +391,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 747
+    Height = 727
     ElementClassName = 'greenBGolive'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -556,7 +556,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 747
+    Height = 727
     ElementClassName = 'greenBGnavy'
     ElementID = 'pnlListings'
     HeightStyle = ssPercent
@@ -576,7 +576,7 @@ object CWRmainFrm: TCWRmainFrm
     TabOrder = 5
     DesignSize = (
       428
-      747)
+      727)
     object lblEmptyEPG: TWebLabel
       Left = 96
       Top = 58
@@ -607,7 +607,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 747
+      Height = 727
       ElementID = 'EPGWDBG'
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
@@ -618,6 +618,7 @@ object CWRmainFrm: TCWRmainFrm
         item
           Field = 'PSIP'
           HeaderName = 'Channel'
+          Filter = True
           ViewModeType = crtText
           SelectOptions = <>
           SuppressMovable = True
@@ -657,6 +658,7 @@ object CWRmainFrm: TCWRmainFrm
         item
           Field = 'Class'
           HeaderName = 'Class'
+          Filter = True
           Visible = False
           SelectOptions = <>
           SuppressMovable = True
@@ -795,7 +797,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 5
         Top = 31
         Width = 165
-        Height = 41
+        Height = 30
         Margins.Left = 5
         Margins.Right = 5
         Align = alClient
@@ -823,7 +825,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 5
         Top = 31
         Width = 165
-        Height = 41
+        Height = 30
         Margins.Left = 5
         Margins.Right = 5
         Align = alClient
@@ -877,6 +879,34 @@ object CWRmainFrm: TCWRmainFrm
       WidthPercent = 100.000000000000000000
       OnClick = btnRefreshDataClick
     end
+  end
+  object BufferWDG: TWebDataGrid
+    Left = 16
+    Top = 256
+    Width = 400
+    Height = 300
+    ColumnDefs = <
+      item
+        Field = 'column1'
+        SelectOptions = <>
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -12
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+      end
+      item
+        Field = 'column2'
+        SelectOptions = <>
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -12
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+      end>
+    MultilevelHeaders = <>
+    TabOrder = 8
+    Visible = False
   end
   object WebMainMenu1: TWebMainMenu
     Appearance.BackgroundColor = clDarkslateblue

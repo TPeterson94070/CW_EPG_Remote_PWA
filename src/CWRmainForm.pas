@@ -66,6 +66,7 @@ type
     wcbTypes: TWebComboBox;
     WebTimer1: TWebTimer;
     HistoryWDG: TWebDataGrid;
+    BufferWDG: TWebDataGrid;
 //  procedure ClearFilterLists;
   procedure SetCapturesFormats;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
@@ -130,6 +131,7 @@ private
   [async]
   procedure FetchNewCapRequests;
   [async] procedure FillWSG(var WSG: TWebStringGrid; rs: string);
+  procedure FillBufferWDG(var WDG: TWebDataGrid; rs: string);
   procedure FillHistoryWDG(var WDG: TWebDataGrid; rs: string);
   [async]
   procedure RefreshCSV(TableFile, Title: string; var id: string);
@@ -175,9 +177,8 @@ uses
 {$I AppKey.inc}
 var
   ResetPrompt:      string = 'none' ;
-  BaseFilter:       string = 'ID >= 1';
+  BaseFilter:       string;
   VisiblePanelNum:  Integer = 0;
-  FirstID:          Integer = 1;
   FirstEndDate,
   LastStartDate:    TDate;
   TotalAvailableDays: Integer;
@@ -334,7 +335,7 @@ begin
   begin
     Log('********* Starting timer');
     StartT := Now;
-    {$IfDef PAS2JS}await{$EndIf}(FillWSG(BufferGrid, CSV_EPG));
+//    {$IfDef PAS2JS}await{$EndIf}(FillWSG(BufferGrid, CSV_EPG));
     {$IfDef PAS2JS}await{$EndIf}(LoadWIDBCDS);
     // Save unfiltered record count (now that TMS Web Core honors filtering)
     if WIDBCDS.Filtered then WIDBCDS.Filtered := False;
@@ -633,6 +634,63 @@ begin
   end;
 end;
 
+procedure TCWRmainFrm.FillBufferWDG(var WDG: TWebDataGrid; rs: string);
+var
+  HeaderRow: string;
+  i, HeaderRowLength: Integer;
+  HeaderItems: TArray<string>;
+begin
+  Log('FillBufferWDG called for ' + WDG.Name);
+  // Fetch string from local storage if not cwr_epg.csv
+  if rs <> CSV_EPG then CSVstring := TLocalStorage.GetValue(rs);
+  Log(rs + ' length: ' + IntToStr(Length(CSVstring)));
+  WDG.Clear;
+  if CSVstring > '' then
+  begin
+    WDG.BeginUpdate;
+    WDG.ColumnDefs.Clear;
+    // Need to treat Header row explicitly to define columns
+//    HeaderRowLength := Pos(#13, CSVString) - 1;
+//    HeaderRow := Copy(CSVString, 1, HeaderRowLength);
+//    HeaderItems := HeaderRow.Split([',']);
+//    for i := 0 to Pred(Length(HeaderItems)) do
+//      WDG.ColumnDefs.Add;
+//    begin
+//      WDG.ColumnDefs.Insert(i);
+//      WDG.ColumnDefs[i].HeaderName := ReplaceStr(HeaderItems[i], '"', '');
+//      WDG.ColumnDefs[i].CellDataType := cdtText;
+//      WDG.ColumnDefs[i].Field := ReplaceStr(HeaderItems[i], '"', '');
+//      WDG.ColumnDefs[i].Visible := False; // i in [7, 8, 12, 13]; // i.e., Channel, StartTime, Title, SubTitle
+//      WDG.ColumnDefs[i].Sortable := i in [7, 8, 12, 13];
+//      WDG.ColumnDefs[i].Filter := i in [7, 8, 12, 13];
+//      WDG.ColumnDefs[i].SuppressMovable := True;
+//      case i of
+//        7: WDG.ColumnDefs[i].Width := 120;
+//        8: WDG.ColumnDefs[i].Width := 150;
+//        12: WDG.ColumnDefs[i].Width := 200;
+//        13: WDG.ColumnDefs[i].Width := 300;
+//      end;
+//    end;
+
+    // Could tell LoadFromCSVString to ignore first row, but since we've already parsed it....
+    WDG.LoadFromCSVString({Copy(CSVString,HeaderRowLength + 1)}csvstring, ',', '"', {False}True);
+    // dump empty rows (add iff needed)
+//    WDG.RowHeight := 19;
+//    WDG.Font.Height := 18;
+
+//    // Convert Col 8 string (StartTime) to TDateTime double
+//    WDG.ColumnDefs[8].CellDataType := cdtNumber;
+//    for i := 0 to Pred(WDG.RowCount) do
+//      WDG.Floats[i,8] := StrToDateTimeDef(WDG.Cells[i,8],0);
+//    WDG.ColumnDefs[8].ValueFormatter := WDGColumn_TDateTimeValueFormatter;
+//    WDG.ColumnDefs[8].Filter := False;
+    WDG.EndUpdate;
+  end;
+  Log(WDG.Name+'.RowCount: ' + WDG.RowCount.ToString);
+  Log('Done loading ' + WDG.Name);
+
+end;
+
 procedure TCWRmainFrm.FillHistoryWDG(var WDG: TWebDataGrid; rs: string);
 // Could be named FillWDG if broaden to Captures & NewCaptures. TBD
 var
@@ -765,6 +823,7 @@ var
   t: TDateTime;
   AColor: string;
   Text: string;
+
 begin
   Log('======= Starting LoadWIDBCDS, DB is ' + IfThen(not WIDBCDS.Active, 'not ') + 'Active');
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Loading EPG DB'));
@@ -776,10 +835,14 @@ begin
   TLocalStorage.RemoveKey('wcbChannelsItems');
   TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   try
-    if WIDBCDS.Active and (BufferGrid.RowCount > 1) then
+    FillBufferWDG(BufferWDG, CSV_EPG);
+//    BufferWDG.LoadFromCSVString(CSVString, ',', '"', True);
+    Log('BufferWDG RowCount: ' + BufferWDG.RowCount.ToString);
+    Log('BufferWDG ColCount: ' + BufferWDG.ColumnDefs.Count.ToString);
+    if WIDBCDS.Active and ({BufferGrid}BufferWDG.RowCount > 1) then
     begin
       Log('LoadWIDBCDS, WIDBCDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
-      Log('LoadWIDBCDS, Buffer Row Count: ' + BufferGrid.RowCount.ToString);
+      Log('LoadWIDBCDS, Buffer Row Count: ' + {BufferGrid}BufferWDG.RowCount.ToString);
       if WIDBCDS.RecordCount > 0 then
       begin
         WIDBCDS.Edit;
@@ -788,26 +851,26 @@ begin
         WebDataSource1.DataSet := WIDBCDS;
         Log('LoadWIDBCDS, Reconnected DataSource');
       end;
-      for j := 1 to BufferGrid.RowCount - 1 do
+      for j := 1 to BufferWDG{BufferGrid}.RowCount - 1 do
       try
         WIDBCDS.Append;
         WIDBCDS.Fields[0].Value := j;
-        for i := 1 to BufferGrid.ColCount do
+        for i := 1 to BufferWDG.ColumnDefs.Count{BufferGrid.ColCount} do
           if WIDBCDS.Fields[i].DataType = ftString then
-            WIDBCDS.Fields[i].Value := BufferGrid.Cells[i-1,j]
+            WIDBCDS.Fields[i].Value := {BufferGrid.Cells[i-1,j]}BufferWDG.Cells[j,i-1]
           else  // Keep UTC StartTime/EndTime strings
-            if TryStrToDateTime(BufferGrid.Cells[i-1,j],t) then
+            if TryStrToDateTime({BufferGrid.Cells[i-1,j]}BufferWDG.Cells[j,i-1],t) then
               WIDBCDS.Fields[i].Value := t
             else WIDBCDS.Fields[i].Value := 0;
-        Text := {WIDBCDS.Fields[8].AsString}BufferGrid.Cells[7,j]; // i.e. ProgramID
+        Text := {WIDBCDS.Fields[8].AsString}{BufferGrid.Cells[7,j]}BufferWDG.Cells[j,7]; // i.e. ProgramID
         if Text.StartsWith('MV') then  // Movie item
           AColor := {'goldenRod'}TypeClass[Movie]
         else if Text.StartsWith('SH') then  // Generic item
-          AColor := IfThen({WIDBCDS.Fields[14].AsString}BufferGrid.Cells[13,j].Contains('"News"'),
+          AColor := IfThen({WIDBCDS.Fields[14].AsString}{BufferGrid.Cells[13,j]}BufferWDG.Cells[j,13].Contains('"News"'),
             {'green'}TypeClass[New],  // News genre assumed "new"
             {'gray'}TypeClass[Other])   // Otherwise generic episode is "unknown time"
         else
-          AColor := IfThen({WIDBCDS.Fields[10].AsString}BufferGrid.Cells[9,j] <> '',
+          AColor := IfThen({WIDBCDS.Fields[10].AsString}{BufferGrid.Cells[9,j]}BufferWDG.Cells[j,9] <> '',
             {'green'}TypeClass[New],  // Non-generic episode declared "new"
             {'rose'}TypeClass[Rerun]);  // Otherwise "rerun"
         WIDBCDS.Fields[15].Value := AColor;
@@ -827,7 +890,7 @@ begin
     else
     begin
       Log('LoadWIDBCDS, skipped WIDBCDS update because' + IfThen(not WIDBCDS.Active, ' CDS not active')
-        + IfThen(BufferGrid.RowCount < 2, ' BufferGrid empty'));
+        + IfThen({BufferGrid}BufferWDG.RowCount < 2, ' BufferGrid empty'));
     end;
   finally
     Log('WIDBCDS is ' + IfThen(WIDBCDS.Active, 'NOT ') + 'closed');
@@ -1079,17 +1142,17 @@ begin
   Log('BaseFilter: ' + BaseFilter);
   fltr := '';
   if ByGenre.Checked then
-   fltr := fltr + ' and genres like ' + QuotedStr('%"'+ReplaceStr(wcbGenres.Text, '/', '_')+'"%');
-//    EPG.ColumnDefs.FindColumn('genres').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, ReplaceStr(wcbGenres.Text, '/', '_'));
+//   fltr := fltr + ' and genres like ' + QuotedStr('%"'+ReplaceStr(wcbGenres.Text, '/', '_')+'"%');
+    EPG.ColumnDefs.FindColumn('genres').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, ReplaceStr(wcbGenres.Text, '/', '_'));
 //  if ByTitle.Checked then {Superseded by EPG UI filtering}
 //    fltr := fltr + ' and Title like ' + QuotedStr('%' + SearchFilter + '%');
 //   EPG.ColumnDefs.FindColumn('Title').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, SearchFilter);
   if ByChannel.Checked then
-    fltr := fltr + ' and PSIP = ' + QuotedStr(wcbChannels.Text);
-//    EPG.ColumnDefs[0]{.FindColumn('PSIP')}.ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foEqual, Trim(wcbChannels.Text));
+//    fltr := fltr + ' and PSIP = ' + QuotedStr(wcbChannels.Text);
+    EPG.ColumnDefs[0]{.FindColumn('PSIP')}.ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foEqual, Trim(wcbChannels.Text));
   if ByType.Checked then
-    fltr := fltr + ' and Class = ' + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
-//    EPG.ColumnDefs.FindColumn('Class').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
+//    fltr := fltr + ' and Class = ' + QuotedStr(TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
+    EPG.ColumnDefs.FindColumn('Class').ApplyFilter(TDGFilterType.gftText, TDGFilterOperation.foContains, TypeClass[ProgramTypes(GetEnumValue(TypeInfo(ProgramTypes),wcbTypes.Text))]);
 
   Log('Epg Filter: BaseFilter + ' + fltr);
   WIDBCDS.Filter := BaseFilter + fltr;
