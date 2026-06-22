@@ -343,6 +343,9 @@ object CWRmainFrm: TCWRmainFrm
           Font.Name = 'Segoe UI'
           Font.Style = []
         end>
+      DefaultColDef.Enabled = True
+      DefaultColDef.SuppressMovable = True
+      EditType = retFullRow
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = 18
@@ -353,7 +356,7 @@ object CWRmainFrm: TCWRmainFrm
       Theming.ThemeMode = agDarkMode
       Visible = False
       OnGetRowClass = HistoryWDGGetRowClass
-      OnCellClickedEvent = HistoryWDGCellClickedEvent
+      OnCellDoubleClickedEvent = HistoryWDGCellDoubleClickedEvent
     end
   end
   object pnlCaptures: TWebPanel
@@ -676,6 +679,8 @@ object CWRmainFrm: TCWRmainFrm
           Font.Name = 'Segoe UI'
           Font.Style = []
         end>
+      DefaultColDef.Enabled = True
+      DefaultColDef.SuppressMovable = True
       EditType = retFullRow
       Font.Charset = ANSI_CHARSET
       Font.Color = clSaddlebrown
@@ -688,10 +693,11 @@ object CWRmainFrm: TCWRmainFrm
       RowHeight = 20
       TabOrder = 0
       Theming.ThemeMode = agDarkMode
+      Visible = False
       DataSource = WebDataSource1
       ShowIndicator = False
       OnGetRowClass = EPGGetRowClass
-      OnCellClickedEvent = EPGCellClickedEvent
+      OnCellDoubleClickedEvent = EPGCellDoubleClickedEvent
     end
     object pnlFilterSelection: TWebPanel
       Left = 100

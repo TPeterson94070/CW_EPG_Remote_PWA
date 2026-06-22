@@ -106,18 +106,16 @@ type
   [async] procedure btnRefreshDataClick(Sender: TObject);
     procedure wcbTypesChange(Sender: TObject);
     procedure wcbTypesFocusOut(Sender: TObject);
-//    procedure weTitleSearchChange(Sender: TObject);
     procedure WebTimer1Timer(Sender: TObject);
-//    [async] procedure WebTimer2Timer(Sender: TObject);
     procedure CapturesWSGGetCellData(Sender: TObject; ACol, ARow: Integer;
       AField: TField; var AValue: string);
     [async] procedure CapturesWSGClickCell(Sender: TObject; ACol, ARow: Integer);
   procedure cbNumHistListChange(Sender: TObject);
-  [async] procedure EPGCellClickedEvent(Event: TJSCellClickedEvent);
+  procedure EPGCellDoubleClickedEvent(Event: TJSCellDoubleClickedEvent);
   function EPGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
     procedure SwipeDownRefresh(Enabled: Boolean);
   function EPGColumn_PSIPGetCellStyle(Params: TJSCellClassParams): TJSValue;
-  procedure HistoryWDGCellClickedEvent(Event: TJSCellClickedEvent);
+  procedure HistoryWDGCellDoubleClickedEvent(Event: TJSCellDoubleClickedEvent);
   function WDGColumn_TDateTimeValueFormatter(Value: TJSValue): TJSValue;
   function HistoryWDGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
 private
@@ -299,8 +297,6 @@ begin
     WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
   Font.Height := -17;
   EPG.Hide;
-
-
   {$IfDef PAS2JS}await{$EndIf}(SetupWIDBCDS);
   {$IfDef PAS2JS}await{$EndIf}(RefreshListings);
   Log('========== FormCreate is finished');
@@ -395,7 +391,6 @@ begin
   ByAll.OnClick := nil;
   try
     ByGenre.Checked := False;
-//    ByTitle.Checked := False;
     byType.Checked := False;
     ByChannel.Checked := False;
     pnlFilterSelection.Hide;
@@ -403,6 +398,7 @@ begin
     {$IfDef PAS2JS}await{$EndIf}(SetFilters)
   finally
     ByAll.OnClick := ByAllClick;
+    EPG.SetSelectedRow(1,True);
     Log('ByAllClick finished');
   end;
 end;
@@ -1253,23 +1249,22 @@ begin
   Log('History visible');
 end;
 
-procedure TCWRmainFrm.HistoryWDGCellClickedEvent(Event: TJSCellClickedEvent);
+procedure TCWRmainFrm.HistoryWDGCellDoubleClickedEvent(Event: TJSCellDoubleClickedEvent);
 begin
+  Log('========== HistoryWDGCellDoubleClickedEvent() called from Row ' + toInteger(Event.RowIndex).ToString);
   ShowHistoryWDGDetails(toInteger(Event.RowIndex));
+  Log('========== HistoryWDGCellDoubleClickedEvent() finished');
 end;
 
-function TCWRmainFrm.WDGColumn_TDateTimeValueFormatter(Value: TJSValue):
-    TJSValue;
+function TCWRmainFrm.WDGColumn_TDateTimeValueFormatter(Value: TJSValue): TJSValue;
 var ADateTime: string;
 begin
   DateTimeToString(ADateTime, 'mm/dd/yy HH:nn', double(Value));
   Result := ADateTime;
 end;
 
-function TCWRmainFrm.HistoryWDGGetRowClass(Params: TJSGetRowClassParams):
-    TJSValue;
+function TCWRmainFrm.HistoryWDGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
 begin
-
   case HistoryWDG.Cells[toInteger(Params.RowIndex),10][1] of
     'E': Result := 'greenBGolive';         // Regular Episode
     'S': Result := 'grayBGolive';          // Generic Show
@@ -1277,7 +1272,6 @@ begin
   else
     Result := 'white';              // Huh?
   end;
-
 end;
 
 procedure TCWRmainFrm.HistoryShow;
@@ -1647,18 +1641,15 @@ begin
     Result := EPG.Cells[toInteger(Params.RowIndex),3];
 end;
 
-procedure TCWRmainFrm.EPGCellClickedEvent(Event: TJSCellClickedEvent);
+procedure TCWRmainFrm.EPGCellDoubleClickedEvent(Event: TJSCellDoubleClickedEvent);
 begin
-  try
-    Log('========== EPGCellClickedEvent() called from Row ' + toInteger(Event.RowIndex).ToString);
+    Log('========== EPGCellDoubleClickedEvent() called from Row ' + toInteger(Event.RowIndex).ToString);
     // Quit Combobox if still open
     if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
-    {$IFDEF PAS2JS} await {$ENDIF}
-    (ShowItemDetails(EPG.GetCell(4,toInteger(Event.RowIndex)).ToInteger));
-  finally
-    Log('========== EPGCellClickedEvent() finished');
-  end;
+    ShowItemDetails(EPG.GetCell(4,toInteger(Event.RowIndex)).ToInteger);
+    Log('========== EPGCellDoubleClickedEvent() finished');
 end;
+
 
 
 
