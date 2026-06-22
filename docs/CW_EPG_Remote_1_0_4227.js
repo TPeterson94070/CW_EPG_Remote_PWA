@@ -48605,6 +48605,21 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         $impl.Log("========== EPGClickCell() finished");
       };
     };
+    this.EPGCellClickedEvent = function (Event) {
+      $impl.Log("========== EPGCellClickedEvent() called from Row " + pas.SysUtils.TNativeIntHelper.ToString$1.call({a: pas.JS.toInteger(Event.rowIndex), get: function () {
+          return this.a;
+        }, set: function (v) {
+          this.a = v;
+        }}));
+      if (this.pnlFilterSelection.FVisible) this.pnlFilterSelection.Hide();
+      this.EPG.SetSelectedRow(pas.JS.toInteger(Event.rowIndex),true);
+      this.ShowItemDetails(pas.SysUtils.TStringHelper.ToInteger$1.call({a: $mod.TDataGridBaseHelper.GetCell.call(this.EPG,4,pas.JS.toInteger(Event.rowIndex)), get: function () {
+          return this.a;
+        }, set: function (v) {
+          this.a = v;
+        }}),true);
+      $impl.Log("========== EPGCellClickedEvent() finished");
+    };
     this.EPGCellDoubleClickedEvent = function (Event) {
       $impl.Log("========== EPGCellDoubleClickedEvent() called from Row " + pas.SysUtils.TNativeIntHelper.ToString$1.call({a: pas.JS.toInteger(Event.rowIndex), get: function () {
           return this.a;
@@ -48637,6 +48652,15 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       var Result = undefined;
       Result = pas.JS.New(["textAlign","center"]);
       return Result;
+    };
+    this.HistoryWDGCellClickedEvent = function (Event) {
+      $impl.Log("========== HistoryWDGCellClickedEvent() called from Row " + pas.SysUtils.TNativeIntHelper.ToString$1.call({a: pas.JS.toInteger(Event.rowIndex), get: function () {
+          return this.a;
+        }, set: function (v) {
+          this.a = v;
+        }}));
+      this.ShowHistoryWDGDetails(pas.JS.toInteger(Event.rowIndex));
+      $impl.Log("========== HistoryWDGCellClickedEvent() finished");
     };
     this.HistoryWDGCellDoubleClickedEvent = function (Event) {
       $impl.Log("========== HistoryWDGCellDoubleClickedEvent() called from Row " + pas.SysUtils.TNativeIntHelper.ToString$1.call({a: pas.JS.toInteger(Event.rowIndex), get: function () {
@@ -49808,7 +49832,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.HistoryWDG.FTheming.SetThemeMode(1);
         this.HistoryWDG.SetVisible(false);
         this.SetEvent$1(this.HistoryWDG,this,"OnGetRowClass","HistoryWDGGetRowClass");
-        this.SetEvent$1(this.HistoryWDG,this,"OnCellDoubleClickedEvent","HistoryWDGCellDoubleClickedEvent");
+        this.SetEvent$1(this.HistoryWDG,this,"OnCellClickedEvent","HistoryWDGCellClickedEvent");
         this.pnlCaptures.SetParentComponent(this);
         this.pnlCaptures.SetName("pnlCaptures");
         this.pnlCaptures.SetLeft(0);
@@ -50135,7 +50159,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.EPG.SetDataSource(this.WebDataSource1);
         this.EPG.SetShowIndicator(false);
         this.SetEvent$1(this.EPG,this,"OnGetRowClass","EPGGetRowClass");
-        this.SetEvent$1(this.EPG,this,"OnCellDoubleClickedEvent","EPGCellDoubleClickedEvent");
+        this.SetEvent$1(this.EPG,this,"OnCellClickedEvent","EPGCellClickedEvent");
         this.pnlFilterSelection.SetParentComponent(this.pnlListings);
         this.pnlFilterSelection.SetName("pnlFilterSelection");
         this.pnlFilterSelection.SetLeft(100);
@@ -50542,10 +50566,12 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
     $r.addMethod("WebTimer1Timer",0,[["Sender",pas.System.$rtti["TObject"]]],4);
     $r.addMethod("CapturesWSGGetCellData",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint],["AField",pas.DB.$rtti["TField"]],["AValue",rtl.string,1]],4);
     $r.addMethod("CapturesWSGClickCell",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
+    $r.addMethod("EPGCellClickedEvent",0,[["Event",pas.libdatagrid.$rtti["TJSCellClickedEvent"]]],4);
     $r.addMethod("EPGCellDoubleClickedEvent",0,[["Event",pas.libdatagrid.$rtti["TJSCellDoubleClickedEvent"]]],4);
     $r.addMethod("EPGGetRowClass",1,[["Params",pas.libdatagrid.$rtti["TJSGetRowClassParams"]]],4,rtl.jsvalue);
     $r.addMethod("SwipeDownRefresh",0,[["Enabled",rtl.boolean]],4);
     $r.addMethod("EPGColumn_PSIPGetCellStyle",1,[["Params",pas.libdatagrid.$rtti["TJSCellClassParams"]]],4,rtl.jsvalue);
+    $r.addMethod("HistoryWDGCellClickedEvent",0,[["Event",pas.libdatagrid.$rtti["TJSCellClickedEvent"]]],4);
     $r.addMethod("HistoryWDGCellDoubleClickedEvent",0,[["Event",pas.libdatagrid.$rtti["TJSCellDoubleClickedEvent"]]],4);
     $r.addMethod("WDGColumn_TDateTimeValueFormatter",1,[["Value",rtl.jsvalue]],4,rtl.jsvalue);
     $r.addMethod("HistoryWDGGetRowClass",1,[["Params",pas.libdatagrid.$rtti["TJSGetRowClassParams"]]],4,rtl.jsvalue);
