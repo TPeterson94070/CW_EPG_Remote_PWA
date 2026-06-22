@@ -13876,7 +13876,6 @@ rtl.module("WEBLib.Graphics",["System","Classes","Types","UITypes","Web","JS"],f
   this.clSilver = 0xC0C0C0;
   this.clRed = 0xFF;
   this.clYellow = 0xFFFF;
-  this.clAqua = 0xFFFF00;
   this.clLtGray = 0xC1C1C1;
   this.clWhite = 0xFFFFFF;
   this.clBtnFace = 0xF0F0F0;
@@ -22312,171 +22311,6 @@ rtl.module("WEBLib.ExtCtrls",["System","Classes","SysUtils","Types","WEBLib.Cont
     $r.addProperty("WidthStyle",2,pas["WEBLib.Controls"].$rtti["TSizeStyle"],"FWidthStyle","SetWidthStyle",4,{Default: pas["WEBLib.Controls"].TSizeStyle.ssAbsolute});
     $r.addProperty("OnClick",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnClick","FOnClick");
     $r.addProperty("OnDblClick",0,pas["WEBLib.Controls"].$rtti["TNotifyEvent"],"FOnDblClick","FOnDblClick");
-    $r.addProperty("OnDragDrop",0,pas["WEBLib.Controls"].$rtti["TDragDropEvent"],"FOnDragDrop","FOnDragDrop");
-    $r.addProperty("OnDragOver",0,pas["WEBLib.Controls"].$rtti["TDragOverEvent"],"FOnDragOver","FOnDragOver");
-    $r.addProperty("OnEndDrag",0,pas["WEBLib.Controls"].$rtti["TEndDragEvent"],"FonEndDrag","FonEndDrag");
-    $r.addProperty("OnStartDrag",0,pas["WEBLib.Controls"].$rtti["TStartDragEvent"],"FOnStartDrag","FOnStartDrag");
-    $r.addProperty("OnTouchStart",0,pas["WEBLib.Controls"].$rtti["TTouchEvent"],"FOnTouchStart","FOnTouchStart");
-    $r.addProperty("OnTouchMove",0,pas["WEBLib.Controls"].$rtti["TTouchEvent"],"FOnTouchMove","FOnTouchMove");
-    $r.addProperty("OnTouchEnd",0,pas["WEBLib.Controls"].$rtti["TTouchEvent"],"FOnTouchEnd","FOnTouchEnd");
-    $r.addProperty("OnTouchCancel",0,pas["WEBLib.Controls"].$rtti["TTouchEvent"],"FOnTouchCancel","FOnTouchCancel");
-  });
-  rtl.createClass(this,"TCustomGroupBox",pas["WEBLib.Menus"].TWebCustomControl,function () {
-    this.$init = function () {
-      pas["WEBLib.Menus"].TWebCustomControl.$init.call(this);
-      this.FCaption$1 = "";
-      this.FLegend = null;
-      this.FFieldSet = null;
-      this.FElementLegendClassName = "";
-      this.FPadding = null;
-      this.FTransparent = false;
-    };
-    this.$final = function () {
-      this.FLegend = undefined;
-      this.FFieldSet = undefined;
-      this.FPadding = undefined;
-      pas["WEBLib.Menus"].TWebCustomControl.$final.call(this);
-    };
-    this.SetElementLegendClassName = function (Value) {
-      if (this.FElementLegendClassName !== Value) {
-        this.FElementLegendClassName = Value;
-        this.UpdateElementVisual();
-      };
-    };
-    this.SetTransparent = function (Value) {
-      if (this.FTransparent !== Value) {
-        this.FTransparent = Value;
-        this.UpdateElementVisual();
-      };
-    };
-    this.UpdatePadding = function (ARect) {
-      ARect.Left = this.FPadding.FLeft;
-      ARect.Top = this.FPadding.FTop;
-      ARect.Right = ARect.Right - this.FPadding.FRight;
-      ARect.Bottom = ARect.Bottom - this.FPadding.FBottom;
-    };
-    this.SetFieldSetSize = function () {
-      var dx = 0;
-      var dy = 0;
-      if (this.FFieldSet != null) {
-        dx = 4;
-        dy = 2;
-        if ((this.FElementClassName !== "") || (this.FElementLegendClassName !== "")) {
-          dx = 0;
-          dy = 0;
-        };
-        if (this.FWidthStyle === 1) {
-          this.FFieldSet.style.setProperty("width",pas.SysUtils.IntToStr(this.GetWidth() - dx) + "px")}
-         else this.FFieldSet.style.setProperty("width","90%");
-        if (this.FHeightStyle === 1) {
-          this.FFieldSet.style.setProperty("height",pas.SysUtils.IntToStr(this.GetHeight() - dy) + "px")}
-         else this.FFieldSet.style.setProperty("height","90%");
-      };
-    };
-    this.SetCaption = function (Value) {
-      if (this.FCaption$1 !== Value) {
-        this.FCaption$1 = Value;
-        this.UpdateElementData();
-      };
-    };
-    this.CreateElement = function () {
-      var Result = null;
-      Result = document.createElement("DIV");
-      this.FFieldSet = document.createElement("FIELDSET");
-      Result.appendChild(this.FFieldSet);
-      this.FLegend = document.createElement("LEGEND");
-      this.FFieldSet.appendChild(this.FLegend);
-      this.FLegend.innerHTML = this.FCaption$1;
-      return Result;
-    };
-    this.UpdateElementData = function () {
-      pas["WEBLib.Controls"].TControl.UpdateElementData.call(this);
-      if (this.FLegend != null) {
-        this.FLegend.innerHTML = this.FCaption$1;
-      };
-    };
-    this.UpdateElementVisual = function () {
-      pas["WEBLib.Controls"].TCustomControl.UpdateElementVisual.call(this);
-      if (this.GetElementHandle() != null) {
-        this.GetElementHandle().style.removeProperty("background-color");
-      };
-      if (this.FLegend != null) {
-        this.FLegend.setAttribute("class","w-auto " + this.FElementLegendClassName);
-        this.FLegend.style.setProperty("float","none");
-      };
-      if (this.FFieldSet != null) {
-        if (this.FTransparent) {
-          this.FFieldSet.style.removeProperty("background-color")}
-         else this.FFieldSet.style.setProperty("background-color",pas["WEBLib.Graphics"].ColorToHTML(this.FColor));
-        this.FFieldSet.style.setProperty("overflow","visible");
-        this.SetFieldSetSize();
-        this.FFieldSet.style.setProperty("white-space","nowrap");
-        this.FFieldSet.style.setProperty("padding-left",pas.SysUtils.IntToStr(this.FPadding.FLeft) + "px");
-        this.FFieldSet.style.setProperty("padding-right",pas.SysUtils.IntToStr(this.FPadding.FRight) + "px");
-        this.FFieldSet.style.setProperty("padding-top",pas.SysUtils.IntToStr(this.FPadding.FTop) + "px");
-        this.FFieldSet.style.setProperty("padding-bottom",pas.SysUtils.IntToStr(this.FPadding.FBottom) + "px");
-        if (this.FVisible) this.FFieldSet.style.setProperty("display","inline-block");
-        this.FFieldSet.style.setProperty("webkit-user-select","none");
-        this.FFieldSet.style.setProperty("moz-user-select","none");
-        this.FFieldSet.style.setProperty("khtml-user-select","none");
-        this.FFieldSet.style.setProperty("ms-user-select","none");
-        this.FFieldSet.style.setProperty("user-select","none");
-        this.FFieldSet.style.setProperty("border","1px solid " + pas["WEBLib.Graphics"].ColorToHTML(this.FBorderColor));
-      };
-    };
-    this.SetBoundsInt = function (X, Y, AWidth, AHeight) {
-      pas["WEBLib.Controls"].TControl.SetBoundsInt.apply(this,arguments);
-      this.SetFieldSetSize();
-    };
-    this.InitCSSLibrary = function (ALibrary) {
-      if (ALibrary === 1) {
-        this.SetElementLegendClassName("h6");
-      };
-    };
-    this.Destroy = function () {
-      rtl.free(this,"FPadding");
-      pas["WEBLib.Controls"].TCustomControl.Destroy.call(this);
-    };
-    this.CreateInitialize = function () {
-      pas["WEBLib.Controls"].TCustomControl.CreateInitialize.call(this);
-      this.FEnablePropagation = true;
-      this.FControlStyle = rtl.unionSet(this.FControlStyle,rtl.createSet(0));
-      this.SetColor(15790320);
-      this.FTransparent = false;
-      this.FPadding = pas["WEBLib.Controls"].TPadding.$create("Create$1");
-      if (4 in this.FComponentState) {
-        this.SetWidth(400);
-        this.SetHeight(300);
-      };
-    };
-    rtl.addIntf(this,pas["WEBLib.Controls"].IControl);
-    rtl.addIntf(this,pas.System.IUnknown);
-  });
-  rtl.createClass(this,"TGroupBox",this.TCustomGroupBox,function () {
-    rtl.addIntf(this,pas["WEBLib.Controls"].IControl);
-    rtl.addIntf(this,pas.System.IUnknown);
-    var $r = this.$rtti;
-    $r.addProperty("Align",2,pas["WEBLib.Controls"].$rtti["TAlign"],"FAlign","SetAlign",4,{Default: pas["WEBLib.Controls"].TAlign.alNone});
-    $r.addProperty("AlignWithMargins",2,rtl.boolean,"FAlignWithMargins","SetAlignWithMargins",4,{Default: false});
-    $r.addProperty("Anchors",2,pas["WEBLib.Controls"].$rtti["TAnchors"],"FAnchors","SetAnchors",4,{Default: rtl.createSet(0,1)});
-    $r.addProperty("BorderColor",2,pas["WEBLib.Graphics"].$rtti["TColor"],"FBorderColor","SetBorderColor",4,{Default: 12632256});
-    $r.addProperty("Caption",2,rtl.string,"FCaption$1","SetCaption");
-    $r.addProperty("Color",2,pas["WEBLib.Graphics"].$rtti["TColor"],"FColor","SetColor");
-    $r.addProperty("DragMode",2,pas["WEBLib.Controls"].$rtti["TDragMode"],"FDragMode","SetDragMode",4,{Default: pas["WEBLib.Controls"].TDragMode.dmManual});
-    $r.addProperty("ElementFont",2,pas["WEBLib.Controls"].$rtti["TElementFont"],"FElementFont","SetElementFont",4,{Default: pas["WEBLib.Controls"].TElementFont.efProperty});
-    $r.addProperty("ElementID",3,pas["WEBLib.Controls"].$rtti["TElementID"],"GetID","SetID");
-    $r.addProperty("ElementLegendClassName",2,pas["WEBLib.Controls"].$rtti["TElementClassName"],"FElementLegendClassName","SetElementLegendClassName");
-    $r.addProperty("ElementPosition",2,pas["WEBLib.Controls"].$rtti["TElementPosition"],"FElementPosition","SetElementPosition",4,{Default: pas["WEBLib.Controls"].TElementPosition.epAbsolute});
-    $r.addProperty("Font",2,pas["WEBLib.Graphics"].$rtti["TFont"],"FFont","SetFont");
-    $r.addProperty("HeightPercent",2,rtl.double,"FHeightPercent","SetHeightPercent",4,{Default: 100});
-    $r.addProperty("HeightStyle",2,pas["WEBLib.Controls"].$rtti["TSizeStyle"],"FHeightStyle","SetHeightStyle",4,{Default: pas["WEBLib.Controls"].TSizeStyle.ssAbsolute});
-    $r.addProperty("Margins",2,pas["WEBLib.Controls"].$rtti["TMargins"],"FMargins","SetMargins");
-    $r.addProperty("ParentFont",2,rtl.boolean,"FParentFont","SetParentFont",4,{Default: true});
-    $r.addProperty("PopupMenu",0,pas["WEBLib.Menus"].$rtti["TPopupMenu"],"FPopupMenu","FPopupMenu");
-    $r.addProperty("Role",3,rtl.string,"GetRole","SetRole");
-    $r.addProperty("Transparent",2,rtl.boolean,"FTransparent","SetTransparent");
-    $r.addProperty("WidthPercent",2,rtl.double,"FWidthPercent","SetWidthPercent",4,{Default: 100});
-    $r.addProperty("WidthStyle",2,pas["WEBLib.Controls"].$rtti["TSizeStyle"],"FWidthStyle","SetWidthStyle",4,{Default: pas["WEBLib.Controls"].TSizeStyle.ssAbsolute});
     $r.addProperty("OnDragDrop",0,pas["WEBLib.Controls"].$rtti["TDragDropEvent"],"FOnDragDrop","FOnDragDrop");
     $r.addProperty("OnDragOver",0,pas["WEBLib.Controls"].$rtti["TDragOverEvent"],"FOnDragOver","FOnDragOver");
     $r.addProperty("OnEndDrag",0,pas["WEBLib.Controls"].$rtti["TEndDragEvent"],"FonEndDrag","FonEndDrag");
@@ -44586,6 +44420,21 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","StrUtils","Clas
         } else throw pas.SysUtils.Exception.$create("Create$1",["Error: RefreshGrid can only be called when the ServerDataAdapter has been assigned!"]);
       };
     };
+    this.SetSelectedRow = function (RowIndex, Selected) {
+      var Result = false;
+      var RowNode = null;
+      Result = false;
+      if (this.FAGGrid != null) {
+        if (this.FServerDataAdapter != null) {
+          RowNode = this.FAGGrid.getRowNode(pas.SysUtils.IntToStr(RowIndex))}
+         else RowNode = this.FAGGrid.getRowNode(RowIndex);
+        if (pas["WEBLib.DataGrid.libjs"]._NotNullOrUndefined$1(RowNode)) {
+          RowNode.setSelected(Selected);
+          Result = true;
+        };
+      };
+      return Result;
+    };
     rtl.addIntf(this,pas["WEBLib.Controls"].IControl);
     rtl.addIntf(this,pas.System.IUnknown);
   });
@@ -48179,7 +48028,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       this.pnlCaptures = null;
       this.pnlHistory = null;
       this.pnlLog = null;
-      this.pnlOptions = null;
       this.pnlWaitPls = null;
       this.WebRESTClient1 = null;
       this.pnlListings = null;
@@ -48193,7 +48041,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       this.ChangeHTPC1 = null;
       this.ViewLog1 = null;
       this.Settings1 = null;
-      this.WebGroupBox3 = null;
       this.EPG = null;
       this.WebDataSource1 = null;
       this.WebButton1 = null;
@@ -48212,7 +48059,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       this.pnlFilterSelection = null;
       this.lblFilterSelect = null;
       this.WebHTMLDiv4 = null;
-      this.cbNumHistList = null;
       this.WIDBCDS = null;
       this.btnSchdRefrsh = null;
       this.btnRefreshData = null;
@@ -48228,7 +48074,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       this.pnlCaptures = undefined;
       this.pnlHistory = undefined;
       this.pnlLog = undefined;
-      this.pnlOptions = undefined;
       this.pnlWaitPls = undefined;
       this.WebRESTClient1 = undefined;
       this.pnlListings = undefined;
@@ -48242,7 +48087,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       this.ChangeHTPC1 = undefined;
       this.ViewLog1 = undefined;
       this.Settings1 = undefined;
-      this.WebGroupBox3 = undefined;
       this.EPG = undefined;
       this.WebDataSource1 = undefined;
       this.WebButton1 = undefined;
@@ -48261,7 +48105,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       this.pnlFilterSelection = undefined;
       this.lblFilterSelect = undefined;
       this.WebHTMLDiv4 = undefined;
-      this.cbNumHistList = undefined;
       this.WIDBCDS = undefined;
       this.btnSchdRefrsh = undefined;
       this.btnRefreshData = undefined;
@@ -48486,7 +48329,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       $impl.Log("Running version:  " + AppVersion);
       $impl.Log("App is " + pas.StrUtils.IfThen(!pas["WEBLib.Forms"].Application.GetIsOnline(),"NOT ","") + "online");
       this.WebRESTClient1.ReadTokens();
-      if (pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMHIST) !== "") this.cbNumHistList.SetItemIndex(this.cbNumHistList.FItems.IndexOf(pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMHIST)));
       this.WebMainMenu1.FAppearance.FHamburgerMenu.SetCaption("[" + pas["WEBLib.Storage"].TWebLocalStorage.GetValue($impl.EMAILADDR) + "]");
       this.FFont.SetHeight(-17);
       this.EPG.Hide();
@@ -48606,6 +48448,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         await this.SetFilters();
       } finally {
         this.ByAll.FOnClick = rtl.createCallback(this,"ByAllClick");
+        this.EPG.SetSelectedRow(1,true);
         $impl.Log("ByAllClick finished");
       };
     };
@@ -48762,25 +48605,19 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         $impl.Log("========== EPGClickCell() finished");
       };
     };
-    this.cbNumHistListChange = function (Sender) {
-      pas["WEBLib.Storage"].TLocalStorage.SetValue($impl.NUMHIST,this.cbNumHistList.GetText());
-    };
-    this.EPGCellClickedEvent = async function (Event) {
-      try {
-        $impl.Log("========== EPGCellClickedEvent() called from Row " + pas.SysUtils.TNativeIntHelper.ToString$1.call({a: pas.JS.toInteger(Event.rowIndex), get: function () {
-            return this.a;
-          }, set: function (v) {
-            this.a = v;
-          }}));
-        if (this.pnlFilterSelection.FVisible) this.pnlFilterSelection.Hide();
-        await this.ShowItemDetails(pas.SysUtils.TStringHelper.ToInteger$1.call({a: $mod.TDataGridBaseHelper.GetCell.call(this.EPG,4,pas.JS.toInteger(Event.rowIndex)), get: function () {
-            return this.a;
-          }, set: function (v) {
-            this.a = v;
-          }}),true);
-      } finally {
-        $impl.Log("========== EPGCellClickedEvent() finished");
-      };
+    this.EPGCellDoubleClickedEvent = function (Event) {
+      $impl.Log("========== EPGCellDoubleClickedEvent() called from Row " + pas.SysUtils.TNativeIntHelper.ToString$1.call({a: pas.JS.toInteger(Event.rowIndex), get: function () {
+          return this.a;
+        }, set: function (v) {
+          this.a = v;
+        }}));
+      if (this.pnlFilterSelection.FVisible) this.pnlFilterSelection.Hide();
+      this.ShowItemDetails(pas.SysUtils.TStringHelper.ToInteger$1.call({a: $mod.TDataGridBaseHelper.GetCell.call(this.EPG,4,pas.JS.toInteger(Event.rowIndex)), get: function () {
+          return this.a;
+        }, set: function (v) {
+          this.a = v;
+        }}),true);
+      $impl.Log("========== EPGCellDoubleClickedEvent() finished");
     };
     this.EPGGetRowClass = function (Params) {
       var Result = undefined;
@@ -48801,8 +48638,14 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       Result = pas.JS.New(["textAlign","center"]);
       return Result;
     };
-    this.HistoryWDGCellClickedEvent = function (Event) {
+    this.HistoryWDGCellDoubleClickedEvent = function (Event) {
+      $impl.Log("========== HistoryWDGCellDoubleClickedEvent() called from Row " + pas.SysUtils.TNativeIntHelper.ToString$1.call({a: pas.JS.toInteger(Event.rowIndex), get: function () {
+          return this.a;
+        }, set: function (v) {
+          this.a = v;
+        }}));
       this.ShowHistoryWDGDetails(pas.JS.toInteger(Event.rowIndex));
+      $impl.Log("========== HistoryWDGCellDoubleClickedEvent() finished");
     };
     this.WDGColumn_TDateTimeValueFormatter = function (Value) {
       var Result = undefined;
@@ -48903,10 +48746,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       } else if ($tmp === 3) {
         this.pnlLog.BringToFront();
         this.pnlLog.Show();
-      } else if ($tmp === 4) {
-        if (pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMHIST) !== "") this.cbNumHistList.SetItemIndex(this.cbNumHistList.FItems.IndexOf(pas["WEBLib.Storage"].TLocalStorage.GetValue($impl.NUMHIST)));
-        this.pnlOptions.BringToFront();
-        this.pnlOptions.Show();
       };
       $impl.VisiblePanelNum = PageNum;
     };
@@ -49617,9 +49456,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       this.WebLabel2 = pas["WEBLib.StdCtrls"].TLabel.$create("Create$1",[this]);
       this.WebLabel1 = pas["WEBLib.StdCtrls"].TLabel.$create("Create$1",[this]);
       this.WebButton1 = pas["WEBLib.StdCtrls"].TButton.$create("Create$1",[this]);
-      this.pnlOptions = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
-      this.WebGroupBox3 = pas["WEBLib.ExtCtrls"].TGroupBox.$create("Create$1",[this]);
-      this.cbNumHistList = pas["WEBLib.StdCtrls"].TComboBox.$create("Create$1",[this]);
       this.pnlHistory = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
       this.HistoryWDG = pas["WEBLib.DataGrid"].TDataGrid.$create("Create$1",[this]);
       this.pnlCaptures = pas["WEBLib.ExtCtrls"].TPanel.$create("Create$1",[this]);
@@ -49664,9 +49500,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       this.WebLabel2.BeforeLoadDFMValues();
       this.WebLabel1.BeforeLoadDFMValues();
       this.WebButton1.BeforeLoadDFMValues();
-      this.pnlOptions.BeforeLoadDFMValues();
-      this.WebGroupBox3.BeforeLoadDFMValues();
-      this.cbNumHistList.BeforeLoadDFMValues();
       this.pnlHistory.BeforeLoadDFMValues();
       this.HistoryWDG.BeforeLoadDFMValues();
       this.pnlCaptures.BeforeLoadDFMValues();
@@ -49740,7 +49573,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlMenu.FFont.SetStyle({});
         this.pnlMenu.SetParentFont(false);
         this.pnlMenu.SetShowCaption(false);
-        this.pnlMenu.SetTabOrder(6);
+        this.pnlMenu.SetTabOrder(5);
         this.pnlLog.SetParentComponent(this);
         this.pnlLog.SetName("pnlLog");
         this.pnlLog.SetLeft(0);
@@ -49919,85 +49752,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.WebButton1.SetRole("button");
         this.WebButton1.SetWidthStyle(0);
         this.WebButton1.SetWidthPercent(100.000000000000000000);
-        this.pnlOptions.SetParentComponent(this);
-        this.pnlOptions.SetName("pnlOptions");
-        this.pnlOptions.SetLeft(0);
-        this.pnlOptions.SetTop(50);
-        this.pnlOptions.SetWidth(428);
-        this.pnlOptions.SetHeight(727);
-        this.pnlOptions.SetElementClassName("card");
-        this.pnlOptions.SetHeightStyle(0);
-        this.pnlOptions.SetWidthStyle(0);
-        this.pnlOptions.SetAlign(5);
-        this.pnlOptions.SetCaption("pnlOptions");
-        this.pnlOptions.SetChildOrderEx(9);
-        this.pnlOptions.FElementBodyClassName = "card-body";
-        this.pnlOptions.SetElementFont(1);
-        this.pnlOptions.FFont.FCharset = 0;
-        this.pnlOptions.FFont.SetColor(0);
-        this.pnlOptions.FFont.SetHeight(-19);
-        this.pnlOptions.FFont.SetName("Arial");
-        this.pnlOptions.FFont.SetStyle({});
-        this.pnlOptions.SetParentFont(false);
-        this.pnlOptions.SetShowCaption(false);
-        this.pnlOptions.SetTabOrder(4);
-        this.WebGroupBox3.SetParentComponent(this.pnlOptions);
-        this.WebGroupBox3.SetName("WebGroupBox3");
-        this.WebGroupBox3.SetLeft(15);
-        this.WebGroupBox3.SetTop(16);
-        this.WebGroupBox3.SetWidth(264);
-        this.WebGroupBox3.SetHeight(104);
-        this.WebGroupBox3.SetElementClassName("btn-group");
-        this.WebGroupBox3.SetWidthPercent(25.000000000000000000);
-        this.WebGroupBox3.SetAlign(6);
-        this.WebGroupBox3.SetBorderColor(12632256);
-        this.WebGroupBox3.SetCaption("History Events Displayed");
-        this.WebGroupBox3.SetColor(16776960);
-        this.WebGroupBox3.SetElementFont(1);
-        this.WebGroupBox3.SetElementLegendClassName("h6");
-        this.WebGroupBox3.FFont.FCharset = 0;
-        this.WebGroupBox3.FFont.SetColor(0);
-        this.WebGroupBox3.FFont.SetHeight(-19);
-        this.WebGroupBox3.FFont.SetName("Arial");
-        this.WebGroupBox3.FFont.SetStyle({});
-        this.WebGroupBox3.SetParentFont(false);
-        this.cbNumHistList.SetParentComponent(this.WebGroupBox3);
-        this.cbNumHistList.SetName("cbNumHistList");
-        this.cbNumHistList.SetLeft(81);
-        this.cbNumHistList.SetTop(40);
-        this.cbNumHistList.SetWidth(100);
-        this.cbNumHistList.SetHeight(30);
-        this.cbNumHistList.SetElementClassName("form-select");
-        this.cbNumHistList.SetElementFont(1);
-        this.cbNumHistList.FFont.FCharset = 0;
-        this.cbNumHistList.FFont.SetColor(0);
-        this.cbNumHistList.FFont.SetHeight(-19);
-        this.cbNumHistList.FFont.SetName("Arial");
-        this.cbNumHistList.FFont.SetStyle({});
-        this.cbNumHistList.SetHeightStyle(2);
-        this.cbNumHistList.SetHeightPercent(100.000000000000000000);
-        this.cbNumHistList.SetParentFont(false);
-        this.cbNumHistList.SetRole("combobox");
-        this.cbNumHistList.SetText("200");
-        this.cbNumHistList.SetWidthPercent(100.000000000000000000);
-        this.SetEvent$1(this.cbNumHistList,this,"OnChange","cbNumHistListChange");
-        this.cbNumHistList.SetItemIndex(1);
-        this.cbNumHistList.FItems.BeginUpdate();
-        try {
-          this.cbNumHistList.FItems.Clear();
-          this.cbNumHistList.FItems.Add("100");
-          this.cbNumHistList.FItems.Add("200");
-          this.cbNumHistList.FItems.Add("300");
-          this.cbNumHistList.FItems.Add("400");
-          this.cbNumHistList.FItems.Add("500");
-          this.cbNumHistList.FItems.Add("600");
-          this.cbNumHistList.FItems.Add("700");
-          this.cbNumHistList.FItems.Add("800");
-          this.cbNumHistList.FItems.Add("900");
-          this.cbNumHistList.FItems.Add("1000");
-        } finally {
-          this.cbNumHistList.FItems.EndUpdate();
-        };
         this.pnlHistory.SetParentComponent(this);
         this.pnlHistory.SetName("pnlHistory");
         this.pnlHistory.SetLeft(0);
@@ -50042,6 +49796,9 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         $with9.FFont.SetHeight(-12);
         $with9.FFont.SetName("Segoe UI");
         $with9.FFont.SetStyle({});
+        this.HistoryWDG.FDefaultColDef.SetEnabled(true);
+        this.HistoryWDG.FDefaultColDef.SetSuppressMovable(true);
+        this.HistoryWDG.SetEditType(1);
         this.HistoryWDG.FFont.FCharset = 1;
         this.HistoryWDG.FFont.SetColor(0);
         this.HistoryWDG.FFont.SetHeight(18);
@@ -50051,7 +49808,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.HistoryWDG.FTheming.SetThemeMode(1);
         this.HistoryWDG.SetVisible(false);
         this.SetEvent$1(this.HistoryWDG,this,"OnGetRowClass","HistoryWDGGetRowClass");
-        this.SetEvent$1(this.HistoryWDG,this,"OnCellClickedEvent","HistoryWDGCellClickedEvent");
+        this.SetEvent$1(this.HistoryWDG,this,"OnCellDoubleClickedEvent","HistoryWDGCellDoubleClickedEvent");
         this.pnlCaptures.SetParentComponent(this);
         this.pnlCaptures.SetName("pnlCaptures");
         this.pnlCaptures.SetLeft(0);
@@ -50246,7 +50003,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlListings.FFont.SetStyle({});
         this.pnlListings.SetParentFont(false);
         this.pnlListings.SetShowCaption(false);
-        this.pnlListings.SetTabOrder(5);
+        this.pnlListings.SetTabOrder(4);
         this.lblEmptyEPG.SetParentComponent(this.pnlListings);
         this.lblEmptyEPG.SetName("lblEmptyEPG");
         this.lblEmptyEPG.SetLeft(96);
@@ -50361,6 +50118,8 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         $with16.FFont.SetHeight(-12);
         $with16.FFont.SetName("Segoe UI");
         $with16.FFont.SetStyle({});
+        this.EPG.FDefaultColDef.SetEnabled(true);
+        this.EPG.FDefaultColDef.SetSuppressMovable(true);
         this.EPG.SetEditType(1);
         this.EPG.FFont.FCharset = 0;
         this.EPG.FFont.SetColor(1262987);
@@ -50372,10 +50131,11 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.EPG.SetRowHeight(20);
         this.EPG.SetTabOrder(0);
         this.EPG.FTheming.SetThemeMode(1);
+        this.EPG.SetVisible(false);
         this.EPG.SetDataSource(this.WebDataSource1);
         this.EPG.SetShowIndicator(false);
         this.SetEvent$1(this.EPG,this,"OnGetRowClass","EPGGetRowClass");
-        this.SetEvent$1(this.EPG,this,"OnCellClickedEvent","EPGCellClickedEvent");
+        this.SetEvent$1(this.EPG,this,"OnCellDoubleClickedEvent","EPGCellDoubleClickedEvent");
         this.pnlFilterSelection.SetParentComponent(this.pnlListings);
         this.pnlFilterSelection.SetName("pnlFilterSelection");
         this.pnlFilterSelection.SetLeft(100);
@@ -50557,7 +50317,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         $with18.FFont.SetHeight(-12);
         $with18.FFont.SetName("Segoe UI");
         $with18.FFont.SetStyle({});
-        this.BufferWDG.SetTabOrder(7);
+        this.BufferWDG.SetTabOrder(6);
         this.BufferWDG.SetVisible(false);
         this.WebMainMenu1.SetParentComponent(this);
         this.WebMainMenu1.SetName("WebMainMenu1");
@@ -50665,9 +50425,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.WebLabel2.AfterLoadDFMValues();
         this.WebLabel1.AfterLoadDFMValues();
         this.WebButton1.AfterLoadDFMValues();
-        this.pnlOptions.AfterLoadDFMValues();
-        this.WebGroupBox3.AfterLoadDFMValues();
-        this.cbNumHistList.AfterLoadDFMValues();
         this.pnlHistory.AfterLoadDFMValues();
         this.HistoryWDG.AfterLoadDFMValues();
         this.pnlCaptures.AfterLoadDFMValues();
@@ -50714,7 +50471,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
     $r.addField("pnlCaptures",pas["WEBLib.ExtCtrls"].$rtti["TPanel"],4);
     $r.addField("pnlHistory",pas["WEBLib.ExtCtrls"].$rtti["TPanel"],4);
     $r.addField("pnlLog",pas["WEBLib.ExtCtrls"].$rtti["TPanel"],4);
-    $r.addField("pnlOptions",pas["WEBLib.ExtCtrls"].$rtti["TPanel"],4);
     $r.addField("pnlWaitPls",pas["WEBLib.ExtCtrls"].$rtti["TPanel"],4);
     $r.addField("WebRESTClient1",pas["WEBLib.REST"].$rtti["TRESTClient"],4);
     $r.addField("pnlListings",pas["WEBLib.ExtCtrls"].$rtti["TPanel"],4);
@@ -50728,7 +50484,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
     $r.addField("ChangeHTPC1",pas["WEBLib.Menus"].$rtti["TMenuItem"],4);
     $r.addField("ViewLog1",pas["WEBLib.Menus"].$rtti["TMenuItem"],4);
     $r.addField("Settings1",pas["WEBLib.Menus"].$rtti["TMenuItem"],4);
-    $r.addField("WebGroupBox3",pas["WEBLib.ExtCtrls"].$rtti["TGroupBox"],4);
     $r.addField("EPG",pas["WEBLib.DB.DataGrid"].$rtti["TDBDataGrid"],4);
     $r.addField("WebDataSource1",pas.DB.$rtti["TDataSource"],4);
     $r.addField("WebButton1",pas["WEBLib.StdCtrls"].$rtti["TButton"],4);
@@ -50747,7 +50502,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
     $r.addField("pnlFilterSelection",pas["WEBLib.ExtCtrls"].$rtti["TPanel"],4);
     $r.addField("lblFilterSelect",pas["WEBLib.StdCtrls"].$rtti["TLabel"],4);
     $r.addField("WebHTMLDiv4",pas["WEBLib.WebCtrls"].$rtti["THTMLDiv"],4);
-    $r.addField("cbNumHistList",pas["WEBLib.StdCtrls"].$rtti["TComboBox"],4);
     $r.addField("WIDBCDS",pas["WEBLib.IndexedDb"].$rtti["TIndexedDbClientDataset"],4);
     $r.addField("btnSchdRefrsh",pas["WEBLib.StdCtrls"].$rtti["TButton"],4);
     $r.addField("btnRefreshData",pas["WEBLib.Buttons"].$rtti["TSpeedButton"],4);
@@ -50788,12 +50542,11 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
     $r.addMethod("WebTimer1Timer",0,[["Sender",pas.System.$rtti["TObject"]]],4);
     $r.addMethod("CapturesWSGGetCellData",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint],["AField",pas.DB.$rtti["TField"]],["AValue",rtl.string,1]],4);
     $r.addMethod("CapturesWSGClickCell",0,[["Sender",pas.System.$rtti["TObject"]],["ACol",rtl.longint],["ARow",rtl.longint]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
-    $r.addMethod("cbNumHistListChange",0,[["Sender",pas.System.$rtti["TObject"]]],4);
-    $r.addMethod("EPGCellClickedEvent",0,[["Event",pas.libdatagrid.$rtti["TJSCellClickedEvent"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
+    $r.addMethod("EPGCellDoubleClickedEvent",0,[["Event",pas.libdatagrid.$rtti["TJSCellDoubleClickedEvent"]]],4);
     $r.addMethod("EPGGetRowClass",1,[["Params",pas.libdatagrid.$rtti["TJSGetRowClassParams"]]],4,rtl.jsvalue);
     $r.addMethod("SwipeDownRefresh",0,[["Enabled",rtl.boolean]],4);
     $r.addMethod("EPGColumn_PSIPGetCellStyle",1,[["Params",pas.libdatagrid.$rtti["TJSCellClassParams"]]],4,rtl.jsvalue);
-    $r.addMethod("HistoryWDGCellClickedEvent",0,[["Event",pas.libdatagrid.$rtti["TJSCellClickedEvent"]]],4);
+    $r.addMethod("HistoryWDGCellDoubleClickedEvent",0,[["Event",pas.libdatagrid.$rtti["TJSCellDoubleClickedEvent"]]],4);
     $r.addMethod("WDGColumn_TDateTimeValueFormatter",1,[["Value",rtl.jsvalue]],4,rtl.jsvalue);
     $r.addMethod("HistoryWDGGetRowClass",1,[["Params",pas.libdatagrid.$rtti["TJSGetRowClassParams"]]],4,rtl.jsvalue);
   });
@@ -50816,7 +50569,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
     $impl.CSVString = "";
     $impl.ProgramTypes = {"0": "New", New: 0, "1": "Rerun", Rerun: 1, "2": "Movie", Movie: 2, "3": "Other", Other: 3};
     $mod.$rtti.$Enum("ProgramTypes",{minvalue: 0, maxvalue: 3, ordtype: 1, enumtype: $impl.ProgramTypes});
-    $impl.NUMHIST = "NumHistoryItems";
     $impl.EMAILADDR = "emailAddress";
     $impl.CSV_EPG = "cwr_epg.csv";
     $impl.CSV_CAPTURES = "cwr_captures.csv";
