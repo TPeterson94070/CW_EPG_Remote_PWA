@@ -48299,7 +48299,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       } else {
         await pas["WEBLib.Dialogs"].MessageDlgAsync("The data update failed!\rPlease make sure that the HTPC" + "\r is connected to Google Drive",2,rtl.createSet(2));
       };
-      if ($impl.VisiblePanelNum !== 3) {
+      if ($impl.VisiblePageNum !== 3) {
         await this.ReFreshListings()}
        else await this.SetupEpg();
       $impl.Log("*********** Delta t (sec): " + pas.SysUtils.TNativeIntHelper.ToString$1.call({a: pas.DateUtils.SecondsBetween(pas.SysUtils.Now(),StartT), get: function () {
@@ -48404,37 +48404,29 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       $impl.Log("Settings visible");
     };
     this.ByGenreClick = async function (Sender) {
-      $impl.Log("ByGenreClick called");
-      this.ByGenre.FOnClick = null;
-      try {
-        if (this.ByGenre.FChecked) {
-          this.ByGenre.SetChecked(false);
-          this.wcbGenres.SetItemIndex(-1);
-          await this.SetFilters();
-        } else await this.PopupFilterList(this.wcbGenres,"genres");
-      } finally {
-        $impl.Log("ByGenreClick finished");
-        this.ByGenre.FOnClick = rtl.createCallback(this,"ByGenreClick");
-      };
+      this.HandleClick(this.ByGenre,this.wcbGenres,"genres");
     };
     this.wcbGenresChange = async function (Sender) {
       $impl.Log("wcbGenres.Text: " + this.wcbGenres.GetText());
       this.ByGenre.SetChecked(this.wcbGenres.GetText() !== "All");
       this.SetFilters();
     };
-    this.byTypeClick = async function (Sender) {
-      $impl.Log("byTypeClick called");
-      this.byType.FOnClick = null;
+    this.HandleClick = function (MenuItem, cbItems, ItemName) {
+      $impl.Log(MenuItem.FName + " called");
       try {
-        if (this.byType.FChecked) {
-          this.byType.SetChecked(false);
-          this.wcbTypes.SetItemIndex(-1);
-          await this.SetFilters();
-        } else await this.PopupFilterList(this.wcbTypes,"Type");
+        if (MenuItem.FChecked && ($impl.VisiblePageNum === 0)) {
+          MenuItem.SetChecked(false);
+          cbItems.SetItemIndex(-1);
+          this.SetFilters();
+        } else if ($impl.VisiblePageNum === 0) {
+          this.PopupFilterList(cbItems,ItemName)}
+         else this.SetPage(0);
       } finally {
-        this.byType.FOnClick = rtl.createCallback(this,"byTypeClick");
-        $impl.Log("byTypeClick finished");
+        $impl.Log(MenuItem.FName + " finished");
       };
+    };
+    this.byTypeClick = async function (Sender) {
+      this.HandleClick(this.byType,this.wcbTypes,"Type");
     };
     this.ByAllClick = async function (Sender) {
       $impl.Log("ByAllClick called");
@@ -48448,23 +48440,11 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         await this.SetFilters();
       } finally {
         this.ByAll.FOnClick = rtl.createCallback(this,"ByAllClick");
-        this.EPG.SetSelectedRow(1,true);
         $impl.Log("ByAllClick finished");
       };
     };
     this.ByChannelClick = async function (Sender) {
-      $impl.Log("ByChannelClick called");
-      this.ByChannel.FOnClick = null;
-      try {
-        if (this.ByChannel.FChecked) {
-          this.ByChannel.SetChecked(false);
-          this.wcbChannels.SetItemIndex(-1);
-          await this.SetFilters();
-        } else await this.PopupFilterList(this.wcbChannels,"PSIP");
-      } finally {
-        $impl.Log("ByChannelClick finished");
-        this.ByChannel.FOnClick = rtl.createCallback(this,"ByChannelClick");
-      };
+      this.HandleClick(this.ByChannel,this.wcbChannels,"PSIP");
     };
     this.wcbChannelsChange = async function (Sender) {
       $impl.Log("wcbChannels.Text: " + this.wcbChannels.GetText());
@@ -48771,7 +48751,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlLog.BringToFront();
         this.pnlLog.Show();
       };
-      $impl.VisiblePanelNum = PageNum;
+      $impl.VisiblePageNum = PageNum;
     };
     this.FetchCapReservations = async function () {
       var id = "";
@@ -49178,7 +49158,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       cb.BringToFront();
       cb.Show();
       await sleep(100);
-      if ($impl.VisiblePanelNum !== 0) await this.SetPage(0);
+      if ($impl.VisiblePageNum !== 0) await this.SetPage(0);
       $impl.Log("====== Exiting PopupFilterList");
     };
     this.SetFilters = async function () {
@@ -49212,12 +49192,13 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       await this.WIDBCDS.EnableControls();
       this.WebTimer1.SetEnabled(true);
       this.EPG.EndUpdate();
+      this.WIDBCDS.First();
       this.pnlWaitPls.Hide();
       this.pnlFilterSelection.Hide();
       $impl.Log("====== SetFilters finished");
     };
     this.ShowPlsWait = async function (PlsWaitCap) {
-      if ($impl.VisiblePanelNum !== 3) {
+      if ($impl.VisiblePageNum !== 3) {
         this.WebLabel1.SetCaption(PlsWaitCap);
         this.pnlWaitPls.BringToFront();
         this.pnlWaitPls.Show();
@@ -50550,6 +50531,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
     $r.addMethod("Settings1Click",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("ByGenreClick",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create",pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("wcbGenresChange",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
+    $r.addMethod("HandleClick",0,[["MenuItem",pas["WEBLib.Menus"].$rtti["TMenuItem"]],["cbItems",pas["WEBLib.StdCtrls"].$rtti["TComboBox"]],["ItemName",rtl.string]],4);
     $r.addMethod("byTypeClick",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("ByAllClick",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("ByChannelClick",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
@@ -50588,7 +50570,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
     $impl.CLIENT_APP_KEY = "654508083810-kdj6ob7srm922egkvdmcj36hfa1hitav.apps.googleusercontent.com";
     $impl.ResetPrompt = "none";
     $impl.BaseFilter = "";
-    $impl.VisiblePanelNum = 0;
+    $impl.VisiblePageNum = 0;
     $impl.FirstEndDate = 0.0;
     $impl.LastStartDate = 0.0;
     $impl.TotalAvailableDays = 0;
