@@ -399,65 +399,19 @@ end;
 procedure TCWRmainFrm.ByChannelClick(Sender: TObject);
 begin
   HandleClick(ByChannel, wcbChannels, 'PSIP');
-//  Log('ByChannelClick called');
-//  ByChannel.OnClick := nil;
-//  try
-//    if VisiblePageNum = 0 then // Toggle off this filter
-//    begin
-//      ByChannel.Checked := False;
-//      wcbChannels.ItemIndex := -1;
-//    end;
-//    {$IfDef PAS2JS}await{$EndIf}(SetFilters);
-//    if VisiblePageNum <> 0 then
-//      {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbChannels, 'PSIP'));
-//  finally
-//    Log('ByChannelClick finished');
 //    ByChannel.OnClick := ByChannelClick;
-//  end;
 end;
 
 procedure TCWRmainFrm.ByGenreClick(Sender: TObject);
 begin
   HandleClick(ByGenre, wcbGenres, 'genres');
-
-
-//  Log('ByGenreClick called');
-//  ByGenre.OnClick := nil;
-//  try
-//    if ByGenre.Checked and (VisiblePageNum = 0) then // Toggle off this filter
-//    begin
-//      ByGenre.Checked := False;
-//      wcbGenres.ItemIndex := -1;
-////      {$IfDef PAS2JS}await{$EndIf}
-//      (SetFilters);
-//    end
-//    else if VisiblePageNum = 0 then
-////      {$IfDef PAS2JS}await{$EndIf}
-//      (PopupFilterList(wcbGenres, 'genres'))
-//    else SetPage(0);
-//  finally
-//    Log('ByGenreClick finished');
 //    ByGenre.OnClick := ByGenreClick;
-//  end;
 end;
 
 procedure TCWRmainFrm.byTypeClick(Sender: TObject);
 begin
   HandleClick(byType, wcbTypes, 'Type');
-//  Log('byTypeClick called');
-//  byType.OnClick := nil;
-//  try
-//    if byType.Checked and (VisiblePageNum = 0) then // Toggle off this filter
-//    begin
-//      byType.Checked := False;
-//      wcbTypes.ItemIndex := -1;
-//      {$IfDef PAS2JS}await{$EndIf}(SetFilters);
-//    end else
-//      {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTypes, 'Type'));
-//  finally
 //    byType.OnClick := byTypeClick;
-//    Log('byTypeClick finished');
-//  end;
 end;
 
 procedure TCWRmainFrm.CapturesWSGClickCell(Sender: TObject; ACol, ARow: Integer);
