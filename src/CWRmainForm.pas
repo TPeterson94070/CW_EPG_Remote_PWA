@@ -63,7 +63,6 @@ type
     WebTimer1: TWebTimer;
     HistoryWDG: TWebDataGrid;
     BufferWDG: TWebDataGrid;
-//  procedure ClearFilterLists;
   procedure SetCapturesFormats;
   procedure EPGGetCellClass(Sender: TObject; ACol, ARow: Integer;  // Lead with non-async proc to avoid mess-up on new comp add
     AField: TField; AValue: string; var AClassName: string);
@@ -82,12 +81,9 @@ type
   [async] procedure ScheduledClick(Sender: TObject);
   [async] procedure ViewLog1Click(Sender: TObject);
   [async] procedure Settings1Click(Sender: TObject);
-  [async]
-//  procedure EPGClickCell(Sender: TObject; ACol, ARow: Integer);
   [async] procedure ByGenreClick(Sender: TObject);
   [async] procedure wcbGenresChange(Sender: TObject);
-//  [async] procedure ByTitleClick(Sender: TObject);
-  procedure HandleClick(MenuItem: TMenuItem; cbItems: TWebComboBox; ItemName:
+  [async] procedure HandleClick(MenuItem: TMenuItem; cbItems: TWebComboBox; ItemName:
       string);
   [async] procedure byTypeClick(Sender: TObject);
   [async] procedure ByAllClick(Sender: TObject);
@@ -100,7 +96,6 @@ type
       AField: TField; var AValue: string);
     procedure wcbGenresFocusOut(Sender: TObject);
     procedure wcbChannelsFocusOut(Sender: TObject);
-//  [async] procedure btnOptOKClick(Sender: TObject);
   [async] procedure btnSchdRefrshClick(Sender: TObject);
   [async] procedure btnRefreshDataClick(Sender: TObject);
     procedure wcbTypesChange(Sender: TObject);
@@ -110,7 +105,6 @@ type
       AField: TField; var AValue: string);
     [async] procedure CapturesWSGClickCell(Sender: TObject; ACol, ARow: Integer);
   procedure EPGCellClickedEvent(Event: TJSCellClickedEvent);
-//  procedure cbNumHistListChange(Sender: TObject);
   procedure EPGCellDoubleClickedEvent(Event: TJSCellDoubleClickedEvent);
   function EPGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
     procedure SwipeDownRefresh(Enabled: Boolean);
@@ -389,11 +383,11 @@ begin
     begin
       MenuItem.Checked := False;
       cbItems.ItemIndex := -1;
-//      {$IfDef PAS2JS}await{$EndIf}
+      {$IfDef PAS2JS}await{$EndIf}
       (SetFilters);
     end
-    else if VisiblePageNum = 0 then
-//      {$IfDef PAS2JS}await{$EndIf}
+    else if not MenuItem.Checked then
+      {$IfDef PAS2JS}await{$EndIf}
       (PopupFilterList(cbItems, ItemName))
     else SetPage(0);
   finally
