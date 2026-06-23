@@ -87,6 +87,8 @@ type
   [async] procedure ByGenreClick(Sender: TObject);
   [async] procedure wcbGenresChange(Sender: TObject);
 //  [async] procedure ByTitleClick(Sender: TObject);
+  procedure HandleClick(MenuItem: TMenuItem; cbItems: TWebComboBox; ItemName:
+      string);
   [async] procedure byTypeClick(Sender: TObject);
   [async] procedure ByAllClick(Sender: TObject);
   [async] procedure ByChannelClick(Sender: TObject);
@@ -174,7 +176,7 @@ uses
 var
   ResetPrompt:      string = 'none' ;
   BaseFilter:       string;
-  VisiblePanelNum:  Integer = 0;
+  VisiblePageNum:  Integer = 0;
   FirstEndDate,
   LastStartDate:    TDate;
   TotalAvailableDays: Integer;
@@ -232,25 +234,6 @@ begin
   pnlFilterSelection.Hide;
   wcbTypes.Hide;
 end;
-
-//procedure TCWRmainFrm.WebTimer2Timer(Sender: TObject);
-//begin
-//  WebTimer2.Enabled := False;
-//  if weTitleSearch.Text = '' then Exit;
-//  if not ByTitle.Checked then Exit;
-//  Log('weTitleSearch.Text: ' + weTitleSearch.Text);
-//  SearchFilter := weTitleSearch.Text;
-//  {$IfDef PAS2JS}await{$EndIf}(SetFilters);
-//  weTitleSearch.SetFocus;
-//end;
-
-//procedure TCWRmainFrm.weTitleSearchChange(Sender: TObject);
-//begin
-//  ByTitle.Checked := True;
-//  WebTimer2.Interval := 2000;
-//  WebTimer2.Enabled := False; // Restart timeout
-//  WebTimer2.Enabled := True;
-//end;
 
 procedure TCWRmainFrm.wcbChannelsChange(Sender: TObject);
 begin
@@ -338,7 +321,7 @@ begin
     TAwait.ExecP<TModalResult> (MessageDlgAsync('The data update failed!'#13'Please make sure that the HTPC'
       + #13' is connected to Google Drive',mtInformation, [mbOK]))
   end;
-  if VisiblePanelNum <> 3 then {$IfDef PAS2JS}await{$EndIf}(ReFreshListings)
+  if VisiblePageNum <> 3 then {$IfDef PAS2JS}await{$EndIf}(ReFreshListings)
   else {$IfDef PAS2JS}await{$EndIf}(SetupEpg);
   Log('*********** Delta t (sec): ' + SecondsBetween(Now, StartT).ToString);
   Log('*********** Rate (ms/rec): ' + (MilliSecondsBetween(Now, StartT)/TotalEPGRecordCount).ToString);
@@ -393,93 +376,94 @@ begin
     {$IfDef PAS2JS}await{$EndIf}(SetFilters)
   finally
     ByAll.OnClick := ByAllClick;
-    EPG.SetSelectedRow(1,True);
     Log('ByAllClick finished');
+  end;
+end;
+
+procedure TCWRmainFrm.HandleClick(MenuItem: TMenuItem; cbItems: TWebComboBox; ItemName: string);
+begin
+  Log(MenuItem.Name + ' called');
+//  MenuItem.OnClick := nil;
+  try
+    if MenuItem.Checked and (VisiblePageNum = 0) then // Toggle off this filter
+    begin
+      MenuItem.Checked := False;
+      cbItems.ItemIndex := -1;
+//      {$IfDef PAS2JS}await{$EndIf}
+      (SetFilters);
+    end
+    else if VisiblePageNum = 0 then
+//      {$IfDef PAS2JS}await{$EndIf}
+      (PopupFilterList(cbItems, ItemName))
+    else SetPage(0);
+  finally
+    Log(MenuItem.Name + ' finished');
+//    MenuItem.OnClick := MenuItemOnClickProcedure;
   end;
 end;
 
 procedure TCWRmainFrm.ByChannelClick(Sender: TObject);
 begin
-  Log('ByChannelClick called');
-  ByChannel.OnClick := nil;
-  try
-    if ByChannel.Checked then // Toggle off this filter
-    begin
-      ByChannel.Checked := False;
-      wcbChannels.ItemIndex := -1;
-      {$IfDef PAS2JS}await{$EndIf}(SetFilters);
-    end else
-      {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbChannels, 'PSIP'));
-  finally
-    Log('ByChannelClick finished');
-    ByChannel.OnClick := ByChannelClick;
-  end;
+  HandleClick(ByChannel, wcbChannels, 'PSIP');
+//  Log('ByChannelClick called');
+//  ByChannel.OnClick := nil;
+//  try
+//    if VisiblePageNum = 0 then // Toggle off this filter
+//    begin
+//      ByChannel.Checked := False;
+//      wcbChannels.ItemIndex := -1;
+//    end;
+//    {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+//    if VisiblePageNum <> 0 then
+//      {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbChannels, 'PSIP'));
+//  finally
+//    Log('ByChannelClick finished');
+//    ByChannel.OnClick := ByChannelClick;
+//  end;
 end;
 
 procedure TCWRmainFrm.ByGenreClick(Sender: TObject);
 begin
-  Log('ByGenreClick called');
-  ByGenre.OnClick := nil;
-  try
-    if ByGenre.Checked then // Toggle off this filter
-    begin
-      ByGenre.Checked := False;
-      wcbGenres.ItemIndex := -1;
-      {$IfDef PAS2JS}await{$EndIf}(SetFilters);
-    end else
-      {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbGenres, 'genres'));
-  finally
-    Log('ByGenreClick finished');
-    ByGenre.OnClick := ByGenreClick;
-  end;
-end;
+  HandleClick(ByGenre, wcbGenres, 'genres');
 
-//procedure TCWRmainFrm.ByTitleClick(Sender: TObject);
-//begin
-//  Log('byTitleClick called');
-//  ByTitle.OnClick := nil;
+
+//  Log('ByGenreClick called');
+//  ByGenre.OnClick := nil;
 //  try
-//    if ByTitle.Checked then // Toggle off this filter
+//    if ByGenre.Checked and (VisiblePageNum = 0) then // Toggle off this filter
 //    begin
-//      ByTitle.Checked := False;
-//      pnlFilterSelection.Hide;
-//      weTitleSearch.Hide;
-//      {$IfDef PAS2JS}await{$EndIf}(SetFilters);
-//    end else
-//    begin
-//      wcbGenres.Hide;
-//      wcbChannels.Hide;
-//      wcbTypes.Hide;
-//      lblFilterSelect.Caption := 'Show Titles with:';
-//      if VisiblePanelNum <> 0 then {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
-//      pnlFilterSelection.BringToFront;
-//      pnlFilterSelection.Show;
-//      weTitleSearch.Clear;
-//      weTitleSearch.BringToFront;
-//      weTitleSearch.Show;
-//    end;
+//      ByGenre.Checked := False;
+//      wcbGenres.ItemIndex := -1;
+////      {$IfDef PAS2JS}await{$EndIf}
+//      (SetFilters);
+//    end
+//    else if VisiblePageNum = 0 then
+////      {$IfDef PAS2JS}await{$EndIf}
+//      (PopupFilterList(wcbGenres, 'genres'))
+//    else SetPage(0);
 //  finally
-//    ByTitle.OnClick := ByTitleClick;
-//    Log('byTitleClick finished');
+//    Log('ByGenreClick finished');
+//    ByGenre.OnClick := ByGenreClick;
 //  end;
-//end;
+end;
 
 procedure TCWRmainFrm.byTypeClick(Sender: TObject);
 begin
-  Log('byTypeClick called');
-  byType.OnClick := nil;
-  try
-    if byType.Checked then // Toggle off this filter
-    begin
-      byType.Checked := False;
-      wcbTypes.ItemIndex := -1;
-      {$IfDef PAS2JS}await{$EndIf}(SetFilters);
-    end else
-      {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTypes, 'Type'));
-  finally
-    byType.OnClick := byTypeClick;
-    Log('byTypeClick finished');
-  end;
+  HandleClick(byType, wcbTypes, 'Type');
+//  Log('byTypeClick called');
+//  byType.OnClick := nil;
+//  try
+//    if byType.Checked and (VisiblePageNum = 0) then // Toggle off this filter
+//    begin
+//      byType.Checked := False;
+//      wcbTypes.ItemIndex := -1;
+//      {$IfDef PAS2JS}await{$EndIf}(SetFilters);
+//    end else
+//      {$IfDef PAS2JS}await{$EndIf}(PopupFilterList(wcbTypes, 'Type'));
+//  finally
+//    byType.OnClick := byTypeClick;
+//    Log('byTypeClick finished');
+//  end;
 end;
 
 procedure TCWRmainFrm.CapturesWSGClickCell(Sender: TObject; ACol, ARow: Integer);
@@ -1057,7 +1041,7 @@ begin
   cb.BringToFront;
   cb.Show;
   {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
-  if VisiblePanelNum <> 0 then {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
+  if VisiblePageNum <> 0 then {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
   Log('====== Exiting PopupFilterList');
 end;
 
@@ -1107,6 +1091,7 @@ begin
   {$IfDef PAS2JS}await{$EndIf}(WIDBCDS.EnableControls);
   WebTimer1.Enabled := True;  // Only keep WIDBCDS controls enabled briefly
   EPG.EndUpdate;
+  WIDBCDS.First;
   pnlWaitPls.Hide;
   pnlFilterSelection.Hide;
   Log('====== SetFilters finished');
@@ -1115,7 +1100,7 @@ end;
 procedure TCWRmainFrm.ShowPlsWait(PlsWaitCap: string);
 
 begin
-  if VisiblePanelNum <> 3 then  // Show overlay
+  if VisiblePageNum <> 3 then  // Show overlay
   begin
     WebLabel1.Caption := PlsWaitCap;
     pnlWaitPls.BringToFront;
@@ -1308,7 +1293,7 @@ begin
       pnlLog.Show;
     end;
   end;
-  VisiblePanelNum := PageNum;
+  VisiblePageNum := PageNum;
 end;
 
 procedure TCWRmainFrm.Settings1Click(Sender: TObject);
