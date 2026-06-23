@@ -48411,15 +48411,15 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       this.ByGenre.SetChecked(this.wcbGenres.GetText() !== "All");
       this.SetFilters();
     };
-    this.HandleClick = function (MenuItem, cbItems, ItemName) {
+    this.HandleClick = async function (MenuItem, cbItems, ItemName) {
       $impl.Log(MenuItem.FName + " called");
       try {
         if (MenuItem.FChecked && ($impl.VisiblePageNum === 0)) {
           MenuItem.SetChecked(false);
           cbItems.SetItemIndex(-1);
-          this.SetFilters();
-        } else if ($impl.VisiblePageNum === 0) {
-          this.PopupFilterList(cbItems,ItemName)}
+          await this.SetFilters();
+        } else if (!MenuItem.FChecked) {
+          await this.PopupFilterList(cbItems,ItemName)}
          else this.SetPage(0);
       } finally {
         $impl.Log(MenuItem.FName + " finished");
@@ -50529,9 +50529,9 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
     $r.addMethod("ScheduledClick",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("ViewLog1Click",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("Settings1Click",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
-    $r.addMethod("ByGenreClick",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create",pas.JS.AsyncAttribute,"Create"]});
+    $r.addMethod("ByGenreClick",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("wcbGenresChange",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
-    $r.addMethod("HandleClick",0,[["MenuItem",pas["WEBLib.Menus"].$rtti["TMenuItem"]],["cbItems",pas["WEBLib.StdCtrls"].$rtti["TComboBox"]],["ItemName",rtl.string]],4);
+    $r.addMethod("HandleClick",0,[["MenuItem",pas["WEBLib.Menus"].$rtti["TMenuItem"]],["cbItems",pas["WEBLib.StdCtrls"].$rtti["TComboBox"]],["ItemName",rtl.string]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("byTypeClick",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("ByAllClick",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
     $r.addMethod("ByChannelClick",0,[["Sender",pas.System.$rtti["TObject"]]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
