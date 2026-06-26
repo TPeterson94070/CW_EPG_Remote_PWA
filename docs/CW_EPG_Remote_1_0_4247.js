@@ -48676,6 +48676,12 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       };
       return Result;
     };
+    this.WIDBCDSAfterClose = function (DataSet) {
+      $impl.Log("@@@@@@ WIDBS.Close was executed");
+    };
+    this.WIDBCDSBeforeClose = function (DataSet) {
+      $impl.Log("@@@@@@ WIDBS.Close was called");
+    };
     this.LogDataRange = async function () {
       $impl.Log("WIDBCDS.RecordCount:  " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
           return this.p;
@@ -49011,7 +49017,15 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         if (($Self.WebRESTClient1.FAccessToken === "") || ($impl.ResetPrompt !== "none")) {
           window.console.log("Performing OAuth");
           await $Self.ShowPlsWait("Select Login Credentials");
-          await $Self.WebRESTClient1.Authenticate();
+          try {
+            await $Self.WebRESTClient1.Authenticate();
+          } catch ($e) {
+            if (pas.SysUtils.Exception.isPrototypeOf($e)) {
+              var E = $e;
+              $impl.Log("******* Client.Authenticate exception: " + E.FMessage);
+              await pas["WEBLib.Dialogs"].MessageDlgAsync("Unexpected authentication error: " + E.FMessage,2,rtl.createSet(2));
+            } else throw $e
+          };
           await $Self.ShowPlsWait("Refreshing Selected DB");
         };
         rq = await $Self.WebRESTClient1.HttpRequest("GET","https://www.googleapis.com/drive/v3/about/?fields=kind,user","","",null);
@@ -50412,6 +50426,8 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.WIDBCDS.FIDBKeyFieldName = "id";
         this.WIDBCDS.FIDBAutoIncrement = false;
         this.SetEvent$1(this.WIDBCDS,this,"OnIDBError","WIDBCDSIDBError");
+        this.WIDBCDS.FBeforeClose = rtl.createCallback(this,"WIDBCDSBeforeClose");
+        this.WIDBCDS.FAfterClose = rtl.createCallback(this,"WIDBCDSAfterClose");
         this.WIDBCDS.SetLeft(216);
         this.WIDBCDS.SetTop(408);
         this.WebTimer1.SetParentComponent(this);
@@ -50557,6 +50573,8 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
     $r.addMethod("HistoryWDGCellDoubleClickedEvent",0,[["Event",pas.libdatagrid.$rtti["TJSCellDoubleClickedEvent"]]],4);
     $r.addMethod("WDGColumn_TDateTimeValueFormatter",1,[["Value",rtl.jsvalue]],4,rtl.jsvalue);
     $r.addMethod("HistoryWDGGetRowClass",1,[["Params",pas.libdatagrid.$rtti["TJSGetRowClassParams"]]],4,rtl.jsvalue);
+    $r.addMethod("WIDBCDSAfterClose",0,[["DataSet",pas.DB.$rtti["TDataSet"]]],4);
+    $r.addMethod("WIDBCDSBeforeClose",0,[["DataSet",pas.DB.$rtti["TDataSet"]]],4);
   });
   rtl.createHelper(this,"TDataGridBaseHelper",null,function () {
     this.GetCell = function (ACol, ARow) {

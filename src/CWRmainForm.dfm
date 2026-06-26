@@ -897,6 +897,8 @@ object CWRmainFrm: TCWRmainFrm
     IDBAutoIncrement = False
     Params = <>
     OnIDBError = WIDBCDSIDBError
+    BeforeClose = WIDBCDSBeforeClose
+    AfterClose = WIDBCDSAfterClose
     Left = 216
     Top = 408
   end

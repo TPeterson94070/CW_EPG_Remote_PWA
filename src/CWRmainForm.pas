@@ -113,6 +113,8 @@ type
   procedure HistoryWDGCellDoubleClickedEvent(Event: TJSCellDoubleClickedEvent);
   function WDGColumn_TDateTimeValueFormatter(Value: TJSValue): TJSValue;
   function HistoryWDGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
+  procedure WIDBCDSAfterClose(DataSet: TDataSet);
+  procedure WIDBCDSBeforeClose(DataSet: TDataSet);
 private
   { Private declarations }
   [async] procedure LogDataRange;
@@ -486,7 +488,15 @@ var
     begin
       console.log('Performing OAuth');
       {$IFDef PAS2JS} await {$ENDIF}(ShowPlsWait('Select Login Credentials'));
-      TAwait.ExecP<TJSPromiseResolver> (WebRESTClient1.Authenticate);
+      try
+        TAwait.ExecP<TJSPromiseResolver> (WebRESTClient1.Authenticate);
+      except
+        on E:Exception do
+        begin
+          Log('******* Client.Authenticate exception: ' + E.Message);
+          TAwait.ExecP<TModalResult> (MessageDlgAsync('Unexpected authentication error: ' + E.Message, mtInformation, [mbOK]));
+        end;
+      end;
       {$IFDef PAS2JS} await {$ENDIF}(ShowPlsWait('Refreshing Selected DB'));
     end;
     rq := TAwait.ExecP<TJSXMLHttpRequest> (WebRESTClient1.httprequest('GET','https://www.googleapis.com/drive/v3/about/?fields=kind,user'));
@@ -1600,6 +1610,16 @@ begin
     TJSHTMLElement(document.body).style.setProperty('overscroll-behavior-y','contain');
     TJSHTMLElement(document.body.parentElement).style.setProperty('overscroll-behavior-y','contain');
   end;
+end;
+
+procedure TCWRmainFrm.WIDBCDSAfterClose(DataSet: TDataSet);
+begin
+  Log('@@@@@@ WIDBS.Close was executed');
+end;
+
+procedure TCWRmainFrm.WIDBCDSBeforeClose(DataSet: TDataSet);
+begin
+  Log('@@@@@@ WIDBS.Close was called');
 end;
 
 end.
