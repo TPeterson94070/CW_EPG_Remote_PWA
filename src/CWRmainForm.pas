@@ -457,7 +457,7 @@ end;
 
 function TCWRmainFrm.GetGoogleDriveFile(TableFile: string; var id: string): string;
 var
-  q, AResponse: string;
+  q{, AResponse}: string;
   rq: TJSXMLHttpRequest;
   jso: TJSONObject;
   ja: TJSONArray;
@@ -466,8 +466,9 @@ var
   [async]
   function TryLogIn: TJSXMLHttpRequest;
   begin
-    console.log('AccessToken: ' + WebRESTClient1.AccessToken);
+//    console.log('AccessToken: ' + WebRESTClient1.AccessToken);
     if WebRESTClient1.AccessToken = '' then ResetPrompt := 'select_account';
+    Log('Trying login, ResetPrompt: ' + ResetPrompt);
     WebRESTClient1.App.Key := CLIENT_APP_KEY;
     if window.location.href.Contains('?') then  // browser has "parameters" that need to be removed
     begin
@@ -486,10 +487,12 @@ var
       + '&prompt=' + ResetPrompt;
     if (WebRESTClient1.AccessToken = '') or (ResetPrompt <> 'none') then
     begin
-      console.log('Performing OAuth');
+      Log('Performing OAuth');
       {$IFDef PAS2JS} await {$ENDIF}(ShowPlsWait('Select Login Credentials'));
       try
         TAwait.ExecP<TJSPromiseResolver> (WebRESTClient1.Authenticate);
+        Log('Returned from OAuth Authenticate');
+        TAwait.ExecP<TModalResult> (MessageDlgAsync('Returned from authentication', mtInformation, [mbOK]));
       except
         on E:Exception do
         begin
@@ -532,10 +535,10 @@ begin
       {console.}log('Retry Request Status: ' +  rq.Status.ToString);
       if rq.Status <> 200 then exit('');   // Return null string on failure
     end;
-    AResponse := rq.responseText;
+//    AResponse := rq.responseText;
     console.log(rq.responseText);
 
-    jso := TJSONObject(TJSONObject.ParseJSONValue(AResponse));
+    jso := TJSONObject(TJSONObject.ParseJSONValue(rq.responseText));
 
     if Assigned(jso) then
     begin
