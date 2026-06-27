@@ -508,12 +508,12 @@ var
       TWebLocalStorage.SetValue(EMAILADDR, string(jso.GetJSONValue('emailAddress')));
 //      console.log('jso:',jso);
       WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
+      q :='name = ''' + TableFile + ''' and trashed = false';
+      rq := TAwait.ExecP<TJSXMLHttpRequest> (WEBRESTClient1.HttpRequest('GET',
+        'https://www.googleapis.com/drive/v3/files?q='+WEBRestClient1.URLEncode(q)));
     end;
     ResetPrompt := 'none';
-    q :='name = ''' + TableFile + ''' and trashed = false';
-
-    Result := TAwait.ExecP<TJSXMLHttpRequest> (WEBRESTClient1.HttpRequest('GET',
-      'https://www.googleapis.com/drive/v3/files?q='+WEBRestClient1.URLEncode(q)));
+    Result := rq;
   end;
 
 begin
@@ -717,21 +717,26 @@ var
 begin
   Log('======= Starting LoadWIDBCDS, DB is ' + IfThen(not WIDBCDS.Active, 'not ') + 'Active');
   {$IfDef PAS2JS}await{$EndIf}(ShowPlsWait('Loading EPG DB'));
-  if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
-  WIDBCDS.Filtered := False;
-  Log('WIDBCDS is ' + IfThen(not WIDBCDS.Filtered, 'UN') + 'filtered');
-  WIDBCDS.Close;
+//  if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
+//  WIDBCDS.Filtered := False;
+//  Log('WIDBCDS is ' + IfThen(not WIDBCDS.Filtered, 'UN') + 'filtered');
+  if WIDBCDS.Active then WIDBCDS.Close;
   TLocalStorage.RemoveKey('wcbGenresItems');  // Dump any saved values
   TLocalStorage.RemoveKey('wcbChannelsItems');
-  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
+//  TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
   try
     FillBufferWDG;
     Log('BufferWDG RowCount: ' + BufferWDG.RowCount.ToString);
     Log('BufferWDG ColCount: ' + BufferWDG.ColumnDefs.Count.ToString);
-    if WIDBCDS.Active and (BufferWDG.RowCount > 1) then
+    if {WIDBCDS.Active and} (BufferWDG.RowCount > 1) then
     begin
+      Log('LoadWIDBCDS, Opening WIDBCDS');
+      TAwait.ExecP<Boolean>(WIDBCDS.OpenAsync);
       Log('LoadWIDBCDS, WIDBCDS.RecordCount: ' + WIDBCDS.RecordCount.ToString);
       Log('LoadWIDBCDS, Buffer Row Count: ' + BufferWDG.RowCount.ToString);
+      if not WIDBCDS.ControlsDisabled then WIDBCDS.DisableControls;
+      WIDBCDS.Filtered := False;
+      Log('WIDBCDS is ' + IfThen(not WIDBCDS.Filtered, 'UN') + 'filtered');
       if WIDBCDS.RecordCount > 0 then
       begin
         WIDBCDS.Edit;
