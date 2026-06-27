@@ -48995,15 +48995,14 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       var $Self = this;
       var Result = "";
       var q = "";
-      var AResponse = "";
       var rq = null;
       var jso = null;
       var ja = null;
       var i = 0;
       async function TryLogIn() {
         var Result = null;
-        window.console.log("AccessToken: " + $Self.WebRESTClient1.FAccessToken);
         if ($Self.WebRESTClient1.FAccessToken === "") $impl.ResetPrompt = "select_account";
+        $impl.Log("Trying login, ResetPrompt: " + $impl.ResetPrompt);
         $Self.WebRESTClient1.FApp.FKey = $impl.CLIENT_APP_KEY;
         if (pas.SysUtils.TStringHelper.Contains.call({p: window.location, get: function () {
             return this.p.href;
@@ -49016,10 +49015,12 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         $impl.Log("WEBRESTClient1.App.CallBackURL: " + $Self.WebRESTClient1.FApp.FCallbackURL);
         $Self.WebRESTClient1.FApp.FAuthURL = "https://accounts.google.com/o/oauth2/v2/auth" + "?client_id=" + $Self.WebRESTClient1.FApp.FKey + "&include_granted_scopes" + "&scope=https://www.googleapis.com/auth/drive" + "&state=bf" + "&response_type=token" + "&redirect_uri=" + $Self.WebRESTClient1.FApp.FCallbackURL + "&prompt=" + $impl.ResetPrompt;
         if (($Self.WebRESTClient1.FAccessToken === "") || ($impl.ResetPrompt !== "none")) {
-          window.console.log("Performing OAuth");
+          $impl.Log("Performing OAuth");
           await $Self.ShowPlsWait("Select Login Credentials");
           try {
             await $Self.WebRESTClient1.Authenticate();
+            $impl.Log("Returned from OAuth Authenticate");
+            await pas["WEBLib.Dialogs"].MessageDlgAsync("Returned from authentication",2,rtl.createSet(2));
           } catch ($e) {
             if (pas.SysUtils.Exception.isPrototypeOf($e)) {
               var E = $e;
@@ -49061,9 +49062,8 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
             }}));
           if (rq.status !== 200) return "";
         };
-        AResponse = rq.responseText;
         window.console.log(rq.responseText);
-        jso = pas["WEBLib.JSON"].TJSONObject.ParseJSONValue(AResponse);
+        jso = pas["WEBLib.JSON"].TJSONObject.ParseJSONValue(rq.responseText);
         if (jso != null) {
           ja = jso.GetValue$1("files");
           $impl.Log(pas.SysUtils.TIntegerHelper.ToString$1.call({p: ja.GetCount(), get: function () {
