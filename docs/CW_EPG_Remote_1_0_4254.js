@@ -49018,6 +49018,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
           $impl.Log("Performing OAuth");
           await $Self.ShowPlsWait("Select Login Credentials");
           try {
+            await pas["WEBLib.Dialogs"].MessageDlgAsync("Set to call authenticate",2,rtl.createSet(2));
             await $Self.WebRESTClient1.Authenticate();
             $impl.Log("Returned from OAuth Authenticate");
             await pas["WEBLib.Dialogs"].MessageDlgAsync("Returned from authentication",2,rtl.createSet(2));
