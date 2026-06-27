@@ -48166,13 +48166,9 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       var Text = "";
       $impl.Log("======= Starting LoadWIDBCDS, DB is " + pas.StrUtils.IfThen(!this.WIDBCDS.GetActive(),"not ","") + "Active");
       await this.ShowPlsWait("Loading EPG DB");
-      if (!this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.DisableControls();
-      this.WIDBCDS.SetFiltered(false);
-      $impl.Log("WIDBCDS is " + pas.StrUtils.IfThen(!this.WIDBCDS.FFiltered,"UN","") + "filtered");
-      this.WIDBCDS.Close();
+      if (this.WIDBCDS.GetActive()) this.WIDBCDS.Close();
       pas["WEBLib.Storage"].TLocalStorage.RemoveKey("wcbGenresItems");
       pas["WEBLib.Storage"].TLocalStorage.RemoveKey("wcbChannelsItems");
-      await this.WIDBCDS.OpenAsync();
       try {
         this.FillBufferWDG();
         $impl.Log("BufferWDG RowCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.BufferWDG.GetRowCount(), get: function () {
@@ -48185,7 +48181,9 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
           }, set: function (v) {
             this.p = v;
           }}));
-        if (this.WIDBCDS.GetActive() && (this.BufferWDG.GetRowCount() > 1)) {
+        if (this.BufferWDG.GetRowCount() > 1) {
+          $impl.Log("LoadWIDBCDS, Opening WIDBCDS");
+          await this.WIDBCDS.OpenAsync();
           $impl.Log("LoadWIDBCDS, WIDBCDS.RecordCount: " + pas.SysUtils.TIntegerHelper.ToString$1.call({p: this.WIDBCDS.GetRecordCount(), get: function () {
               return this.p;
             }, set: function (v) {
@@ -48196,6 +48194,9 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
             }, set: function (v) {
               this.p = v;
             }}));
+          if (!this.WIDBCDS.ControlsDisabled()) this.WIDBCDS.DisableControls();
+          this.WIDBCDS.SetFiltered(false);
+          $impl.Log("WIDBCDS is " + pas.StrUtils.IfThen(!this.WIDBCDS.FFiltered,"UN","") + "filtered");
           if (this.WIDBCDS.GetRecordCount() > 0) {
             this.WIDBCDS.Edit();
             await this.WIDBCDS.EmptyDataSet();
@@ -49034,10 +49035,11 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
           jso = jso.GetValue$1("user");
           pas["WEBLib.Storage"].TLocalStorage.SetValue($impl.EMAILADDR,jso.GetJSONValue("emailAddress"));
           $Self.WebMainMenu1.FAppearance.FHamburgerMenu.SetCaption("[" + pas["WEBLib.Storage"].TWebLocalStorage.GetValue($impl.EMAILADDR) + "]");
+          q = "name = '" + TableFile + "' and trashed = false";
+          rq = await $Self.WebRESTClient1.HttpRequest("GET","https://www.googleapis.com/drive/v3/files?q=" + $Self.WebRESTClient1.$class.URLEncode(q),"","",null);
         };
         $impl.ResetPrompt = "none";
-        q = "name = '" + TableFile + "' and trashed = false";
-        Result = await $Self.WebRESTClient1.HttpRequest("GET","https://www.googleapis.com/drive/v3/files?q=" + $Self.WebRESTClient1.$class.URLEncode(q),"","",null);
+        Result = rq;
         return Result;
       };
       Result = "";
