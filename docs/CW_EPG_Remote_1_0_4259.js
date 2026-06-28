@@ -5055,6 +5055,14 @@ rtl.module("SysUtils",["System","RTLConsts","JS"],function () {
       return Result;
     };
   });
+  this.TUseBoolStrs = {"0": "False", False: 0, "1": "True", True: 1};
+  rtl.createHelper(this,"TBooleanHelper",null,function () {
+    this.ToString$1 = function (UseBoolStrs) {
+      var Result = "";
+      Result = $mod.BoolToStr(this.get(),UseBoolStrs === 1);
+      return Result;
+    };
+  });
   $mod.$implcode = function () {
     $impl.DefaultShortMonthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     $impl.DefaultLongMonthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -48677,6 +48685,12 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       };
       return Result;
     };
+    this.WebRESTClient1Error = async function (Sender, ARequest, Event, Handled) {
+      await pas["WEBLib.Dialogs"].MessageDlgAsync("Caught RESTClient error: " + Event.event.toString() + "\rRequest: " + ARequest.req.toString(),2,rtl.createSet(2));
+    };
+    this.WebRESTClient1RequestResponse = function (Sender, ARequest, AResponse) {
+      $impl.Log("Caught RESTClient response: " + AResponse + "\rRequest: " + ARequest.req.toString());
+    };
     this.WIDBCDSAfterClose = function (DataSet) {
       $impl.Log("@@@@@@ WIDBS.Close was executed");
     };
@@ -49018,10 +49032,14 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
           $impl.Log("Performing OAuth");
           await $Self.ShowPlsWait("Select Login Credentials");
           try {
-            await pas["WEBLib.Dialogs"].MessageDlgAsync("Set to call authenticate",2,rtl.createSet(2));
             await $Self.WebRESTClient1.Authenticate();
             $impl.Log("Returned from OAuth Authenticate");
-            await pas["WEBLib.Dialogs"].MessageDlgAsync("Returned from authentication",2,rtl.createSet(2));
+            if ($Self.WebRESTClient1.FPersistTokens.FEnabled) $Self.WebRESTClient1.WriteTokens();
+            $impl.Log("PersistTokens.Enabled: " + pas.SysUtils.TBooleanHelper.ToString$1.call({p: $Self.WebRESTClient1.FPersistTokens, get: function () {
+                return this.p.FEnabled;
+              }, set: function (v) {
+                this.p.FEnabled = v;
+              }},0));
           } catch ($e) {
             if (pas.SysUtils.Exception.isPrototypeOf($e)) {
               var E = $e;
@@ -49601,7 +49619,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlLog.SetLeft(0);
         this.pnlLog.SetTop(50);
         this.pnlLog.SetWidth(428);
-        this.pnlLog.SetHeight(727);
+        this.pnlLog.SetHeight(767);
         this.pnlLog.SetElementClassName("card");
         this.pnlLog.SetHeightStyle(0);
         this.pnlLog.SetWidthStyle(0);
@@ -49624,7 +49642,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.WebMemo2.SetLeft(3);
         this.WebMemo2.SetTop(3);
         this.WebMemo2.SetWidth(422);
-        this.WebMemo2.SetHeight(721);
+        this.WebMemo2.SetHeight(761);
         this.WebMemo2.SetAlign(5);
         this.WebMemo2.SetColor(0);
         this.WebMemo2.SetElementClassName("white");
@@ -49647,7 +49665,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlWaitPls.SetLeft(0);
         this.pnlWaitPls.SetTop(50);
         this.pnlWaitPls.SetWidth(428);
-        this.pnlWaitPls.SetHeight(727);
+        this.pnlWaitPls.SetHeight(767);
         this.pnlWaitPls.SetElementClassName("container-fluid");
         this.pnlWaitPls.SetHeightStyle(0);
         this.pnlWaitPls.SetWidthStyle(0);
@@ -49669,7 +49687,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.WebGridPanel1.SetLeft(0);
         this.WebGridPanel1.SetTop(0);
         this.WebGridPanel1.SetWidth(428);
-        this.WebGridPanel1.SetHeight(727);
+        this.WebGridPanel1.SetHeight(767);
         this.WebGridPanel1.SetWidthStyle(0);
         this.WebGridPanel1.SetAlign(5);
         this.WebGridPanel1.FColumnCollection.Clear();
@@ -49702,9 +49720,9 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.WebLabel2.SetParentComponent(this.WebGridPanel1);
         this.WebLabel2.SetName("WebLabel2");
         this.WebLabel2.SetLeft(2);
-        this.WebLabel2.SetTop(366);
+        this.WebLabel2.SetTop(386);
         this.WebLabel2.SetWidth(424);
-        this.WebLabel2.SetHeight(178);
+        this.WebLabel2.SetHeight(188);
         this.WebLabel2.SetAlign(5);
         this.WebLabel2.SetAlignment(2);
         this.WebLabel2.SetCaption("Please Wait...");
@@ -49727,9 +49745,9 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.WebLabel1.SetParentComponent(this.WebGridPanel1);
         this.WebLabel1.SetName("WebLabel1");
         this.WebLabel1.SetLeft(2);
-        this.WebLabel1.SetTop(184);
+        this.WebLabel1.SetTop(194);
         this.WebLabel1.SetWidth(424);
-        this.WebLabel1.SetHeight(178);
+        this.WebLabel1.SetHeight(188);
         this.WebLabel1.SetAlign(5);
         this.WebLabel1.SetAlignment(2);
         this.WebLabel1.SetCaption("Preparing EPG Listings.");
@@ -49755,7 +49773,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.WebButton1.SetLeft(2);
         this.WebButton1.SetTop(2);
         this.WebButton1.SetWidth(424);
-        this.WebButton1.SetHeight(178);
+        this.WebButton1.SetHeight(188);
         this.WebButton1.SetAlign(5);
         this.WebButton1.SetCaption('<i class="fa-solid fa-spinner fa-spin"></>');
         this.WebButton1.SetColor(65535);
@@ -49779,7 +49797,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlHistory.SetLeft(0);
         this.pnlHistory.SetTop(50);
         this.pnlHistory.SetWidth(428);
-        this.pnlHistory.SetHeight(727);
+        this.pnlHistory.SetHeight(767);
         this.pnlHistory.SetElementClassName("card");
         this.pnlHistory.SetHeightStyle(0);
         this.pnlHistory.SetWidthStyle(0);
@@ -49836,7 +49854,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlCaptures.SetLeft(0);
         this.pnlCaptures.SetTop(50);
         this.pnlCaptures.SetWidth(428);
-        this.pnlCaptures.SetHeight(727);
+        this.pnlCaptures.SetHeight(767);
         this.pnlCaptures.SetElementClassName("greenBGolive");
         this.pnlCaptures.SetHeightStyle(0);
         this.pnlCaptures.SetWidthStyle(0);
@@ -50009,7 +50027,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlListings.SetLeft(0);
         this.pnlListings.SetTop(50);
         this.pnlListings.SetWidth(428);
-        this.pnlListings.SetHeight(727);
+        this.pnlListings.SetHeight(767);
         this.pnlListings.SetElementClassName("greenBGnavy");
         this.pnlListings.SetHeightStyle(0);
         this.pnlListings.SetWidthStyle(0);
@@ -50055,7 +50073,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.EPG.SetLeft(0);
         this.EPG.SetTop(0);
         this.EPG.SetWidth(428);
-        this.EPG.SetHeight(727);
+        this.EPG.SetHeight(767);
         this.EPG.SetHeightPercent(100.000000000000000000);
         this.EPG.SetWidthPercent(100.000000000000000000);
         this.EPG.SetAlign(5);
@@ -50415,6 +50433,8 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.WebRESTClient1.FLoginWidth = 400;
         this.WebRESTClient1.FPersistTokens.FKey = "GoogleToken";
         this.WebRESTClient1.FPersistTokens.FEnabled = true;
+        this.SetEvent$1(this.WebRESTClient1,this,"OnError","WebRESTClient1Error");
+        this.SetEvent$1(this.WebRESTClient1,this,"OnRequestResponse","WebRESTClient1RequestResponse");
         this.WebRESTClient1.SetLeft(296);
         this.WebRESTClient1.SetTop(104);
         this.WebDataSource1.SetParentComponent(this);
@@ -50576,6 +50596,8 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
     $r.addMethod("HistoryWDGCellDoubleClickedEvent",0,[["Event",pas.libdatagrid.$rtti["TJSCellDoubleClickedEvent"]]],4);
     $r.addMethod("WDGColumn_TDateTimeValueFormatter",1,[["Value",rtl.jsvalue]],4,rtl.jsvalue);
     $r.addMethod("HistoryWDGGetRowClass",1,[["Params",pas.libdatagrid.$rtti["TJSGetRowClassParams"]]],4,rtl.jsvalue);
+    $r.addMethod("WebRESTClient1Error",0,[["Sender",pas.System.$rtti["TObject"]],["ARequest",pas["WEBLib.Controls"].$rtti["TJSXMLHttpRequestRecord"]],["Event",pas["WEBLib.Controls"].$rtti["TJSEventRecord"]],["Handled",rtl.boolean,1]],4,null,16,{attr: [pas.JS.AsyncAttribute,"Create"]});
+    $r.addMethod("WebRESTClient1RequestResponse",0,[["Sender",pas.System.$rtti["TObject"]],["ARequest",pas["WEBLib.Controls"].$rtti["TJSXMLHttpRequestRecord"]],["AResponse",rtl.string]],4);
     $r.addMethod("WIDBCDSAfterClose",0,[["DataSet",pas.DB.$rtti["TDataSet"]]],4);
     $r.addMethod("WIDBCDSBeforeClose",0,[["DataSet",pas.DB.$rtti["TDataSet"]]],4);
   });
