@@ -113,6 +113,10 @@ type
   procedure HistoryWDGCellDoubleClickedEvent(Event: TJSCellDoubleClickedEvent);
   function WDGColumn_TDateTimeValueFormatter(Value: TJSValue): TJSValue;
   function HistoryWDGGetRowClass(Params: TJSGetRowClassParams): TJSValue;
+  [async] procedure WebRESTClient1Error(Sender: TObject; ARequest:
+      TJSXMLHttpRequestRecord; Event: TJSEventRecord; var Handled: Boolean);
+  procedure WebRESTClient1RequestResponse(Sender: TObject; ARequest:
+      TJSXMLHttpRequestRecord; AResponse: string);
   procedure WIDBCDSAfterClose(DataSet: TDataSet);
   procedure WIDBCDSBeforeClose(DataSet: TDataSet);
 private
@@ -1619,6 +1623,20 @@ begin
     TJSHTMLElement(document.body).style.setProperty('overscroll-behavior-y','contain');
     TJSHTMLElement(document.body.parentElement).style.setProperty('overscroll-behavior-y','contain');
   end;
+end;
+
+procedure TCWRmainFrm.WebRESTClient1Error(Sender: TObject; ARequest:
+    TJSXMLHttpRequestRecord; Event: TJSEventRecord; var Handled: Boolean);
+begin
+  TAwait.ExecP<TModalResult> (MessageDlgAsync('Caught RESTClient error: ' + Event.event.ToString
+    + #13'Request: ' + ARequest.req.toString, mtInformation, [mbOK]));
+end;
+
+procedure TCWRmainFrm.WebRESTClient1RequestResponse(Sender: TObject; ARequest:
+    TJSXMLHttpRequestRecord; AResponse: string);
+begin
+  {TAwait.ExecP<TModalResult> (MessageDlgAsync}Log('Caught RESTClient response: ' + AResponse
+    + #13'Request: ' + ARequest.req.toString{, mtInformation, [mbOK])});
 end;
 
 procedure TCWRmainFrm.WIDBCDSAfterClose(DataSet: TDataSet);
