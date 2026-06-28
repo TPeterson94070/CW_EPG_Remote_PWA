@@ -494,10 +494,12 @@ var
       Log('Performing OAuth');
       {$IFDef PAS2JS} await {$ENDIF}(ShowPlsWait('Select Login Credentials'));
       try
-        TAwait.ExecP<TModalResult> (MessageDlgAsync('Set to call authenticate', mtInformation, [mbOK]));
+//        TAwait.ExecP<TModalResult> (MessageDlgAsync('Set to call authenticate', mtInformation, [mbOK]));
         TAwait.ExecP<TJSPromiseResolver> (WebRESTClient1.Authenticate);
         Log('Returned from OAuth Authenticate');
-        TAwait.ExecP<TModalResult> (MessageDlgAsync('Returned from authentication', mtInformation, [mbOK]));
+        if WebRESTClient1.PersistTokens.Enabled then WebRESTClient1.WriteTokens;
+        Log('PersistTokens.Enabled: ' + WebRESTClient1.PersistTokens.Enabled.ToString);
+//        TAwait.ExecP<TModalResult> (MessageDlgAsync('Returned from authentication', mtInformation, [mbOK]));
       except
         on E:Exception do
         begin
