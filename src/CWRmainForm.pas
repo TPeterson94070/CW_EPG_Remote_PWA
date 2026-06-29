@@ -1,7 +1,7 @@
 ﻿unit CWRmainForm;
 
-                       { TODO : Add search function to Listings (and History?) }
-                       { TODO : Add item deletion to Scheduled list }
+                       { DONE : search function for Listings and History via Web(DB)DataGrids }
+                       { DONE : Add item deletion to Scheduled list }
                        { DONE : Add one-off scheduling of Listing item }
 interface
 
@@ -474,12 +474,13 @@ var
     if WebRESTClient1.AccessToken = '' then ResetPrompt := 'select_account';
     Log('Trying login, ResetPrompt: ' + ResetPrompt);
     WebRESTClient1.App.Key := CLIENT_APP_KEY;
-    if window.location.href.Contains('?') then  // browser has "parameters" that need to be removed
+//    if window.location.href.Contains('?') then  // browser has "parameters" that need to be removed
     begin
-      WebRESTClient1.App.CallbackURL := LeftStr(window.location.href, Pred(Pos('?',window.location.href)));
+      WebRESTClient1.App.CallbackURL := LeftStr(window.location.href, {Pred(}Pos({'?'}'.html',window.location.href)+5);
       Log('window.location.href: ' + window.location.href);
     end
-    else WEBRESTClient1.App.CallBackURL := window.location.href;
+//    else WEBRESTClient1.App.CallBackURL := window.location.href
+    ;
     Log('WEBRESTClient1.App.CallBackURL: ' + WEBRESTClient1.App.CallbackURL);
     WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth'
       + '?client_id=' + WebRESTCLient1.App.Key
