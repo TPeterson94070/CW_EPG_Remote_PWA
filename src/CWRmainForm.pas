@@ -825,7 +825,7 @@ begin
     Title := NewCapturesWSG.Cells[3,ARow];
     ProgID := NewCapturesWSG.Cells[6,ARow];
     NewCapturesWSG.BeginUpdate;
-    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES,'New CapturesWSG', id));
+    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES,'New Captures', id));
     {$IfDef PAS2JS}await{$EndIf}(FillWSG(NewCapturesWSG, CSV_NEWCAPTURES));
     Log('NewCapturesWSG Rows: '+NewCapturesWSG.RowCount.ToString);
     if NewCapturesWSG.RowCount > 1 then // file exists, find matching row
@@ -1476,7 +1476,7 @@ var
   id: string;
 begin
   Log(' ====== FetchNewCapRequests called =========');
-    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES, 'New CapturesWSG', id));
+    {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES, 'New Captures', id));
     Log(' ====== FetchNewCapRequests finished =========');
 end;
 
@@ -1497,7 +1497,7 @@ var
   id: string;
 begin
   Log(' ====== UpdateNewCaptures called =========');
-  {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES,'New CapturesWSG', id));
+  {$IfDef PAS2JS}await{$EndIf}(RefreshCSV(CSV_NEWCAPTURES,'New Captures', id));
   {$IfDef PAS2JS}await{$EndIf}(FillWSG(NewCapturesWSG, CSV_NEWCAPTURES));
   Log('NewCapturesWSG Rows: '+NewCapturesWSG.RowCount.ToString);
   if NewCapturesWSG.RowCount = 0 then // fnf, create new one
