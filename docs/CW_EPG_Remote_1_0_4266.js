@@ -49018,14 +49018,8 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         if ($Self.WebRESTClient1.FAccessToken === "") $impl.ResetPrompt = "select_account";
         $impl.Log("Trying login, ResetPrompt: " + $impl.ResetPrompt);
         $Self.WebRESTClient1.FApp.FKey = $impl.CLIENT_APP_KEY;
-        if (pas.SysUtils.TStringHelper.Contains.call({p: window.location, get: function () {
-            return this.p.href;
-          }, set: function (v) {
-            this.p.href = v;
-          }},"?")) {
-          $Self.WebRESTClient1.FApp.FCallbackURL = pas.StrUtils.LeftStr(window.location.href,pas.System.Pos("?",window.location.href) - 1);
-          $impl.Log("window.location.href: " + window.location.href);
-        } else $Self.WebRESTClient1.FApp.FCallbackURL = window.location.href;
+        $Self.WebRESTClient1.FApp.FCallbackURL = pas.StrUtils.LeftStr(window.location.href,pas.System.Pos(".html",window.location.href) + 5);
+        $impl.Log("window.location.href: " + window.location.href);
         $impl.Log("WEBRESTClient1.App.CallBackURL: " + $Self.WebRESTClient1.FApp.FCallbackURL);
         $Self.WebRESTClient1.FApp.FAuthURL = "https://accounts.google.com/o/oauth2/v2/auth" + "?client_id=" + $Self.WebRESTClient1.FApp.FKey + "&include_granted_scopes" + "&scope=https://www.googleapis.com/auth/drive" + "&state=bf" + "&response_type=token" + "&redirect_uri=" + $Self.WebRESTClient1.FApp.FCallbackURL + "&prompt=" + $impl.ResetPrompt;
         if (($Self.WebRESTClient1.FAccessToken === "") || ($impl.ResetPrompt !== "none")) {
@@ -49619,7 +49613,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlLog.SetLeft(0);
         this.pnlLog.SetTop(50);
         this.pnlLog.SetWidth(428);
-        this.pnlLog.SetHeight(767);
+        this.pnlLog.SetHeight(747);
         this.pnlLog.SetElementClassName("card");
         this.pnlLog.SetHeightStyle(0);
         this.pnlLog.SetWidthStyle(0);
@@ -49665,7 +49659,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlWaitPls.SetLeft(0);
         this.pnlWaitPls.SetTop(50);
         this.pnlWaitPls.SetWidth(428);
-        this.pnlWaitPls.SetHeight(767);
+        this.pnlWaitPls.SetHeight(747);
         this.pnlWaitPls.SetElementClassName("container-fluid");
         this.pnlWaitPls.SetHeightStyle(0);
         this.pnlWaitPls.SetWidthStyle(0);
@@ -49797,7 +49791,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlHistory.SetLeft(0);
         this.pnlHistory.SetTop(50);
         this.pnlHistory.SetWidth(428);
-        this.pnlHistory.SetHeight(767);
+        this.pnlHistory.SetHeight(747);
         this.pnlHistory.SetElementClassName("card");
         this.pnlHistory.SetHeightStyle(0);
         this.pnlHistory.SetWidthStyle(0);
@@ -49854,7 +49848,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlCaptures.SetLeft(0);
         this.pnlCaptures.SetTop(50);
         this.pnlCaptures.SetWidth(428);
-        this.pnlCaptures.SetHeight(767);
+        this.pnlCaptures.SetHeight(747);
         this.pnlCaptures.SetElementClassName("greenBGolive");
         this.pnlCaptures.SetHeightStyle(0);
         this.pnlCaptures.SetWidthStyle(0);
@@ -50027,7 +50021,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlListings.SetLeft(0);
         this.pnlListings.SetTop(50);
         this.pnlListings.SetWidth(428);
-        this.pnlListings.SetHeight(767);
+        this.pnlListings.SetHeight(747);
         this.pnlListings.SetElementClassName("greenBGnavy");
         this.pnlListings.SetHeightStyle(0);
         this.pnlListings.SetWidthStyle(0);
@@ -50073,7 +50067,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.EPG.SetLeft(0);
         this.EPG.SetTop(0);
         this.EPG.SetWidth(428);
-        this.EPG.SetHeight(767);
+        this.EPG.SetHeight(747);
         this.EPG.SetHeightPercent(100.000000000000000000);
         this.EPG.SetWidthPercent(100.000000000000000000);
         this.EPG.SetAlign(5);
@@ -50251,7 +50245,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.wcbChannels.SetLeft(5);
         this.wcbChannels.SetTop(31);
         this.wcbChannels.SetWidth(165);
-        this.wcbChannels.SetHeight(30);
+        this.wcbChannels.SetHeight(41);
         this.wcbChannels.FMargins.SetLeft(5);
         this.wcbChannels.FMargins.SetRight(5);
         this.wcbChannels.SetAlign(5);
@@ -50279,7 +50273,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.wcbTypes.SetLeft(5);
         this.wcbTypes.SetTop(31);
         this.wcbTypes.SetWidth(165);
-        this.wcbTypes.SetHeight(30);
+        this.wcbTypes.SetHeight(41);
         this.wcbTypes.FMargins.SetLeft(5);
         this.wcbTypes.FMargins.SetRight(5);
         this.wcbTypes.SetAlign(5);
