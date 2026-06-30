@@ -19707,15 +19707,18 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
     this.GetElementPicker = function () {
       var Result = null;
       if (this.GetIsLinked()) {
-        Result = this.GetElementHandle()}
-       else Result = this.FElementPicker;
+        Result = this.GetElementHandle();
+        if (Result.tagName !== "INPUT") {
+          Result = this.GetElementHandle().querySelector('input[type="date"]');
+        };
+      } else Result = this.FElementPicker;
       return Result;
     };
     this.SetEnabled = function (Value) {
       var el = null;
       pas["WEBLib.Controls"].TControl.SetEnabled.apply(this,arguments);
       el = this.GetElementPicker();
-      if (el != null) {
+      if ((el != null) && (el.tagName === "INPUT")) {
         if (Value) {
           el.removeAttribute("disabled")}
          else el.setAttribute("disabled","");
@@ -20116,6 +20119,7 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
       if (this.GetContainer() != null) {
         el = this.GetCheckElement();
         if (el != null) this.FChecked = el.checked;
+        window.console.log("get checked",this.FChecked);
       };
       Result = this.FChecked;
       return Result;
@@ -20155,7 +20159,13 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
       pas["WEBLib.Controls"].TControl.SetEnabled.apply(this,arguments);
       if (this.GetContainer() != null) {
         el = this.GetCheckElement();
-        if (el != null) el.disabled = !Value;
+        if (el != null) {
+          if (Value) {
+            el.removeAttribute("disabled");
+          } else {
+            el.setAttribute("disabled","");
+          };
+        };
       };
     };
     this.HandleLabelClick = function (Event) {
@@ -20181,6 +20191,7 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
       if (this.FOnClick != null) this.FOnClick(this);
       this.DoCheckClick();
       Result = true;
+      this.FChecked = this.GetChecked();
       return Result;
     };
     this.HandleCheckClick = function (Event) {
@@ -20202,6 +20213,7 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
       if (this.FOnClick != null) this.FOnClick(this);
       this.DoCheckClick();
       Result = true;
+      this.FChecked = this.GetChecked();
       return Result;
     };
     this.HandleCheckBlur = function (Event) {
@@ -20247,6 +20259,7 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
       if (this.FOnClick != null) this.FOnClick(this);
       this.DoCheckClick();
       this.SetFocus();
+      this.FChecked = this.GetChecked();
     };
     this.DoCheckClick = function () {
       if (this.FOnCheckClick != null) this.FOnCheckClick(this);
@@ -35588,15 +35601,25 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
       if (ARow === 0) this.EnableColResize();
     };
     this.SetFixedCols = function (Value) {
+      var sl = null;
       if (this.FFixedCols !== Value) {
+        if (!this.IsUpdating()) {
+          sl = pas.Classes.TStringList.$create("Create$1");
+          this.SaveToStrings(sl,"|",true);
+        };
         this.FFixedCols = Value;
-        if (!this.IsUpdating()) this.ReRenderGrid();
+        if (!this.IsUpdating()) this.ReRenderGrid(sl);
       };
     };
     this.SetFixedRows = function (Value) {
+      var sl = null;
       if (this.FFixedRows !== Value) {
+        if (!this.IsUpdating()) {
+          sl = pas.Classes.TStringList.$create("Create$1");
+          this.SaveToStrings(sl,"|",true);
+        };
         this.FFixedRows = Value;
-        if (!this.IsUpdating()) this.ReRenderGrid();
+        if (!this.IsUpdating()) this.ReRenderGrid(sl);
       };
     };
     this.SetColor = function (AValue) {
@@ -36079,7 +36102,7 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
     this.SetElementTableClassName = function (Value) {
       if (this.FElementTableClassName !== Value) {
         this.FElementTableClassName = Value;
-        if (!this.IsUpdating()) this.ReRenderGrid();
+        if (!this.IsUpdating()) this.ReRenderGrid(null);
       };
     };
     this.SetGridLineColor = function (Value) {
@@ -36123,7 +36146,7 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
     this.SetDefaultColAlignment = function (Value) {
       if (this.FDefaultColAlignment !== Value) {
         this.FDefaultColAlignment = Value;
-        if (!(0 in this.FComponentState)) this.ReRenderGrid();
+        if (!(0 in this.FComponentState)) this.ReRenderGrid(null);
       };
     };
     this.SetFixedFont = function (Value) {
@@ -37267,14 +37290,18 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
       this.EnableColResize();
       if (this.FDragMode === 1) this.EnableDrag();
     };
-    this.ReRenderGrid = function () {
+    this.ReRenderGrid = function (Data) {
       var sl = null;
       var del = "\x00";
       var lf = false;
       del = this.FDelimiter;
       lf = this.FLoadFixed;
-      sl = pas.Classes.TStringList.$create("Create$1");
-      this.SaveToStrings(sl,"|",true);
+      if (Data != null) {
+        sl = Data}
+       else {
+        sl = pas.Classes.TStringList.$create("Create$1");
+        this.SaveToStrings(sl,"|",true);
+      };
       if (!this.GetIsLinked() && (this.FGrid != null) && (this.FGrid.firstElementChild != null)) {
         this.FGrid.removeChild(this.FGrid.firstChild);
       };
@@ -37718,13 +37745,11 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
                    }
                  }
               };
-        this.BeginUpdate();
         for (var $l = 1, $end = delta; $l <= $end; $l++) {
           r = $l;
           this.SetRowHeights(this.FRowCount - r,this.FDefaultRowHeight);
         };
         if (this.FDragMode === 1) this.EnableDrag();
-        this.EndUpdate();
       };
       if (delta < 0) {
         var i = 0;
@@ -38256,7 +38281,7 @@ rtl.module("WEBLib.Grids",["System","Classes","JS","WEBLib.Controls","WEBLib.Gra
     };
     this.EndUpdate = function () {
       pas["WEBLib.Controls"].TCustomControl.EndUpdate.call(this);
-      this.ReRenderGrid();
+      this.ReRenderGrid(null);
     };
     this.Sort = function (AColumn, ADirection) {
       var colidx = 0;
@@ -41948,6 +41973,7 @@ rtl.module("WEBLib.DataGrid.Options",["System","WEBLib.DataGrid.Common","WEBLib.
       var NewResult = null;
       Result = null;
       UseCellStyle = false;
+      NewResult = null;
       if (this.FOnGetCellStyle != null) {
         NewResult = this.FOnGetCellStyle(Params);
         UseCellStyle = true;
@@ -43223,15 +43249,6 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","StrUtils","Clas
       this.FColumnDefs = undefined;
       $mod.TDGDesignerGridBase.$final.call(this);
     };
-    this.IsFontStored = function () {
-      var Result = false;
-      Result = false;
-      if (this.FFont.FName !== "Segoe UI") Result = true;
-      if (this.FFont.FColor !== 0) Result = true;
-      if (rtl.neSet(this.FFont.FStyle,rtl.createSet(0))) Result = true;
-      if (this.FFont.FHeight !== 18) Result = true;
-      return Result;
-    };
     this.InitFont = function (Value) {
       Value.SetName("Segoe UI");
       Value.SetColor(0);
@@ -43477,6 +43494,15 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","StrUtils","Clas
     this.SetSingleClickEdit = function (Value) {
       this.FSingleClickEdit = Value;
       this.DoOptionsChange("singleClickEdit",this.FSingleClickEdit);
+    };
+    this.IsFontStored = function () {
+      var Result = false;
+      Result = false;
+      if (this.FFont.FName !== "Segoe UI") Result = true;
+      if (this.FFont.FColor !== 0) Result = true;
+      if (rtl.neSet(this.FFont.FStyle,rtl.createSet(0))) Result = true;
+      if (this.FFont.FHeight !== 18) Result = true;
+      return Result;
     };
     this.SetServerDataAdapter = function (Value) {
       if (Value !== this.FServerDataAdapter) {
@@ -44670,6 +44696,8 @@ rtl.module("WEBLib.DataGrid",["System","WEBLib.DataGrid.Common","StrUtils","Clas
     $r.addProperty("ColumnDefs",0,pas["WEBLib.DataGrid.Options"].$rtti["TDGColumnDefsCollection"],"FColumnDefs","FColumnDefs");
     $r.addProperty("DefaultColDef",0,pas["WEBLib.DataGrid.Options"].$rtti["TDGDefaultColDef"],"FDefaultColDef","FDefaultColDef");
     $r.addProperty("EditType",2,$mod.$rtti["TDGRowEditType"],"FEditType","SetEditType",4,{Default: $mod.TDGRowEditType.retCell});
+    $r.addProperty("ElementClassName",2,pas["WEBLib.Controls"].$rtti["TElementClassName"],"FElementClassName","SetElementClassName");
+    $r.addProperty("ElementPosition",2,pas["WEBLib.Controls"].$rtti["TElementPosition"],"FElementPosition","SetElementPosition",4,{Default: pas["WEBLib.Controls"].TElementPosition.epAbsolute});
     $r.addProperty("EnableClickSelection",2,rtl.boolean,"FEnableClickSelection","SetEnableClickSelection",4,{Default: true});
     $r.addProperty("Font",14,pas["WEBLib.Graphics"].$rtti["TFont"],"FFont","SetFont",4,{stored: "IsFontStored"});
     $r.addProperty("Locale",2,$mod.$rtti["TDGLocale"],"FLocale","SetLocale",4,{Default: $mod.TDGLocale.localeNone});
@@ -46646,6 +46674,8 @@ rtl.module("WEBLib.DB.DataGrid",["System","WEBLib.DataGrid.Common","JSONDataset"
     $r.addProperty("ColumnDefs",3,$mod.$rtti["TDataGridColumns"],"GetColumnDefs","SetColumnDefs");
     $r.addProperty("DefaultColDef",0,pas["WEBLib.DataGrid.Options"].$rtti["TDGDefaultColDef"],"FDefaultColDef","FDefaultColDef");
     $r.addProperty("EditType",2,pas["WEBLib.DataGrid"].$rtti["TDGRowEditType"],"FEditType","SetEditType",4,{Default: pas["WEBLib.DataGrid"].TDGRowEditType.retCell});
+    $r.addProperty("ElementClassName",2,pas["WEBLib.Controls"].$rtti["TElementClassName"],"FElementClassName","SetElementClassName");
+    $r.addProperty("ElementPosition",2,pas["WEBLib.Controls"].$rtti["TElementPosition"],"FElementPosition","SetElementPosition",4,{Default: pas["WEBLib.Controls"].TElementPosition.epAbsolute});
     $r.addProperty("EnableClickSelection",2,rtl.boolean,"FEnableClickSelection","SetEnableClickSelection",4,{Default: true});
     $r.addProperty("Font",14,pas["WEBLib.Graphics"].$rtti["TFont"],"FFont","SetFont",4,{stored: "IsFontStored"});
     $r.addProperty("Locale",2,pas["WEBLib.DataGrid"].$rtti["TDGLocale"],"FLocale","SetLocale",4,{Default: pas["WEBLib.DataGrid"].TDGLocale.localeNone});
@@ -48476,7 +48506,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         Title = this.NewCapturesWSG.GetCells(3,ARow);
         ProgID = this.NewCapturesWSG.GetCells(6,ARow);
         this.NewCapturesWSG.BeginUpdate();
-        await this.RefreshCSV($impl.CSV_NEWCAPTURES,"New CapturesWSG",{get: function () {
+        await this.RefreshCSV($impl.CSV_NEWCAPTURES,"New Captures",{get: function () {
             return id;
           }, set: function (v) {
             id = v;
@@ -48787,7 +48817,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
     this.FetchNewCapRequests = async function () {
       var id = "";
       $impl.Log(" ====== FetchNewCapRequests called =========");
-      await this.RefreshCSV($impl.CSV_NEWCAPTURES,"New CapturesWSG",{get: function () {
+      await this.RefreshCSV($impl.CSV_NEWCAPTURES,"New Captures",{get: function () {
           return id;
         }, set: function (v) {
           id = v;
@@ -48957,7 +48987,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       var i = 0;
       var id = "";
       $impl.Log(" ====== UpdateNewCaptures called =========");
-      await this.RefreshCSV($impl.CSV_NEWCAPTURES,"New CapturesWSG",{get: function () {
+      await this.RefreshCSV($impl.CSV_NEWCAPTURES,"New Captures",{get: function () {
           return id;
         }, set: function (v) {
           id = v;
