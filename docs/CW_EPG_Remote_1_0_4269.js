@@ -49048,8 +49048,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         if ($Self.WebRESTClient1.FAccessToken === "") $impl.ResetPrompt = "select_account";
         $impl.Log("Trying login, ResetPrompt: " + $impl.ResetPrompt);
         $Self.WebRESTClient1.FApp.FKey = $impl.CLIENT_APP_KEY;
-        $Self.WebRESTClient1.FApp.FCallbackURL = pas.StrUtils.LeftStr(window.location.href,pas.System.Pos(".html",window.location.href) + 5);
-        $impl.Log("window.location.href: " + window.location.href);
+        $Self.WebRESTClient1.FApp.FCallbackURL = window.location.href;
         $impl.Log("WEBRESTClient1.App.CallBackURL: " + $Self.WebRESTClient1.FApp.FCallbackURL);
         $Self.WebRESTClient1.FApp.FAuthURL = "https://accounts.google.com/o/oauth2/v2/auth" + "?client_id=" + $Self.WebRESTClient1.FApp.FKey + "&include_granted_scopes" + "&scope=https://www.googleapis.com/auth/drive" + "&state=bf" + "&response_type=token" + "&redirect_uri=" + $Self.WebRESTClient1.FApp.FCallbackURL + "&prompt=" + $impl.ResetPrompt;
         if (($Self.WebRESTClient1.FAccessToken === "") || ($impl.ResetPrompt !== "none")) {
