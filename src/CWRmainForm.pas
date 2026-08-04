@@ -259,7 +259,7 @@ begin
   asm
     console.log('Starting ' + ProjectName);
 // Define sleep function used to allow screen updates
-    window.sleep = async function(msecs) {return new Promise((resolve) => setTimeout(resolve, msecs)); }
+//    window.sleep = async function(msecs) {return new Promise((resolve) => setTimeout(resolve, msecs)); }
 // Retrieve JS version info in Delphi variable
     AppVersion = ProjectName;
 // Discover if installed ("standalone") : Does not work!!
@@ -428,7 +428,7 @@ var
 
 begin
   CapturesWSG.OnClickCell := nil;
-  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
+//  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
   SaveFilter := WIDBCDS.Filter;
   SaveFilterState := WIDBCDS.Filtered;
   try
@@ -472,14 +472,18 @@ var
   begin
 //    console.log('AccessToken: ' + WebRESTClient1.AccessToken);
     if WebRESTClient1.AccessToken = '' then ResetPrompt := 'select_account';
+//    if WebRESTClient1.AccessToken > '' then
+//      TAwait.ExecP<TModalResult> (MessageDlgAsync('AccessToken: '+WebRESTClient1.AccessToken
+//        ,mtInformation, [mbOK]));
     Log('Trying login, ResetPrompt: ' + ResetPrompt);
     WebRESTClient1.App.Key := CLIENT_APP_KEY;
 //    if window.location.href.Contains('?') then  // browser has "parameters" that need to be removed
-    begin
-      WebRESTClient1.App.CallbackURL := LeftStr(window.location.href, {Pred(}Pos({'?'}'.html',window.location.href)+5);
-      Log('window.location.href: ' + window.location.href);
-    end
-//    else WEBRESTClient1.App.CallBackURL := window.location.href
+//    begin
+//      WebRESTClient1.App.CallbackURL := LeftStr(window.location.href, {Pred(}Pos({'?'}'.html',window.location.href)+5);
+//      Log('window.location.href: ' + window.location.href);
+//    end
+//    else
+    WEBRESTClient1.App.CallBackURL := window.location.href
     ;
     Log('WEBRESTClient1.App.CallBackURL: ' + WEBRESTClient1.App.CallbackURL);
     WEBRESTClient1.App.AuthURL := 'https://accounts.google.com/o/oauth2/v2/auth'
@@ -1014,7 +1018,7 @@ begin
   cb.ItemIndex := -1;
   cb.BringToFront;
   cb.Show;
-  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+//  {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   if VisiblePageNum <> 0 then {$IfDef PAS2JS}await{$EndIf}(SetPage(0));
   Log('====== Exiting PopupFilterList');
 end;
@@ -1079,7 +1083,7 @@ begin
     WebLabel1.Caption := PlsWaitCap;
     pnlWaitPls.BringToFront;
     pnlWaitPls.Show;
-    {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
+//    {$IFDEF PAS2JS} asm await sleep(100) end; {$ENDIF}
   end;
   {else }Log('### Showing panel ### ' + PlsWaitCap);   // make log entry
 end;

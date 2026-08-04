@@ -40,7 +40,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 747
+    Height = 767
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -87,7 +87,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 747
+    Height = 767
     ElementClassName = 'container-fluid'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -227,7 +227,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 747
+    Height = 767
     ElementClassName = 'card'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -289,7 +289,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 747
+    Height = 767
     ElementClassName = 'greenBGolive'
     HeightStyle = ssPercent
     WidthStyle = ssPercent
@@ -454,7 +454,7 @@ object CWRmainFrm: TCWRmainFrm
     Left = 0
     Top = 50
     Width = 428
-    Height = 747
+    Height = 767
     ElementClassName = 'greenBGnavy'
     ElementID = 'pnlListings'
     HeightStyle = ssPercent
@@ -474,7 +474,7 @@ object CWRmainFrm: TCWRmainFrm
     TabOrder = 4
     DesignSize = (
       428
-      747)
+      767)
     object lblEmptyEPG: TWebLabel
       Left = 96
       Top = 58
@@ -505,7 +505,7 @@ object CWRmainFrm: TCWRmainFrm
       Left = 0
       Top = 0
       Width = 428
-      Height = 747
+      Height = 767
       ElementID = 'EPGWDBG'
       HeightPercent = 100.000000000000000000
       WidthPercent = 100.000000000000000000
@@ -698,7 +698,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 5
         Top = 31
         Width = 165
-        Height = 41
+        Height = 30
         Margins.Left = 5
         Margins.Right = 5
         Align = alClient
@@ -726,7 +726,7 @@ object CWRmainFrm: TCWRmainFrm
         Left = 5
         Top = 31
         Width = 165
-        Height = 41
+        Height = 30
         Margins.Left = 5
         Margins.Right = 5
         Align = alClient
