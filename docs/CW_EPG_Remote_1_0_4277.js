@@ -20119,7 +20119,6 @@ rtl.module("WEBLib.StdCtrls",["System","Classes","WEBLib.Controls","SysUtils","W
       if (this.GetContainer() != null) {
         el = this.GetCheckElement();
         if (el != null) this.FChecked = el.checked;
-        window.console.log("get checked",this.FChecked);
       };
       Result = this.FChecked;
       return Result;
@@ -48358,7 +48357,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       $impl.Log("========== FormCreate is called");
       console.log('Starting ' + ProjectName);
       // Define sleep function used to allow screen updates
-          window.sleep = async function(msecs) {return new Promise((resolve) => setTimeout(resolve, msecs)); }
+      //    window.sleep = async function(msecs) {return new Promise((resolve) => setTimeout(resolve, msecs)); }
       // Retrieve JS version info in Delphi variable
           AppVersion = ProjectName;
       // Discover if installed ("standalone") : Does not work!!
@@ -48593,7 +48592,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       var SaveFilter = "";
       var SaveFilterState = false;
       this.CapturesWSG.FOnClickCell = null;
-      await sleep(10);
       SaveFilter = this.WIDBCDS.FFilterText;
       SaveFilterState = this.WIDBCDS.FFiltered;
       try {
@@ -49215,7 +49213,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
       cb.SetItemIndex(-1);
       cb.BringToFront();
       cb.Show();
-      await sleep(100);
       if ($impl.VisiblePageNum !== 0) await this.SetPage(0);
       $impl.Log("====== Exiting PopupFilterList");
     };
@@ -49260,7 +49257,6 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.WebLabel1.SetCaption(PlsWaitCap);
         this.pnlWaitPls.BringToFront();
         this.pnlWaitPls.Show();
-        await sleep(100);
       };
       $impl.Log("### Showing panel ### " + PlsWaitCap);
     };
@@ -49642,7 +49638,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlLog.SetLeft(0);
         this.pnlLog.SetTop(50);
         this.pnlLog.SetWidth(428);
-        this.pnlLog.SetHeight(747);
+        this.pnlLog.SetHeight(767);
         this.pnlLog.SetElementClassName("card");
         this.pnlLog.SetHeightStyle(0);
         this.pnlLog.SetWidthStyle(0);
@@ -49688,7 +49684,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlWaitPls.SetLeft(0);
         this.pnlWaitPls.SetTop(50);
         this.pnlWaitPls.SetWidth(428);
-        this.pnlWaitPls.SetHeight(747);
+        this.pnlWaitPls.SetHeight(767);
         this.pnlWaitPls.SetElementClassName("container-fluid");
         this.pnlWaitPls.SetHeightStyle(0);
         this.pnlWaitPls.SetWidthStyle(0);
@@ -49820,7 +49816,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlHistory.SetLeft(0);
         this.pnlHistory.SetTop(50);
         this.pnlHistory.SetWidth(428);
-        this.pnlHistory.SetHeight(747);
+        this.pnlHistory.SetHeight(767);
         this.pnlHistory.SetElementClassName("card");
         this.pnlHistory.SetHeightStyle(0);
         this.pnlHistory.SetWidthStyle(0);
@@ -49877,7 +49873,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlCaptures.SetLeft(0);
         this.pnlCaptures.SetTop(50);
         this.pnlCaptures.SetWidth(428);
-        this.pnlCaptures.SetHeight(747);
+        this.pnlCaptures.SetHeight(767);
         this.pnlCaptures.SetElementClassName("greenBGolive");
         this.pnlCaptures.SetHeightStyle(0);
         this.pnlCaptures.SetWidthStyle(0);
@@ -50050,7 +50046,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.pnlListings.SetLeft(0);
         this.pnlListings.SetTop(50);
         this.pnlListings.SetWidth(428);
-        this.pnlListings.SetHeight(747);
+        this.pnlListings.SetHeight(767);
         this.pnlListings.SetElementClassName("greenBGnavy");
         this.pnlListings.SetHeightStyle(0);
         this.pnlListings.SetWidthStyle(0);
@@ -50096,7 +50092,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.EPG.SetLeft(0);
         this.EPG.SetTop(0);
         this.EPG.SetWidth(428);
-        this.EPG.SetHeight(747);
+        this.EPG.SetHeight(767);
         this.EPG.SetHeightPercent(100.000000000000000000);
         this.EPG.SetWidthPercent(100.000000000000000000);
         this.EPG.SetAlign(5);
@@ -50274,7 +50270,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.wcbChannels.SetLeft(5);
         this.wcbChannels.SetTop(31);
         this.wcbChannels.SetWidth(165);
-        this.wcbChannels.SetHeight(41);
+        this.wcbChannels.SetHeight(30);
         this.wcbChannels.FMargins.SetLeft(5);
         this.wcbChannels.FMargins.SetRight(5);
         this.wcbChannels.SetAlign(5);
@@ -50302,7 +50298,7 @@ rtl.module("CWRmainForm",["System","SysUtils","Classes","WEBLib.Graphics","WEBLi
         this.wcbTypes.SetLeft(5);
         this.wcbTypes.SetTop(31);
         this.wcbTypes.SetWidth(165);
-        this.wcbTypes.SetHeight(41);
+        this.wcbTypes.SetHeight(30);
         this.wcbTypes.FMargins.SetLeft(5);
         this.wcbTypes.FMargins.SetRight(5);
         this.wcbTypes.SetAlign(5);
