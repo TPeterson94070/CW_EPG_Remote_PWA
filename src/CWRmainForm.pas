@@ -272,6 +272,7 @@ begin
   Log('Running version:  ' + AppVersion);
   Log('App is ' + IfThen(not Application.IsOnline, 'NOT ') + 'online');
   WebRESTClient1.ReadTokens; // retrieve previous access token
+  if TWebLocalStorage.GetValue(EMAILADDR) = '' then TWebLocalStorage.SetValue(EMAILADDR,'you need to log in');
   WebMainMenu1.Appearance.HamburgerMenu.Caption := '['+TWebLocalStorage.GetValue(EMAILADDR)+']';
   Font.Height := -17;
   EPG.Hide;
