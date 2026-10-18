@@ -151,7 +151,8 @@ private
   [async] procedure SetFilters;
   [async] procedure ShowPlsWait(PlsWaitCap: string);
   [async] procedure SetupFilterLists;
-  [async] procedure ShowItemDetails(ItemNo: Integer; DoCapture: Boolean = True);
+  [async] function ShowItemDetails(ItemNo: Integer; CustomTime, Action: string):
+      Boolean;
   [async] procedure ShowHistoryWDGDetails(ItemNo: Integer);
 public
   { Public declarations }
@@ -421,35 +422,48 @@ begin
 //    byType.OnClick := byTypeClick;
 end;
 
-procedure TCWRmainFrm.CapturesWSGClickCell(Sender: TObject; ACol, ARow: Integer);
+[Async]
+function CapturesWSGDisplay(WSG: TWebStringGrid; CustomTime, Action: string; StartTime: TDateTime; ARow, TitleCol: Integer): Boolean;
 var
   st: TDateTime;
   SaveFilter: string;
   SaveFilterState: Boolean;
+  SaveClickAction: TCellEvent;
 
 begin
-  CapturesWSG.OnClickCell := nil;
+  SaveClickAction := WSG.OnClickCell;
+  WSG.OnClickCell := nil;
 //  {$IFDEF PAS2JS} asm await sleep(10) end; {$ENDIF}
-  SaveFilter := WIDBCDS.Filter;
-  SaveFilterState := WIDBCDS.Filtered;
+  SaveFilter := CWRmainFrm.WIDBCDS.Filter;
+  SaveFilterState := CWRmainFrm.WIDBCDS.Filtered;
   try
-    Log('========== CapturesClickCell() called from Row ' + ARow.ToString);
+    Log('========== CapturesWSGDisplay called from Row ' + ARow.ToString);
     // Find Capture Item in EPG
-    st := TTimeZone.Local.ToUniversalTime(StrToDateTimeDef(CapturesWSG.Cells[3,ARow] + ' ' + CapturesWSG.Cells[4,ARow],Now));
-    WIDBCDS.Filtered := False;
-    WIDBCDS.Filter := 'Title like ' + QuotedStr(CapturesWSG.Cells[8,ARow])
+    st := TTimeZone.Local.ToUniversalTime(StartTime);
+    CWRmainFrm.WIDBCDS.Filtered := False;
+    CWRmainFrm.WIDBCDS.Filter := 'Title like ' + QuotedStr(WSG.Cells[TitleCol,ARow])
       + ' and StartTime > ' + Double(st-15*OneMinute).ToString   // Allow for generous padding
       + ' and StartTime < ' + Double(st+OneMinute).ToString;
-    WIDBCDS.Filtered := True;
-    WIDBCDS.FindFirst;
-    {$IFDEF PAS2JS} await {$ENDIF}(ShowItemDetails(WIDBCDS.RecNo, False)); // Call w/invisible Add Capture button
+    CWRmainFrm.WIDBCDS.Filtered := True;
+    CWRmainFrm.WIDBCDS.FindFirst;
+    Result := {$IFDEF PAS2JS} await {$ENDIF}(CWRmainFrm.ShowItemDetails(CWRmainFrm.WIDBCDS.RecNo, CustomTime, Action));
   finally
-    WIDBCDS.Filtered := False;
-    WIDBCDS.Filter := SaveFilter;
-    WIDBCDS.Filtered := SaveFilterState;
-    CapturesWSG.OnClickCell := CapturesWSGClickCell;
-    Log('========== EPGClickCell() finished');
+    CWRmainFrm.WIDBCDS.Filtered := False;
+    CWRmainFrm.WIDBCDS.Filter := SaveFilter;
+    CWRmainFrm.WIDBCDS.Filtered := SaveFilterState;
+    WSG.OnClickCell := SaveClickAction;
+    Log('========== CapturesWSGDisplay finished');
   end;
+end;
+
+procedure TCWRmainFrm.CapturesWSGClickCell(Sender: TObject; ACol, ARow: Integer);
+var
+  CustomTime: string;
+  StartTime: TDateTime;
+begin
+  CustomTime := CapturesWSG.Cells[3,ARow] + ' ' + CapturesWSG.Cells[4,ARow] + '--' + CapturesWSG.Cells[5,ARow];
+  StartTime := StrToDateTimeDef(CapturesWSG.Cells[3,ARow] + ' ' + CapturesWSG.Cells[4,ARow],Now);
+  CapturesWSGDisplay(CapturesWSG, CustomTime, '' {no action button}, StartTime, ARow, 8);
 end;
 
 procedure TCWRmainFrm.CapturesWSGGetCellData(Sender: TObject; ACol, ARow: Integer;
@@ -815,18 +829,20 @@ end;
 procedure TCWRmainFrm.NewCapturesWSGClickCell(Sender: TObject; ACol,
   ARow: Integer);
 var
-  PSIP, Title, ProgID, id: string;
+  PSIP, Title, ProgID, id, CustomTime: string;
   RecordStart, RecordEnd: TDateTime;
   i: Integer;
 begin
   if ARow = 0 then exit;
-  if TAwait.ExecP<TModalResult> (MessageDlgAsync('Remove selected program?'
-    ,mtConfirmation, [mbYes,mbNo])) = mrYes then
+  RecordStart := StrToDateTimeDef(NewCapturesWSG.Cells[1,ARow],Now);
+  RecordEnd := StrToDateTimeDef(NewCapturesWSG.Cells[2,ARow],Now);
+  CustomTime := NewCapturesWSG.Cells[1,ARow] + '--' + NewCapturesWSG.Cells[2,ARow];
+  if {$IfDef PAS2JS}await{$EndIf}(CapturesWSGDisplay(NewCapturesWSG, CustomTime, 'Delete Item', RecordStart, ARow, 3)) then
+//  if TAwait.ExecP<TModalResult> (MessageDlgAsync('Remove selected program?'
+//    ,mtConfirmation, [mbYes,mbNo])) = mrYes then
   begin
     // Find & delete matching row in Local Storage
     PSIP := NewCapturesWSG.Cells[0,ARow];
-    RecordStart := StrToDateTimeDef(NewCapturesWSG.Cells[1,ARow],Now);
-    RecordEnd := StrToDateTimeDef(NewCapturesWSG.Cells[2,ARow],Now);
     Title := NewCapturesWSG.Cells[3,ARow];
     ProgID := NewCapturesWSG.Cells[6,ARow];
     NewCapturesWSG.BeginUpdate;
@@ -1369,7 +1385,7 @@ begin
 end;
 
 
-procedure TCWRmainFrm.ShowItemDetails(ItemNo: Integer; DoCapture: Boolean = True);
+function TCWRmainFrm.ShowItemDetails(ItemNo: Integer; CustomTime, Action: string): Boolean;
 var
   DetailsFrm: TDetailsFrm;
   SchedFrm: TSchedForm;
@@ -1397,7 +1413,7 @@ begin
     // init controls after loading
     DetailsFrm.mmTitle.Text := WIDBCDS.Fields[3].AsString;
     DetailsFrm.mmSubTitle.Text := WIDBCDS.Fields[4].AsString;
-    DetailsFrm.lb11Time.Caption := WIDBCDS.Fields[2].AsString;
+    DetailsFrm.lb11Time.Caption := IfThen(CustomTime>'', CustomTime, WIDBCDS.Fields[2].AsString);
     DetailsFrm.lb10Channel.Caption := WIDBCDS.Fields[1].AsString;
     x := WIDBCDS.Fields[9].AsString.Split(['-']);                 // Parse 1st-air date
     DetailsFrm.lb09OrigDate.Caption := IfThen(Length(x) = 3,      // Have 1st-air date
@@ -1415,12 +1431,14 @@ begin
     SetLabelStyle(DetailsFrm.lb04HD, DetailsFrm.lb04HD.Caption <> 'SD');
     DetailsFrm.mmDescription.Text := WIDBCDS.Fields[5].AsString;
     // Allow capture request only for EPG
-    DetailsFrm.btnAddCap.Visible := DoCapture;
+    DetailsFrm.btnAddCap.Visible := Action > '';
+    DetailsFrm.btnAddCap.Caption := Action;
     // execute form and wait for close
     Log('========== starting DetailsFrm.Execute ');
     TAwait.ExecP<TModalResult>(DetailsFrm.Execute);
     Log('========== finished DetailsFrm.Execute ');
-    if DetailsFrm.ModalResult = mrOk then  // Only poss if DoCapture=True
+    Result := DetailsFrm.ModalResult = mrOk;   // Only poss if Action > ''
+    if Result and (Action = 'Add Capture') then
     begin
       SchedFrm := TSchedForm.Create(Self);
       Log('========== finished TSchedForm.Create(nil)');
@@ -1602,7 +1620,7 @@ begin
   // Quit Combobox if still open
   if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
   EPG.SetSelectedRow(toInteger(Event.RowIndex), True);
-  ShowItemDetails(EPG.GetCell(4,toInteger(Event.RowIndex)).ToInteger);
+  ShowItemDetails(EPG.GetCell(4,toInteger(Event.RowIndex)).ToInteger, '', 'Add Capture');
   Log('========== EPGCellClickedEvent() finished');
 end;
 
@@ -1611,7 +1629,7 @@ begin
   Log('========== EPGCellDoubleClickedEvent() called from Row ' + toInteger(Event.RowIndex).ToString);
   // Quit Combobox if still open
   if pnlFilterSelection.Visible then pnlFilterSelection.Hide;
-  ShowItemDetails(EPG.GetCell(4,toInteger(Event.RowIndex)).ToInteger);
+  ShowItemDetails(EPG.GetCell(4,toInteger(Event.RowIndex)).ToInteger, '', 'Add Capture');
   Log('========== EPGCellDoubleClickedEvent() finished');
 end;
 

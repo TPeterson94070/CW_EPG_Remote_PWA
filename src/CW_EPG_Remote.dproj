@@ -8,7 +8,7 @@
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <ProjectGuid>{41531CF5-09F3-4E47-AC3A-CD411047F502}</ProjectGuid>
         <ProjectName Condition="'$(ProjectName)'==''">CW_EPG_Remote</ProjectName>
-        <ProjectVersion>20.4</ProjectVersion>
+        <ProjectVersion>20.5</ProjectVersion>
         <TargetedPlatforms>1</TargetedPlatforms>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -50,7 +50,7 @@
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <TMSPWAManifestFile>Manifest.json</TMSPWAManifestFile>
-        <TMSVersion>1.0.4277</TMSVersion>
+        <TMSVersion>1.0.4294</TMSVersion>
         <TMSVersionAuto>2</TMSVersionAuto>
         <TMSWebHTMLFile>index.html</TMSWebHTMLFile>
         <TMSWebPWA>2</TMSWebPWA>
@@ -99,7 +99,7 @@
         <TMSPWAApplicationName>CW_Remote app</TMSPWAApplicationName>
         <TMSPWAApplicationShortName>CW_Remote</TMSPWAApplicationShortName>
         <TMSPWABackgroundColor>Coral</TMSPWABackgroundColor>
-        <TMSWebBrowser>5</TMSWebBrowser>
+        <TMSWebBrowser>8</TMSWebBrowser>
         <TMSWebPWAThemeColor>Coral</TMSWebPWAThemeColor>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
