@@ -1564,7 +1564,7 @@ begin
   if res.Status = 200 then
   begin
     TAwait.ExecP<TModalResult> (MessageDlgAsync('Request successfully updated.'
-      + #13#13'N.B.:  NOT scheduled until CW_EPG''s next run.', mtInformation, [mbOK]));
+      + #13#13'N.B.:  To be scheduled at HTPC''s next wakeup.', mtInformation, [mbOK]));
     TLocalStorage.SetValue(CSV_NEWCAPTURES, data.Text);
   end
   else
